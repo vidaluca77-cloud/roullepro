@@ -141,7 +141,7 @@ export default function DeposerAnnoncePage() {
 
       // Insertion de l'annonce avec les BONS noms de colonnes
       const { error: err } = await supabase.from('annonces').insert({
-        titre: form.title, // DB: titre
+        title: form.title, // DB: titre
         category_id: form.category_id,
         marque: form.marque,
         modele: form.modele,
