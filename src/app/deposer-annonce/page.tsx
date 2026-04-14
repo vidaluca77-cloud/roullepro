@@ -62,11 +62,9 @@ export default function DeposerAnnoncePage() {
       annee: form.annee ? +form.annee : null,
       kilometrage: form.kilometrage ? +form.kilometrage : null,
       price: form.price ? +form.price : null,
-      form.carburant || null,,
-      form.boite || null,,
-      couleur: form.couleur,
-      description: form.description,
-      ville: form.ville,
+      carburant: form.carburant || null,      
+      boite: form.boite || null,  couleur: form.couleur,  
+      description: form.description,   
       user_id: user.id,
       statut: 'active'
     });
