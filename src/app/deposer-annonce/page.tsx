@@ -147,7 +147,7 @@ export default function DeposerAnnoncePage() {
         modele: form.modele,
         annee: form.annee ? +form.annee : null,
         kilometrage: form.kilometrage ? +form.kilometrage : null,
-        prix: form.prix ? +form.prix : null, // DB: prix
+        price: form.price ? +form.prix : null, // DB: prix
         carburant: form.carburant || null,
         boite: form.boite || null,
         couleur: form.couleur,
