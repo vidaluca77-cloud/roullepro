@@ -67,7 +67,7 @@ export default function AnnoncesPage() {
               <Link key={a.id} href={`/annonces/${a.id}`}>
                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden">
                   <div className="bg-gray-100 h-48 flex items-center justify-center">
-                    {a.images?.[0] ? <img src={a.images[0]} alt={a.titre} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
+                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.titre} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
                   </div>
                   <div className="p-4">
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{a.categorie}</span>
