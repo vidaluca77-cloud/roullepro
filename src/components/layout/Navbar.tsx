@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Truck, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
@@ -9,6 +9,8 @@ import { useRouter } from 'next/navigation';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -19,8 +21,29 @@ export default function Navbar() {
     { href: '/deposer-annonce', label: 'Deposer une annonce' },
   ];
 
+  useEffect(() => {
+    loadUser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      loadUser();
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loadUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+    if (user) {
+      const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      setProfile(data);
+    } else {
+      setProfile(null);
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
     router.push('/');
     router.refresh();
   };
@@ -35,6 +58,7 @@ export default function Navbar() {
               <span className="text-xl font-bold text-blue-600">RoullePro</span>
             </Link>
           </div>
+
           <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
@@ -49,21 +73,62 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex items-center space-x-2">
-              <Link
-                href="/auth/login"
-                className="text-sm text-gray-600 hover:text-blue-600"
-              >
-                Connexion
-              </Link>
-              <Link
-                href="/auth/register"
-                className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
-                Inscription
-              </Link>
-            </div>
+
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600"
+                >
+                  <User className="h-5 w-5" />
+                  <span>{profile?.full_name || user.email}</span>
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                    <Link
+                      href="/dashboard"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <LayoutDashboard className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Link>
+                    <Link
+                      href="/profil"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      Mon profil
+                    </Link>
+                    <button
+                      onClick={() => { handleSignOut(); setUserMenuOpen(false); }}
+                      className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Deconnexion
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/auth/login"
+                  className="text-sm text-gray-600 hover:text-blue-600"
+                >
+                  Connexion
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  Inscription
+                </Link>
+              </div>
+            )}
           </div>
+
           <div className="md:hidden flex items-center">
             <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600">
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -71,6 +136,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
       {isOpen && (
         <div className="md:hidden bg-white border-t">
           <div className="px-4 py-3 space-y-2">
@@ -84,10 +150,18 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="border-t pt-2 space-y-2">
-              <Link href="/auth/login" className="block text-sm text-gray-600 hover:text-blue-600 py-1">Connexion</Link>
-              <Link href="/auth/register" className="block bg-blue-600 text-white text-sm px-4 py-2 rounded-lg text-center">Inscription</Link>
-            </div>
+            {user ? (
+              <div className="border-t pt-2 space-y-2">
+                <Link href="/dashboard" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Dashboard</Link>
+                <Link href="/profil" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Mon profil</Link>
+                <button onClick={() => { handleSignOut(); setIsOpen(false); }} className="block w-full text-left text-sm text-red-600 hover:text-red-700 py-1">Deconnexion</button>
+              </div>
+            ) : (
+              <div className="border-t pt-2 space-y-2">
+                <Link href="/auth/login" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Connexion</Link>
+                <Link href="/auth/register" className="block bg-blue-600 text-white text-sm px-4 py-2 rounded-lg text-center" onClick={() => setIsOpen(false)}>Inscription</Link>
+              </div>
+            )}
           </div>
         </div>
       )}
