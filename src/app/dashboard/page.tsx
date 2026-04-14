@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Trash2, Eye, LogOut } from 'lucide-react';
-
+import { Plus, Trash2, Eye, LogOut, User } from 'lucide-react';
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -38,7 +37,8 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
+          <div><h1 className="text-2xl font-bold">Mon es
+                        <Link href="/profil" className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600"><User size={18} />Profil</Link>pace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
           <button onClick={signOut} className="flex items-center gap-2 bg-blue-700 px-4 py-2 rounded-lg hover:bg-blue-800"><LogOut size={18}/>Deconnexion</button>
         </div>
       </div>
