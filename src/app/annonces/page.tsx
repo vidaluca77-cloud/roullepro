@@ -33,7 +33,7 @@ export default function AnnoncesPage() {
   };
 
   const filtered = annonces.filter((a) =>
-    !search || a.titre?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase())
+    !search || a.title?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -67,12 +67,12 @@ export default function AnnoncesPage() {
               <Link key={a.id} href={`/annonces/${a.id}`}>
                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden">
                   <div className="bg-gray-100 h-48 flex items-center justify-center">
-                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.titre} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
+                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.title} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
                   </div>
                   <div className="p-4">
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{a.categorie}</span>
-                    <h3 className="font-semibold mt-2 truncate">{a.titre}</h3>
-                    <p className="text-blue-600 font-bold text-lg">{a.prix ? `${Number(a.prix).toLocaleString()} EUR` : 'Sur demande'}</p>
+                    <h3 className="font-semibold mt-2 truncate">{a.title}</h3>
+                    <p className="text-blue-600 font-bold text-lg">{a.price ? `${Number(a.price).toLocaleString()} EUR` : 'Sur demande'}</p>
                     <div className="text-xs text-gray-500 mt-1 flex gap-2">
                       {a.ville && <span><MapPin size={10} className="inline" /> {a.ville}</span>}
                       {a.annee && <span>{a.annee}</span>}
