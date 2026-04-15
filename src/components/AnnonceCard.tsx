@@ -13,6 +13,11 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [loading, setLoading] = useState(false);
 
+    // Synchroniser le state interne avec la prop
+  useEffect(() => {
+    setIsFavorite(initialFavorite);
+  }, [initialFavorite]);
+
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
