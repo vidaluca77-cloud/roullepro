@@ -53,6 +53,7 @@ export default function ContactModal({
           sender_email: senderEmail,
           contenu: contenu,                  // colonne réelle dans Supabase
         }),
+              });
     
       const data = await response.json();
 
