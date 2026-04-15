@@ -4,29 +4,34 @@ import Link from 'next/link';
 import { Search, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
-const CATEGORIES = [
-  { value: '', label: 'Toutes categories' },
-  { value: 'vtc', label: 'VTC' },
-  { value: 'taxi', label: 'Taxi' },
-  { value: 'ambulance', label: 'Ambulance' },
-  { value: 'transport-scolaire', label: 'Transport scolaire' },
-  { value: 'utilitaire', label: 'Utilitaire' },
-  { value: 'autre', label: 'Autre' },
-];
+type Category = { id: string; name: string; slug: string };
 
 export default function AnnoncesPage() {
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categorie, setCategorie] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
   const supabase = createClient();
 
-  useEffect(() => { fetchAnnonces(); }, [categorie]);
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchAnnonces();
+  }, [categorie]);
+
+  const loadCategories = async () => {
+    const { data } = await supabase.from('categories').select('id, name, slug').order('name');
+    if (data) setCategories(data);
+  };
 
   const fetchAnnonces = async () => {
     setLoading(true);
     let query = supabase.from('annonces').select('*').eq('statut', 'active').order('created_at', { ascending: false });
-    if (categorie) query = query.eq('category_id', categorie);    const { data } = await query;
+    if (categorie) query = query.eq('category_id', categorie);
+    const { data } = await query;
     setAnnonces(data || []);
     setLoading(false);
   };
@@ -48,10 +53,21 @@ export default function AnnoncesPage() {
         <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-wrap gap-3">
           <div className="flex-1 min-w-48 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input type="text" placeholder="Rechercher..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm" />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm"
+            />
           </div>
-          <select value={categorie} onChange={(e) => setCategorie(e.target.value)} className="border rounded-lg px-3 py-2 text-sm">
-            {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          <select
+            value={categorie}
+            onChange={(e) => setCategorie(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Toutes categories</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
         </div>
 
