@@ -59,7 +59,7 @@ export default function FavorisPage() {
       } else {
         // Filtrer les favoris avec annonces valides et actives
         const validFavoris = (favorisData || []).filter(
-          (f) => f.annonces && f.annonces.statut === 'active'
+          (f) => f.annonces && (f.annonces as any).statut === 'active'
         );
         setFavoris(validFavoris);
       }
