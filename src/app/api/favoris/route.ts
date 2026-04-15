@@ -9,7 +9,7 @@ export async function GET() {
 
     if (authError || !user) {
       // Si non authentifié, retourner un tableau vide au lieu d'une erreur
-      return NextResponse.json({ favoriteIds: [] });
+      return NextResponse.jso[]});
     }
 
     const { data: favoris, error } = await supabase
@@ -18,14 +18,13 @@ export async function GET() {
 
     if (error) {
       console.error('Erreur récupération favoris:', error);
-      return NextResponse.json({ favoriteIds: [] });
+      return NextResponse.jso[]});
     }
 
-    const favoriteIds = (favoris || []).map(f => f.annonce_id);
-    return NextResponse.json({ favoriteIds });
-  } catch (error) {
+    return NextResponse.json(favoris || []});
+  } catch (error) favoris || []
     console.error('Erreur GET /api/favoris:', error);
-    return NextResponse.json({ favoriteIds: [] });
+    return NextResponse.json([]});
   }
 }
 
