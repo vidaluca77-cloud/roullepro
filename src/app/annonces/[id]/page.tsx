@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import SignalementModal from '@/components/SignalementModal';
+import ContactModal from '@/components/ContactModal';
 
 export default function AnnonceDetailPage() {
   const params = useParams();
@@ -15,12 +16,25 @@ export default function AnnonceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedImg, setSelectedImg] = useState(0);
   const [contactOpen, setContactOpen] = useState(false);
+  const [contactModalOpen, setContactModalOpen] = useState(false);
   const [signalementOpen, setSignalementOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [currentProfile, setCurrentProfile] = useState<any>(null);
   const supabase = createClient();
 
   useEffect(() => {
     if (params.id) fetchAnnonce(params.id as string);
+    fetchCurrentUser();
   }, [params.id]);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUser(user);
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      setCurrentProfile(profile);
+    }
+  };
 
   const fetchAnnonce = async (id: string) => {
     const { data } = await supabase.from('annonces').select('*, profiles(*)').eq('id', id).single();
@@ -32,14 +46,12 @@ export default function AnnonceDetailPage() {
   if (!annonce) return <div className="text-center py-20"><p className="text-gray-500">Annonce introuvable</p><Link href="/annonces" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Retour</Link></div>;
 
   const images = annonce.photos || [];
+  const isOwner = currentUser?.id === annonce.user_id;
+  const currentUserName = currentProfile ? `${currentProfile.prenom || ''} ${currentProfile.nom || ''}`.trim() : '';
+  const currentUserEmail = currentUser?.email || '';
 
-  const nextImage = () => {
-    setSelectedImg((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setSelectedImg((prev) => (prev - 1 + images.length) % images.length);
-  };
+  const nextImage = () => setSelectedImg((prev) => (prev + 1) % images.length);
+  const prevImage = () => setSelectedImg((prev) => (prev - 1 + images.length) % images.length);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -49,29 +61,22 @@ export default function AnnonceDetailPage() {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Carrousel de photos amélioré */}
+          {/* Carrousel de photos */}
           <div className="space-y-4">
-            {/* Image principale */}
             <div className="relative bg-gray-100 rounded-xl overflow-hidden" style={{ height: '500px' }}>
               {images.length > 0 ? (
                 <>
-                  <img 
-                    src={images[selectedImg]} 
-                    alt={annonce.title} 
+                  <img
+                    src={images[selectedImg]}
+                    alt={annonce.title}
                     className="w-full h-full object-contain"
                   />
                   {images.length > 1 && (
                     <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition"
-                      >
+                      <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition">
                         <ChevronLeft size={24} className="text-gray-800" />
                       </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition"
-                      >
+                      <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition">
                         <ChevronRight size={24} className="text-gray-800" />
                       </button>
                       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
@@ -86,8 +91,6 @@ export default function AnnonceDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* Miniatures */}
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {images.map((img: string, idx: number) => (
@@ -171,11 +174,28 @@ export default function AnnonceDetailPage() {
                       <span className="font-semibold text-lg">{vendeur.nom_entreprise}</span>
                     </div>
                   )}
+
+                  {/* Bouton Contacter le vendeur */}
+                  {!isOwner ? (
+                    <button
+                      onClick={() => setContactModalOpen(true)}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare size={18} />
+                      Contacter le vendeur
+                    </button>
+                  ) : (
+                    <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-lg font-medium text-center text-sm">
+                      Votre annonce
+                    </div>
+                  )}
+
+                  {/* Afficher le contact direct */}
                   <button
                     onClick={() => setContactOpen(!contactOpen)}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+                    className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded-lg font-medium transition text-sm"
                   >
-                    Afficher le contact
+                    {contactOpen ? 'Masquer le contact' : 'Afficher le contact direct'}
                   </button>
                   {contactOpen && (
                     <div className="space-y-2 pt-3 border-t">
@@ -196,7 +216,7 @@ export default function AnnonceDetailPage() {
                 </div>
               </div>
             )}
-            
+
             {/* Bouton Signaler cette annonce */}
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <button
@@ -215,10 +235,20 @@ export default function AnnonceDetailPage() {
         </div>
       </div>
 
-      <SignalementModal 
+      <SignalementModal
         annonceId={params.id as string}
         isOpen={signalementOpen}
         onClose={() => setSignalementOpen(false)}
+      />
+
+      <ContactModal
+        annonceId={params.id as string}
+        annonceTitre={annonce.title || annonce.titre || ''}
+        isOpen={contactModalOpen}
+        onClose={() => setContactModalOpen(false)}
+        currentUserName={currentUserName}
+        currentUserEmail={currentUserEmail}
+        isOwner={isOwner}
       />
     </div>
   );

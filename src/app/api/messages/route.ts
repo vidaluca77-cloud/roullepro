@@ -1,0 +1,112 @@
+import { createClient } from '@supabase/supabase-js';
+import { NextResponse } from 'next/server';
+
+const getAdminClient = () =>
+  createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+export async function POST(request: Request) {
+  try {
+    const supabaseAdmin = getAdminClient();
+    const body = await request.json();
+    const { annonce_id, sender_name, sender_email, message } = body;
+
+    // Validation
+    if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !message?.trim()) {
+      return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(sender_email)) {
+      return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
+    }
+
+    if (message.trim().length < 10) {
+      return NextResponse.json({ error: 'Le message doit contenir au moins 10 caractères' }, { status: 400 });
+    }
+
+    // Vérifier que l'annonce existe
+    const { data: annonce, error: annonceError } = await supabaseAdmin
+      .from('annonces')
+      .select('id, user_id')
+      .eq('id', annonce_id)
+      .single();
+
+    if (annonceError || !annonce) {
+      return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
+    }
+
+    // Vérifier que l'expéditeur connecté ne contacte pas sa propre annonce
+    const { createClient: createServerClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user && user.id === annonce.user_id) {
+      return NextResponse.json(
+        { error: 'Vous ne pouvez pas contacter votre propre annonce' },
+        { status: 403 }
+      );
+    }
+
+    // Insérer le message
+    const { data, error } = await supabaseAdmin
+      .from('messages')
+      .insert({ annonce_id, sender_name: sender_name.trim(), sender_email: sender_email.trim(), message: message.trim() })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Erreur insertion message:', error);
+      return NextResponse.json({ error: 'Erreur lors de l\'envoi du message', details: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Message envoyé avec succès', data }, { status: 201 });
+  } catch (error: any) {
+    console.error('Erreur serveur:', error);
+    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  }
+}
+
+export async function GET() {
+  try {
+    const { createClient: createServerClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    }
+
+    const supabaseAdmin = getAdminClient();
+
+    // Récupérer les annonces de l'utilisateur
+    const { data: mesAnnonces } = await supabaseAdmin
+      .from('annonces')
+      .select('id, titre')
+      .eq('user_id', user.id);
+
+    if (!mesAnnonces || mesAnnonces.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    const annonceIds = mesAnnonces.map((a: any) => a.id);
+
+    // Récupérer les messages pour ces annonces
+    const { data: messages, error } = await supabaseAdmin
+      .from('messages')
+      .select('*, annonces(id, titre)')
+      .in('annonce_id', annonceIds)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return NextResponse.json({ error: 'Erreur de récupération des messages' }, { status: 500 });
+    }
+
+    return NextResponse.json(messages || []);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  }
+}

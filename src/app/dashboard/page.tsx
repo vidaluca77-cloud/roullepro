@@ -1,41 +1,21 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Trash2, Eye, LogOut, User, Heart } from 'lucide-react';
+import { Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [favoris, setFavoris] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedMessages, setExpandedMessages] = useState<string[]>([]);
 
-  useEffect(() => { init(); }, []);
-
-  // Recharger les favoris périodiquement et quand la page devient visible
-  useEffect(() => {
-    // Polling toutes les 5 secondes
-    const interval = setInterval(() => {
-      loadFavoris();
-    }, 5000);
-
-    // Recharger aussi quand la page devient visible
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadFavoris();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, []);
-
-  const loadFavoris = async () => {
+  const loadFavoris = useCallback(async () => {
     try {
       const response = await fetch('/api/favoris');
       if (response.ok) {
@@ -45,7 +25,39 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Erreur chargement favoris:', error);
     }
-  };
+  }, []);
+
+  const loadMessages = useCallback(async () => {
+    try {
+      const response = await fetch('/api/messages');
+      if (response.ok) {
+        const data = await response.json();
+        setMessages(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error('Erreur chargement messages:', error);
+    }
+  }, []);
+
+  useEffect(() => { init(); }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadFavoris();
+      loadMessages();
+    }, 5000);
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadFavoris();
+        loadMessages();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [loadFavoris, loadMessages]);
 
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,9 +66,8 @@ export default function DashboardPage() {
     setProfile(p);
     const { data: a } = await supabase.from('annonces').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     setAnnonces(a || []);
-    
     await loadFavoris();
-    
+    await loadMessages();
     setLoading(false);
   };
 
@@ -67,6 +78,19 @@ export default function DashboardPage() {
   };
 
   const signOut = async () => { await supabase.auth.signOut(); router.push('/'); };
+
+  const toggleMessage = (id: string) => {
+    setExpandedMessages(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
 
   if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;
 
@@ -86,9 +110,68 @@ export default function DashboardPage() {
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-blue-600">{annonces.length}</p><p className="text-gray-500">Annonces</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.status==='active').length}</p><p className="text-gray-500">Actives</p></div>
-          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-red-500">{favoris.length}</p><p className="text-gray-500">Favoris</p></div>
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <p className="text-3xl font-bold text-purple-600">{messages.length}</p>
+            <p className="text-gray-500">Messages</p>
+          </div>
           <div className="bg-white rounded-xl p-6 shadow-sm flex items-center"><Link href="/deposer-annonce" className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-medium"><Plus size={20}/>Nouvelle annonce</Link></div>
         </div>
+
+        {/* Section Messages reçus */}
+        {messages.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm mb-8">
+            <div className="p-6 border-b flex items-center gap-2">
+              <MessageSquare size={20} className="text-blue-600" />
+              <h2 className="text-lg font-semibold">Messages reçus</h2>
+              <span className="ml-auto text-sm text-gray-500">{messages.length} message{messages.length > 1 ? 's' : ''}</span>
+            </div>
+            <div className="divide-y">
+              {messages.map((msg: any) => (
+                <div key={msg.id} className="p-4">
+                  <button
+                    onClick={() => toggleMessage(msg.id)}
+                    className="w-full flex items-start justify-between gap-4 text-left"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-gray-900 truncate">{msg.sender_name}</span>
+                        <span className="text-gray-400 text-sm">·</span>
+                        <a
+                          href={`mailto:${msg.sender_email}`}
+                          className="text-blue-600 text-sm hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {msg.sender_email}
+                        </a>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        Pour : <Link href={`/annonces/${msg.annonce_id}`} className="hover:underline text-gray-500" onClick={(e) => e.stopPropagation()}>{msg.annonces?.titre || 'Annonce'}</Link>
+                        &nbsp;· {formatDate(msg.created_at)}
+                      </p>
+                      {!expandedMessages.includes(msg.id) && (
+                        <p className="text-gray-600 text-sm mt-1 truncate">{msg.message}</p>
+                      )}
+                    </div>
+                    <div className="flex-shrink-0 text-gray-400 mt-1">
+                      {expandedMessages.includes(msg.id) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </div>
+                  </button>
+                  {expandedMessages.includes(msg.id) && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-gray-700 whitespace-pre-line text-sm">{msg.message}</p>
+                      <a
+                        href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.titre || 'Votre annonce'}`}
+                        className="mt-3 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                      >
+                        <MessageSquare size={14} /> Répondre par email
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Section Favoris */}
         {favoris.length > 0 && (
