@@ -14,8 +14,7 @@ export async function POST(request: Request) {
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
       // Colonnes réelles: sender_name, sender_email, content, seller_id (définies dans
-          const { annonce_id, sender_name, sender_email, content } = body;001_schema.sql)        const { annonce_id, sender_name, sender_email, content } = body;
-
+      const { annonce_id, sender_name, sender_email, content } = body;
     // Validation
     if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !content?.trim()) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
