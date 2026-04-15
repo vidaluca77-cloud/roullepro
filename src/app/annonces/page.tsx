@@ -49,7 +49,7 @@ export default function AnnoncesPage() {
     setLoading(false);
   };
 
-    const filtered = annonces.filter((a) => {
+  const filtered = annonces.filter((a) => {
     // Filter by search (title and marque)
     const matchesSearch = !search || 
       a.title?.toLowerCase().includes(search.toLowerCase()) || 
