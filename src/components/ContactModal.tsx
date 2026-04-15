@@ -25,7 +25,7 @@ export default function ContactModal({
   // Variables d'état - noms internes en français pour la lisibilité
   const [senderNom, setSenderNom] = useState(currentUserName);
   const [senderEmail, setSenderEmail] = useState(currentUserEmail);
-  const [contenu, setContenu] = useState('');
+  const [content, setContenu] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -49,9 +49,9 @@ export default function ContactModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           annonce_id: annonceId,
-          sender_nom: senderNom,   // colonne réelle dans Supabase
+          sender_name: senderNom,   // colonne réelle dans Supabase
           sender_email: senderEmail,
-          contenu,                  // colonne réelle dans Supabase
+          content,                  // colonne réelle dans Supabase
         }),
       });
 
