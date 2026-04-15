@@ -14,8 +14,7 @@ export async function GET() {
 
     const { data: favoris, error } = await supabase
       .from('favoris')
-      .select('annonce_id')
-      .eq('user_id', user.id);
+      .select('*, annonces(*)')      .eq('user_id', user.id);
 
     if (error) {
       console.error('Erreur récupération favoris:', error);
