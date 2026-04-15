@@ -13,11 +13,11 @@ export async function POST(request: Request) {
   try {
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
-    // Colonnes réelles: sender_nom, contenu (définies dans 001_schema.sql)
-    const { annonce_id, sender_nom, sender_email, contenu } = body;
+    // Colonnes réelles: sender_name, content (définies dans 001_schema.sql)
+    const { annonce_id, sender_name, sender_email, content } = body;
 
     // Validation
-    if (!annonce_id || !sender_nom?.trim() || !sender_email?.trim() || !contenu?.trim()) {
+    if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !content?.trim()) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
 
-    if (contenu.trim().length < 10) {
+    if (content.trim().length < 10) {
       return NextResponse.json({ error: 'Le message doit contenir au moins 10 caractères' }, { status: 400 });
     }
 
@@ -58,9 +58,9 @@ export async function POST(request: Request) {
       .from('messages')
       .insert({
         annonce_id,
-        sender_nom: sender_nom.trim(),
+        sender_name: sender_name.trim(),
         sender_email: sender_email.trim(),
-        contenu: contenu.trim(),
+        content: content.trim(),
         ...(user ? { sender_id: user.id } : {}),
       })
       .select()
