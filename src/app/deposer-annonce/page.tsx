@@ -123,6 +123,14 @@ export default function DeposerAnnoncePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+        // Validation: au moins 1 photo obligatoire
+    if (photoPreview.length === 0) {
+      setError('Veuillez ajouter au moins une photo');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
 
     try {
