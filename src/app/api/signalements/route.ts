@@ -1,16 +1,30 @@
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
-    
-    // Vérifier l'authentification
+    // Créer un client Supabase avec le service role key pour bypass RLS
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
+    // Créer un client normal pour vérifier l'authentification
+    const { createClient: createServerClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerClient();
+
+    // Vérifier l'authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
       return NextResponse.json(
-        { error: 'Non authentifié' },
+        { error: 'Vous devez être connecté pour signaler une annonce' },
         { status: 401 }
       );
     }
@@ -26,8 +40,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insérer le signalement
-    const { data, error } = await supabase
+    // Insérer le signalement avec le client admin (bypass RLS)
+    const { data, error } = await supabaseAdmin
       .from('signalements')
       .insert({
         annonce_id,
@@ -40,7 +54,7 @@ export async function POST(request: Request) {
     if (error) {
       console.error('Erreur lors de la création du signalement:', error);
       return NextResponse.json(
-        { error: 'Erreur lors de la création du signalement' },
+        { error: 'Erreur lors de la création du signalement', details: error.message },
         { status: 500 }
       );
     }
@@ -49,10 +63,10 @@ export async function POST(request: Request) {
       { message: 'Signalement enregistré avec succès', data },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erreur serveur:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur' },
+      { error: 'Erreur serveur', details: error.message },
       { status: 500 }
     );
   }
