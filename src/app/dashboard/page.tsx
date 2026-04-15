@@ -40,7 +40,7 @@ export default function DashboardPage() {
       const response = await fetch('/api/favoris');
       if (response.ok) {
         const favData = await response.json();
-        setFavoris(favData.filter((f: any) => f.annonces && (f.annonces as any)?.statut === 'active'));
+        setFavoris(favData.filter((f: any) => f.annonces && (f.annonces as any)?.status === 'active'));
       }
     } catch (error) {
       console.error('Erreur chargement favoris:', error);
@@ -85,7 +85,7 @@ export default function DashboardPage() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-blue-600">{annonces.length}</p><p className="text-gray-500">Annonces</p></div>
-          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.statut==='active').length}</p><p className="text-gray-500">Actives</p></div>
+          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.status==='active').length}</p><p className="text-gray-500">Actives</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-red-500">{favoris.length}</p><p className="text-gray-500">Favoris</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm flex items-center"><Link href="/deposer-annonce" className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-medium"><Plus size={20}/>Nouvelle annonce</Link></div>
         </div>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
                     <div>
                       <h3 className="font-medium">{annonce.titre}</h3>
                       <div className="flex gap-3 text-sm text-gray-500 mt-1">
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{annonce.statut}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{annonce.status}</span>
                         {annonce.prix && <span className="text-blue-600 font-medium">{Number(annonce.prix).toLocaleString()} EUR</span>}
                         {annonce.categorie && <span>{annonce.categorie}</span>}
                       </div>
@@ -130,7 +130,7 @@ export default function DashboardPage() {
                   <div>
                     <h3 className="font-medium">{a.titre}</h3>
                     <div className="flex gap-3 text-sm text-gray-500 mt-1">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${a.statut==='active'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{a.statut}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${a.status==='active'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{a.status}</span>
                       {a.prix && <span className="text-blue-600 font-medium">{Number(a.prix).toLocaleString()} EUR</span>}
                       {a.categorie && <span>{a.categorie}</span>}
                     </div>
