@@ -91,7 +91,7 @@ export async function GET() {
     // Récupérer les annonces de l'utilisateur
     const { data: mesAnnonces } = await supabaseAdmin
       .from('annonces')
-      .select('id, titre')
+      .select('id, title')
       .eq('user_id', user.id);
 
     if (!mesAnnonces || mesAnnonces.length === 0) {
@@ -100,10 +100,10 @@ export async function GET() {
 
     const annonceIds = mesAnnonces.map((a: any) => a.id);
 
-    // Récupérer les messages avec le titre de l'annonce
+    // Récupérer les messages avec le title de l'annonce
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
-      .select('*, annonces(id, titre)')
+      .select('*, annonces(id, title)')
       .in('annonce_id', annonceIds)
       .order('created_at', { ascending: false });
 
