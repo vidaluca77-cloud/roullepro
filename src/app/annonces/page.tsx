@@ -14,9 +14,14 @@ export default function AnnoncesPage() {
   const [categorie, setCategorie] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const supabase = createClient();
+    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   useEffect(() => {
     loadCategories();
+  }, []);
+
+    useEffect(() => {
+    loadFavorites();
   }, []);
 
   useEffect(() => {
@@ -26,6 +31,18 @@ export default function AnnoncesPage() {
   const loadCategories = async () => {
     const { data } = await supabase.from('categories').select('id, name, slug').order('name');
     if (data) setCategories(data);
+  };
+
+    const loadFavorites = async () => {
+    try {
+      const response = await fetch('/api/favoris');
+      if (response.ok) {
+        const data = await response.json();
+        setFavoriteIds(data.favoriteIds || []);
+      }
+    } catch (error) {
+      console.error('Erreur chargement favoris:', error);
+    }
   };
 
   const fetchAnnonces = async () => {
@@ -83,7 +100,7 @@ export default function AnnoncesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((a) => (
               <Link key={a.id} href={`/annonces/${a.id}`}>
-                <AnnonceCard annonce={a} />
+                <AnnonceCard annonce={a} isFavorite={favoriteIds.includes(a.id)} onFavoriteToggle={loadFavorites} />
               </Link>
             ))}
           </div>
