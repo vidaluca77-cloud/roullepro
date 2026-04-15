@@ -49,9 +49,9 @@ export default function ContactModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           annonce_id: annonceId,
-          sender_name: senderNom,   // colonne réelle dans Supabase
+          sender_nom: senderNom,   // colonne réelle dans Supabase
           sender_email: senderEmail,
-          content: contenu,                  // colonne réelle dans Supabase
+          contenu: contenu,                  // colonne réelle dans Supabase
         }),
       });
 
