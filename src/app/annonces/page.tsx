@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import AnnonceCard from '@/components/AnnonceCard';
 
 type Category = { id: string; name: string; slug: string };
 
@@ -81,26 +82,4 @@ export default function AnnoncesPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((a) => (
-              <Link key={a.id} href={`/annonces/${a.id}`}>
-                <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden">
-                  <div className="bg-gray-100 h-48 flex items-center justify-center">
-                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.title} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
-                  </div>
-                  <div className="p-4">
-                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{a.categorie}</span>
-                    <h3 className="font-semibold mt-2 truncate">{a.title}</h3>
-                    <p className="text-blue-600 font-bold text-lg">{a.price ? `${Number(a.price).toLocaleString()} €` : 'Sur demande'}</p>
-                    <div className="text-xs text-gray-500 mt-1 flex gap-2">
-                      {a.ville && <span><MapPin size={10} className="inline" /> {a.ville}</span>}
-                      {a.annee && <span>{a.annee}</span>}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+              <L              <AnnonceCard key={a.id} annonce={a} />
