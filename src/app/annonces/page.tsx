@@ -67,7 +67,7 @@ export default function AnnoncesPage() {
               <Link key={a.id} href={`/annonces/${a.id}`}>
                 <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden">
                   <div className="bg-gray-100 h-48 flex items-center justify-center">
-                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.title} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">Pas de photo</span>}
+                    {a.photos?.[0] ? <img src={a.photos[0]} alt={a.title} className="w-full h-full object-cover" /> : <span className="text-gray-400 text-sm">><svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg><</span>}
                   </div>
                   <div className="p-4">
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{a.categorie}</span>
