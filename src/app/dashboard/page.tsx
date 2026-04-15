@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Trash2, Eye, LogOut, User } from 'lucide-react';
+import { Plus, Trash2, Eye, LogOut, User, Heart } from 'lucide-react';
 export default function DashboardPage() {
   const router = useRouter();
   const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
   const [annonces, setAnnonces] = useState<any[]>([]);
+  const [favoris, setFavoris] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { init(); }, []);
@@ -20,6 +21,14 @@ export default function DashboardPage() {
     setProfile(p);
     const { data: a } = await supabase.from('annonces').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
     setAnnonces(a || []);
+    
+    // Charger les favoris
+    const response = await fetch('/api/favoris');
+    if (response.ok) {
+      const favData = await response.json();
+      setFavoris(favData.filter((f: any) => (f.annonces as any)?.statut === 'active'));
+    }
+    
     setLoading(false);
   };
 
@@ -37,21 +46,54 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div><h1 className="text-2xl font-bold">Mon es
-                        <Link href="/profil" className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600"><User size={18} />Profil</Link>pace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
-          <button onClick={signOut} className="flex items-center gap-2 bg-blue-700 px-4 py-2 rounded-lg hover:bg-blue-800"><LogOut size={18}/>Deconnexion</button>
+          <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
+          <div className="flex gap-2">
+            <Link href="/profil" className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600"><User size={18} />Profil</Link>
+            <button onClick={signOut} className="flex items-center gap-2 bg-blue-700 px-4 py-2 rounded-lg hover:bg-blue-800"><LogOut size={18}/>Déconnexion</button>
+          </div>
         </div>
       </div>
+
       <div className="max-w-5xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-blue-600">{annonces.length}</p><p className="text-gray-500">Annonces</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.statut==='active').length}</p><p className="text-gray-500">Actives</p></div>
+          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-red-500">{favoris.length}</p><p className="text-gray-500">Favoris</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm flex items-center"><Link href="/deposer-annonce" className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 font-medium"><Plus size={20}/>Nouvelle annonce</Link></div>
         </div>
+
+        {/* Section Favoris */}
+        {favoris.length > 0 && (
+          <div className="bg-white rounded-xl shadow-sm mb-8">
+            <div className="p-6 border-b flex items-center gap-2"><Heart size={20} className="text-red-500" fill="currentColor" /><h2 className="text-lg font-semibold">Mes favoris</h2></div>
+            <div className="divide-y">
+              {favoris.map(f => {
+                const annonce = f.annonces;
+                return (
+                  <div key={f.id} className="p-4 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium">{annonce.titre}</h3>
+                      <div className="flex gap-3 text-sm text-gray-500 mt-1">
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{annonce.statut}</span>
+                        {annonce.prix && <span className="text-blue-600 font-medium">{Number(annonce.prix).toLocaleString()} EUR</span>}
+                        {annonce.categorie && <span>{annonce.categorie}</span>}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link href={`/annonces/${annonce.id}`} className="p-2 text-gray-400 hover:text-blue-600"><Eye size={18}/></Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Section Mes Annonces */}
         <div className="bg-white rounded-xl shadow-sm">
           <div className="p-6 border-b"><h2 className="text-lg font-semibold">Mes annonces</h2></div>
           {annonces.length === 0 ? (
-            <div className="text-center py-12"><p className="text-gray-500">Aucune annonce</p><Link href="/deposer-annonce" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Deposer une annonce</Link></div>
+            <div className="text-center py-12"><p className="text-gray-500">Aucune annonce</p><Link href="/deposer-annonce" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Déposer une annonce</Link></div>
           ) : (
             <div className="divide-y">
               {annonces.map(a => (
