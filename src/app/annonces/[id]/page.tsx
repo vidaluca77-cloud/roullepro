@@ -38,6 +38,37 @@ export default function AnnonceDetailPage() {
     setSelectedImg((prev) => (prev - 1 + images.length) % images.length);
   };
 
+    const handleSignaler = async () => {
+    if (!confirm('Voulez-vous vraiment signaler cette annonce?')) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Vous devez être connecté pour signaler une annonce');
+        return;
+      }
+
+      const response = await fetch('/api/signalements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          annonce_id: params.id,
+          raison: 'Annonce inappropriée ou frauduleuse'
+        })
+      });
+
+      if (response.ok) {
+        alert('Merci pour votre signalement. Notre équipe va examiner cette annonce.');
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Une erreur est survenue');
+      }
+    } catch (error) {
+      console.error('Erreur:', error);
+      alert('Une erreur est survenue lors du signalement');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -197,11 +228,7 @@ export default function AnnonceDetailPage() {
               {/* Bouton Signaler cette annonce */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <button
-                  onClick={() => {
-                    if (confirm('Voulez-vous vraiment signaler cette annonce?')) {
-                      alert('Merci pour votre signalement. Notre équipe va examiner cette annonce.');
-                    }
-                  }}
+                  onClick={handleSignaler}
                   className="w-full border-2 border-red-500 text-red-600 hover:bg-red-50 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
