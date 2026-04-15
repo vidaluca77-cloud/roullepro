@@ -9,25 +9,25 @@ export async function GET() {
 
     if (authError || !user) {
       // Si non authentifié, retourner un tableau vide au lieu d'une erreur
-      return NextResponse.jso[]});
+      return NextResponse.json([]);
     }
 
     const { data: favoris, error } = await supabase
       .from('favoris')
-      .select('*, annonces(*)')      .eq('user_id', user.id);
+      .select('*, annonces(*)')
+      .eq('user_id', user.id);
 
     if (error) {
       console.error('Erreur récupération favoris:', error);
-      return NextResponse.jso[]});
+      return NextResponse.json([]);
     }
 
-    return NextResponse.json(favoris || []});
-    } catch (error) {
+    return NextResponse.json(favoris || []);
+  } catch (error) {
     console.error('Erreur GET /api/favoris:', error);
-    return NextResponse.json([]});
+    return NextResponse.json([]);
   }
 }
-
 
 // POST: Ajouter aux favoris
 export async function POST(request: Request) {
@@ -70,10 +70,7 @@ export async function POST(request: Request) {
     // Ajouter aux favoris
     const { error: insertError } = await supabase
       .from('favoris')
-      .insert({
-        user_id: user.id,
-        annonce_id
-      });
+      .insert({ user_id: user.id, annonce_id });
 
     if (insertError) {
       console.error('Erreur insertion favoris:', insertError);
