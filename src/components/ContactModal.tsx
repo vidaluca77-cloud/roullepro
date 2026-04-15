@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { X, MessageSquare, Send } from 'lucide-react';
 
@@ -11,6 +10,12 @@ interface ContactModalProps {
   currentUserName?: string;
   currentUserEmail?: string;
   isOwner?: boolean;
+  annonceDetails?: {
+    price?: number;
+    marque?: string;
+    modele?: string;
+    categorie?: string;
+  };
 }
 
 export default function ContactModal({
@@ -21,22 +26,48 @@ export default function ContactModal({
   currentUserName = '',
   currentUserEmail = '',
   isOwner = false,
+  annonceDetails,
 }: ContactModalProps) {
-  // Variables d'état - noms internes en français pour la lisibilité
   const [senderNom, setSenderNom] = useState(currentUserName);
   const [senderEmail, setSenderEmail] = useState(currentUserEmail);
   const [contenu, setContenu] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
+  // G\u00e9n\u00e9rer un message pr\u00e9-rempli intelligent
+  const generateSmartMessage = () => {
+    const parts = ['Bonjour,', ''];
+    parts.push(`Je suis int\u00e9ress\u00e9(e) par votre annonce "${annonceTitre}".`);
+    
+    if (annonceDetails) {
+      if (annonceDetails.marque && annonceDetails.modele) {
+        parts.push(`Concernant le ${annonceDetails.marque} ${annonceDetails.modele},`);
+      }
+    }
+    
+    parts.push('');
+    parts.push('Pourriez-vous me donner plus d\'informations sur :');
+    parts.push('- L\'\u00e9tat g\u00e9n\u00e9ral du v\u00e9hicule');
+    parts.push('- L\'historique d\'entretien');
+    if (annonceDetails?.price) {
+      parts.push('- Les modalit\u00e9s de paiement possibles');
+    }
+    parts.push('');
+    parts.push('Je reste \u00e0 votre disposition pour organiser une visite.');
+    parts.push('');
+    parts.push('Cordialement');
+    
+    return parts.join('\n');
+  };
+
   useEffect(() => {
     if (isOpen) {
       setSenderNom(currentUserName);
       setSenderEmail(currentUserEmail);
-      setContenu('');
+      setContenu(generateSmartMessage());
       setFeedback(null);
     }
-  }, [isOpen, currentUserName, currentUserEmail]);
+  }, [isOpen, currentUserName, currentUserEmail, annonceTitre, annonceDetails]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,16 +80,16 @@ export default function ContactModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           annonce_id: annonceId,
-          sender_name: senderNom,   // colonne réelle dans Supabase
+          sender_name: senderNom,
           sender_email: senderEmail,
-          content: contenu,                  // colonne réelle dans Supabase
+          content: contenu,
         }),
-              });
-    
+      });
+      
       const data = await response.json();
 
       if (response.ok) {
-        setFeedback({ type: 'success', text: 'Votre message a bien été envoyé ! Le vendeur vous contactera prochainement.' });
+        setFeedback({ type: 'success', text: 'Votre message a bien \u00e9t\u00e9 envoy\u00e9 ! Le vendeur vous contactera prochainement.' });
         setTimeout(() => {
           onClose();
           setContenu('');
@@ -68,7 +99,7 @@ export default function ContactModal({
         setFeedback({ type: 'error', text: data.error || 'Une erreur est survenue' });
       }
     } catch {
-      setFeedback({ type: 'error', text: 'Erreur réseau. Veuillez réessayer.' });
+      setFeedback({ type: 'error', text: 'Erreur r\u00e9seau. Veuillez r\u00e9essayer.' });
     } finally {
       setLoading(false);
     }
@@ -149,13 +180,13 @@ export default function ContactModal({
             <textarea
               value={contenu}
               onChange={(e) => setContenu(e.target.value)}
-              placeholder="Bonjour, je suis intéressé par votre annonce..."
+              placeholder="Bonjour, je suis int\u00e9ress\u00e9 par votre annonce..."
               required
-              rows={4}
+              rows={8}
               disabled={loading}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-50 resize-none"
             />
-            <p className="text-xs text-gray-400 mt-1">{contenu.length} caractères (min. 10)</p>
+            <p className="text-xs text-gray-400 mt-1">{contenu.length} caract\u00e8res (min. 10)</p>
           </div>
 
           {feedback && (
