@@ -1,6 +1,36 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+// GET: Récupérer les IDs des favoris de l'utilisateur
+export async function GET() {
+  try {
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      // Si non authentifié, retourner un tableau vide au lieu d'une erreur
+      return NextResponse.json({ favoriteIds: [] });
+    }
+
+    const { data: favoris, error } = await supabase
+      .from('favoris')
+      .select('annonce_id')
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Erreur récupération favoris:', error);
+      return NextResponse.json({ favoriteIds: [] });
+    }
+
+    const favoriteIds = (favoris || []).map(f => f.annonce_id);
+    return NextResponse.json({ favoriteIds });
+  } catch (error) {
+    console.error('Erreur GET /api/favoris:', error);
+    return NextResponse.json({ favoriteIds: [] });
+  }
+}
+
+
 // POST: Ajouter aux favoris
 export async function POST(request: Request) {
   try {
