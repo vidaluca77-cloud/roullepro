@@ -14,15 +14,16 @@ export default function DashboardPage() {
 
   useEffect(() => { init(); }, []);
 
-  const init = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { router.push('/auth/login'); return; }
-    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-    setProfile(p);
-    const { data: a } = await supabase.from('annonces').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
-    setAnnonces(a || []);
-    
-    // Charger les favoris
+  // Recharger les favoris quand l'utilisateur revient sur la page
+  useEffect(() => {
+    const handleFocus = () => {
+      loadFavoris();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  const loadFavoris = async () => {
     try {
       const response = await fetch('/api/favoris');
       if (response.ok) {
@@ -32,6 +33,17 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Erreur chargement favoris:', error);
     }
+  };
+
+  const init = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { router.push('/auth/login'); return; }
+    const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    setProfile(p);
+    const { data: a } = await supabase.from('annonces').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+    setAnnonces(a || []);
+    
+    await loadFavoris();
     
     setLoading(false);
   };
