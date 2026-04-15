@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useSta, useEffectte } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 
 interface SignalementModalProps {
@@ -13,6 +13,13 @@ export default function SignalementModal({ annonceId, isOpen, onClose }: Signale
   const [raison, setRaison] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    // Reset error state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setMessage(null);
+    }
+  }, [isOpen]);
 
   const raisons = [
     'Contenu inapproprié ou offensant',
