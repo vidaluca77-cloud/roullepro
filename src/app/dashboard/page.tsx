@@ -14,13 +14,25 @@ export default function DashboardPage() {
 
   useEffect(() => { init(); }, []);
 
-  // Recharger les favoris quand l'utilisateur revient sur la page
+  // Recharger les favoris périodiquement et quand la page devient visible
   useEffect(() => {
-    const handleFocus = () => {
+    // Polling toutes les 5 secondes
+    const interval = setInterval(() => {
       loadFavoris();
+    }, 5000);
+
+    // Recharger aussi quand la page devient visible
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadFavoris();
+      }
     };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadFavoris = async () => {
