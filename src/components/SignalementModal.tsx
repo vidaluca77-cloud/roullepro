@@ -1,7 +1,6 @@
 'use client';
 
-import { useSta, useEffectte } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';import { X, AlertTriangle } from 'lucide-react';
 
 interface SignalementModalProps {
   annonceId: string;
