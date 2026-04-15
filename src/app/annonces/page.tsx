@@ -71,7 +71,7 @@ export default function AnnoncesPage() {
                   </div>
                   <div className="p-4">
                     <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{a.categorie}</span>
-                    <h3 className="font-semibold mt-2 truncate">{a.title}</h3>
+                    <h3 className="font-semibold mt-2 truncate">{ [a.marque, a.modele, a.annee].filter(Boolean).join(' ') || a.title }</h3>
                     <p className="text-blue-600 font-bold text-lg">{a.price ? `${Number(a.price).toLocaleString()} €` : 'Sur demande'}</p>
                     <div className="text-xs text-gray-500 mt-1 flex gap-2">
                       {a.ville && <span><MapPin size={10} className="inline" /> {a.ville}</span>}
