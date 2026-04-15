@@ -51,9 +51,9 @@ export default function ContactModal({
           annonce_id: annonceId,
           sender_nom: senderNom,   // colonne réelle dans Supabase
           sender_email: senderEmail,
-          contenu: contenu,                  // colonne réelle dans Supabase
+          content: contenu,                  // colonne réelle dans Supabase
         }),
-      });
+      sender_name
 
       const data = await response.json();
 
