@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
+// Client admin avec service role (bypass RLS)
 const getAdminClient = () =>
   createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,10 +13,11 @@ export async function POST(request: Request) {
   try {
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
-    const { annonce_id, sender_name, sender_email, message } = body;
+    // Colonnes réelles: sender_nom, contenu (définies dans 001_schema.sql)
+    const { annonce_id, sender_nom, sender_email, contenu } = body;
 
     // Validation
-    if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !message?.trim()) {
+    if (!annonce_id || !sender_nom?.trim() || !sender_email?.trim() || !contenu?.trim()) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
     }
 
@@ -24,7 +26,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
 
-    if (message.trim().length < 10) {
+    if (contenu.trim().length < 10) {
       return NextResponse.json({ error: 'Le message doit contenir au moins 10 caractères' }, { status: 400 });
     }
 
@@ -51,10 +53,16 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insérer le message
+    // Insérer le message avec les vrais noms de colonnes
     const { data, error } = await supabaseAdmin
       .from('messages')
-      .insert({ annonce_id, sender_name: sender_name.trim(), sender_email: sender_email.trim(), message: message.trim() })
+      .insert({
+        annonce_id,
+        sender_nom: sender_nom.trim(),
+        sender_email: sender_email.trim(),
+        contenu: contenu.trim(),
+        ...(user ? { sender_id: user.id } : {}),
+      })
       .select()
       .single();
 
@@ -94,7 +102,7 @@ export async function GET() {
 
     const annonceIds = mesAnnonces.map((a: any) => a.id);
 
-    // Récupérer les messages pour ces annonces
+    // Récupérer les messages avec le titre de l'annonce
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
       .select('*, annonces(id, titre)')
@@ -106,6 +114,52 @@ export async function GET() {
     }
 
     return NextResponse.json(messages || []);
+  } catch (error: any) {
+    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  }
+}
+
+// PATCH pour marquer un message comme lu
+export async function PATCH(request: Request) {
+  try {
+    const { createClient: createServerClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { message_id } = body;
+
+    if (!message_id) {
+      return NextResponse.json({ error: 'message_id requis' }, { status: 400 });
+    }
+
+    const supabaseAdmin = getAdminClient();
+
+    // Vérifier que le message appartient à une annonce de l'utilisateur
+    const { data: msg } = await supabaseAdmin
+      .from('messages')
+      .select('id, annonces(user_id)')
+      .eq('id', message_id)
+      .single();
+
+    if (!msg || (msg.annonces as any)?.user_id !== user.id) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
+    }
+
+    const { error } = await supabaseAdmin
+      .from('messages')
+      .update({ lu: true })
+      .eq('id', message_id);
+
+    if (error) {
+      return NextResponse.json({ error: 'Erreur mise à jour' }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
   }
