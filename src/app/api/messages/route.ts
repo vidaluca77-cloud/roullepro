@@ -13,7 +13,8 @@ export async function POST(request: Request) {
   try {
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
-    // Colonnes réelles: sender_nom, contenu (définies dans 001_schema.sql)    const { annonce_id, sender_name, sender_email, content } = body;
+        // Colonnes réelles: sender_nom, contenu (définies dans 001_schema.sql)
+        const { annonce_id, sender_name, sender_email, content } = body;
 
     // Validation
     if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !content?.trim()) {
