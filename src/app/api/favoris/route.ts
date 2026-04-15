@@ -22,7 +22,7 @@ export async function GET() {
     }
 
     return NextResponse.json(favoris || []});
-  } catch (error) favoris || []
+    } catch (error) {
     console.error('Erreur GET /api/favoris:', error);
     return NextResponse.json([]});
   }
