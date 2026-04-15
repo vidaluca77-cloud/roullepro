@@ -12,6 +12,8 @@ export default function AnnoncesPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [categorie, setCategorie] = useState('');
+    const [marque, setMarque] = useState('');
+    const [marques, setMarques] = useState<string[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const supabase = createClient();
 
@@ -22,6 +24,16 @@ export default function AnnoncesPage() {
   useEffect(() => {
     fetchAnnonces();
   }, [categorie]);
+
+    // Extract unique marques when annonces or categorie changes
+  useEffect(() => {
+    if (annonces.length > 0) {
+      const filtered = categorie ? annonces.filter(a => a.category_id === categorie) : annonces;
+      const uniqueMarques = Array.from(new Set(filtered.map(a => a.marque).filter(Boolean)));
+      setMarques(uniqueMarques as string[]);
+      setMarque(''); // Reset marque when category changes
+    }
+  }, [annonces, categorie]);
 
   const loadCategories = async () => {
     const { data } = await supabase.from('categories').select('id, name, slug').order('name');
@@ -37,10 +49,17 @@ export default function AnnoncesPage() {
     setLoading(false);
   };
 
-  const filtered = annonces.filter((a) =>
-    !search || a.title?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase())
-  );
-
+    const filtered = annonces.filter((a) => {
+    // Filter by search (title and marque)
+    const matchesSearch = !search || 
+      a.title?.toLowerCase().includes(search.toLowerCase()) || 
+      a.marque?.toLowerCase().includes(search.toLowerCase());
+    
+    // Filter by marque dropdown
+    const matchesMarque = !marque || a.marque === marque;
+    
+    return matchesSearch && matchesMarque;
+  });
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-10 px-4">
@@ -70,6 +89,16 @@ export default function AnnoncesPage() {
             <option value="">Toutes categories</option>
             {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
+                  {marques.length > 0 && (
+          <select
+            value={marque}
+            onChange={(e) => setMarque(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm"
+          >
+            <option value="">Toutes marques</option>
+            {marques.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        )}
         </div>
 
         {loading ? (
