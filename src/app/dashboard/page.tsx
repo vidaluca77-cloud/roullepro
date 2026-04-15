@@ -23,10 +23,14 @@ export default function DashboardPage() {
     setAnnonces(a || []);
     
     // Charger les favoris
-    const response = await fetch('/api/favoris');
-    if (response.ok) {
-      const favData = await response.json();
-      setFavoris(favData.filter((f: any) => (f.annonces as any)?.statut === 'active'));
+    try {
+      const response = await fetch('/api/favoris');
+      if (response.ok) {
+        const favData = await response.json();
+        setFavoris(favData.filter((f: any) => f.annonces && (f.annonces as any)?.statut === 'active'));
+      }
+    } catch (error) {
+      console.error('Erreur chargement favoris:', error);
     }
     
     setLoading(false);
@@ -69,6 +73,7 @@ export default function DashboardPage() {
             <div className="divide-y">
               {favoris.map(f => {
                 const annonce = f.annonces;
+                if (!annonce) return null;
                 return (
                   <div key={f.id} className="p-4 flex items-center justify-between">
                     <div>
