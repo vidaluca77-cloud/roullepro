@@ -1,29 +1,13 @@
--- Migration: Création de la table messages
-create table if not exists public.messages (
-  id uuid default gen_random_uuid() primary key,
-  annonce_id uuid not null references public.annonces(id) on delete cascade,
-  sender_email text not null,
-  sender_name text not null,
-  message text not null,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
+-- Migration: Table messages (déjà définie dans 001_schema.sql)
+-- Colonnes réelles: id, annonce_id, sender_id, sender_email, sender_nom, sender_telephone, contenu, lu, created_at
+-- Ce fichier sert de référence uniquement - la table est créée par 001_schema.sql
 
--- Index pour requêtes rapides sur annonce_id
+-- Index supplémentaire pour performances
 create index if not exists messages_annonce_id_idx on public.messages(annonce_id);
+create index if not exists messages_created_at_idx on public.messages(created_at desc);
 
--- RLS policies
-alter table public.messages enable row level security;
-
--- Tout le monde peut insérer un message (y compris non connecté)
-create policy "Anyone can send messages" on public.messages
-  for insert with check (true);
-
--- Seul le propriétaire de l'annonce peut lire les messages qui lui sont destinés
-create policy "Annonce owner can read messages" on public.messages
-  for select using (
-    exists (
-      select 1 from public.annonces
-      where annonces.id = messages.annonce_id
-      and annonces.user_id = auth.uid()
-    )
+-- Marquer les messages comme lus (update policy)
+create policy if not exists "Vendeur marque messages lus" on public.messages
+  for update using (
+    exists (select 1 from public.annonces where id = annonce_id and user_id = auth.uid())
   );
