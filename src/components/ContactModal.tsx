@@ -22,17 +22,18 @@ export default function ContactModal({
   currentUserEmail = '',
   isOwner = false,
 }: ContactModalProps) {
-  const [senderName, setSenderName] = useState(currentUserName);
+  // Variables d'état - noms internes en français pour la lisibilité
+  const [senderNom, setSenderNom] = useState(currentUserName);
   const [senderEmail, setSenderEmail] = useState(currentUserEmail);
-  const [message, setMessage] = useState('');
+  const [contenu, setContenu] = useState('');
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
-      setSenderName(currentUserName);
+      setSenderNom(currentUserName);
       setSenderEmail(currentUserEmail);
-      setMessage('');
+      setContenu('');
       setFeedback(null);
     }
   }, [isOpen, currentUserName, currentUserEmail]);
@@ -48,9 +49,9 @@ export default function ContactModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           annonce_id: annonceId,
-          sender_name: senderName,
+          sender_nom: senderNom,   // colonne réelle dans Supabase
           sender_email: senderEmail,
-          message,
+          contenu,                  // colonne réelle dans Supabase
         }),
       });
 
@@ -60,7 +61,7 @@ export default function ContactModal({
         setFeedback({ type: 'success', text: 'Votre message a bien été envoyé ! Le vendeur vous contactera prochainement.' });
         setTimeout(() => {
           onClose();
-          setMessage('');
+          setContenu('');
           setFeedback(null);
         }, 2500);
       } else {
@@ -117,8 +118,8 @@ export default function ContactModal({
             </label>
             <input
               type="text"
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
+              value={senderNom}
+              onChange={(e) => setSenderNom(e.target.value)}
               placeholder="Jean Dupont"
               required
               disabled={loading}
@@ -146,15 +147,15 @@ export default function ContactModal({
               Votre message <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              value={contenu}
+              onChange={(e) => setContenu(e.target.value)}
               placeholder="Bonjour, je suis intéressé par votre annonce..."
               required
               rows={4}
               disabled={loading}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-50 resize-none"
             />
-            <p className="text-xs text-gray-400 mt-1">{message.length} caractères (min. 10)</p>
+            <p className="text-xs text-gray-400 mt-1">{contenu.length} caractères (min. 10)</p>
           </div>
 
           {feedback && (
@@ -176,13 +177,13 @@ export default function ContactModal({
             </button>
             <button
               type="submit"
-              disabled={loading || message.trim().length < 10}
+              disabled={loading || contenu.trim().length < 10}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
-                <><span className="animate-spin h-4 w-4 border-b-2 border-white rounded-full inline-block"></span> Envoi...</>
+                <><span className="animate-spin h-4 w-4 border-b-2 border-white rounded-full inline-block" />Envoi...</>
               ) : (
-                <><Send size={16} /> Envoyer</>  
+                <><Send size={16} />Envoyer</>
               )}
             </button>
           </div>
