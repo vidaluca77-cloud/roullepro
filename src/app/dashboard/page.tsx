@@ -145,7 +145,7 @@ export default function DashboardPage() {
                         </a>
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        Pour : <Link href={`/annonces/${msg.annonce_id}`} className="hover:underline text-gray-500" onClick={(e) => e.stopPropagation()}>{msg.annonces?.titre || 'Annonce'}</Link>
+                        Pour : <Link href={`/annonces/${msg.annonce_id}`} className="hover:underline text-gray-500" onClick={(e) => e.stopPropagation()}>{msg.annonces?.title || 'Annonce'}</Link>
                         &nbsp;· {formatDate(msg.created_at)}
                       </p>
                       {!expandedMessages.includes(msg.id) && (
@@ -160,7 +160,7 @@ export default function DashboardPage() {
                     <div className="mt-3 pt-3 border-t border-gray-100">
                       <p className="text-gray-700 whitespace-pre-line text-sm">{msg.message}</p>
                       <a
-                        href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.titre || 'Votre annonce'}`}
+                        href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.title || 'Votre annonce'}`}
                         className="mt-3 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                       >
                         <MessageSquare size={14} /> Répondre par email
@@ -184,7 +184,7 @@ export default function DashboardPage() {
                 return (
                   <div key={f.id} className="p-4 flex items-center justify-between">
                     <div>
-                      <h3 className="font-medium">{annonce.titre}</h3>
+                      <h3 className="font-medium">{annonce.title}</h3>
                       <div className="flex gap-3 text-sm text-gray-500 mt-1">
                         <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{annonce.status}</span>
                         {annonce.prix && <span className="text-blue-600 font-medium">{Number(annonce.prix).toLocaleString()} EUR</span>}
@@ -211,7 +211,7 @@ export default function DashboardPage() {
               {annonces.map(a => (
                 <div key={a.id} className="p-4 flex items-center justify-between">
                   <div>
-                    <h3 className="font-medium">{a.titre}</h3>
+                    <h3 className="font-medium">{a.title}</h3>
                     <div className="flex gap-3 text-sm text-gray-500 mt-1">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${a.status==='active'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{a.status}</span>
                       {a.prix && <span className="text-blue-600 font-medium">{Number(a.prix).toLocaleString()} EUR</span>}
