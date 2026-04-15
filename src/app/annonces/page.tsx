@@ -74,10 +74,9 @@ export default function AnnoncesPage() {
     }
   };
 
-  const filtered = annonces.filter((a) =>
-    !search || a.title?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase())
-  );
-
+  const filtered = annonces.filter((a) => {
+    return !search || a.title?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase());
+  });
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-10 px-4">
