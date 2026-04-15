@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, Mail, ArrowLeft } from 'lucide-react';
+import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AnnonceDetailPage() {
@@ -30,47 +30,168 @@ export default function AnnonceDetailPage() {
 
   const images = annonce.photos || [];
 
+  const nextImage = () => {
+    setSelectedImg((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setSelectedImg((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-4"><ArrowLeft size={20} />Retour</button>
-        <div className="grid grid-cols-1 lg:col-span-2 gap-6">
-          <div className="bg-white rounded-xl overflow-hidden shadow-sm">
-            {images[selectedImg] ? <img src={images[selectedImg]} alt={annonce.titre} className="w-full h-96 object-cover" /> : <div className="bg-gray-100 h-96 flex items-center justify-center"><span className="text-gray-400 text-sm">Pas de photo</span></div>}
+        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-4">
+          <ArrowLeft size={20} />Retour
+        </button>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Carrousel de photos amélioré */}
+          <div className="space-y-4">
+            {/* Image principale */}
+            <div className="relative bg-gray-100 rounded-xl overflow-hidden" style={{ height: '500px' }}>
+              {images.length > 0 ? (
+                <>
+                  <img 
+                    src={images[selectedImg]} 
+                    alt={annonce.title} 
+                    className="w-full h-full object-contain"
+                  />
+                  {images.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition"
+                      >
+                        <ChevronLeft size={24} className="text-gray-800" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition"
+                      >
+                        <ChevronRight size={24} className="text-gray-800" />
+                      </button>
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
+                        {selectedImg + 1} / {images.length}
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <span>Pas de photo</span>
+                </div>
+              )}
+            </div>
+
+            {/* Miniatures */}
             {images.length > 1 && (
-              <div className="p-4 flex gap-2 overflow-x-auto">
-                {images.map((img: string, i: number) => (
-                  <img key={i} src={img} alt={`${i+1}`} onClick={() => setSelectedImg(i)} className={`h-16 w-20 object-cover rounded cursor-pointer border-2 ${selectedImg === i ? 'border-blue-500' : 'border-gray-200'}`} />
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {images.map((img: string, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImg(idx)}
+                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition ${
+                      selectedImg === idx ? 'border-blue-600 shadow-lg' : 'border-gray-300 hover:border-blue-400'
+                    }`}
+                  >
+                    <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
                 ))}
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{annonce.categorie}</span>
-            <h1 className="text-3xl font-bold mt-2">{annonce.titre}</h1>
-            <p className="text-blue-600 font-bold text-3xl mt-4">{annonce.prix ? `${Number(annonce.prix).toLocaleString()} EUR` : 'Prix sur demande'}</p>
-            <div className="grid md:grid-cols-2 gap-4 mt-6">
-              {annonce.marque && <div><p className="text-sm text-gray-500">Marque</p><p className="font-semibold">{annonce.marque}</p></div>}
-              {annonce.modele && <div><p className="text-sm text-gray-500">Modèle</p><p className="font-semibold">{annonce.modele}</p></div>}
-              {annonce.annee && <div><p className="text-sm text-gray-500">Année</p><p className="font-semibold">{annonce.annee}</p></div>}
-              {annonce.kilometrage && <div><p className="text-sm text-gray-500">KM</p><p className="font-semibold">{Number(annonce.kilometrage).toLocaleString()}</p></div>}
-              {annonce.carburant && <div><p className="text-sm text-gray-500">Énergie</p><p className="font-semibold">{annonce.carburant}</p></div>}
-              {annonce.boite && <div><p className="text-sm text-gray-500">Boîte</p><p className="font-semibold">{annonce.boite}</p></div>}
-              {annonce.couleur && <div><p className="text-sm text-gray-500">Couleur</p><p className="font-semibold">{annonce.couleur}</p></div>}
-              {annonce.ville && <div><p className="text-sm text-gray-500">Ville</p><p className="font-semibold">{annonce.ville}</p></div>}
-            </div>
-            {annonce.description && <div className="mt-6"><h3 className="font-semibold mb-2">Description</h3><p className="text-gray-700 whitespace-pre-line">{annonce.description}</p></div>}
-          </div>
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h3 className="font-semibold mb-4">Contacter le vendeur</h3>
-            {vendeur && <div className="mb-4"><p className="font-semibold">{vendeur.prenom} {vendeur.nom}</p>{vendeur.entreprise && <p className="text-sm text-gray-500">{vendeur.entreprise}</p>}</div>}
-            {contactOpen ? (
-              <div className="space-y-3">
-                {vendeur?.telephone && <a href={`tel:${vendeur.telephone}`} className="flex items-center gap-2 text-blue-600 hover:underline"><Phone size={18} />{vendeur.telephone}</a>}
-                {vendeur?.email && <a href={`mailto:${vendeur.email}`} className="flex items-center gap-2 text-blue-600 hover:underline"><Mail size={18} />{vendeur.email}</a>}
+
+          {/* Détails de l'annonce */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full mb-2">
+                    {annonce.categorie}
+                  </span>
+                  <h1 className="text-3xl font-bold text-gray-900">{annonce.title}</h1>
+                </div>
               </div>
-            ) : (
-              <button onClick={() => setContactOpen(true)} className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">Voir les coordonnées</button>
+
+              <div className="text-4xl font-bold text-blue-600 mb-6">
+                {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
+              </div>
+
+              <div className="space-y-3 border-t pt-4">
+                {annonce.marque && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Marque</span>
+                    <span className="font-semibold">{annonce.marque}</span>
+                  </div>
+                )}
+                {annonce.modele && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Modèle</span>
+                    <span className="font-semibold">{annonce.modele}</span>
+                  </div>
+                )}
+                {annonce.annee && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Année</span>
+                    <span className="font-semibold">{annonce.annee}</span>
+                  </div>
+                )}
+                {annonce.kilometrage && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Kilométrage</span>
+                    <span className="font-semibold">{Number(annonce.kilometrage).toLocaleString()} km</span>
+                  </div>
+                )}
+                {annonce.ville && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Localisation</span>
+                    <span className="font-semibold">{annonce.ville}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {annonce.description && (
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-3">Description</h2>
+                <p className="text-gray-700 whitespace-pre-line">{annonce.description}</p>
+              </div>
+            )}
+
+            {vendeur && (
+              <div className="bg-white rounded-xl p-6 shadow-sm">
+                <h2 className="text-xl font-bold mb-4">Vendeur</h2>
+                <div className="space-y-3">
+                  {vendeur.nom_entreprise && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-lg">{vendeur.nom_entreprise}</span>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => setContactOpen(!contactOpen)}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition"
+                  >
+                    Afficher le contact
+                  </button>
+                  {contactOpen && (
+                    <div className="space-y-2 pt-3 border-t">
+                      {vendeur.telephone && (
+                        <a href={`tel:${vendeur.telephone}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+                          <Phone size={18} />
+                          <span>{vendeur.telephone}</span>
+                        </a>
+                      )}
+                      {vendeur.email && (
+                        <a href={`mailto:${vendeur.email}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
+                          <Mail size={18} />
+                          <span>{vendeur.email}</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
