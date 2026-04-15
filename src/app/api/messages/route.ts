@@ -60,8 +60,7 @@ export async function POST(request: Request) {
         sender_name: sender_name.trim(),
         sender_email: sender_email.trim(),
         content: content.trim(),
-        ...(user ? { seller_id: user.id } : {}),
-      })
+          seller_id: annonce.user_id,      })
       .select()
       .single();
 
