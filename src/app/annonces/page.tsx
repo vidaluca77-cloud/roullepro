@@ -25,7 +25,7 @@ export default function AnnoncesPage() {
     fetchAnnonces();
   }, [categorie]);
 
-    // Extract unique marques when annonces or categorie changes
+    // Extract unique marques for the selected category
   useEffect(() => {
     if (annonces.length > 0) {
       const filtered = categorie ? annonces.filter(a => a.category_id === categorie) : annonces;
@@ -50,7 +50,7 @@ export default function AnnoncesPage() {
   };
 
   const filtered = annonces.filter((a) => {
-    // Filter by search (title and marque)
+    // Filter by search (searches in title and marque)
     const matchesSearch = !search || 
       a.title?.toLowerCase().includes(search.toLowerCase()) || 
       a.marque?.toLowerCase().includes(search.toLowerCase());
