@@ -249,6 +249,12 @@ export default function AnnonceDetailPage() {
         currentUserName={currentUserName}
         currentUserEmail={currentUserEmail}
         isOwner={isOwner}
+                annonceDetails={{
+                            price: annonce.price,
+                            marque: annonce.marque,
+                            modele: annonce.modele,
+                            categorie: annonce.categorie,
+                          }}
       />
     </div>
   );
