@@ -111,7 +111,16 @@ export default function DashboardPage() {
     });
   };
 
-  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;    <div className="min-h-screen bg-gray-50">
+  if (loading) {
+    return (
+      <div className="flex justify-center py-20">
+        <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
@@ -155,16 +164,16 @@ export default function DashboardPage() {
                         <a
                           href={`mailto:${msg.sender_email}`}
                           className="text-blue-600 text-sm hover:underline"
-                                            {!msg.is_read && (
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Non lu</span>
-                  )}
-                  {msg.is_read && (
-                    <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">Lu</span>
-                  )}
                           onClick={(e) => e.stopPropagation()}
                         >
                           {msg.sender_email}
                         </a>
+                        {!msg.is_read && (
+                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Non lu</span>
+                        )}
+                        {msg.is_read && (
+                          <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">Lu</span>
+                        )}
                       </div>
                       <p className="text-xs text-gray-400 mt-0.5">
                         Pour : <Link href={`/annonces/${msg.annonce_id}`} className="hover:underline text-gray-500" onClick={(e) => e.stopPropagation()}>{msg.annonces?.title || 'Annonce'}</Link>
@@ -185,24 +194,24 @@ export default function DashboardPage() {
                         href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.title || 'Votre annonce'}`}
                         className="mt-3 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                       >
-                        <M
-                                          <div className="flex gap-2 mt-2">
-                  {!msg.is_read && (
-                    <button
-                      onClick={() => markAsRead(msg.id)}
-                      className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition font-medium"
-                    >
-                      Marquer comme lu
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteMessage(msg.id)}
-                    className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium flex items-center gap-1"
-                  >
-                    <Trash2 size={14} /> Supprimer
-                  </button>
-                </div>essageSquare size={14} /> Répondre par email
+                        <MessageSquare size={14} /> Répondre par email
                       </a>
+                      <div className="flex gap-2 mt-2">
+                        {!msg.is_read && (
+                          <button
+                            onClick={() => markAsRead(msg.id)}
+                            className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition font-medium"
+                          >
+                            Marquer comme lu
+                          </button>
+                        )}
+                        <button
+                          onClick={() => deleteMessage(msg.id)}
+                          className="px-3 py-1.5 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition font-medium flex items-center gap-1"
+                        >
+                          <Trash2 size={14} /> Supprimer
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
