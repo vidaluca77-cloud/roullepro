@@ -103,12 +103,10 @@ export async function GET() {
     // Récupérer les messages avec le title de l'annonce
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
-      .select('*, annonces(id, title)')
       .in('annonce_id', annonceIds)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      return NextResponse.json({ error: 'Erreur de récupération des messages' }, { status: 500 });
+      .select('*, annonces(id, title), is_read')      return NextResponse.json({ error: 'Erreur de récupération des messages' }, { status: 500 });
     }
 
     return NextResponse.json(messages || []);
