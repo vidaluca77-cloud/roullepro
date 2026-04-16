@@ -195,9 +195,14 @@ export default function ProfilPage() {
             </div>
           </form>
 
-                    <VerificationSection        <VerificationSection
-          userId={user?.id || ''}
-          currentStatus={(profile.statut_verification || 'non_verifie') as 'non_verifie' | 'en_attente' | 'verifie'}
-          justificatifUrl={profile.justificatif_url}
-          onStatusChange={loadProfile}
-        />
+          <VerificationSection
+            userId={user?.id || ''}
+            currentStatus={(profile.statut_verification || 'non_verifie') as 'non_verifie' | 'en_attente' | 'verifie'}
+            justificatifUrl={profile.justificatif_url}
+            onStatusChange={loadProfile}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
