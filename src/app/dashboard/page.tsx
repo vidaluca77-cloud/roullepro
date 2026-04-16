@@ -111,10 +111,7 @@ export default function DashboardPage() {
     });
   };
 
-  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;    <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
