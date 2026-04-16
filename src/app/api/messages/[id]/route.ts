@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+
+// Client admin avec service role (bypass RLS)
+const getAdminClient = () =>
+  createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
 
 // PATCH - Marquer un message comme lu
 export async function PATCH(
@@ -11,12 +20,12 @@ export async function PATCH(
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifi\u00e9' }, { status: 401 });
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     const messageId = params.id;
 
-    // V\u00e9rifier que l'utilisateur est le destinataire du message
+    // Vérifier que l'utilisateur est le destinataire du message
     const { data: message } = await supabase
       .from('messages')
       .select('seller_id')
@@ -24,7 +33,7 @@ export async function PATCH(
       .single();
 
     if (!message || message.seller_id !== user.id) {
-      return NextResponse.json({ error: 'Message introuvable ou acc\u00e8s non autoris\u00e9' }, { status: 404 });
+      return NextResponse.json({ error: 'Message introuvable ou accès non autorisé' }, { status: 404 });
     }
 
     // Marquer comme lu
@@ -53,24 +62,25 @@ export async function DELETE(
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Non authentifi\u00e9' }, { status: 401 });
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
     const messageId = params.id;
 
-    // V\u00e9rifier que l'utilisateur est le destinataire du message
-    const { data: message } = await supabase
+    // Vérifier que l'utilisateur est le destinataire du message
+    const supabaseAdmin = getAdminClient();
+    const { data: message } = await supabaseAdmin
       .from('messages')
       .select('seller_id')
       .eq('id', messageId)
       .single();
 
     if (!message || message.seller_id !== user.id) {
-      return NextResponse.json({ error: 'Message introuvable ou acc\u00e8s non autoris\u00e9' }, { status: 404 });
+      return NextResponse.json({ error: 'Message introuvable ou accès non autorisé' }, { status: 404 });
     }
 
-    // Supprimer le message
-    const { error } = await supabase
+    // Supprimer le message avec le client admin (bypass RLS)
+    const { error } = await supabaseAdmin
       .from('messages')
       .delete()
       .eq('id', messageId);
