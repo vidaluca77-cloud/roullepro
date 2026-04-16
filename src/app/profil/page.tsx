@@ -18,7 +18,9 @@ export default function ProfilPage() {
     phone: '',
     ville: '',
     entreprise: '',
-    siret: ''
+    siret: '',
+        statut_verification: 'non_verifie',
+        justificatif_url: null
   });
 
   useEffect(() => {
@@ -45,7 +47,9 @@ export default function ProfilPage() {
         phone: data.phone || '',
         ville: data.ville || '',
         entreprise: data.entreprise || '',
-        siret: data.siret || ''
+        siret: data.siret || '',
+                statut_verification: data.statut_verification || 'non_verifie',
+                justificatif_url: data.justificatif_url || null
       });
     }
     setLoading(false);
@@ -193,8 +197,8 @@ export default function ProfilPage() {
 
                     <VerificationSection
             userId={user?.id || ''}
-            currentStatus={(profile as any).statut_verification || 'non_verifie'}
-            justificatifUrl={(profile as any).justificatif_url}
+          currentStatus={profile.statut_verification || 'non_verifie'}
+                                justificatifUrl={profile.justificatif_url}justificatifUrl={(profile as any).justificatif_url}
             onStatusChange={loadProfile}
           />
         </div>
