@@ -104,7 +104,7 @@ export async function GET() {
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
       .in('annonce_id', annonceIds)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
 
       .select('*, annonces(id, title), is_read');
   
