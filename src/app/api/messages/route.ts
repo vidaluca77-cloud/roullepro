@@ -110,6 +110,7 @@ export async function GET() {
   
     if (error) {
       return NextResponse.json({ error: 'Erreur de récupération des messages' }, { status: 500 });
+          }
 
     return NextResponse.json(messages || []);
   } catch (error: any) {
