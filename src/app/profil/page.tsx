@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User, Mail, Phone, MapPin, Building, AlertCircle } from 'lucide-react';
+import VerificationSection from './VerificationSection';
 
 export default function ProfilPage() {
   const router = useRouter();
@@ -189,6 +190,13 @@ export default function ProfilPage() {
               </button>
             </div>
           </form>
+
+                    <VerificationSection
+            userId={user?.id || ''}
+            currentStatus={(profile as any).statut_verification || 'non_verifie'}
+            justificatifUrl={(profile as any).justificatif_url}
+            onStatusChange={loadProfile}
+          />
         </div>
       </div>
     </div>
