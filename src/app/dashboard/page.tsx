@@ -85,6 +85,25 @@ export default function DashboardPage() {
     );
   };
 
+    const markAsRead = async (id: string) => {
+    try {
+      await fetch(`/api/messages/${id}`, { method: 'PATCH' });
+      loadMessages();
+    } catch (error) {
+      console.error('Erreur marquage lu:', error);
+    }
+  };
+
+  const deleteMessage = async (id: string) => {
+    if (!confirm('Supprimer ce message ?')) return;
+    try {
+      await fetch(`/api/messages/${id}`, { method: 'DELETE' });
+      setMessages(prev => prev.filter(m => m.id !== id));
+    } catch (error) {
+      console.error('Erreur suppression:', error);
+    }
+  };
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('fr-FR', {
       day: '2-digit', month: '2-digit', year: 'numeric',
