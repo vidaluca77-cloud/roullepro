@@ -150,7 +150,7 @@ export async function PATCH(request: Request) {
 
     const { error } = await supabaseAdmin
       .from('messages')
-      .update({ lu: true })
+      .update({ is_read: true })
       .eq('id', message_id);
 
     if (error) {
