@@ -11,9 +11,7 @@ const getAdminClient = () =>
   );
 
 /**
- * POST /api/messages
- * Envoi d'un premier message (acheteur → vendeur).
- * Si l'acheteur est connecté, buyer_id est sauvegardé → conversation visible dans son dashboard.
+ * POST /api/messages — premier contact acheteur → vendeur
  */
 export async function POST(request: Request) {
   try {
@@ -29,12 +27,10 @@ export async function POST(request: Request) {
     if (!emailRegex.test(sender_email)) {
       return NextResponse.json({ error: 'Email invalide' }, { status: 400 });
     }
-
     if (content.trim().length < 10) {
       return NextResponse.json({ error: 'Le message doit contenir au moins 10 caractères' }, { status: 400 });
     }
 
-    // Récupérer l'annonce + le profil vendeur
     const { data: annonce, error: annonceError } = await supabaseAdmin
       .from('annonces')
       .select('id, title, user_id, profiles(email, full_name)')
@@ -45,22 +41,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
     }
 
-    // Récupérer l'acheteur connecté (optionnel)
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user && user.id === annonce.user_id) {
-      return NextResponse.json(
-        { error: 'Vous ne pouvez pas contacter votre propre annonce' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Vous ne pouvez pas contacter votre propre annonce' }, { status: 403 });
     }
 
-    // buyer_id = UUID si connecté, null sinon
     const buyerId = (user && user.id !== annonce.user_id) ? user.id : null;
 
-    // Insérer le message root
     const { data, error } = await supabaseAdmin
       .from('messages')
       .insert({
@@ -69,20 +59,16 @@ export async function POST(request: Request) {
         sender_email: sender_email.trim(),
         content: content.trim(),
         seller_id: annonce.user_id,
-        buyer_id: buyerId,   // ← clé : permet à l'acheteur de retrouver ses conversations
+        buyer_id: buyerId,
+        is_read: false,
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Erreur insertion message:', error);
-      return NextResponse.json(
-        { error: "Erreur lors de l'envoi du message", details: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Erreur lors de l'envoi", details: error.message }, { status: 500 });
     }
 
-    // Notifier le vendeur par email (non bloquant)
     const vendeur = annonce.profiles as any;
     if (vendeur?.email) {
       sendVendeurNotification({
@@ -98,17 +84,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ message: 'Message envoyé avec succès', data }, { status: 201 });
   } catch (error: any) {
-    console.error('Erreur serveur:', error);
     return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
   }
 }
 
 /**
  * GET /api/messages
- * - Sans paramètre  → messages reçus en tant que VENDEUR (root messages sur mes annonces)
- * - ?role=buyer     → conversations initiées en tant qu'ACHETEUR (root messages avec buyer_id = moi)
+ * Retourne une liste unifiée de conversations pour l'utilisateur connecté.
+ * Chaque conversation = un root message enrichi de :
+ *   - last_message_at   : date du dernier message du thread
+ *   - last_message      : contenu du dernier message
+ *   - has_unread        : booléen — est-ce qu'il y a des messages non lus pour moi ?
+ *   - role              : 'seller' | 'buyer'
  */
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
@@ -118,96 +107,114 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const role = searchParams.get('role'); // 'buyer' ou null (= vendeur)
-
     const supabaseAdmin = getAdminClient();
 
-    if (role === 'buyer') {
-      // Conversations où l'utilisateur est l'acheteur
-      const { data: messages, error } = await supabaseAdmin
-        .from('messages')
-        .select('*, annonces(id, title, user_id, profiles(full_name, company_name))')
-        .eq('buyer_id', user.id)
-        .is('thread_id', null) // root messages uniquement
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        return NextResponse.json({ error: 'Erreur de récupération' }, { status: 500 });
-      }
-      return NextResponse.json(messages || []);
-    }
-
-    // Mode vendeur : messages reçus sur mes annonces
+    // 1. Root messages où je suis vendeur
     const { data: mesAnnonces } = await supabaseAdmin
       .from('annonces')
-      .select('id, title')
+      .select('id')
       .eq('user_id', user.id);
 
-    if (!mesAnnonces || mesAnnonces.length === 0) {
+    const annonceIds = (mesAnnonces || []).map((a: any) => a.id);
+
+    const [sellerRoots, buyerRoots] = await Promise.all([
+      annonceIds.length > 0
+        ? supabaseAdmin
+            .from('messages')
+            .select('*, annonces(id, title, profiles(full_name, company_name, email))')
+            .in('annonce_id', annonceIds)
+            .is('thread_id', null)
+            .order('created_at', { ascending: false })
+        : Promise.resolve({ data: [] }),
+      // Root messages où je suis acheteur
+      supabaseAdmin
+        .from('messages')
+        .select('*, annonces(id, title, profiles(full_name, company_name, email))')
+        .eq('buyer_id', user.id)
+        .is('thread_id', null)
+        .order('created_at', { ascending: false }),
+    ]);
+
+    const sellerList: any[] = (sellerRoots as any).data || [];
+    const buyerList: any[]  = (buyerRoots as any).data  || [];
+
+    // 2. Pour chaque thread, récupérer le dernier message + has_unread
+    const allThreadIds = [
+      ...sellerList.map((m: any) => m.id),
+      ...buyerList.map((m: any) => m.id),
+    ];
+
+    if (allThreadIds.length === 0) {
       return NextResponse.json([]);
     }
 
-    const annonceIds = mesAnnonces.map((a: any) => a.id);
-
-    const { data: messages, error } = await supabaseAdmin
+    // Toutes les réponses de ces threads
+    const { data: replies } = await supabaseAdmin
       .from('messages')
-      .select('*, annonces(id, title)')
-      .in('annonce_id', annonceIds)
-      .is('thread_id', null) // root messages uniquement
+      .select('id, thread_id, content, created_at, is_read, is_seller_reply')
+      .in('thread_id', allThreadIds)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      return NextResponse.json({ error: 'Erreur de récupération des messages' }, { status: 500 });
+    // Indexer par thread_id
+    const replyMap: Record<string, any[]> = {};
+    for (const r of replies || []) {
+      if (!replyMap[r.thread_id]) replyMap[r.thread_id] = [];
+      replyMap[r.thread_id].push(r);
     }
 
-    return NextResponse.json(messages || []);
+    // Enrichir chaque root
+    const enrich = (msg: any, role: 'seller' | 'buyer') => {
+      const threadReplies = replyMap[msg.id] || [];
+      // Dernier message = la reply la plus récente, ou le root lui-même
+      const lastReply = threadReplies[0]; // déjà trié desc
+      const lastMsgContent = lastReply?.content ?? msg.content;
+      const lastMsgAt = lastReply?.created_at ?? msg.created_at;
+
+      // has_unread : messages non lus destinés à moi
+      //   - vendeur → messages de l'acheteur non lus (is_seller_reply=false)
+      //   - acheteur → réponses vendeur non lues (is_seller_reply=true)
+      let hasUnread = false;
+      if (role === 'seller') {
+        hasUnread = !msg.is_read || threadReplies.some(
+          (r: any) => !r.is_read && !r.is_seller_reply
+        );
+      } else {
+        hasUnread = threadReplies.some((r: any) => !r.is_read && r.is_seller_reply);
+      }
+
+      return {
+        ...msg,
+        role,
+        last_message: lastMsgContent,
+        last_message_at: lastMsgAt,
+        has_unread: hasUnread,
+        reply_count: threadReplies.length,
+      };
+    };
+
+    const enrichedSeller = sellerList.map((m: any) => enrich(m, 'seller'));
+    const enrichedBuyer  = buyerList.map((m: any) => enrich(m, 'buyer'));
+
+    // 3. Fusionner + dédupliquer (si même personne est vendeur ET acheteur sur même thread)
+    //    Priorité vendeur pour les doublons
+    const seen = new Set<string>();
+    const merged: any[] = [];
+    for (const m of [...enrichedSeller, ...enrichedBuyer]) {
+      if (!seen.has(m.id)) {
+        seen.add(m.id);
+        merged.push(m);
+      }
+    }
+
+    // Trier par dernière activité décroissante
+    merged.sort((a, b) =>
+      new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
+    );
+
+    return NextResponse.json(merged);
   } catch (error: any) {
     return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
   }
 }
 
-// PATCH /api/messages — marquer un message comme lu
-export async function PATCH(request: Request) {
-  try {
-    const { createClient: createServerClient } = await import('@/lib/supabase/server');
-    const supabase = await createServerClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { message_id } = body;
-
-    if (!message_id) {
-      return NextResponse.json({ error: 'message_id requis' }, { status: 400 });
-    }
-
-    const supabaseAdmin = getAdminClient();
-
-    const { data: msg } = await supabaseAdmin
-      .from('messages')
-      .select('id, annonces(user_id)')
-      .eq('id', message_id)
-      .single();
-
-    if (!msg || (msg.annonces as any)?.user_id !== user.id) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
-    }
-
-    const { error } = await supabaseAdmin
-      .from('messages')
-      .update({ is_read: true })
-      .eq('id', message_id);
-
-    if (error) {
-      return NextResponse.json({ error: 'Erreur mise à jour' }, { status: 500 });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
-  }
-}
+// DELETE /api/messages/:id géré dans /api/messages/[id]/route.ts

@@ -8,8 +8,7 @@ import AlertesCategoriesToggle from '@/components/AlertesCategoriesToggle';
 import ConversationThread from '@/components/ConversationThread';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
-  Clock, TrendingUp, Bell,
-  BadgeCheck, BarChart2, Mail, Users,
+  Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
 } from 'lucide-react';
 
 type Category = { id: string; name: string; slug: string };
@@ -20,9 +19,7 @@ function DashboardPageInner() {
   const [profile, setProfile] = useState<any>(null);
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [favoris, setFavoris] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [buyerMessages, setBuyerMessages] = useState<any[]>([]);
-  const [msgSubTab, setMsgSubTab] = useState<'received'|'sent'>('received');
+  const [messages, setMessages] = useState<any[]>([]); // liste unifiée enrichie
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendeurStats, setVendeurStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -41,17 +38,10 @@ function DashboardPageInner() {
 
   const loadMessages = useCallback(async () => {
     try {
-      const [sellerRes, buyerRes] = await Promise.all([
-        fetch('/api/messages'),
-        fetch('/api/messages?role=buyer'),
-      ]);
-      if (sellerRes.ok) {
-        const data = await sellerRes.json();
+      const res = await fetch('/api/messages');
+      if (res.ok) {
+        const data = await res.json();
         setMessages(Array.isArray(data) ? data : []);
-      }
-      if (buyerRes.ok) {
-        const data = await buyerRes.json();
-        setBuyerMessages(Array.isArray(data) ? data : []);
       }
     } catch {}
   }, []);
@@ -100,21 +90,12 @@ function DashboardPageInner() {
   };
   const signOut = async () => { await supabase.auth.signOut(); router.push('/'); };
 
-  const deleteMessage = async (id: string, isBuyer = false) => {
+  const deleteMessage = async (id: string) => {
     if (!confirm('Supprimer cette conversation ?')) return;
     await fetch(`/api/messages/${id}`, { method: 'DELETE' });
-    if (isBuyer) {
-      setBuyerMessages(prev => prev.filter((m: any) => m.id !== id));
-    } else {
-      setMessages(prev => prev.filter(m => m.id !== id));
-    }
+    setMessages(prev => prev.filter((m: any) => m.id !== id));
     if (selectedThreadId === id) setSelectedThreadId(null);
   };
-
-  // Messages root vendeur
-  const rootMessages = messages.filter((m: any) => !m.thread_id);
-  // Messages root acheteur
-  const rootBuyerMessages = buyerMessages.filter((m: any) => !m.thread_id);
 
   const searchParams = useSearchParams();
   const showPendingBanner = searchParams.get('annonce') === 'pending';
@@ -123,8 +104,8 @@ function DashboardPageInner() {
   const totalVues = annonces.reduce((s, a) => s + (a.views_count || 0), 0);
   const annoncesActives = annonces.filter(a => a.status === 'active');
   const annoncesPending = annonces.filter(a => a.status === 'pending');
-  const messagesNonLus = messages.filter((m: any) => !m.is_read && !m.thread_id && !m.is_seller_reply).length;
-  const buyerMessagesNonLus = buyerMessages.filter((m: any) => !m.is_read && m.is_seller_reply).length;
+  // has_unread est calculé côté API, on fait confiance à cette valeur
+  const messagesNonLus = messages.filter((m: any) => m.has_unread).length;
 
   if (loading) return (
     <div className="flex justify-center py-20">
@@ -216,7 +197,7 @@ function DashboardPageInner() {
             </div>
             <p className="text-3xl font-bold text-gray-900">{messages.length}</p>
             {messagesNonLus > 0 && (
-              <p className="text-xs text-blue-600 mt-1 font-medium">{messagesNonLus} non lu{messagesNonLus > 1 ? 's' : ''}</p>
+              <p className="text-xs text-red-600 mt-1 font-medium">{messagesNonLus} non lu{messagesNonLus > 1 ? 's' : ''}</p>
             )}
           </div>
 
@@ -249,10 +230,12 @@ function DashboardPageInner() {
             Mes annonces {annonces.length > 0 && <span className="ml-1 opacity-70">({annonces.length})</span>}
           </button>
           <button className={tabCls('messages')} onClick={() => setActiveTab('messages')}>
-            Messages
-            {messagesNonLus > 0 && (
-              <span className="ml-1.5 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{messagesNonLus}</span>
-            )}
+            <span className="flex items-center gap-1.5">
+              Messages
+              {messagesNonLus > 0 && (
+                <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{messagesNonLus}</span>
+              )}
+            </span>
           </button>
           <button className={tabCls('favoris')} onClick={() => setActiveTab('favoris')}>
             Favoris {favoris.length > 0 && <span className="ml-1 opacity-70">({favoris.length})</span>}
@@ -440,166 +423,133 @@ function DashboardPageInner() {
 
         {/* ── Onglet Messages ── */}
         {activeTab === 'messages' && (
-          <div className="space-y-4">
-            {/* Sous-onglets Reçus / Envoyés */}
-            <div className="flex gap-1 bg-white rounded-xl p-1 shadow-sm border border-gray-100 w-fit">
-              <button
-                onClick={() => { setMsgSubTab('received'); setSelectedThreadId(null); }}
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 ${
-                  msgSubTab === 'received' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Reçus
-                {messagesNonLus > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    msgSubTab === 'received' ? 'bg-white text-blue-600' : 'bg-red-500 text-white'
-                  }`}>{messagesNonLus}</span>
-                )}
-              </button>
-              <button
-                onClick={() => { setMsgSubTab('sent'); setSelectedThreadId(null); }}
-                className={`px-4 py-1.5 text-sm font-medium rounded-lg transition flex items-center gap-1.5 ${
-                  msgSubTab === 'sent' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                Envoyés
-                {buyerMessagesNonLus > 0 && (
-                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    msgSubTab === 'sent' ? 'bg-white text-blue-600' : 'bg-red-500 text-white'
-                  }`}>{buyerMessagesNonLus}</span>
-                )}
-              </button>
+          <div className="flex gap-4" style={{ minHeight: '560px' }}>
+
+            {/* Colonne gauche : liste de toutes les conversations */}
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col ${
+              selectedThreadId ? 'hidden lg:flex lg:w-80 flex-shrink-0' : 'flex-1'
+            }`}>
+              <div className="px-5 py-4 border-b flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Users size={16} className="text-blue-600" />
+                  Conversations
+                </h3>
+                <span className="text-sm text-gray-400">{messages.length}</span>
+              </div>
+
+              {messages.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                  <Mail size={32} className="text-gray-200 mb-3" />
+                  <p className="text-gray-400 text-sm">Aucune conversation</p>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto divide-y">
+                  {messages.map((msg: any) => {
+                    const isSelected = selectedThreadId === msg.id;
+                    const isBuyer = msg.role === 'buyer';
+                    // Interlocuteur : vendeur si acheteur, acheteur si vendeur
+                    const displayName = isBuyer
+                      ? (msg.annonces?.profiles?.company_name || msg.annonces?.profiles?.full_name || 'Vendeur')
+                      : msg.sender_name;
+                    return (
+                      <button
+                        key={msg.id}
+                        onClick={() => setSelectedThreadId(msg.id)}
+                        className={`w-full text-left px-4 py-3.5 transition flex items-start gap-3 ${
+                          isSelected
+                            ? 'bg-blue-50 border-l-2 border-l-blue-600'
+                            : 'hover:bg-gray-50 border-l-2 border-l-transparent'
+                        }`}
+                      >
+                        {/* Avatar */}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-bold">
+                            {displayName?.charAt(0)?.toUpperCase() || '?'}
+                          </div>
+                          {msg.has_unread && !isSelected && (
+                            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className={`text-sm truncate ${
+                              msg.has_unread && !isSelected ? 'font-bold text-gray-900' : 'font-medium text-gray-700'
+                            }`}>
+                              {displayName}
+                            </span>
+                            <span className="text-[10px] text-gray-400 flex-shrink-0">
+                              {new Date(msg.last_message_at || msg.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 truncate mt-0.5">
+                            {msg.annonces?.title || 'Annonce'}
+                          </p>
+                          <p className={`text-xs truncate mt-0.5 ${
+                            msg.has_unread && !isSelected ? 'text-gray-700 font-medium' : 'text-gray-400'
+                          }`}>
+                            {msg.last_message || msg.content}
+                          </p>
+                          {/* Pill rôle */}
+                          <span className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                            isBuyer ? 'bg-purple-50 text-purple-600' : 'bg-green-50 text-green-600'
+                          }`}>
+                            {isBuyer ? 'Envoyé' : 'Reçu'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
-            {/* Layout liste + thread */}
-            {(() => {
-              const isBuyer = msgSubTab === 'sent';
-              const list = isBuyer ? rootBuyerMessages : rootMessages;
-
-              return (
-                <div className="flex gap-4" style={{ minHeight: '520px' }}>
-                  {/* Liste */}
-                  <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col ${
-                    selectedThreadId ? 'hidden lg:flex lg:w-80 flex-shrink-0' : 'flex-1'
-                  }`}>
-                    <div className="px-5 py-4 border-b flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                        <Users size={16} className="text-blue-600" />
-                        {isBuyer ? 'Mes conversations' : 'Messages reçus'}
-                      </h3>
-                      <span className="text-sm text-gray-400">{list.length}</span>
-                    </div>
-
-                    {list.length === 0 ? (
-                      <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
-                        <Mail size={32} className="text-gray-200 mb-3" />
-                        <p className="text-gray-400 text-sm">
-                          {isBuyer ? 'Vous n\'avez pas encore contacté de vendeur' : 'Aucun message reçu'}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex-1 overflow-y-auto divide-y">
-                        {list.map((msg: any) => {
-                          const isSelected = selectedThreadId === msg.id;
-                          // Pour l'acheteur : non lu = une réponse vendeur non lue dans ce thread
-                          // Pour le vendeur : non lu = message acheteur non lu
-                          const isUnread = isBuyer
-                            ? msg.has_unread_reply  // on gère via le thread
-                            : !msg.is_read;
-                          // Nom affiché : vendeur côté acheteur, acheteur côté vendeur
-                          const displayName = isBuyer
-                            ? (msg.annonces?.profiles?.company_name || msg.annonces?.profiles?.full_name || 'Vendeur')
-                            : msg.sender_name;
-                          return (
-                            <button
-                              key={msg.id}
-                              onClick={() => setSelectedThreadId(msg.id)}
-                              className={`w-full text-left px-4 py-3.5 transition flex items-start gap-3 ${
-                                isSelected
-                                  ? 'bg-blue-50 border-l-2 border-l-blue-600'
-                                  : 'hover:bg-gray-50 border-l-2 border-l-transparent'
-                              }`}
-                            >
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">
-                                {displayName?.charAt(0)?.toUpperCase() || '?'}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between gap-1">
-                                  <span className={`text-sm truncate ${!isSelected && isUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
-                                    {displayName}
-                                  </span>
-                                  <span className="text-[10px] text-gray-400 flex-shrink-0">
-                                    {new Date(msg.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-gray-500 truncate mt-0.5">
-                                  {msg.annonces?.title || 'Annonce'}
-                                </p>
-                                <p className={`text-xs truncate mt-0.5 ${!isSelected && isUnread ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
-                                  {msg.content}
-                                </p>
-                                {!isSelected && isUnread && (
-                                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-1" />
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Thread */}
-                  {selectedThreadId ? (
-                    <div className="flex-1 min-w-0">
-                      {(() => {
-                        const msg = list.find((m: any) => m.id === selectedThreadId);
-                        if (!msg) return null;
-                        const displayName = isBuyer
-                          ? (msg.annonces?.profiles?.company_name || msg.annonces?.profiles?.full_name || 'Vendeur')
-                          : msg.sender_name;
-                        const displayEmail = isBuyer
-                          ? (msg.annonces?.profiles?.email || '')
-                          : msg.sender_email;
-                        return (
-                          <ConversationThread
-                            threadId={selectedThreadId}
-                            buyerName={displayName}
-                            buyerEmail={displayEmail}
-                            annonceTitle={msg.annonces?.title || 'Annonce'}
-                            annonceId={msg.annonce_id}
-                            currentUserId={profile?.id}
-                            isBuyerView={isBuyer}
-                            onClose={() => setSelectedThreadId(null)}
-                            onReplySent={loadMessages}
-                          />
-                        );
-                      })()}
-                      <div className="mt-3 flex justify-end">
+            {/* Colonne droite : thread */}
+            {selectedThreadId ? (
+              <div className="flex-1 min-w-0 flex flex-col gap-3">
+                {(() => {
+                  const msg = messages.find((m: any) => m.id === selectedThreadId);
+                  if (!msg) return null;
+                  const isBuyer = msg.role === 'buyer';
+                  const displayName = isBuyer
+                    ? (msg.annonces?.profiles?.company_name || msg.annonces?.profiles?.full_name || 'Vendeur')
+                    : msg.sender_name;
+                  const displayEmail = isBuyer
+                    ? (msg.annonces?.profiles?.email || '')
+                    : msg.sender_email;
+                  return (
+                    <>
+                      <ConversationThread
+                        threadId={selectedThreadId}
+                        buyerName={displayName}
+                        buyerEmail={displayEmail}
+                        annonceTitle={msg.annonces?.title || 'Annonce'}
+                        annonceId={msg.annonce_id}
+                        isBuyerView={isBuyer}
+                        onClose={() => setSelectedThreadId(null)}
+                        onReplySent={loadMessages}
+                      />
+                      <div className="flex justify-end">
                         <button
-                          onClick={() => {
-                            const msg = list.find((m: any) => m.id === selectedThreadId);
-                            if (msg) deleteMessage(msg.id, isBuyer);
-                          }}
-                          className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                          onClick={() => deleteMessage(msg.id)}
+                          className="text-xs text-red-400 hover:text-red-600 hover:underline"
                         >
                           Supprimer cette conversation
                         </button>
                       </div>
-                    </div>
-                  ) : (
-                    list.length > 0 && (
-                      <div className="hidden lg:flex flex-1 items-center justify-center text-gray-300 bg-white rounded-2xl border border-gray-100">
-                        <div className="text-center">
-                          <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">Sélectionnez une conversation</p>
-                        </div>
-                      </div>
-                    )
-                  )}
+                    </>
+                  );
+                })()}
+              </div>
+            ) : (
+              messages.length > 0 && (
+                <div className="hidden lg:flex flex-1 items-center justify-center text-gray-300 bg-white rounded-2xl border border-gray-100">
+                  <div className="text-center">
+                    <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">Sélectionnez une conversation</p>
+                  </div>
                 </div>
-              );
-            })()}
+              )
+            )}
           </div>
         )}
 

@@ -88,7 +88,7 @@ export async function POST(request: Request) {
         sender_name: senderName,
         sender_email: senderEmail,
         content: content.trim(),
-        is_read: true,                        // l'expéditeur a lu son propre message
+        is_read: false,                       // le destinataire n'a pas encore lu
       })
       .select()
       .single();
