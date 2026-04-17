@@ -18,17 +18,16 @@ export default function RegisterPage() {
     const { data, error: authErr } = await supabase.auth.signUp({ email: form.email, password: form.password });
     if (authErr) { setError(authErr.message); setLoading(false); return; }
     if (data.user) {
-      // Le profil est créé automatiquement par le trigger. On met à jour avec les infos supplémentaires.
-      await supabase.from('profiles').update({
-        full_name: `${form.prenom} ${form.nom}`.trim(),
-        phone: form.telephone,
-        entreprise: form.entreprise
-      }).eq('id', data.user.id);
-      setSuccess(true); 
-      setLoading(false);
-    };
-
-  if (success) return (
+      await supabase.from('profiles').upsert({ id: data.user.id, email: form.email, nom: form.nom, prenom: form.prenom, telephone: form.telephone, entreprise: form.entreprise });
+    }
+    setSuccess(true); setLoading(false);
+  };
+        // Le profil est créé automatiquement par le trigger. On met à jour avec les infos supplémentaires.
+        await supabase.from('profiles').update({ 
+          full_name: `${form.prenom} ${form.nom}`.trim(), 
+          phone: form.telephone, 
+          entreprise: form.entreprise 
+        }).eq('id', data.user.id);  if (success) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-green-600">Inscription reussie !</h2>
@@ -62,4 +61,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-  };
