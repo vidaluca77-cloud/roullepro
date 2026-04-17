@@ -64,7 +64,7 @@ export default function DashboardPage() {
     if (!user) { router.push('/auth/login'); return; }
     const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).single();
     setProfile(p);
-    const { data: a } = await supabase.from('annonces').select('*').eq('user_id', user.id).order('created_at', { ascending: false });
+    const { data: a } = await supabase.from('annonces').select('*, categories(name)').eq('user_id', user.id).order('created_at', { ascending: false });
     setAnnonces(a || []);
     await loadFavoris();
     await loadMessages();
@@ -123,7 +123,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.prenom} {profile?.nom}</p></div>
+          <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.full_name || profile?.email}</p></div>
           <div className="flex gap-2">
             <Link href="/profil" className="flex items-center gap-2 bg-blue-500 px-4 py-2 rounded-lg hover:bg-blue-600"><User size={18} />Profil</Link>
             <button onClick={signOut} className="flex items-center gap-2 bg-blue-700 px-4 py-2 rounded-lg hover:bg-blue-800"><LogOut size={18}/>Déconnexion</button>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                         &nbsp;· {formatDate(msg.created_at)}
                       </p>
                       {!expandedMessages.includes(msg.id) && (
-                        <p className="text-gray-600 text-sm mt-1 truncate">{msg.message}</p>
+                        <p className="text-gray-600 text-sm mt-1 truncate">{msg.content}</p>
                       )}
                     </div>
                     <div className="flex-shrink-0 text-gray-400 mt-1">
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                   </button>
                   {expandedMessages.includes(msg.id) && (
                     <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-gray-700 whitespace-pre-line text-sm">{msg.message}</p>
+                      <p className="text-gray-700 whitespace-pre-line text-sm">{msg.content}</p>
                       <a
                         href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.title || 'Votre annonce'}`}
                         className="mt-3 inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
@@ -234,8 +234,8 @@ export default function DashboardPage() {
                       <h3 className="font-medium">{annonce.title}</h3>
                       <div className="flex gap-3 text-sm text-gray-500 mt-1">
                         <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700">{annonce.status}</span>
-                        {annonce.prix && <span className="text-blue-600 font-medium">{Number(annonce.prix).toLocaleString()} EUR</span>}
-                        {annonce.categorie && <span>{annonce.categorie}</span>}
+                        {annonce.price && <span className="text-blue-600 font-medium">{Number(annonce.price).toLocaleString()} EUR</span>}
+                        {annonce.categories?.name && <span>{annonce.categories.name}</span>}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -261,8 +261,8 @@ export default function DashboardPage() {
                     <h3 className="font-medium">{a.title}</h3>
                     <div className="flex gap-3 text-sm text-gray-500 mt-1">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${a.status==='active'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{a.status}</span>
-                      {a.prix && <span className="text-blue-600 font-medium">{Number(a.prix).toLocaleString()} EUR</span>}
-                      {a.categorie && <span>{a.categorie}</span>}
+                      {a.price && <span className="text-blue-600 font-medium">{Number(a.price).toLocaleString()} EUR</span>}
+                      {a.categories?.name && <span>{a.categories.name}</span>}
                     </div>
                   </div>
                   <div className="flex gap-2">

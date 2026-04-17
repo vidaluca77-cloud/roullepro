@@ -37,7 +37,7 @@ export default function AnnonceDetailPage() {
   };
 
   const fetchAnnonce = async (id: string) => {
-    const { data } = await supabase.from('annonces').select('*, profiles(*)').eq('id', id).single();
+    const { data } = await supabase.from('annonces').select('*, profiles(*), categories(name)').eq('id', id).single();
     if (data) { setAnnonce(data); setVendeur(data.profiles); }
     setLoading(false);
   };
@@ -45,9 +45,9 @@ export default function AnnonceDetailPage() {
   if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;
   if (!annonce) return <div className="text-center py-20"><p className="text-gray-500">Annonce introuvable</p><Link href="/annonces" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Retour</Link></div>;
 
-  const images = annonce.photos || [];
+  const images = annonce.images || annonce.photos || [];
   const isOwner = currentUser?.id === annonce.user_id;
-  const currentUserName = currentProfile ? `${currentProfile.prenom || ''} ${currentProfile.nom || ''}`.trim() : '';
+  const currentUserName = currentProfile ? (currentProfile.full_name || `${currentProfile.prenom || ''} ${currentProfile.nom || ''}`.trim()) : '';
   const currentUserEmail = currentUser?.email || '';
 
   const nextImage = () => setSelectedImg((prev) => (prev + 1) % images.length);
@@ -114,7 +114,7 @@ export default function AnnonceDetailPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full mb-2">
-                    {annonce.categorie}
+                    {annonce.categories?.name || annonce.categorie}
                   </span>
                   <h1 className="text-3xl font-bold text-gray-900">{annonce.title}</h1>
                 </div>
@@ -149,10 +149,10 @@ export default function AnnonceDetailPage() {
                     <span className="font-semibold">{Number(annonce.kilometrage).toLocaleString()} km</span>
                   </div>
                 )}
-                {annonce.ville && (
+                {(annonce.city || annonce.ville) && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Localisation</span>
-                    <span className="font-semibold">{annonce.ville}</span>
+                    <span className="font-semibold">{annonce.city || annonce.ville}</span>
                   </div>
                 )}
               </div>
@@ -259,7 +259,7 @@ export default function AnnonceDetailPage() {
                             price: annonce.price,
                             marque: annonce.marque,
                             modele: annonce.modele,
-                            categorie: annonce.categorie,
+                            categorie: annonce.categories?.name || annonce.categorie,
                           }}
       />
     </div>

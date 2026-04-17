@@ -36,8 +36,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    // Admin check is done client-side in the admin page
+  if (request.nextUrl.pathname.startsWith('/admin') && user) {
+    // Vérification admin côté serveur
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile || profile.role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
   }
 
   return supabaseResponse;

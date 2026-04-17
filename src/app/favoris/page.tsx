@@ -43,11 +43,11 @@ export default function FavorisPage() {
             id,
             title,
             price,
-            photos,
-            ville,
+            images,
+            city,
             annee,
-            categorie,
-            statut
+            categories(name),
+            status
           )
         `)
         .eq('user_id', userId)
@@ -59,7 +59,7 @@ export default function FavorisPage() {
       } else {
         // Filtrer les favoris avec annonces valides et actives
         const validFavoris = (favorisData || []).filter(
-          (f) => f.annonces && (f.annonces as any).statut === 'active'
+          (f) => f.annonces && (f.annonces as any).status === 'active'
         );
         setFavoris(validFavoris);
       }

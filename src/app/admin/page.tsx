@@ -18,16 +18,18 @@ export default function AdminPage() {
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
-    const { data: a } = await supabase.from('annonces').select('*, profiles(nom, prenom, email)').order('created_at', { ascending: false });
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (!profile || profile.role !== 'admin') { router.push('/'); return; }
+    const { data: a } = await supabase.from('annonces').select('*, profiles(full_name, email), categories(name)').order('created_at', { ascending: false });
     setAnnonces(a || []);
     const { data: p } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     setUsers(p || []);
     setLoading(false);
   };
 
-  const updateStatut = async (id: string, statut: string) => {
-    await supabase.from('annonces').update({ statut }).eq('id', id);
-    setAnnonces(prev => prev.map(a => a.id === id ? {...a, statut} : a));
+  const updateStatut = async (id: string, status: string) => {
+    await supabase.from('annonces').update({ status }).eq('id', id);
+    setAnnonces(prev => prev.map(a => a.id === id ? {...a, status} : a));
   };
 
   const deleteAnnonce = async (id: string) => {
@@ -46,7 +48,7 @@ export default function AdminPage() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold">{annonces.length}</p><p className="text-gray-500">Annonces</p></div>
-          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.statut==='active').length}</p><p className="text-gray-500">Actives</p></div>
+          <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-green-600">{annonces.filter(a=>a.status==='active').length}</p><p className="text-gray-500">Actives</p></div>
           <div className="bg-white rounded-xl p-6 shadow-sm"><p className="text-3xl font-bold text-blue-600">{users.length}</p><p className="text-gray-500">Utilisateurs</p></div>
         </div>
         <div className="flex gap-2 mb-4">
@@ -58,18 +60,18 @@ export default function AdminPage() {
             {annonces.map(a => (
               <div key={a.id} className="p-4 flex items-center justify-between">
                 <div>
-                  <h3 className="font-medium">{a.titre}</h3>
+                  <h3 className="font-medium">{a.title}</h3>
                   <div className="flex gap-2 text-sm text-gray-500 mt-1">
-                    <span>{a.profiles?.prenom} {a.profiles?.nom}</span>
-                    <span>{a.categorie}</span>
-                    {a.prix && <span className="text-blue-600">{Number(a.prix).toLocaleString()} EUR</span>}
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${a.statut==='active'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>{a.statut}</span>
+                    <span>{a.profiles?.full_name}</span>
+                    <span>{a.categories?.name}</span>
+                    {a.price && <span className="text-blue-600">{Number(a.price).toLocaleString()} EUR</span>}
+                    <span className={`px-2 py-0.5 rounded-full text-xs ${a.status==='active'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}`}>{a.status}</span>
                   </div>
                 </div>
                 <div className="flex gap-1">
                   <Link href={`/annonces/${a.id}`} className="p-2 text-gray-400 hover:text-blue-600"><Eye size={16}/></Link>
-                  {a.statut !== 'active' && <button onClick={()=>updateStatut(a.id,'active')} className="p-2 text-gray-400 hover:text-green-600"><Check size={16}/></button>}
-                  {a.statut === 'active' && <button onClick={()=>updateStatut(a.id,'suspendu')} className="p-2 text-gray-400 hover:text-orange-600"><X size={16}/></button>}
+                  {a.status !== 'active' && <button onClick={()=>updateStatut(a.id,'active')} className="p-2 text-gray-400 hover:text-green-600"><Check size={16}/></button>}
+                  {a.status === 'active' && <button onClick={()=>updateStatut(a.id,'suspended')} className="p-2 text-gray-400 hover:text-orange-600"><X size={16}/></button>}
                   <button onClick={()=>deleteAnnonce(a.id)} className="p-2 text-gray-400 hover:text-red-600"><X size={16}/></button>
                 </div>
               </div>
@@ -79,7 +81,7 @@ export default function AdminPage() {
           <div className="bg-white rounded-xl shadow-sm divide-y">
             {users.map(u => (
               <div key={u.id} className="p-4">
-                <p className="font-medium">{u.prenom} {u.nom}</p>
+                <p className="font-medium">{u.full_name || u.email}</p>
                 <p className="text-sm text-gray-500">{u.email}</p>
               </div>
             ))}

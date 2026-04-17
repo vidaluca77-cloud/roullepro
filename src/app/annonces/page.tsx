@@ -47,7 +47,7 @@ export default function AnnoncesPage() {
 
   const fetchAnnonces = async () => {
     setLoading(true);
-    let query = supabase.from('annonces').select('*').eq('statut', 'active').order('created_at', { ascending: false });
+    let query = supabase.from('annonces').select('*, categories(id, name, slug)').eq('status', 'active').order('created_at', { ascending: false });
     if (categorie) query = query.eq('category_id', categorie);
     const { data } = await query;
     setAnnonces(data || []);

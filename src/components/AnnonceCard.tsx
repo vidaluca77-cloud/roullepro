@@ -61,22 +61,22 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden relative group">
       <Link href={`/annonces/${annonce.id}`}>
         <div className="bg-gray-100 h-48 flex items-center justify-center relative">
-          {annonce.photos?.[0] ? (
-            <img src={annonce.photos[0]} alt={annonce.title} className="w-full h-full object-cover" />
+          {(annonce.images?.[0] || annonce.photos?.[0]) ? (
+            <img src={annonce.images?.[0] || annonce.photos?.[0]} alt={annonce.title} className="w-full h-full object-cover" />
           ) : (
             <span className="text-gray-400 text-sm">Pas de photo</span>
           )}
         </div>
         <div className="p-4">
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{annonce.categorie}</span>
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{annonce.categories?.name || annonce.categorie}</span>
           <h3 className="font-semibold mt-2 truncate">{annonce.title}</h3>
           <p className="text-blue-600 font-bold text-lg">
             {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
           </p>
           <div className="text-xs text-gray-500 mt-1 flex gap-2">
-            {annonce.ville && (
+            {(annonce.city || annonce.ville) && (
               <span>
-                <MapPin size={10} className="inline" /> {annonce.ville}
+                <MapPin size={10} className="inline" /> {annonce.city || annonce.ville}
               </span>
             )}
             {annonce.annee && <span>{annonce.annee}</span>}

@@ -147,23 +147,23 @@ export default function DeposerAnnoncePage() {
         photoUrls = await uploadPhotos(user.id);
       }
 
-      // Insertion de l'annonce avec les BONS noms de colonnes
+      // Insertion de l'annonce
       const { error: err } = await supabase.from('annonces').insert({
-        title: form.title, // DB: titre
+        title: form.title,
         category_id: form.category_id,
         marque: form.marque,
         modele: form.modele,
         annee: form.annee ? +form.annee : null,
         kilometrage: form.kilometrage ? +form.kilometrage : null,
-        price: form.price ? +form.price : null, // DB: prix
+        price: form.price ? +form.price : null,
         carburant: form.carburant || null,
         boite: form.boite || null,
         couleur: form.couleur,
         description: form.description,
-        ville: form.ville,
-        photos: photoUrls, // DB: photos (text[])
+        city: form.ville,
+        images: photoUrls,
         user_id: user.id,
-        statut: 'active'
+        status: 'active'
       });
 
       if (err) {

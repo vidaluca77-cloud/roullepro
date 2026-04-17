@@ -16,10 +16,11 @@ export default function ProfilPage() {
   const [profile, setProfile] = useState({
     full_name: '',
     phone: '',
-    ville: '',
-    entreprise: '',
+    city: '',
+    company_name: '',
     siret: '',
-    is_verified: false
+    is_verified: false,
+    statut_verification: 'non_verifie' as string
   });
 
   useEffect(() => {
@@ -46,10 +47,11 @@ export default function ProfilPage() {
       setProfile({
         full_name: data.full_name || '',
         phone: data.phone || '',
-        ville: data.ville || '',
-        entreprise: data.entreprise || '',
+        city: data.city || data.ville || '',
+        company_name: data.company_name || data.entreprise || '',
         siret: data.siret || '',
-        is_verified: data.is_verified || false
+        is_verified: data.is_verified || false,
+        statut_verification: data.statut_verification || 'non_verifie'
       });
     }
 
@@ -143,8 +145,8 @@ export default function ProfilPage() {
               </label>
               <input
                 type="text"
-                name="ville"
-                value={profile.ville}
+                name="city"
+                value={profile.city}
                 onChange={set}
                 placeholder="Paris"
                 className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
@@ -157,8 +159,8 @@ export default function ProfilPage() {
               </label>
               <input
                 type="text"
-                name="entreprise"
-                value={profile.entreprise}
+                name="company_name"
+                value={profile.company_name}
                 onChange={set}
                 placeholder="Nom de votre entreprise"
                 className="w-full border rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-blue-500"
