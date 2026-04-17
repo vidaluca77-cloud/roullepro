@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -8,7 +8,7 @@ import AnnonceCard from '@/components/AnnonceCard';
 
 type Category = { id: string; name: string; slug: string };
 
-export default function AnnoncesPage() {
+function AnnoncesPageInner() {
   const searchParams = useSearchParams();
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -253,5 +253,17 @@ export default function AnnoncesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AnnoncesPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center py-20">
+        <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full" />
+      </div>
+    }>
+      <AnnoncesPageInner />
+    </Suspense>
   );
 }

@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
-export default function DashboardPage() {
+function DashboardPageInner() {
   const router = useRouter();
   const supabase = createClient();
   const [profile, setProfile] = useState<any>(null);
@@ -296,5 +296,17 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center py-20">
+        <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full" />
+      </div>
+    }>
+      <DashboardPageInner />
+    </Suspense>
   );
 }

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 /**
  * POST /api/annonces
  * Appelé après l'insert Supabase côté client dans deposer-annonce.
