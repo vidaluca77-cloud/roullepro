@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { sendReplyNotification } from '@/lib/email';
+import { sendReplyNotification, sendVendeurNotification } from '@/lib/email';
 
 const getAdminClient = () =>
   createClient(
@@ -14,12 +14,12 @@ const getAdminClient = () =>
  * POST /api/messages/reply
  * Body: { thread_id: string, content: string }
  *
- * Permet au vendeur de répondre dans un thread de conversation.
- * thread_id = id du message initial (root message).
+ * Utilisable par :
+ *   - Le VENDEUR (is_seller_reply = true) → notifie l'acheteur par email
+ *   - L'ACHETEUR (is_seller_reply = false) → notifie le vendeur par email
  */
 export async function POST(request: Request) {
   try {
-    // Auth : seul un utilisateur connecté peut répondre
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -41,12 +41,16 @@ export async function POST(request: Request) {
 
     const supabaseAdmin = getAdminClient();
 
-    // Récupérer le message root + l'annonce + le profil vendeur
+    // Récupérer le root message + annonce + profils
     const { data: rootMsg, error: rootErr } = await supabaseAdmin
       .from('messages')
-      .select('id, annonce_id, seller_id, sender_name, sender_email, annonces(id, title, user_id)')
+      .select(`
+        id, annonce_id, seller_id, buyer_id,
+        sender_name, sender_email,
+        annonces(id, title, user_id, profiles(full_name, company_name, email))
+      `)
       .eq('id', thread_id)
-      .is('thread_id', null) // s'assurer que c'est bien le root
+      .is('thread_id', null)
       .single();
 
     if (rootErr || !rootMsg) {
@@ -54,54 +58,75 @@ export async function POST(request: Request) {
     }
 
     const annonce = rootMsg.annonces as any;
+    const isVendeur = annonce.user_id === user.id;
+    const isAcheteur = rootMsg.buyer_id === user.id;
 
-    // Vérifier que l'utilisateur connecté est bien le vendeur de l'annonce
-    if (annonce.user_id !== user.id) {
-      return NextResponse.json({ error: 'Non autorisé — vous n\'êtes pas le vendeur' }, { status: 403 });
+    if (!isVendeur && !isAcheteur) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
-    // Récupérer le profil du vendeur pour avoir son nom
-    const { data: vendeurProfile } = await supabaseAdmin
+    // Récupérer le profil de l'expéditeur
+    const { data: senderProfile } = await supabaseAdmin
       .from('profiles')
       .select('full_name, company_name, email')
       .eq('id', user.id)
       .single();
 
-    const vendeurName = vendeurProfile?.company_name || vendeurProfile?.full_name || 'Le vendeur';
-    const vendeurEmail = vendeurProfile?.email || '';
+    const senderName = senderProfile?.company_name || senderProfile?.full_name || (isVendeur ? 'Le vendeur' : 'L\'acheteur');
+    const senderEmail = senderProfile?.email || '';
 
-    // Insérer la réponse du vendeur dans le thread
+    // Insérer la réponse
     const { data: reply, error: insertErr } = await supabaseAdmin
       .from('messages')
       .insert({
         annonce_id: rootMsg.annonce_id,
         seller_id: rootMsg.seller_id,
-        thread_id: thread_id,            // rattaché au root
-        is_seller_reply: true,
-        seller_id_reply: user.id,
-        sender_name: vendeurName,
-        sender_email: vendeurEmail,
+        buyer_id: rootMsg.buyer_id,          // maintenu pour chainage
+        thread_id: thread_id,
+        is_seller_reply: isVendeur,
+        seller_id_reply: isVendeur ? user.id : null,
+        sender_name: senderName,
+        sender_email: senderEmail,
         content: content.trim(),
-        is_read: true,                   // le vendeur a déjà lu sa propre réponse
+        is_read: true,                        // l'expéditeur a lu son propre message
       })
       .select()
       .single();
 
     if (insertErr) {
       console.error('Erreur insertion réponse:', insertErr);
-      return NextResponse.json({ error: 'Erreur lors de l\'envoi', details: insertErr.message }, { status: 500 });
+      return NextResponse.json({ error: "Erreur lors de l'envoi", details: insertErr.message }, { status: 500 });
     }
 
-    // Notifier l'acheteur par email (non bloquant)
-    if (rootMsg.sender_email) {
-      sendReplyNotification({
-        buyerEmail: rootMsg.sender_email,
-        buyerName: rootMsg.sender_name,
-        vendeurName,
-        annonceTitle: annonce.title,
-        annonceId: annonce.id,
-        replyContent: content.trim(),
-      });
+    // ── Notifications email (non bloquantes) ──
+
+    if (isVendeur) {
+      // Vendeur répond → notifier l'acheteur
+      const vendeurName = annonce.profiles?.company_name || annonce.profiles?.full_name || 'Le vendeur';
+      if (rootMsg.sender_email) {
+        sendReplyNotification({
+          buyerEmail: rootMsg.sender_email,
+          buyerName: rootMsg.sender_name,
+          vendeurName,
+          annonceTitle: annonce.title,
+          annonceId: annonce.id,
+          replyContent: content.trim(),
+        });
+      }
+    } else {
+      // Acheteur répond → notifier le vendeur
+      const vendeurProfile = annonce.profiles as any;
+      if (vendeurProfile?.email) {
+        sendVendeurNotification({
+          vendeurEmail: vendeurProfile.email,
+          vendeurName: vendeurProfile.full_name || '',
+          senderName,
+          senderEmail,
+          annonceTitle: annonce.title,
+          annonceId: annonce.id,
+          messageContent: content.trim(),
+        });
+      }
     }
 
     return NextResponse.json({ success: true, data: reply }, { status: 201 });

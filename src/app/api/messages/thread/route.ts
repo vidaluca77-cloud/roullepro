@@ -12,7 +12,7 @@ const getAdminClient = () =>
 /**
  * GET /api/messages/thread?thread_id=<uuid>
  * Retourne tous les messages d'un thread (root + réponses), triés par date.
- * Seul le vendeur propriétaire de l'annonce peut y accéder.
+ * Accessible par le vendeur OU par l'acheteur (buyer_id = user.id).
  */
 export async function GET(request: Request) {
   try {
@@ -33,14 +33,21 @@ export async function GET(request: Request) {
 
     const supabaseAdmin = getAdminClient();
 
-    // Vérifier que le root message appartient bien à une annonce du vendeur connecté
+    // Récupérer le root message
     const { data: rootMsg } = await supabaseAdmin
       .from('messages')
-      .select('id, annonces(user_id)')
+      .select('id, buyer_id, annonces(user_id)')
       .eq('id', thread_id)
       .single();
 
-    if (!rootMsg || (rootMsg.annonces as any)?.user_id !== user.id) {
+    if (!rootMsg) {
+      return NextResponse.json({ error: 'Conversation introuvable' }, { status: 404 });
+    }
+
+    const isVendeur = (rootMsg.annonces as any)?.user_id === user.id;
+    const isAcheteur = rootMsg.buyer_id === user.id;
+
+    if (!isVendeur && !isAcheteur) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
@@ -55,9 +62,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Erreur de récupération' }, { status: 500 });
     }
 
-    // Marquer tous les messages non lus du buyer comme lus
+    // Marquer les messages non lus comme lus selon le rôle
     const unreadIds = (allMessages || [])
-      .filter(m => !m.is_read && !m.is_seller_reply)
+      .filter(m => {
+        if (!m.is_read) {
+          // Le vendeur lit les messages de l'acheteur (is_seller_reply = false)
+          if (isVendeur && !m.is_seller_reply) return true;
+          // L'acheteur lit les réponses du vendeur (is_seller_reply = true)
+          if (isAcheteur && m.is_seller_reply) return true;
+        }
+        return false;
+      })
       .map(m => m.id);
 
     if (unreadIds.length > 0) {

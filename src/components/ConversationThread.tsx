@@ -11,15 +11,24 @@ interface Message {
   is_seller_reply: boolean;
   created_at: string;
   annonce_id: string;
-  annonces?: { id: string; title: string };
 }
 
 interface ConversationThreadProps {
   threadId: string;
+  /** Nom affiché dans le header (interlocuteur) */
   buyerName: string;
+  /** Email affiché dans le header (interlocuteur) */
   buyerEmail: string;
   annonceTitle: string;
   annonceId: string;
+  /** ID de l'utilisateur connecté (pour orienter les bulles) */
+  currentUserId?: string;
+  /**
+   * true  → mode acheteur : ses propres messages (is_seller_reply=false) à droite,
+   *          réponses vendeur (is_seller_reply=true) à gauche
+   * false → mode vendeur  : messages acheteur à gauche, ses propres réponses à droite
+   */
+  isBuyerView?: boolean;
   onClose: () => void;
   onReplySent?: () => void;
 }
@@ -30,6 +39,7 @@ export default function ConversationThread({
   buyerEmail,
   annonceTitle,
   annonceId,
+  isBuyerView = false,
   onClose,
   onReplySent,
 }: ConversationThreadProps) {
@@ -41,6 +51,7 @@ export default function ConversationThread({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const loadThread = async () => {
+    setLoading(true);
     try {
       const res = await fetch(`/api/messages/thread?thread_id=${threadId}`);
       if (res.ok) {
@@ -52,10 +63,12 @@ export default function ConversationThread({
   };
 
   useEffect(() => {
+    setMessages([]);
+    setReplyText('');
+    setError(null);
     loadThread();
   }, [threadId]);
 
-  // Scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -81,7 +94,7 @@ export default function ConversationThread({
         await loadThread();
         onReplySent?.();
       } else {
-        setError(data.error || 'Erreur lors de l\'envoi');
+        setError(data.error || "Erreur lors de l'envoi");
       }
     } catch {
       setError('Erreur réseau. Veuillez réessayer.');
@@ -96,6 +109,14 @@ export default function ConversationThread({
       hour: '2-digit', minute: '2-digit',
     });
 
+  /**
+   * Détermine si un message doit être aligné à droite (= "moi").
+   * - Mode vendeur  : is_seller_reply=true → droite (c'est le vendeur qui parle)
+   * - Mode acheteur : is_seller_reply=false → droite (c'est l'acheteur qui parle)
+   */
+  const isMyMessage = (msg: Message) =>
+    isBuyerView ? !msg.is_seller_reply : msg.is_seller_reply;
+
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Header */}
@@ -103,13 +124,18 @@ export default function ConversationThread({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <User size={14} className="text-blue-600" />
+              {isBuyerView
+                ? <Store size={14} className="text-blue-600" />
+                : <User size={14} className="text-blue-600" />
+              }
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-gray-900 text-sm truncate">{buyerName}</p>
-              <a href={`mailto:${buyerEmail}`} className="text-xs text-blue-600 hover:underline truncate block">
-                {buyerEmail}
-              </a>
+              {buyerEmail && (
+                <a href={`mailto:${buyerEmail}`} className="text-xs text-blue-600 hover:underline truncate block">
+                  {buyerEmail}
+                </a>
+              )}
             </div>
           </div>
           <Link
@@ -138,14 +164,14 @@ export default function ConversationThread({
           <p className="text-center text-gray-400 py-10 text-sm">Aucun message</p>
         ) : (
           messages.map((msg) => {
-            const isSeller = msg.is_seller_reply;
+            const mine = isMyMessage(msg);
             return (
-              <div key={msg.id} className={`flex ${isSeller ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] ${isSeller ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+              <div key={msg.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] flex flex-col gap-1 ${mine ? 'items-end' : 'items-start'}`}>
                   {/* Bulle */}
                   <div
                     className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-line ${
-                      isSeller
+                      mine
                         ? 'bg-blue-600 text-white rounded-br-sm'
                         : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                     }`}
@@ -153,13 +179,13 @@ export default function ConversationThread({
                     {msg.content}
                   </div>
                   {/* Méta */}
-                  <div className={`flex items-center gap-1.5 px-1 ${isSeller ? 'flex-row-reverse' : 'flex-row'}`}>
+                  <div className={`flex items-center gap-1.5 px-1 ${mine ? 'flex-row-reverse' : 'flex-row'}`}>
                     <span className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                      isSeller ? 'bg-blue-100' : 'bg-gray-200'
+                      mine ? 'bg-blue-100' : 'bg-gray-200'
                     }`}>
-                      {isSeller
-                        ? <Store size={10} className="text-blue-600" />
-                        : <User size={10} className="text-gray-500" />
+                      {mine
+                        ? (isBuyerView ? <User size={10} className="text-blue-600" /> : <Store size={10} className="text-blue-600" />)
+                        : (isBuyerView ? <Store size={10} className="text-gray-500" /> : <User size={10} className="text-gray-500" />)
                       }
                     </span>
                     <span className="text-[11px] text-gray-400">{formatTime(msg.created_at)}</span>
@@ -187,7 +213,7 @@ export default function ConversationThread({
                 handleSend(e as any);
               }
             }}
-            placeholder="Votre réponse... (Entrée pour envoyer, Maj+Entrée pour sauter une ligne)"
+            placeholder="Votre réponse… (Entrée pour envoyer, Maj+Entrée pour sauter une ligne)"
             rows={3}
             disabled={sending}
             className="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition disabled:bg-gray-50 bg-white"
@@ -204,7 +230,10 @@ export default function ConversationThread({
           </button>
         </form>
         <p className="text-xs text-gray-400 mt-1.5">
-          L'acheteur sera notifié par email de votre réponse.
+          {isBuyerView
+            ? 'Le vendeur sera notifié par email de votre message.'
+            : "L'acheteur sera notifié par email de votre réponse."
+          }
         </p>
       </div>
     </div>

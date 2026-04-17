@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { sendVendeurNotification } from '@/lib/email';
 
-// Client admin avec service role (bypass RLS)
 const getAdminClient = () =>
   createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,13 +10,17 @@ const getAdminClient = () =>
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
+/**
+ * POST /api/messages
+ * Envoi d'un premier message (acheteur → vendeur).
+ * Si l'acheteur est connecté, buyer_id est sauvegardé → conversation visible dans son dashboard.
+ */
 export async function POST(request: Request) {
   try {
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
     const { annonce_id, sender_name, sender_email, content } = body;
 
-    // Validation
     if (!annonce_id || !sender_name?.trim() || !sender_email?.trim() || !content?.trim()) {
       return NextResponse.json({ error: 'Tous les champs sont requis' }, { status: 400 });
     }
@@ -31,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Le message doit contenir au moins 10 caractères' }, { status: 400 });
     }
 
-    // Récupérer l'annonce + le profil vendeur en une seule requête
+    // Récupérer l'annonce + le profil vendeur
     const { data: annonce, error: annonceError } = await supabaseAdmin
       .from('annonces')
       .select('id, title, user_id, profiles(email, full_name)')
@@ -42,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
     }
 
-    // Vérifier que l'expéditeur connecté ne contacte pas sa propre annonce
+    // Récupérer l'acheteur connecté (optionnel)
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -54,7 +57,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Insérer le message
+    // buyer_id = UUID si connecté, null sinon
+    const buyerId = (user && user.id !== annonce.user_id) ? user.id : null;
+
+    // Insérer le message root
     const { data, error } = await supabaseAdmin
       .from('messages')
       .insert({
@@ -63,6 +69,7 @@ export async function POST(request: Request) {
         sender_email: sender_email.trim(),
         content: content.trim(),
         seller_id: annonce.user_id,
+        buyer_id: buyerId,   // ← clé : permet à l'acheteur de retrouver ses conversations
       })
       .select()
       .single();
@@ -75,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Envoyer l'email de notification au vendeur (asynchrone, non bloquant)
+    // Notifier le vendeur par email (non bloquant)
     const vendeur = annonce.profiles as any;
     if (vendeur?.email) {
       sendVendeurNotification({
@@ -96,7 +103,12 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+/**
+ * GET /api/messages
+ * - Sans paramètre  → messages reçus en tant que VENDEUR (root messages sur mes annonces)
+ * - ?role=buyer     → conversations initiées en tant qu'ACHETEUR (root messages avec buyer_id = moi)
+ */
+export async function GET(request: Request) {
   try {
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
@@ -106,8 +118,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
+    const { searchParams } = new URL(request.url);
+    const role = searchParams.get('role'); // 'buyer' ou null (= vendeur)
+
     const supabaseAdmin = getAdminClient();
 
+    if (role === 'buyer') {
+      // Conversations où l'utilisateur est l'acheteur
+      const { data: messages, error } = await supabaseAdmin
+        .from('messages')
+        .select('*, annonces(id, title, user_id, profiles(full_name, company_name))')
+        .eq('buyer_id', user.id)
+        .is('thread_id', null) // root messages uniquement
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        return NextResponse.json({ error: 'Erreur de récupération' }, { status: 500 });
+      }
+      return NextResponse.json(messages || []);
+    }
+
+    // Mode vendeur : messages reçus sur mes annonces
     const { data: mesAnnonces } = await supabaseAdmin
       .from('annonces')
       .select('id, title')
@@ -123,7 +154,7 @@ export async function GET() {
       .from('messages')
       .select('*, annonces(id, title)')
       .in('annonce_id', annonceIds)
-      .is('thread_id', null)  // uniquement les messages root (pas les réponses vendeur)
+      .is('thread_id', null) // root messages uniquement
       .order('created_at', { ascending: false });
 
     if (error) {
