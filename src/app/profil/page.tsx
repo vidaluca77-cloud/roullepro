@@ -19,8 +19,7 @@ export default function ProfilPage() {
     ville: '',
     entreprise: '',
     siret: '',
-        statut_verification: 'non_verifie',
-        justificatif_url: null
+    is_verified: false
   });
 
   useEffect(() => {
@@ -29,10 +28,12 @@ export default function ProfilPage() {
 
   const loadProfile = async () => {
     const { data: { user } } = await supabase.auth.getUser();
+
     if (!user) {
       router.push('/auth/login');
       return;
     }
+
     setUser(user);
 
     const { data } = await supabase
@@ -48,10 +49,10 @@ export default function ProfilPage() {
         ville: data.ville || '',
         entreprise: data.entreprise || '',
         siret: data.siret || '',
-                statut_verification: data.statut_verification || 'non_verifie',
-                justificatif_url: data.justificatif_url || null
+        is_verified: data.is_verified || false
       });
     }
+
     setLoading(false);
   };
 
@@ -72,6 +73,7 @@ export default function ProfilPage() {
       setSuccess('Profil mis a jour avec succes !');
       setTimeout(() => setSuccess(''), 3000);
     }
+
     setUpdating(false);
   };
 
@@ -197,8 +199,7 @@ export default function ProfilPage() {
 
           <VerificationSection
             userId={user?.id || ''}
-            currentStatus={(profile.statut_verification || 'non_verifie') as 'non_verifie' | 'en_attente' | 'verifie'}
-            justificatifUrl={profile.justificatif_url}
+            isVerified={profile.is_verified}
             onStatusChange={loadProfile}
           />
         </div>
