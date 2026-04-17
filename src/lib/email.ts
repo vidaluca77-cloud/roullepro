@@ -271,3 +271,95 @@ export async function sendVendeurAnnonceRefusee({
     html,
   });
 }
+
+/* ─────────────────────────────────────────
+   5. Alerte — nouvelle annonce dans une catégorie suivie
+───────────────────────────────────────── */
+export async function sendAlerteNouvelleAnnonce({
+  abonneEmail,
+  abonneName,
+  categorieName,
+  annonceTitle,
+  annonceId,
+  annoncePrice,
+  annonceCity,
+  annonceImageUrl,
+}: {
+  abonneEmail: string;
+  abonneName: string;
+  categorieName: string;
+  annonceTitle: string;
+  annonceId: string;
+  annoncePrice?: number | null;
+  annonceCity?: string;
+  annonceImageUrl?: string;
+}) {
+  const annonceUrl = `${APP_URL}/annonces/${annonceId}`;
+  const unsubscribeUrl = `${APP_URL}/profil?section=alertes`;
+  const priceText = annoncePrice
+    ? `${Number(annoncePrice).toLocaleString('fr-FR')} €`
+    : 'Prix sur demande';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 28px 32px;">
+        <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">RoullePro</h1>
+        <p style="color: rgba(255,255,255,0.75); margin: 4px 0 0; font-size: 13px;">Marketplace B2B du transport routier</p>
+      </div>
+
+      <div style="padding: 32px;">
+        <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 24px;">
+          <p style="margin: 0; color: #1d4ed8; font-weight: 600; font-size: 14px;">
+            🔔 Nouvelle annonce dans <strong>${categorieName}</strong>
+          </p>
+        </div>
+
+        <p style="color: #6b7280; font-size: 15px; margin-top: 0;">
+          Bonjour ${abonneName || 'cher professionnel'},<br><br>
+          Une nouvelle annonce correspond à votre alerte pour la catégorie
+          <strong style="color: #1f2937;">${categorieName}</strong>.
+        </p>
+
+        <!-- Card annonce -->
+        <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin: 24px 0;">
+          ${annonceImageUrl ? `
+          <div style="height: 200px; overflow: hidden; background: #f3f4f6;">
+            <img src="${annonceImageUrl}" alt="${annonceTitle}"
+              style="width: 100%; height: 100%; object-fit: cover;" />
+          </div>` : ''}
+          <div style="padding: 20px;">
+            <span style="background: #eff6ff; color: #1d4ed8; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;">
+              ${categorieName}
+            </span>
+            <h2 style="margin: 12px 0 8px; font-size: 18px; color: #111827;">${annonceTitle}</h2>
+            <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+              <span style="font-size: 22px; font-weight: 700; color: #2563eb;">${priceText}</span>
+              ${annonceCity ? `<span style="color: #6b7280; font-size: 14px;">📍 ${annonceCity}</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${annonceUrl}"
+            style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 10px;
+                   text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+            Voir l'annonce →
+          </a>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #f3f4f6; margin: 28px 0;" />
+
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
+          Vous recevez cet email car vous êtes abonné aux alertes <strong>${categorieName}</strong> sur RoullePro.<br>
+          <a href="${unsubscribeUrl}" style="color: #6b7280;">Gérer mes alertes</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  await sendEmail({
+    to: abonneEmail,
+    subject: `[RoullePro] Nouvelle annonce ${categorieName} : ${annonceTitle}`,
+    html,
+  });
+}

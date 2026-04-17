@@ -2,13 +2,16 @@ export const dynamic = 'force-dynamic';
 /**
  * PATCH /api/admin/moderation
  * Approuve ou refuse une annonce pending.
- * Déclenche l'email de notification vendeur.
- * Réservé aux admins (role='admin').
+ * Si approbation : envoie les alertes aux abonnés de la catégorie.
  */
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createClient as createServerClient } from '@/lib/supabase/server';
-import { sendVendeurAnnonceApprouvee, sendVendeurAnnonceRefusee } from '@/lib/email';
+import {
+  sendVendeurAnnonceApprouvee,
+  sendVendeurAnnonceRefusee,
+  sendAlerteNouvelleAnnonce,
+} from '@/lib/email';
 
 const getAdminClient = () =>
   createClient(
@@ -19,54 +22,38 @@ const getAdminClient = () =>
 
 export async function PATCH(request: Request) {
   try {
-    // Auth + vérification admin
     const supabase = await createServerClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
-    }
+    if (authError || !user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
     const admin = getAdminClient();
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single();
+    if (!profile || profile.role !== 'admin') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
     const { annonce_id, action } = await request.json();
     if (!annonce_id || !['approve', 'reject'].includes(action)) {
-      return NextResponse.json({ error: 'Paramètres invalides (annonce_id + action: approve|reject)' }, { status: 400 });
+      return NextResponse.json({ error: 'Paramètres invalides' }, { status: 400 });
     }
 
     const newStatus = action === 'approve' ? 'active' : 'rejected';
 
-    // Récupérer l'annonce + vendeur avant la mise à jour
+    // Récupérer l'annonce complète + vendeur + catégorie
     const { data: annonce, error: fetchErr } = await admin
       .from('annonces')
-      .select('id, title, user_id, profiles(full_name, email)')
+      .select('id, title, price, city, images, category_id, user_id, profiles(full_name, email), categories(id, name)')
       .eq('id', annonce_id)
       .single();
 
-    if (fetchErr || !annonce) {
-      return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
-    }
+    if (fetchErr || !annonce) return NextResponse.json({ error: 'Annonce introuvable' }, { status: 404 });
 
     // Mettre à jour le statut
-    const { error: updateErr } = await admin
-      .from('annonces')
-      .update({ status: newStatus })
-      .eq('id', annonce_id);
+    const { error: updateErr } = await admin.from('annonces').update({ status: newStatus }).eq('id', annonce_id);
+    if (updateErr) return NextResponse.json({ error: 'Erreur mise à jour' }, { status: 500 });
 
-    if (updateErr) {
-      return NextResponse.json({ error: 'Erreur mise à jour' }, { status: 500 });
-    }
-
-    // Email notification vendeur (asynchrone, non bloquant)
     const vendeur = annonce.profiles as any;
+    const categorie = annonce.categories as any;
+
+    // Email vendeur (non bloquant)
     if (vendeur?.email) {
       if (action === 'approve') {
         sendVendeurAnnonceApprouvee({
@@ -81,6 +68,37 @@ export async function PATCH(request: Request) {
           vendeurName: vendeur.full_name || '',
           annonceTitle: annonce.title,
         });
+      }
+    }
+
+    // Alertes abonnés — uniquement si approbation
+    if (action === 'approve' && annonce.category_id) {
+      // Récupérer tous les abonnés à cette catégorie (sauf le vendeur lui-même)
+      const { data: abonnes } = await admin
+        .from('alertes_categories')
+        .select('user_id, profiles(full_name, email)')
+        .eq('category_id', annonce.category_id)
+        .neq('user_id', annonce.user_id); // pas de notif au vendeur
+
+      if (abonnes && abonnes.length > 0) {
+        const images = (annonce.images as string[]) || [];
+        // Envoi en parallèle (non bloquant)
+        Promise.allSettled(
+          abonnes.map((ab: any) => {
+            const p = ab.profiles;
+            if (!p?.email) return Promise.resolve();
+            return sendAlerteNouvelleAnnonce({
+              abonneEmail: p.email,
+              abonneName: p.full_name || '',
+              categorieName: categorie?.name || '',
+              annonceTitle: annonce.title,
+              annonceId: annonce.id,
+              annoncePrice: annonce.price,
+              annonceCity: annonce.city || '',
+              annonceImageUrl: images[0] || '',
+            });
+          })
+        );
       }
     }
 
