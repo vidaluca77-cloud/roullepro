@@ -24,39 +24,47 @@ export default function VerificationSection({
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validation type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      setError('Format non accepté. Utilisez PDF, JPG ou PNG.');
+      return;
+    }
+
+    // Validation taille (5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Fichier trop volumineux (max 5 MB).');
+      return;
+    }
+
     setUploading(true);
     setError('');
     setMessage('');
 
     try {
-      // Upload file to Supabase Storage
+      // Chemin structuré : userId/timestamp.ext (bucket privé)
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `verification-docs/${fileName}`;
+      const filePath = `${userId}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('verification-docs')
-        .upload(filePath, file);
+        .upload(filePath, file, { upsert: false });
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('verification-docs')
-        .getPublicUrl(filePath);
-
-      // Update profile with document URL
+      // Stocker le chemin relatif (pas d'URL publique — bucket privé)
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          justificatif_url: publicUrl,
+          justificatif_url: filePath,
+          statut_verification: 'en_attente',
           date_verification: new Date().toISOString()
         })
         .eq('id', userId);
 
       if (updateError) throw updateError;
 
-      setMessage('Document téléversé avec succès! En attente de vérification.');
+      setMessage('Document envoyé avec succès. Votre demande est en cours de vérification.');
       onStatusChange();
     } catch (err: any) {
       setError(err.message || 'Erreur lors du téléversement');
