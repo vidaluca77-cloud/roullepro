@@ -178,7 +178,6 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                   key={annonce.id}
                   annonce={annonce}
                   isFavorite={false}
-                  onToggleFavorite={() => {}}
                 />
               ))}
             </div>
