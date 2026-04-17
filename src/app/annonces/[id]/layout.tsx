@@ -24,21 +24,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     if (!annonce) {
       return {
-        title: 'Annonce introuvable — RoullePro',
-        description: 'Cette annonce n\'existe pas ou a été supprimée.',
+        title: 'Annonce introuvable',
+        description: "Cette annonce n'existe pas ou a été supprimée.",
       };
     }
 
     const cat = (annonce.categories as any)?.name || '';
     const price = annonce.price ? `${Number(annonce.price).toLocaleString('fr-FR')} €` : 'Prix sur demande';
     const city = annonce.city ? ` — ${annonce.city}` : '';
-    const title = `${annonce.title} | ${cat}${city} — RoullePro`;
+    const title = `${annonce.title} | ${cat}${city}`;
     const description = annonce.description
       ? annonce.description.slice(0, 160)
       : `${annonce.title} · ${cat} · ${price}${city}. Achetez ce véhicule professionnel sur RoullePro.`;
 
-    const images = (annonce.images as string[]) || [];
-    const ogImage = images[0] || `${APP_URL}/og-default.png`;
+    // OG image : route /api/og dynamique
+    const ogImageUrl = `${APP_URL}/api/og?id=${params.id}`;
 
     return {
       title,
@@ -48,7 +48,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         url: `${APP_URL}/annonces/${params.id}`,
         siteName: 'RoullePro',
-        images: [{ url: ogImage, width: 1200, height: 630, alt: annonce.title }],
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: annonce.title,
+          },
+        ],
         type: 'website',
         locale: 'fr_FR',
       },
@@ -56,7 +63,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         card: 'summary_large_image',
         title,
         description,
-        images: [ogImage],
+        images: [ogImageUrl],
       },
       alternates: {
         canonical: `${APP_URL}/annonces/${params.id}`,

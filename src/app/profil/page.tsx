@@ -202,6 +202,9 @@ export default function ProfilPage() {
           <VerificationSection
             userId={user?.id || ''}
             isVerified={profile.is_verified}
+            statut={profile.statut_verification}
+            siret={profile.siret}
+            companyName={profile.company_name}
             onStatusChange={loadProfile}
           />
         </div>
