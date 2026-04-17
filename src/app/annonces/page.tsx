@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import AnnonceCard from '@/components/AnnonceCard';
 
@@ -16,6 +16,8 @@ export default function AnnoncesPage() {
   const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 12;
   const supabase = createClient();
 
   // Charger les catégories en premier (nécessaire pour résoudre les slugs)
@@ -103,7 +105,7 @@ export default function AnnoncesPage() {
 
   const handleCategoryChange = (id: string) => {
     setCategoryId(id);
-    // Mettre à jour l'URL sans rechargement
+    setPage(1);
     const url = new URL(window.location.href);
     if (id) {
       const cat = categories.find(c => c.id === id);
@@ -116,6 +118,7 @@ export default function AnnoncesPage() {
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
+    setPage(1);
     const url = new URL(window.location.href);
     if (value) {
       url.searchParams.set('q', value);
@@ -195,21 +198,58 @@ export default function AnnoncesPage() {
             </Link>
           </div>
         ) : (
-          <>
-            {!categoryId && !search && (
-              <p className="text-sm text-gray-500 mb-4">{filtered.length} annonce{filtered.length > 1 ? 's' : ''}</p>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {filtered.map((a) => (
-                <AnnonceCard
-                  key={a.id}
-                  annonce={a}
-                  isFavorite={favoriteIds.includes(a.id)}
-                  onFavoriteToggle={loadFavorites}
-                />
-              ))}
-            </div>
-          </>
+          (() => {
+            const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+            const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+            return (
+              <>
+                {!categoryId && !search && (
+                  <p className="text-sm text-gray-500 mb-4">{filtered.length} annonce{filtered.length > 1 ? 's' : ''}</p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {paginated.map((a) => (
+                    <AnnonceCard
+                      key={a.id}
+                      annonce={a}
+                      isFavorite={favoriteIds.includes(a.id)}
+                      onFavoriteToggle={loadFavorites}
+                    />
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <button
+                      onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      disabled={page === 1}
+                      className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        onClick={() => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        className={`w-9 h-9 rounded-lg text-sm font-medium transition ${
+                          p === page
+                            ? 'bg-blue-600 text-white'
+                            : 'border hover:bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => { setPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                      disabled={page === totalPages}
+                      className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </>
+            );
+          })()
         )}
       </div>
     </div>

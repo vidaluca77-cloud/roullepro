@@ -40,6 +40,8 @@ export default function AnnonceDetailPage() {
     const { data } = await supabase.from('annonces').select('*, profiles(*), categories(name)').eq('id', id).single();
     if (data) { setAnnonce(data); setVendeur(data.profiles); }
     setLoading(false);
+    // Incrémenter le compteur de vues (silencieux, ne bloque pas l'affichage)
+    supabase.rpc('increment_views', { annonce_id: id }).then(() => {});
   };
 
   if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;

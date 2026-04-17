@@ -163,14 +163,14 @@ export default function DeposerAnnoncePage() {
         city: form.ville,
         images: photoUrls,
         user_id: user.id,
-        status: 'active'
+        status: 'pending'
       });
 
       if (err) {
         console.error('Erreur insertion:', err);
         setError(err.message);
       } else {
-        router.push('/dashboard');
+        router.push('/dashboard?annonce=pending');
       }
     } catch (err: any) {
       setError(err.message);

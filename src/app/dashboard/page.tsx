@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare, ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -111,6 +111,9 @@ export default function DashboardPage() {
     });
   };
 
+  const searchParams = useSearchParams();
+  const showPendingBanner = searchParams.get('annonce') === 'pending';
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -121,6 +124,16 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {showPendingBanner && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-3">
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            <Clock size={20} className="text-amber-600 flex-shrink-0" />
+            <p className="text-amber-800 text-sm font-medium">
+              Votre annonce a été soumise avec succès et est en attente de validation par notre équipe. Elle sera publiée sous 24h.
+            </p>
+          </div>
+        </div>
+      )}
       <div className="bg-blue-600 text-white py-8 px-4">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div><h1 className="text-2xl font-bold">Mon espace</h1><p className="text-blue-100">{profile?.full_name || profile?.email}</p></div>
@@ -260,7 +273,14 @@ export default function DashboardPage() {
                   <div>
                     <h3 className="font-medium">{a.title}</h3>
                     <div className="flex gap-3 text-sm text-gray-500 mt-1">
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${a.status==='active'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}`}>{a.status}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        a.status === 'active' ? 'bg-green-100 text-green-700' :
+                        a.status === 'pending' ? 'bg-amber-100 text-amber-700' :
+                        a.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {a.status === 'active' ? 'Active' : a.status === 'pending' ? 'En attente' : a.status === 'rejected' ? 'Refusée' : a.status}
+                      </span>
                       {a.price && <span className="text-blue-600 font-medium">{Number(a.price).toLocaleString()} EUR</span>}
                       {a.categories?.name && <span>{a.categories.name}</span>}
                     </div>
