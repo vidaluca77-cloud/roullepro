@@ -1,39 +1,68 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Search, MapPin } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import AnnonceCard from '@/components/AnnonceCard';
 
 type Category = { id: string; name: string; slug: string };
 
 export default function AnnoncesPage() {
+  const searchParams = useSearchParams();
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [categorie, setCategorie] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const supabase = createClient();
-    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
+  // Charger les catégories en premier (nécessaire pour résoudre les slugs)
   useEffect(() => {
     loadCategories();
   }, []);
 
-    useEffect(() => {
+  // Dès que les catégories sont chargées, lire les params URL
+  useEffect(() => {
+    if (categories.length === 0) return;
+
+    // Lire ?q= pour la recherche
+    const qParam = searchParams.get('q') || '';
+    setSearch(qParam);
+
+    // Lire ?categorie=slug OU ?categorie=uuid
+    const catParam = searchParams.get('categorie') || '';
+    if (catParam) {
+      // Si c'est un slug (ex: "vtc"), résoudre en UUID
+      const matchBySlug = categories.find(c => c.slug === catParam);
+      // Si c'est déjà un UUID, l'utiliser directement
+      const matchById = categories.find(c => c.id === catParam);
+      setCategoryId(matchBySlug?.id || matchById?.id || '');
+    } else {
+      setCategoryId('');
+    }
+  }, [categories, searchParams]);
+
+  // Charger les favoris
+  useEffect(() => {
     loadFavorites();
   }, []);
 
+  // Recharger les annonces quand categoryId change
   useEffect(() => {
     fetchAnnonces();
-  }, [categorie]);
+  }, [categoryId]);
 
   const loadCategories = async () => {
-    const { data } = await supabase.from('categories').select('id, name, slug').order('name');
+    const { data } = await supabase
+      .from('categories')
+      .select('id, name, slug')
+      .order('sort_order');
     if (data) setCategories(data);
   };
 
-    const loadFavorites = async () => {
+  const loadFavorites = async () => {
     try {
       const response = await fetch('/api/favoris');
       if (response.ok) {
@@ -47,22 +76,60 @@ export default function AnnoncesPage() {
 
   const fetchAnnonces = async () => {
     setLoading(true);
-    let query = supabase.from('annonces').select('*, categories(id, name, slug)').eq('status', 'active').order('created_at', { ascending: false });
-    if (categorie) query = query.eq('category_id', categorie);
+    let query = supabase
+      .from('annonces')
+      .select('*, categories(id, name, slug)')
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (categoryId) query = query.eq('category_id', categoryId);
+
     const { data } = await query;
     setAnnonces(data || []);
     setLoading(false);
   };
 
-  const filtered = annonces.filter((a) =>
-    !search || a.title?.toLowerCase().includes(search.toLowerCase()) || a.marque?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filtre texte côté client (titre + marque + modèle + ville)
+  const filtered = annonces.filter((a) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      a.title?.toLowerCase().includes(q) ||
+      a.marque?.toLowerCase().includes(q) ||
+      a.modele?.toLowerCase().includes(q) ||
+      a.city?.toLowerCase().includes(q)
+    );
+  });
+
+  const handleCategoryChange = (id: string) => {
+    setCategoryId(id);
+    // Mettre à jour l'URL sans rechargement
+    const url = new URL(window.location.href);
+    if (id) {
+      const cat = categories.find(c => c.id === id);
+      url.searchParams.set('categorie', cat?.slug || id);
+    } else {
+      url.searchParams.delete('categorie');
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    const url = new URL(window.location.href);
+    if (value) {
+      url.searchParams.set('q', value);
+    } else {
+      url.searchParams.delete('q');
+    }
+    window.history.replaceState({}, '', url.toString());
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-blue-600 text-white py-10 px-4">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl font-bold mb-1">Vehicules professionnels</h1>
+          <h1 className="text-3xl font-bold mb-1">Véhicules professionnels</h1>
           <p className="text-blue-100">VTC, taxi, ambulance et plus</p>
         </div>
       </div>
@@ -73,37 +140,76 @@ export default function AnnoncesPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder="Rechercher (marque, titre, ville...)"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 border rounded-lg text-sm focus:outline-none focus:border-blue-500"
             />
           </div>
           <select
-            value={categorie}
-            onChange={(e) => setCategorie(e.target.value)}
-            className="border rounded-lg px-3 py-2 text-sm"
+            value={categoryId}
+            onChange={(e) => handleCategoryChange(e.target.value)}
+            className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
           >
-            <option value="">Toutes categories</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <option value="">Toutes catégories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
           </select>
         </div>
 
+        {/* Fil d'Ariane catégorie active */}
+        {categoryId && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-gray-600">
+            <button
+              onClick={() => handleCategoryChange('')}
+              className="text-blue-600 hover:underline"
+            >
+              Toutes catégories
+            </button>
+            <span>›</span>
+            <span className="font-medium text-gray-900">
+              {categories.find(c => c.id === categoryId)?.name}
+            </span>
+            <span className="text-gray-400">({filtered.length} annonce{filtered.length > 1 ? 's' : ''})</span>
+          </div>
+        )}
+
         {loading ? (
-          <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>
+          <div className="flex justify-center py-20">
+            <div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full" />
+          </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-gray-500">Aucune annonce trouvee</p>
-            <Link href="/deposer-annonce" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Deposer une annonce</Link>
+            <p className="text-gray-500 mb-2">Aucune annonce trouvée</p>
+            {(search || categoryId) && (
+              <button
+                onClick={() => { handleSearchChange(''); handleCategoryChange(''); }}
+                className="text-blue-600 hover:underline text-sm mr-4"
+              >
+                Réinitialiser les filtres
+              </button>
+            )}
+            <Link href="/deposer-annonce" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">
+              Déposer une annonce
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((a) => (
-              <Link key={a.id} href={`/annonces/${a.id}`}>
-                <AnnonceCard annonce={a} isFavorite={favoriteIds.includes(a.id)} onFavoriteToggle={loadFavorites} />
-              </Link>
-            ))}
-          </div>
+          <>
+            {!categoryId && !search && (
+              <p className="text-sm text-gray-500 mb-4">{filtered.length} annonce{filtered.length > 1 ? 's' : ''}</p>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filtered.map((a) => (
+                <AnnonceCard
+                  key={a.id}
+                  annonce={a}
+                  isFavorite={favoriteIds.includes(a.id)}
+                  onFavoriteToggle={loadFavorites}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

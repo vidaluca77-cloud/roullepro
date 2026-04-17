@@ -1,13 +1,13 @@
 import Link from 'next/link';
-import { Search, Car, Truck, Heart, Shield, Users, TrendingUp } from 'lucide-react';
+import { Search, Shield, Users, TrendingUp } from 'lucide-react';
 
 const categories = [
-  { name: 'VTC', slug: 'vtc', icon: '\ud83d\ude97', color: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { name: 'Taxi', slug: 'taxi', icon: '\ud83d\ude95', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
-  { name: 'Ambulance / VSL', slug: 'ambulance', icon: '\ud83d\ude91', color: 'bg-red-50 border-red-200 text-red-700' },
-  { name: 'TPMR / PMR', slug: 'tpmr', icon: '\u267f', color: 'bg-green-50 border-green-200 text-green-700' },
-  { name: 'Navette / Minibus', slug: 'navette', icon: '\ud83d\ude8c', color: 'bg-purple-50 border-purple-200 text-purple-700' },
-  { name: 'Materiel', slug: 'materiel', icon: '\ud83d\udd27', color: 'bg-gray-50 border-gray-200 text-gray-700' },
+  { name: 'VTC', slug: 'vtc', icon: '🚗', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { name: 'Taxi', slug: 'taxi', icon: '🚕', color: 'bg-yellow-50 border-yellow-200 text-yellow-700' },
+  { name: 'Ambulance / VSL', slug: 'ambulance', icon: '🚑', color: 'bg-red-50 border-red-200 text-red-700' },
+  { name: 'TPMR / PMR', slug: 'tpmr', icon: '♿', color: 'bg-green-50 border-green-200 text-green-700' },
+  { name: 'Navette / Minibus', slug: 'navette', icon: '🚌', color: 'bg-purple-50 border-purple-200 text-purple-700' },
+  { name: 'Matériel', slug: 'materiel', icon: '🔧', color: 'bg-gray-50 border-gray-200 text-gray-700' },
 ];
 
 export default function HomePage() {
@@ -20,30 +20,38 @@ export default function HomePage() {
             La plateforme des pros du transport
           </h1>
           <p className="text-xl text-blue-100 mb-8">
-            Achetez et vendez vos vehicules VTC, Taxi, Ambulance, TPMR gratuitement
+            Achetez et vendez vos véhicules VTC, Taxi, Ambulance, TPMR gratuitement
           </p>
-          <div className="flex gap-4 max-w-2xl mx-auto">
+
+          {/* Formulaire de recherche — passe ?q= dans l'URL sans JS */}
+          <form
+            action="/annonces"
+            method="get"
+            className="flex gap-4 max-w-2xl mx-auto"
+          >
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3.5 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Rechercher un vehicule..."
-                className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 text-lg"
+                name="q"
+                placeholder="Rechercher un véhicule..."
+                className="w-full pl-10 pr-4 py-3 rounded-lg text-gray-900 text-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
             </div>
-            <Link
-              href="/annonces"
-              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold whitespace-nowrap"
+            <button
+              type="submit"
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition"
             >
               Rechercher
-            </Link>
-          </div>
+            </button>
+          </form>
+
           <div className="mt-6">
             <Link
               href="/deposer-annonce"
-              className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-3 rounded-lg font-bold text-lg inline-block"
+              className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-3 rounded-lg font-bold text-lg inline-block transition"
             >
-              Deposer une annonce gratuite
+              Déposer une annonce gratuite
             </Link>
           </div>
         </div>
@@ -54,22 +62,22 @@ export default function HomePage() {
         <div className="max-w-5xl mx-auto py-8 px-4 grid grid-cols-3 gap-6 text-center">
           <div>
             <div className="text-3xl font-bold text-blue-600">100%</div>
-            <div className="text-gray-600 text-sm">Depot gratuit</div>
+            <div className="text-gray-600 text-sm">Dépôt gratuit</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-blue-600">6</div>
-            <div className="text-gray-600 text-sm">Categories metier</div>
+            <div className="text-gray-600 text-sm">Catégories métier</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-blue-600">Pro</div>
-            <div className="text-gray-600 text-sm">Vendeurs verifies</div>
+            <div className="text-gray-600 text-sm">Vendeurs vérifiés</div>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
+      {/* Catégories */}
       <section className="max-w-5xl mx-auto py-12 px-4">
-        <h2 className="text-2xl font-bold mb-6 text-center">Parcourir par categorie</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Parcourir par catégorie</h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {categories.map((cat) => (
             <Link
@@ -91,17 +99,17 @@ export default function HomePage() {
           <div className="grid md:grid-cols-3 gap-6">
             <div className="bg-white rounded-xl p-6 shadow-sm text-center">
               <Shield className="mx-auto mb-3 text-blue-600" size={32} />
-              <h3 className="font-bold mb-2">Vendeurs verifies</h3>
-              <p className="text-gray-600 text-sm">Chaque vendeur est verifie avec SIRET/KBIS</p>
+              <h3 className="font-bold mb-2">Vendeurs vérifiés</h3>
+              <p className="text-gray-600 text-sm">Chaque vendeur est vérifié avec SIRET / KBIS</p>
             </div>
             <div className="bg-white rounded-xl p-6 shadow-sm text-center">
               <TrendingUp className="mx-auto mb-3 text-green-600" size={32} />
-              <h3 className="font-bold mb-2">Depot 100% gratuit</h3>
+              <h3 className="font-bold mb-2">Dépôt 100% gratuit</h3>
               <p className="text-gray-600 text-sm">Publiez vos annonces sans frais</p>
             </div>
             <div className="bg-white rounded-xl p-6 shadow-sm text-center">
               <Users className="mx-auto mb-3 text-purple-600" size={32} />
-              <h3 className="font-bold mb-2">Communaute pro</h3>
+              <h3 className="font-bold mb-2">Communauté pro</h3>
               <p className="text-gray-600 text-sm">Uniquement des professionnels du transport</p>
             </div>
           </div>
@@ -110,13 +118,13 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="bg-blue-600 text-white py-12 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-4">Vous avez un vehicule a vendre ?</h2>
-        <p className="text-blue-100 mb-6">Deposez votre annonce gratuitement en 5 minutes</p>
+        <h2 className="text-2xl font-bold mb-4">Vous avez un véhicule à vendre ?</h2>
+        <p className="text-blue-100 mb-6">Déposez votre annonce gratuitement en 5 minutes</p>
         <Link
           href="/deposer-annonce"
-          className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-3 rounded-lg font-bold text-lg inline-block"
+          className="bg-white text-blue-700 hover:bg-blue-50 px-8 py-3 rounded-lg font-bold text-lg inline-block transition"
         >
-          Deposer une annonce
+          Déposer une annonce
         </Link>
       </section>
     </div>
