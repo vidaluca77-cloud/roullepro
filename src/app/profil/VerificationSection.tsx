@@ -35,14 +35,14 @@ export default function VerificationSection({
       const filePath = `verification-docs/${fileName}';
 
       const { error: uploadError } = await supabase.storage
-        .from('verification-docs)
+        .from('verification-docs')
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('verification-docs)
+        .from('verification-docs')
         .getPublicUrl(filePath);
 
       // Update profile with document URL
