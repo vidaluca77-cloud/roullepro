@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare, BadgeCheck } from 'lucide-react';
+import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare, BadgeCheck, Eye } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import SignalementModal from '@/components/SignalementModal';
 import ContactModal from '@/components/ContactModal';
@@ -122,8 +122,16 @@ export default function AnnonceDetailPage() {
                 </div>
               </div>
 
-              <div className="text-4xl font-bold text-blue-600 mb-6">
-                {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
+              <div className="flex items-center justify-between mb-6">
+                <div className="text-4xl font-bold text-blue-600">
+                  {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
+                </div>
+                {annonce.views_count > 0 && (
+                  <span className="flex items-center gap-1 text-sm text-gray-400">
+                    <Eye size={14} />
+                    {annonce.views_count} vue{annonce.views_count > 1 ? 's' : ''}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-3 border-t pt-4">
@@ -171,16 +179,19 @@ export default function AnnonceDetailPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-4">Vendeur</h2>
                 <div className="space-y-3">
-                  {vendeur.entreprise && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-lg">{vendeur.entreprise}</span>
-                      {vendeur.date_verification && (
-                        <span className="flex items-center gap-1">
-                          <BadgeCheck size={20} className="text-blue-600" />
-                          <span className="text-sm text-gray-600">Compte vérifié</span>
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Link href={`/profil/${annonce.user_id}`} className="font-semibold text-lg text-gray-900 hover:text-blue-600 transition">
+                      {vendeur.company_name || vendeur.entreprise || vendeur.full_name || 'Vendeur professionnel'}
+                    </Link>
+                    {(vendeur.is_verified || vendeur.date_verification) && (
+                      <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                        <BadgeCheck size={14} />
+                        Vérifié
+                      </span>
+                    )}
+                  </div>
+                  {(vendeur.city || vendeur.ville) && (
+                    <p className="text-sm text-gray-500">{vendeur.city || vendeur.ville}</p>
                   )}
 
                   {/* Bouton Contacter le vendeur */}

@@ -6,9 +6,27 @@ import Footer from '@/components/layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
+
 export const metadata: Metadata = {
-  title: 'RoullePro - Annonces pros du transport',
-  description: 'Plateforme de vente de vehicules professionnels - VTC, Taxi, Ambulance, TPMR',
+  title: {
+    default: 'RoullePro — Marketplace véhicules professionnels',
+    template: '%s | RoullePro',
+  },
+  description: 'Achetez et vendez des véhicules professionnels : VTC, taxi, ambulance, TPMR, navette. La marketplace B2B du transport routier.',
+  metadataBase: new URL(APP_URL),
+  openGraph: {
+    siteName: 'RoullePro',
+    locale: 'fr_FR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
