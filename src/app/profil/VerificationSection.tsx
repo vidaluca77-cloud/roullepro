@@ -2,26 +2,21 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import VerificationBadge from '@/components/VerificationBadge';
-import { Upload, FileText, AlertCircle, CheckCircle } from 'lucide-react';
-
-type VerificationStatus = 'non_verifie' | 'en_attente' | 'verifie' | 'refuse';
+import { Upload, FileText, AlertCircle } from 'lucide-react';
 
 interface VerificationSectionProps {
   userId: string;
-  currentStatus: VerificationStatus;
-  justificatifUrl: string | null;
+  isVerified: boolean;
   onStatusChange: () => void;
 }
 
 export default function VerificationSection({
   userId,
-  currentStatus,
-  justificatifUrl,
+  isVerified,
   onStatusChange
 }: VerificationSectionProps) {
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
-  const [requesting, setRequesting] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
@@ -34,151 +29,90 @@ export default function VerificationSection({
     setMessage('');
 
     try {
+      // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}.${fileExt}`;
+      const fileName = `${userId}-${Date.now()}.${fileExt}`;
+      const filePath = `verification-documents/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('justificatifs')
-        .upload(fileName, file);
+        .from('verification-docs')
+        .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('justificatifs')
-        .getPublicUrl(fileName);
+        .from('verification-docs')
+        .getPublicUrl(filePath);
 
-      await handleVerificationRequest(publicUrl);
-    } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'upload');
-    } finally {
-      setUploading(false);
-    }
-  };
+      // Update profile with document URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          justificatif_url: publicUrl,
+          date_verification: new Date().toISOString()
+        })
+        .eq('id', userId);
 
-  const handleVerificationRequest = async (fileUrl: string) => {
-    setRequesting(true);
-    try {
-      const res = await fetch('/api/verification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ justificatif_url: fileUrl })
-      });
+      if (updateError) throw updateError;
 
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error);
-
-      setMessage('Demande de vérification envoyée avec succès !');
+      setMessage('Document téléversé avec succès! En attente de vérification.');
       onStatusChange();
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de la demande');
+      setError(err.message || 'Erreur lors du téléversement');
     } finally {
-      setRequesting(false);
+      setUploading(false);
     }
   };
 
   return (
     <div className="mt-8 border-t pt-6">
       <div className="flex items-center gap-3 mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">État de vérification</h2>
-        <VerificationBadge status={currentStatus} />
+        <h2 className="text-xl font-semibold text-gray-800">Vérification du compte</h2>
+        <VerificationBadge verified={isVerified} />
       </div>
 
-      {currentStatus === 'non_verifie' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <div className="flex gap-3 mb-4">
-            <AlertCircle className="text-blue-600 flex-shrink-0" size={20} />
-            <div>
-              <p className="text-sm text-blue-900 font-medium mb-2">
-                Obtenez un badge vérifié pour votre compte
-              </p>
-              <p className="text-sm text-blue-700">
-                Uploadez un justificatif d'identité ou Kbis pour demander la vérification de votre profil professionnel.
-              </p>
-            </div>
-          </div>
-          <label className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer transition">
-            <Upload size={18} />
-            {uploading ? 'Upload en cours...' : 'Uploader un justificatif'}
-            <input
-              type="file"
-              className="hidden"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-          </label>
-        </div>
-      )}
-
-      {currentStatus === 'en_attente' && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-          <div className="flex gap-3">
-            <FileText className="text-yellow-600 flex-shrink-0" size={20} />
-            <div>
-              <p className="text-sm text-yellow-900 font-medium mb-2">
-                Demande en cours de traitement
-              </p>
-              <p className="text-sm text-yellow-700">
-                Notre équipe examine votre justificatif. Vous recevrez une réponse sous 48h.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {currentStatus === 'verifie' && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
-          <div className="flex gap-3">
-            <CheckCircle className="text-green-600 flex-shrink-0" size={20} />
-            <div>
-              <p className="text-sm text-green-900 font-medium mb-2">
-                Profil vérifié
-              </p>
-              <p className="text-sm text-green-700">
-                Votre compte est vérifié. Le badge apparait sur vos annonces et votre profil.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {currentStatus === 'refuse' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-          <div className="flex gap-3 mb-4">
-            <AlertCircle className="text-red-600 flex-shrink-0" size={20} />
-            <div>
-              <p className="text-sm text-red-900 font-medium mb-2">
-                Vérification refusée
-              </p>
-              <p className="text-sm text-red-700 mb-4">
-                Le justificatif fourni n'a pas pu être validé. Vous pouvez soumettre un nouveau document.
-              </p>
-            </div>
-          </div>
-          <label className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg cursor-pointer transition">
-            <Upload size={18} />
-            {uploading ? 'Upload en cours...' : 'Uploader un nouveau justificatif'}
-            <input
-              type="file"
-              className="hidden"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-          </label>
+      {message && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+          {message}
         </div>
       )}
 
       {error && (
-        <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex gap-2">
+          <AlertCircle size={18} />
           {error}
         </div>
       )}
 
-      {message && (
-        <div className="mt-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-          {message}
+      {!isVerified && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <h3 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
+            <FileText size={18} />
+            Faites vérifier votre compte professionnel
+          </h3>
+          <p className="text-sm text-blue-700 mb-4">
+            Téléversez un justificatif (KBIS, extrait d'immatriculation) pour obtenir le badge vérifié.
+          </p>
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg cursor-pointer transition">
+            <Upload size={18} />
+            {uploading ? 'Téléversement...' : 'Téléverser un document'}
+            <input
+              type="file"
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileUpload}
+              disabled={uploading}
+              className="hidden"
+            />
+          </label>
+        </div>
+      )}
+
+      {isVerified && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+          <p className="text-green-700 font-medium">
+            ✓ Votre compte est vérifié
+          </p>
         </div>
       )}
     </div>
