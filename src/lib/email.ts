@@ -8,6 +8,7 @@
 
 const RESEND_API = 'https://api.resend.com/emails';
 
+// Domaine vérifié en production ; fallback onboarding@resend.dev pour les tests locaux
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || 'RoullePro <onboarding@resend.dev>';
 
@@ -20,7 +21,20 @@ async function sendEmail(payload: {
   reply_to?: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return; // pas de clé = mode silencieux
+  if (!apiKey) {
+    console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
+    return;
+  }
+
+  const body = {
+    from: FROM_EMAIL,
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+    ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
+  };
+
+  console.log('[Resend] Envoi email →', payload.to, '|', payload.subject, '| from:', FROM_EMAIL);
 
   try {
     const res = await fetch(RESEND_API, {
@@ -29,17 +43,14 @@ async function sendEmail(payload: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: payload.to,
-        subject: payload.subject,
-        html: payload.html,
-        ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
-      }),
+      body: JSON.stringify(body),
     });
 
+    const responseText = await res.text();
     if (!res.ok) {
-      console.error('[Resend] error:', await res.text());
+      console.error('[Resend] Erreur HTTP', res.status, ':', responseText);
+    } else {
+      console.log('[Resend] Email envoyé avec succès :', responseText);
     }
   } catch (err) {
     console.error('[Resend] fetch error:', err);
