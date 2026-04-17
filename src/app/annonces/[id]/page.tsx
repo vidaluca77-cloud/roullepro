@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare }, BadgeCheck from 'lucide-react';
+import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare, BadgeCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import SignalementModal from '@/components/SignalementModal';
 import ContactModal from '@/components/ContactModal';
@@ -170,12 +170,14 @@ export default function AnnonceDetailPage() {
                 <h2 className="text-xl font-bold mb-4">Vendeur</h2>
                 <div className="space-y-3">
                   {vendeur.nom_entreprise && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-lg">{vendeur.nom_entreprise}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-semibold text-lg">{vendeur.nom_entreprise}</span>
                       {vendeur.date_verification && (
-                        <BadgeCheck size={20} className="text-blue-600" />
-                        <span className="text-sm text-gray-600 ml-1">Compte vérifié</span>
-                      )}</span>
+                        <span className="flex items-center gap-1">
+                          <BadgeCheck size={20} className="text-blue-600" />
+                          <span className="text-sm text-gray-600">Compte vérifié</span>
+                        </span>
+                      )}
                     </div>
                   )}
 
