@@ -39,13 +39,13 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Catégories</h3>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><Link href="/annonces?categorie=vtc" className="hover:text-white transition">VTC</Link></li>
-              <li><Link href="/annonces?categorie=taxi" className="hover:text-white transition">Taxi</Link></li>
-              <li><Link href="/annonces?categorie=ambulance" className="hover:text-white transition">Ambulance / VSL</Link></li>
-              <li><Link href="/annonces?categorie=tpmr" className="hover:text-white transition">TPMR / PMR</Link></li>
-              <li><Link href="/annonces?categorie=navette" className="hover:text-white transition">Navette / Minibus</Link></li>
-              <li><Link href="/annonces?categorie=materiel" className="hover:text-white transition">Matériel & Équipement</Link></li>
-              <li><Link href="/annonces?categorie=utilitaire" className="hover:text-white transition">Véhicules utilitaires</Link></li>
+              <li><Link href="/annonces/categorie/vtc" className="hover:text-white transition">VTC</Link></li>
+              <li><Link href="/annonces/categorie/taxi" className="hover:text-white transition">Taxi</Link></li>
+              <li><Link href="/annonces/categorie/ambulance" className="hover:text-white transition">Ambulance / VSL</Link></li>
+              <li><Link href="/annonces/categorie/tpmr" className="hover:text-white transition">TPMR / PMR</Link></li>
+              <li><Link href="/annonces/categorie/navette" className="hover:text-white transition">Navette / Minibus</Link></li>
+              <li><Link href="/annonces/categorie/materiel" className="hover:text-white transition">Matériel & Équipement</Link></li>
+              <li><Link href="/annonces/categorie/utilitaire" className="hover:text-white transition">Véhicules utilitaires</Link></li>
             </ul>
           </div>
         </div>

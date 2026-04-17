@@ -33,16 +33,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Pages catégories
+  // Pages catégories dédiées
   const { data: categories } = await supabase
     .from('categories')
     .select('slug');
 
   const categoryPages: MetadataRoute.Sitemap = (categories || []).map((c) => ({
-    url: `${BASE_URL}/annonces?categorie=${c.slug}`,
+    url: `${BASE_URL}/annonces/categorie/${c.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
-    priority: 0.8,
+    priority: 0.85,
   }));
 
   // Pages annonces actives

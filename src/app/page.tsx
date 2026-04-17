@@ -284,7 +284,7 @@ export default async function HomePage() {
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.slug}
-              href={`/annonces?categorie=${cat.slug}`}
+              href={`/annonces/categorie/${cat.slug}`}
               className={`group relative flex flex-col gap-3 p-5 rounded-2xl border-2 ${cat.borderColor} ${cat.lightBg} hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${cat.bg} bg-opacity-10 ${cat.textColor}`}>

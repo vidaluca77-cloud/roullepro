@@ -1,280 +1,167 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { createClient } from '@supabase/supabase-js';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight, MessageSquare, BadgeCheck, Eye } from 'lucide-react';
-import { createClient } from '@/lib/supabase/client';
-import SignalementModal from '@/components/SignalementModal';
-import ContactModal from '@/components/ContactModal';
+import AnnonceDetail from './AnnonceDetail';
 
-export default function AnnonceDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const [annonce, setAnnonce] = useState<any>(null);
-  const [vendeur, setVendeur] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedImg, setSelectedImg] = useState(0);
-  const [contactOpen, setContactOpen] = useState(false);
-  const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [signalementOpen, setSignalementOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [currentProfile, setCurrentProfile] = useState<any>(null);
-  const supabase = createClient();
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
-  useEffect(() => {
-    if (params.id) fetchAnnonce(params.id as string);
-    fetchCurrentUser();
-  }, [params.id]);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
-  const fetchCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setCurrentUser(user);
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-      setCurrentProfile(profile);
-    }
-  };
+async function getAnnonce(id: string) {
+  const supabase = getSupabase();
+  const { data } = await supabase
+    .from('annonces')
+    .select('*, profiles(*), categories(name, slug)')
+    .eq('id', id)
+    .eq('status', 'active')
+    .single();
+  return data;
+}
 
-  const fetchAnnonce = async (id: string) => {
-    const { data } = await supabase.from('annonces').select('*, profiles(*), categories(name)').eq('id', id).single();
-    if (data) { setAnnonce(data); setVendeur(data.profiles); }
-    setLoading(false);
-    // Incrémenter le compteur de vues (silencieux, ne bloque pas l'affichage)
-    supabase.rpc('increment_views', { annonce_id: id }).then(() => {});
-  };
+interface PageProps {
+  params: { id: string };
+}
 
-  if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-10 w-10 border-b-2 border-blue-600 rounded-full"></div></div>;
-  if (!annonce) return <div className="text-center py-20"><p className="text-gray-500">Annonce introuvable</p><Link href="/annonces" className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg">Retour</Link></div>;
+export default async function AnnonceDetailPage({ params }: PageProps) {
+  const annonce = await getAnnonce(params.id);
 
+  if (!annonce) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-gray-500">Annonce introuvable</p>
+        <Link
+          href="/annonces"
+          className="mt-4 inline-block bg-blue-600 text-white px-6 py-2 rounded-lg"
+        >
+          Retour aux annonces
+        </Link>
+      </div>
+    );
+  }
+
+  const vendeur = annonce.profiles || null;
   const images = annonce.images || annonce.photos || [];
-  const isOwner = currentUser?.id === annonce.user_id;
-  const currentUserName = currentProfile ? (currentProfile.full_name || `${currentProfile.prenom || ''} ${currentProfile.nom || ''}`.trim()) : '';
-  const currentUserEmail = currentUser?.email || '';
+  const catName = annonce.categories?.name || '';
+  const catSlug = annonce.categories?.slug || '';
+  const price = annonce.price ? Number(annonce.price) : null;
+  const city = annonce.city || annonce.ville || '';
 
-  const nextImage = () => setSelectedImg((prev) => (prev + 1) % images.length);
-  const prevImage = () => setSelectedImg((prev) => (prev - 1 + images.length) % images.length);
+  /* ── JSON-LD structured data ── */
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      // BreadcrumbList
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: 'Accueil',
+            item: APP_URL,
+          },
+          {
+            '@type': 'ListItem',
+            position: 2,
+            name: 'Annonces',
+            item: `${APP_URL}/annonces`,
+          },
+          ...(catName && catSlug
+            ? [
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: catName,
+                  item: `${APP_URL}/annonces/${catSlug}`,
+                },
+                {
+                  '@type': 'ListItem',
+                  position: 4,
+                  name: annonce.title,
+                  item: `${APP_URL}/annonces/${annonce.id}`,
+                },
+              ]
+            : [
+                {
+                  '@type': 'ListItem',
+                  position: 3,
+                  name: annonce.title,
+                  item: `${APP_URL}/annonces/${annonce.id}`,
+                },
+              ]),
+        ],
+      },
+      // Product
+      {
+        '@type': 'Product',
+        name: annonce.title,
+        description: annonce.description || `${annonce.title} — ${catName}${city ? ` à ${city}` : ''}`,
+        url: `${APP_URL}/annonces/${annonce.id}`,
+        ...(images.length > 0 ? { image: images } : {}),
+        ...(catName ? { category: catName } : {}),
+        ...(annonce.marque ? { brand: { '@type': 'Brand', name: annonce.marque } } : {}),
+        additionalProperty: [
+          ...(annonce.annee
+            ? [{ '@type': 'PropertyValue', name: 'Année', value: String(annonce.annee) }]
+            : []),
+          ...(annonce.kilometrage
+            ? [{ '@type': 'PropertyValue', name: 'Kilométrage', value: `${Number(annonce.kilometrage).toLocaleString('fr-FR')} km` }]
+            : []),
+          ...(annonce.modele
+            ? [{ '@type': 'PropertyValue', name: 'Modèle', value: annonce.modele }]
+            : []),
+          ...(city
+            ? [{ '@type': 'PropertyValue', name: 'Localisation', value: city }]
+            : []),
+        ],
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'EUR',
+          ...(price
+            ? { price: price.toFixed(2), priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] }
+            : { availability: 'https://schema.org/InStock' }),
+          availability: 'https://schema.org/InStock',
+          url: `${APP_URL}/annonces/${annonce.id}`,
+          seller: vendeur
+            ? {
+                '@type': 'Organization',
+                name: vendeur.company_name || vendeur.entreprise || vendeur.full_name || 'Vendeur professionnel',
+                ...(city ? { address: { '@type': 'PostalAddress', addressLocality: city, addressCountry: 'FR' } } : {}),
+              }
+            : undefined,
+        },
+      },
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-4">
-          <ArrowLeft size={20} />Retour
-        </button>
+    <>
+      {/* JSON-LD injecté dans le <head> via script tag */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Carrousel de photos */}
-          <div className="space-y-4">
-            <div className="relative bg-gray-100 rounded-xl overflow-hidden" style={{ height: '500px' }}>
-              {images.length > 0 ? (
-                <>
-                  <img
-                    src={images[selectedImg]}
-                    alt={annonce.title}
-                    className="w-full h-full object-contain"
-                  />
-                  {images.length > 1 && (
-                    <>
-                      <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition">
-                        <ChevronLeft size={24} className="text-gray-800" />
-                      </button>
-                      <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-3 rounded-full shadow-lg transition">
-                        <ChevronRight size={24} className="text-gray-800" />
-                      </button>
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 px-3 py-1 rounded-full text-white text-sm">
-                        {selectedImg + 1} / {images.length}
-                      </div>
-                    </>
-                  )}
-                </>
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-gray-400">
-                  <span>Pas de photo</span>
-                </div>
-              )}
-            </div>
-            {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {images.map((img: string, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedImg(idx)}
-                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition ${
-                      selectedImg === idx ? 'border-blue-600 shadow-lg' : 'border-gray-300 hover:border-blue-400'
-                    }`}
-                  >
-                    <img src={img} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Détails de l'annonce */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full mb-2">
-                    {annonce.categories?.name || annonce.categorie}
-                  </span>
-                  <h1 className="text-3xl font-bold text-gray-900">{annonce.title}</h1>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between mb-6">
-                <div className="text-4xl font-bold text-blue-600">
-                  {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
-                </div>
-                {annonce.views_count > 0 && (
-                  <span className="flex items-center gap-1 text-sm text-gray-400">
-                    <Eye size={14} />
-                    {annonce.views_count} vue{annonce.views_count > 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-3 border-t pt-4">
-                {annonce.marque && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Marque</span>
-                    <span className="font-semibold">{annonce.marque}</span>
-                  </div>
-                )}
-                {annonce.modele && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Modèle</span>
-                    <span className="font-semibold">{annonce.modele}</span>
-                  </div>
-                )}
-                {annonce.annee && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Année</span>
-                    <span className="font-semibold">{annonce.annee}</span>
-                  </div>
-                )}
-                {annonce.kilometrage && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Kilométrage</span>
-                    <span className="font-semibold">{Number(annonce.kilometrage).toLocaleString()} km</span>
-                  </div>
-                )}
-                {(annonce.city || annonce.ville) && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Localisation</span>
-                    <span className="font-semibold">{annonce.city || annonce.ville}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {annonce.description && (
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-3">Description</h2>
-                <p className="text-gray-700 whitespace-pre-line">{annonce.description}</p>
-              </div>
-            )}
-
-            {vendeur && (
-              <div className="bg-white rounded-xl p-6 shadow-sm">
-                <h2 className="text-xl font-bold mb-4">Vendeur</h2>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link href={`/profil/${annonce.user_id}`} className="font-semibold text-lg text-gray-900 hover:text-blue-600 transition">
-                      {vendeur.company_name || vendeur.entreprise || vendeur.full_name || 'Vendeur professionnel'}
-                    </Link>
-                    {(vendeur.is_verified || vendeur.date_verification) && (
-                      <span className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full text-xs font-medium">
-                        <BadgeCheck size={14} />
-                        Vérifié
-                      </span>
-                    )}
-                  </div>
-                  {(vendeur.city || vendeur.ville) && (
-                    <p className="text-sm text-gray-500">{vendeur.city || vendeur.ville}</p>
-                  )}
-
-                  {/* Bouton Contacter le vendeur */}
-                  {!isOwner ? (
-                    <button
-                      onClick={() => setContactModalOpen(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare size={18} />
-                      Contacter le vendeur
-                    </button>
-                  ) : (
-                    <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-lg font-medium text-center text-sm">
-                      Votre annonce
-                    </div>
-                  )}
-
-                  {/* Afficher le contact direct */}
-                  <button
-                    onClick={() => setContactOpen(!contactOpen)}
-                    className="w-full border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded-lg font-medium transition text-sm"
-                  >
-                    {contactOpen ? 'Masquer le contact' : 'Afficher le contact direct'}
-                  </button>
-                  {contactOpen && (
-                    <div className="space-y-2 pt-3 border-t">
-                      {vendeur.telephone && (
-                        <a href={`tel:${vendeur.telephone}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
-                          <Phone size={18} />
-                          <span>{vendeur.telephone}</span>
-                        </a>
-                      )}
-                      {vendeur.email && (
-                        <a href={`mailto:${vendeur.email}`} className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
-                          <Mail size={18} />
-                          <span>{vendeur.email}</span>
-                        </a>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Bouton Signaler cette annonce */}
-            <div className="bg-white rounded-xl p-6 shadow-sm">
-              <button
-                onClick={() => setSignalementOpen(true)}
-                className="w-full border-2 border-red-500 text-red-600 hover:bg-red-50 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/>
-                  <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                Signaler cette annonce
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Contenu statique SSR visible par Google */}
+      <div className="sr-only">
+        <h1>{annonce.title}</h1>
+        {catName && <p>Catégorie : {catName}</p>}
+        {price && <p>Prix : {price.toLocaleString('fr-FR')} €</p>}
+        {city && <p>Localisation : {city}</p>}
+        {annonce.marque && <p>Marque : {annonce.marque}</p>}
+        {annonce.modele && <p>Modèle : {annonce.modele}</p>}
+        {annonce.annee && <p>Année : {annonce.annee}</p>}
+        {annonce.kilometrage && <p>Kilométrage : {Number(annonce.kilometrage).toLocaleString('fr-FR')} km</p>}
+        {annonce.description && <p>{annonce.description}</p>}
       </div>
 
-      <SignalementModal
-        annonceId={params.id as string}
-        isOpen={signalementOpen}
-        onClose={() => setSignalementOpen(false)}
-      />
-
-      <ContactModal
-        annonceId={params.id as string}
-        annonceTitre={annonce.title || annonce.titre || ''}
-        isOpen={contactModalOpen}
-        onClose={() => setContactModalOpen(false)}
-        currentUserName={currentUserName}
-        currentUserEmail={currentUserEmail}
-        isOwner={isOwner}
-                annonceDetails={{
-                            price: annonce.price,
-                            marque: annonce.marque,
-                            modele: annonce.modele,
-                            categorie: annonce.categories?.name || annonce.categorie,
-                          }}
-      />
-    </div>
+      {/* Composant client pour les interactions */}
+      <AnnonceDetail annonce={annonce} vendeur={vendeur} />
+    </>
   );
 }
