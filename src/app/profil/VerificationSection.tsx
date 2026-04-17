@@ -69,7 +69,7 @@ export default function VerificationSection({
     <div className="mt-8 border-t pt-6">
       <div className="flex items-center gap-3 mb-4">
         <h2 className="text-xl font-semibold text-gray-800">Vérification du compte</h2>
-        <VerificationBadge status={isVerified ? 'verifie' : 'non_verifie' />
+        <VerificationBadge status={isVerified ? 'verifie' : 'non_verifie'} />
       </div>
 
       {message && (
