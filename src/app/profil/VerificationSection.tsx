@@ -32,7 +32,7 @@ export default function VerificationSection({
       // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}-${Date.now()}.${fileExt}`;
-      const filePath = `verification-docs/${fileName}';
+      const filePath = `verification-docs/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('verification-docs')
