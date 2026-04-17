@@ -170,6 +170,22 @@ export default function DeposerAnnoncePage() {
         console.error('Erreur insertion:', err);
         setError(err.message);
       } else {
+        // Notifier l'admin par email (non bloquant)
+        const { data: inserted } = await supabase
+          .from('annonces')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        if (inserted?.id) {
+          fetch('/api/annonces', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ annonce_id: inserted.id }),
+          }).catch(() => {}); // silencieux
+        }
         router.push('/dashboard?annonce=pending');
       }
     } catch (err: any) {

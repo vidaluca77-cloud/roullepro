@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { sendVendeurNotification } from '@/lib/email';
 
 // Client admin avec service role (bypass RLS)
 const getAdminClient = () =>
@@ -8,105 +9,6 @@ const getAdminClient = () =>
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
-
-/**
- * Envoie un email de notification au vendeur via Resend.
- * Silencieux si RESEND_API_KEY n'est pas configuré (ne bloque pas le message).
- */
-async function sendVendeurNotification({
-  vendeurEmail,
-  vendeurName,
-  senderName,
-  senderEmail,
-  annonceTitle,
-  annonceId,
-  messageContent,
-}: {
-  vendeurEmail: string;
-  vendeurName: string;
-  senderName: string;
-  senderEmail: string;
-  annonceTitle: string;
-  annonceId: string;
-  messageContent: string;
-}) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) return; // Pas de clé = mode silencieux
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
-  const dashboardUrl = `${appUrl}/dashboard`;
-
-  const htmlBody = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      <div style="background: #2563eb; padding: 24px 32px;">
-        <h1 style="color: white; margin: 0; font-size: 20px;">RoullePro</h1>
-      </div>
-
-      <div style="padding: 32px;">
-        <h2 style="color: #1f2937; margin-top: 0;">Nouveau message reçu</h2>
-
-        <p style="color: #6b7280; font-size: 15px;">
-          Bonjour ${vendeurName || 'cher vendeur'},<br><br>
-          Vous avez reçu un nouveau message concernant votre annonce
-          <strong style="color: #1f2937;">${annonceTitle}</strong>.
-        </p>
-
-        <div style="background: #f3f4f6; border-radius: 8px; padding: 20px; margin: 24px 0;">
-          <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">
-            De
-          </p>
-          <p style="margin: 0; font-weight: 600; color: #1f2937;">${senderName}</p>
-          <a href="mailto:${senderEmail}" style="color: #2563eb; font-size: 14px;">${senderEmail}</a>
-
-          <p style="margin: 16px 0 8px 0; font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">
-            Message
-          </p>
-          <p style="margin: 0; color: #374151; white-space: pre-line; line-height: 1.6; font-size: 15px;">
-            ${messageContent.replace(/\n/g, '<br>')}
-          </p>
-        </div>
-
-        <div style="text-align: center; margin: 32px 0;">
-          <a
-            href="${dashboardUrl}"
-            style="background: #2563eb; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;"
-          >
-            Répondre depuis mon espace
-          </a>
-        </div>
-
-        <p style="color: #9ca3af; font-size: 13px; text-align: center; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-          Vous pouvez répondre directement à cet email ou passer par votre
-          <a href="${dashboardUrl}" style="color: #2563eb;">dashboard RoullePro</a>.
-        </p>
-      </div>
-    </div>
-  `;
-
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'RoullePro <notifications@roullepro.fr>',
-        to: vendeurEmail,
-        reply_to: senderEmail,
-        subject: `[RoullePro] Nouveau message pour "${annonceTitle}"`,
-        html: htmlBody,
-      }),
-    });
-
-    if (!res.ok) {
-      console.error('Resend error:', await res.text());
-    }
-  } catch (err) {
-    // Ne jamais bloquer l'envoi du message si l'email échoue
-    console.error('Erreur envoi email notification:', err);
-  }
-}
 
 export async function POST(request: Request) {
   try {

@@ -38,7 +38,21 @@ export default function AdminPage() {
   };
 
   const updateStatut = async (id: string, status: string) => {
-    await supabase.from('annonces').update({ status }).eq('id', id);
+    // Pour approve/reject : passer par l'API route qui déclenche les emails
+    if (status === 'active' || status === 'rejected') {
+      const action = status === 'active' ? 'approve' : 'reject';
+      const res = await fetch('/api/admin/moderation', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ annonce_id: id, action }),
+      });
+      if (!res.ok) {
+        console.error('Erreur moderation API:', await res.text());
+      }
+    } else {
+      // Pour suspended / autres statuts : Supabase direct
+      await supabase.from('annonces').update({ status }).eq('id', id);
+    }
     setAnnonces(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   };
 
