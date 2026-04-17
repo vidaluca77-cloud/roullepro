@@ -22,8 +22,12 @@ export default function RegisterPage() {
     }
     setSuccess(true); setLoading(false);
   };
-
-  if (success) return (
+        // Le profil est créé automatiquement par le trigger. On met à jour avec les infos supplémentaires.
+        await supabase.from('profiles').update({ 
+          full_name: `${form.prenom} ${form.nom}`.trim(), 
+          phone: form.telephone, 
+          entreprise: form.entreprise 
+        }).eq('id', data.user.id);  if (success) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
         <h2 className="text-2xl font-bold text-green-600">Inscription reussie !</h2>
