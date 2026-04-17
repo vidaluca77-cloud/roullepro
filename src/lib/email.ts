@@ -273,7 +273,69 @@ export async function sendVendeurAnnonceRefusee({
 }
 
 /* ─────────────────────────────────────────
-   5. Alerte — nouvelle annonce dans une catégorie suivie
+   5. Notification acheteur — réponse du vendeur
+───────────────────────────────────────── */
+export async function sendReplyNotification({
+  buyerEmail,
+  buyerName,
+  vendeurName,
+  annonceTitle,
+  annonceId,
+  replyContent,
+}: {
+  buyerEmail: string;
+  buyerName: string;
+  vendeurName: string;
+  annonceTitle: string;
+  annonceId: string;
+  replyContent: string;
+}) {
+  const annonceUrl = `${APP_URL}/annonces/${annonceId}`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%); padding: 28px 32px;">
+        <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">RoullePro</h1>
+        <p style="color: rgba(255,255,255,0.75); margin: 4px 0 0; font-size: 13px;">Marketplace B2B du transport routier</p>
+      </div>
+      <div style="padding: 32px;">
+        <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 0 8px 8px 0; padding: 14px 18px; margin-bottom: 24px;">
+          <p style="margin: 0; color: #1d4ed8; font-weight: 600; font-size: 14px;">
+            💬 Le vendeur a répondu à votre message
+          </p>
+        </div>
+        <p style="color: #6b7280; font-size: 15px; margin-top: 0;">
+          Bonjour ${buyerName || ''},<br><br>
+          <strong style="color: #1f2937;">${vendeurName}</strong> a répondu à votre message
+          concernant l'annonce <strong style="color: #1f2937;">${annonceTitle}</strong>.
+        </p>
+        <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 24px 0; background: #f9fafb;">
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">Réponse de ${vendeurName}</p>
+          <p style="margin: 0; color: #374151; white-space: pre-line; line-height: 1.7; font-size: 15px;">${replyContent.replace(/\n/g, '<br>')}</p>
+        </div>
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${annonceUrl}"
+            style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 10px;
+                   text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+            Voir l'annonce →
+          </a>
+        </div>
+        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0; border-top: 1px solid #f3f4f6; padding-top: 20px;">
+          Vous pouvez contacter le vendeur directement depuis la page de l'annonce sur RoullePro.
+        </p>
+      </div>
+    </div>
+  `;
+
+  await sendEmail({
+    to: buyerEmail,
+    subject: `[RoullePro] ${vendeurName} a répondu à votre message — "${annonceTitle}"`,
+    html,
+  });
+}
+
+/* ─────────────────────────────────────────
+   6. Alerte — nouvelle annonce dans une catégorie suivie
 ───────────────────────────────────────── */
 export async function sendAlerteNouvelleAnnonce({
   abonneEmail,

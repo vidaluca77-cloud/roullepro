@@ -123,6 +123,7 @@ export async function GET() {
       .from('messages')
       .select('*, annonces(id, title)')
       .in('annonce_id', annonceIds)
+      .is('thread_id', null)  // uniquement les messages root (pas les réponses vendeur)
       .order('created_at', { ascending: false });
 
     if (error) {

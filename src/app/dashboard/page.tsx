@@ -5,10 +5,11 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import StarRating from '@/components/StarRating';
 import AlertesCategoriesToggle from '@/components/AlertesCategoriesToggle';
+import ConversationThread from '@/components/ConversationThread';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
-  ChevronDown, ChevronUp, Clock, TrendingUp, Bell,
-  BadgeCheck, BarChart2, Mail,
+  Clock, TrendingUp, Bell,
+  BadgeCheck, BarChart2, Mail, Users,
 } from 'lucide-react';
 
 type Category = { id: string; name: string; slug: string };
@@ -23,7 +24,7 @@ function DashboardPageInner() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendeurStats, setVendeurStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [expandedMessages, setExpandedMessages] = useState<string[]>([]);
+  const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview'|'annonces'|'messages'|'favoris'|'alertes'>('overview');
 
   const loadFavoris = useCallback(async () => {
@@ -90,21 +91,15 @@ function DashboardPageInner() {
   };
   const signOut = async () => { await supabase.auth.signOut(); router.push('/'); };
 
-  const toggleMessage = (id: string) =>
-    setExpandedMessages(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
-
-  const markAsRead = async (id: string) => {
-    await fetch(`/api/messages/${id}`, { method: 'PATCH' });
-    loadMessages();
-  };
   const deleteMessage = async (id: string) => {
-    if (!confirm('Supprimer ce message ?')) return;
+    if (!confirm('Supprimer cette conversation ?')) return;
     await fetch(`/api/messages/${id}`, { method: 'DELETE' });
     setMessages(prev => prev.filter(m => m.id !== id));
+    if (selectedThreadId === id) setSelectedThreadId(null);
   };
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', {
-    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
+
+  // Grouper les messages par thread (root message uniquement pour la liste)
+  const rootMessages = messages.filter((m: any) => !m.thread_id);
 
   const searchParams = useSearchParams();
   const showPendingBanner = searchParams.get('annonce') === 'pending';
@@ -113,7 +108,7 @@ function DashboardPageInner() {
   const totalVues = annonces.reduce((s, a) => s + (a.views_count || 0), 0);
   const annoncesActives = annonces.filter(a => a.status === 'active');
   const annoncesPending = annonces.filter(a => a.status === 'pending');
-  const messagesNonLus = messages.filter(m => !m.is_read).length;
+  const messagesNonLus = messages.filter((m: any) => !m.is_read && !m.thread_id && !m.is_seller_reply).length;
 
   if (loading) return (
     <div className="flex justify-center py-20">
@@ -429,52 +424,108 @@ function DashboardPageInner() {
 
         {/* ── Onglet Messages ── */}
         {activeTab === 'messages' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y">
-            {messages.length === 0 ? (
-              <div className="p-10 text-center text-gray-400">Aucun message reçu</div>
-            ) : messages.map((msg: any) => (
-              <div key={msg.id} className="p-4">
-                <button onClick={() => { toggleMessage(msg.id); if (!msg.is_read) markAsRead(msg.id); }}
-                  className="w-full flex items-start justify-between gap-4 text-left">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900">{msg.sender_name}</span>
-                      <a href={`mailto:${msg.sender_email}`} className="text-blue-600 text-sm hover:underline" onClick={e => e.stopPropagation()}>
-                        {msg.sender_email}
-                      </a>
-                      {!msg.is_read && <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Non lu</span>}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      Pour : <Link href={`/annonces/${msg.annonce_id}`} className="hover:underline" onClick={e => e.stopPropagation()}>{msg.annonces?.title || 'Annonce'}</Link>
-                      {' · '}{formatDate(msg.created_at)}
-                    </p>
-                    {!expandedMessages.includes(msg.id) && (
-                      <p className="text-gray-600 text-sm mt-1 truncate">{msg.content}</p>
-                    )}
-                  </div>
-                  <span className="text-gray-400 mt-1 flex-shrink-0">
-                    {expandedMessages.includes(msg.id) ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </span>
-                </button>
-                {expandedMessages.includes(msg.id) && (
-                  <div className="mt-3 ml-0">
-                    <div className="bg-gray-50 rounded-xl p-4 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                      {msg.content}
-                    </div>
-                    <div className="flex gap-2 mt-3">
-                      <a href={`mailto:${msg.sender_email}?subject=Re: ${msg.annonces?.title || 'Annonce'}&body=%0A%0A--- Message original ---%0A${encodeURIComponent(msg.content)}`}
-                        className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
-                        <Mail size={14} /> Répondre par email
-                      </a>
-                      <button onClick={() => deleteMessage(msg.id)}
-                        className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 border border-red-200 rounded-lg transition">
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-                )}
+          <div className="flex gap-4" style={{ minHeight: '520px' }}>
+            {/* Liste des conversations */}
+            <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col ${
+              selectedThreadId ? 'hidden lg:flex lg:w-80 flex-shrink-0' : 'flex-1'
+            }`}>
+              <div className="px-5 py-4 border-b flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <Users size={16} className="text-blue-600" />
+                  Conversations
+                </h3>
+                <span className="text-sm text-gray-400">{rootMessages.length}</span>
               </div>
-            ))}
+
+              {rootMessages.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-10 text-center">
+                  <Mail size={32} className="text-gray-200 mb-3" />
+                  <p className="text-gray-400 text-sm">Aucun message reçu</p>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto divide-y">
+                  {rootMessages.map((msg: any) => {
+                    const isSelected = selectedThreadId === msg.id;
+                    const isUnread = !msg.is_read;
+                    return (
+                      <button
+                        key={msg.id}
+                        onClick={() => setSelectedThreadId(msg.id)}
+                        className={`w-full text-left px-4 py-3.5 transition flex items-start gap-3 ${
+                          isSelected
+                            ? 'bg-blue-50 border-l-2 border-l-blue-600'
+                            : 'hover:bg-gray-50 border-l-2 border-l-transparent'
+                        }`}
+                      >
+                        {/* Avatar */}
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0 text-white text-sm font-bold">
+                          {msg.sender_name?.charAt(0)?.toUpperCase() || '?'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className={`text-sm truncate ${isUnread ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                              {msg.sender_name}
+                            </span>
+                            <span className="text-[10px] text-gray-400 flex-shrink-0">
+                              {new Date(msg.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 truncate mt-0.5">{msg.annonces?.title || 'Annonce'}</p>
+                          <p className={`text-xs truncate mt-0.5 ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>
+                            {msg.content}
+                          </p>
+                          {isUnread && (
+                            <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mt-1" />
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Thread de conversation */}
+            {selectedThreadId ? (
+              <div className="flex-1 min-w-0">
+                {(() => {
+                  const msg = rootMessages.find((m: any) => m.id === selectedThreadId);
+                  if (!msg) return null;
+                  return (
+                    <ConversationThread
+                      threadId={selectedThreadId}
+                      buyerName={msg.sender_name}
+                      buyerEmail={msg.sender_email}
+                      annonceTitle={msg.annonces?.title || 'Annonce'}
+                      annonceId={msg.annonce_id}
+                      onClose={() => setSelectedThreadId(null)}
+                      onReplySent={loadMessages}
+                    />
+                  );
+                })()}
+                {/* Bouton supprimer en bas du thread */}
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={() => {
+                      const msg = rootMessages.find((m: any) => m.id === selectedThreadId);
+                      if (msg) deleteMessage(msg.id);
+                    }}
+                    className="text-xs text-red-500 hover:text-red-700 hover:underline"
+                  >
+                    Supprimer cette conversation
+                  </button>
+                </div>
+              </div>
+            ) : (
+              rootMessages.length > 0 && (
+                <div className="hidden lg:flex flex-1 items-center justify-center text-gray-300 bg-white rounded-2xl border border-gray-100">
+                  <div className="text-center">
+                    <MessageSquare size={40} className="mx-auto mb-3 opacity-30" />
+                    <p className="text-sm">Sélectionnez une conversation</p>
+                  </div>
+                </div>
+              )
+            )}
           </div>
         )}
 
