@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Check, X, Eye, Clock, AlertCircle } from 'lucide-react';
+import { Shield, Check, X, Eye, Clock, AlertCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -62,6 +62,10 @@ export default function AdminPage() {
     setAnnonces(prev => prev.filter(a => a.id !== id));
   };
 
+  const downloadCsv = (type: 'annonces' | 'users' | 'notations') => {
+    window.open(`/api/admin/export?type=${type}`, '_blank');
+  };
+
   const pendingAnnonces = annonces.filter(a => a.status === 'pending');
   const allAnnonces = annonces;
 
@@ -102,6 +106,20 @@ export default function AdminPage() {
             <p className="text-3xl font-bold text-blue-600">{users.length}</p>
             <p className="text-gray-500">Utilisateurs</p>
           </div>
+        </div>
+
+        {/* Export CSV */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <span className="text-sm text-gray-500 flex items-center gap-1 mr-2"><Download size={14} /> Exporter :</span>
+          <button onClick={() => downloadCsv('annonces')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition">
+            <Download size={13} /> Annonces CSV
+          </button>
+          <button onClick={() => downloadCsv('users')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition">
+            <Download size={13} /> Utilisateurs CSV
+          </button>
+          <button onClick={() => downloadCsv('notations')} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition">
+            <Download size={13} /> Avis CSV
+          </button>
         </div>
 
         {/* Tabs */}
