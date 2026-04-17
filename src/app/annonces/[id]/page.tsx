@@ -169,9 +169,9 @@ export default function AnnonceDetailPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-4">Vendeur</h2>
                 <div className="space-y-3">
-                  {vendeur.company_name && (
+                  {vendeur.entreprise && (
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-lg">{vendeur.company_name}</span>
+                      <span className="font-semibold text-lg">{vendeur.entreprise}</span>
                       {vendeur.date_verification && (
                         <span className="flex items-center gap-1">
                           <BadgeCheck size={20} className="text-blue-600" />
