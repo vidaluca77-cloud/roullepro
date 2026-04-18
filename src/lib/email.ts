@@ -1,18 +1,26 @@
 /**
- * Helpers d'envoi d'email via Resend.
+ * Helpers d'envoi d'email via SDK Resend officiel.
  * Silencieux si RESEND_API_KEY n'est pas configuré.
  *
  * FROM_EMAIL : utilise RESEND_FROM_EMAIL en priorité (domaine vérifié),
  * sinon tombe sur onboarding@resend.dev (domaine de test Resend, fonctionnel sans vérification).
  */
 
-const RESEND_API = 'https://api.resend.com/emails';
+import { Resend } from 'resend';
 
-// Domaine vérifié en production ; fallback onboarding@resend.dev pour les tests locaux
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || 'RoullePro <onboarding@resend.dev>';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
+
+function getResendClient(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
+    return null;
+  }
+  return new Resend(apiKey);
+}
 
 async function sendEmail(payload: {
   to: string;
@@ -20,40 +28,21 @@ async function sendEmail(payload: {
   html: string;
   reply_to?: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
-    return;
-  }
+  const resend = getResendClient();
+  if (!resend) return;
 
-  const body = {
+  console.log('[Resend] Envoi email →', payload.to, '|', payload.subject);
+
+  const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: payload.to,
     subject: payload.subject,
     html: payload.html,
-    ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
-  };
+    ...(payload.reply_to ? { replyTo: payload.reply_to } : {}),
+  });
 
-  console.log('[Resend] Envoi email →', payload.to, '|', payload.subject, '| from:', FROM_EMAIL);
-
-  try {
-    const res = await fetch(RESEND_API, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    const responseText = await res.text();
-    if (!res.ok) {
-      console.error('[Resend] Erreur HTTP', res.status, ':', responseText);
-    } else {
-      console.log('[Resend] Email envoyé avec succès :', responseText);
-    }
-  } catch (err) {
-    console.error('[Resend] fetch error:', err);
+  if (error) {
+    console.error('[Resend] Erreur envoi email:', error.message);
   }
 }
 
@@ -140,7 +129,7 @@ export async function sendAdminNewAnnoncePending({
   city?: string;
 }) {
   const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail) return; // pas d'admin email configuré = silencieux
+  if (!adminEmail) return;
 
   const adminUrl = `${APP_URL}/admin`;
   const annonceUrl = `${APP_URL}/annonces/${annonceId}`;
@@ -393,7 +382,6 @@ export async function sendAlerteNouvelleAnnonce({
           <strong style="color: #1f2937;">${categorieName}</strong>.
         </p>
 
-        <!-- Card annonce -->
         <div style="border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin: 24px 0;">
           ${annonceImageUrl ? `
           <div style="height: 200px; overflow: hidden; background: #f3f4f6;">

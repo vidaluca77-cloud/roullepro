@@ -47,8 +47,8 @@ export default function ProfilPage() {
       setProfile({
         full_name: data.full_name || '',
         phone: data.phone || '',
-        city: data.city || data.ville || '',
-        company_name: data.company_name || data.entreprise || '',
+        city: data.city || '',
+        company_name: data.company_name || '',
         siret: data.siret || '',
         is_verified: data.is_verified || false,
         statut_verification: data.statut_verification || 'non_verifie'

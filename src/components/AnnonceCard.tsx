@@ -128,9 +128,9 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
             {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
           </p>
           <div className="text-xs text-gray-500 mt-1 flex gap-2">
-            {(annonce.city || annonce.ville) && (
+            {annonce.city && (
               <span>
-                <MapPin size={10} className="inline" /> {annonce.city || annonce.ville}
+                <MapPin size={10} className="inline" /> {annonce.city}
               </span>
             )}
             {annonce.annee && <span>{annonce.annee}</span>}

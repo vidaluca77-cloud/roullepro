@@ -152,7 +152,7 @@ export default function AdminVerificationPage() {
                       </div>
                       <div>
                         <span className="font-medium text-gray-700">Entreprise : </span>
-                        {profile.company_name || profile.entreprise || 'N/A'}
+                        {profile.company_name || 'N/A'}
                       </div>
                       <div>
                         <span className="font-medium text-gray-700">SIRET : </span>

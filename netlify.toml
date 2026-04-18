@@ -18,4 +18,8 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self), interest-cohort=()"
+    # CSP en mode Report-Only pour valider sans bloquer (passer en Content-Security-Policy après 48h de monitoring)
+    Content-Security-Policy-Report-Only = "default-src 'self'; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://api.resend.com; font-src 'self' data:; frame-ancestors 'none'"
 

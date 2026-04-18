@@ -44,11 +44,13 @@ export async function PATCH(
       .eq('id', messageId);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('[api/messages/[id]] update error:', error.message);
+      return NextResponse.json({ error: 'Erreur lors de la mise à jour' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (err: unknown) {
+    console.error('[api/messages/[id]] PATCH error:', err);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
@@ -87,11 +89,13 @@ export async function DELETE(
       .eq('id', messageId);
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error('[api/messages/[id]] delete error:', error.message);
+      return NextResponse.json({ error: 'Erreur lors de la suppression' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (err: unknown) {
+    console.error('[api/messages/[id]] DELETE error:', err);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

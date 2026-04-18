@@ -50,12 +50,37 @@ function DashboardPageInner() {
 
   useEffect(() => { init(); }, []);
 
+  // Realtime : re-fetch messages/favoris à chaque changement Supabase
+  // Remplace le polling 5s — seule la notification arrive en push, le fetch reste léger
   useEffect(() => {
-    const interval = setInterval(() => { loadFavoris(); loadMessages(); }, 5000);
+    let userId: string | null = null;
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      userId = user.id;
+
+      const channel = supabase
+        .channel('dashboard-realtime')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'messages' },
+          () => { loadMessages(); }
+        )
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'favoris', filter: `user_id=eq.${userId}` },
+          () => { loadFavoris(); }
+        )
+        .subscribe();
+
+      return () => { supabase.removeChannel(channel); };
+    });
+
+    // Rafraîchir quand l'onglet redevient visible
     const onVisibility = () => { if (!document.hidden) { loadFavoris(); loadMessages(); } };
     document.addEventListener('visibilitychange', onVisibility);
-    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisibility); };
-  }, [loadFavoris, loadMessages]);
+    return () => { document.removeEventListener('visibilitychange', onVisibility); };
+  }, [loadFavoris, loadMessages, supabase]);
 
   const init = async () => {
     const { data: { user } } = await supabase.auth.getUser();

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { sendVendeurNotification } from '@/lib/email';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const getAdminClient = () =>
   createClient(
@@ -15,6 +16,13 @@ const getAdminClient = () =>
  */
 export async function POST(request: Request) {
   try {
+    // Rate limiting : max 5 messages par IP par minute
+    const ip = getClientIp(request);
+    const { ok } = checkRateLimit(`messages:${ip}`, 5, 60_000);
+    if (!ok) {
+      return NextResponse.json({ error: 'Trop de requêtes. Veuillez réessayer dans quelques instants.' }, { status: 429 });
+    }
+
     const supabaseAdmin = getAdminClient();
     const body = await request.json();
     const { annonce_id, sender_name, sender_email, content } = body;
@@ -66,7 +74,8 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: "Erreur lors de l'envoi", details: error.message }, { status: 500 });
+      console.error('[api/messages] insert error:', error.message);
+      return NextResponse.json({ error: "Erreur lors de l'envoi" }, { status: 500 });
     }
 
     const vendeur = annonce.profiles as any;
@@ -83,8 +92,9 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ message: 'Message envoyé avec succès', data }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    console.error('[api/messages] POST error:', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
 
@@ -212,8 +222,9 @@ export async function GET() {
     );
 
     return NextResponse.json(merged);
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    console.error('[api/messages] GET error:', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
 

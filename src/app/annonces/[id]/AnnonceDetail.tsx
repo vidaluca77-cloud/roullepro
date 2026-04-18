@@ -220,10 +220,10 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                     </span>
                   </div>
                 )}
-                {(annonce.city || annonce.ville) && (
+                {annonce.city && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Localisation</span>
-                    <span className="font-semibold">{annonce.city || annonce.ville}</span>
+                    <span className="font-semibold">{annonce.city}</span>
                   </div>
                 )}
               </div>
@@ -246,7 +246,7 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                       className="font-semibold text-lg text-gray-900 hover:text-blue-600 transition"
                     >
                       {vendeur.company_name ||
-                        vendeur.entreprise ||
+                        vendeur.company_name ||
                         vendeur.full_name ||
                         'Vendeur professionnel'}
                     </Link>
@@ -257,8 +257,8 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                       </span>
                     )}
                   </div>
-                  {(vendeur.city || vendeur.ville) && (
-                    <p className="text-sm text-gray-500">{vendeur.city || vendeur.ville}</p>
+                  {vendeur.city && (
+                    <p className="text-sm text-gray-500">{vendeur.city}</p>
                   )}
 
                   {!isOwner ? (

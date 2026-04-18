@@ -94,8 +94,8 @@ export async function POST(request: Request) {
       .single();
 
     if (insertErr) {
-      console.error('Erreur insertion réponse:', insertErr);
-      return NextResponse.json({ error: "Erreur lors de l'envoi", details: insertErr.message }, { status: 500 });
+      console.error('[api/messages/reply] insert error:', insertErr.message);
+      return NextResponse.json({ error: "Erreur lors de l'envoi" }, { status: 500 });
     }
 
     // ── Notifications email (non bloquantes) ──
@@ -130,8 +130,8 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, data: reply }, { status: 201 });
-  } catch (error: any) {
-    console.error('Erreur serveur reply:', error);
-    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  } catch (err: unknown) {
+    console.error('[api/messages/reply] unexpected error:', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

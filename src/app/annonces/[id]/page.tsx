@@ -49,7 +49,7 @@ export default async function AnnonceDetailPage({ params }: PageProps) {
   const catName = annonce.categories?.name || '';
   const catSlug = annonce.categories?.slug || '';
   const price = annonce.price ? Number(annonce.price) : null;
-  const city = annonce.city || annonce.ville || '';
+  const city = annonce.city || '';
 
   /* ── JSON-LD structured data ── */
   const jsonLd = {
@@ -130,7 +130,7 @@ export default async function AnnonceDetailPage({ params }: PageProps) {
           seller: vendeur
             ? {
                 '@type': 'Organization',
-                name: vendeur.company_name || vendeur.entreprise || vendeur.full_name || 'Vendeur professionnel',
+                name: vendeur.company_name || vendeur.full_name || 'Vendeur professionnel',
                 ...(city ? { address: { '@type': 'PostalAddress', addressLocality: city, addressCountry: 'FR' } } : {}),
               }
             : undefined,

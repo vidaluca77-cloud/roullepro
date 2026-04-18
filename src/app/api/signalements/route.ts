@@ -1,9 +1,17 @@
 export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 export async function POST(request: Request) {
   try {
+    // Rate limiting : max 10 signalements par IP par heure
+    const ip = getClientIp(request);
+    const { ok } = checkRateLimit(`signalements:${ip}`, 10, 3_600_000);
+    if (!ok) {
+      return NextResponse.json({ error: 'Trop de signalements. Veuillez réessayer plus tard.' }, { status: 429 });
+    }
+
     // Créer un client Supabase avec le service role key pour bypass RLS
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,9 +61,9 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
-      console.error('Erreur lors de la création du signalement:', error);
+      console.error('[api/signalements] insert error:', error.message);
       return NextResponse.json(
-        { error: 'Erreur lors de la création du signalement', details: error.message },
+        { error: 'Erreur lors de la création du signalement' },
         { status: 500 }
       );
     }
@@ -64,10 +72,10 @@ export async function POST(request: Request) {
       { message: 'Signalement enregistré avec succès', data },
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error('Erreur serveur:', error);
+  } catch (err: unknown) {
+    console.error('[api/signalements] unexpected error:', err);
     return NextResponse.json(
-      { error: 'Erreur serveur', details: error.message },
+      { error: 'Erreur serveur' },
       { status: 500 }
     );
   }
