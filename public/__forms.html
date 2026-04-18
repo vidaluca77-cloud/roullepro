@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /></head>
+<body>
+  <!-- Formulaire fantome pour detection Netlify Forms (Next.js App Router) -->
+  <!-- Ce fichier est requis par @netlify/plugin-nextjs v5 pour enregistrer le formulaire -->
+  <form name="contact" netlify netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="contact" />
+    <input type="text" name="bot-field" />
+    <input type="text" name="full_name" />
+    <input type="email" name="email" />
+    <select name="subject">
+      <option value="Question generale">Question generale</option>
+      <option value="Probleme technique">Probleme technique</option>
+      <option value="Signalement">Signalement</option>
+      <option value="Partenariat">Partenariat</option>
+      <option value="Autre">Autre</option>
+    </select>
+    <textarea name="message"></textarea>
+    <button type="submit">Envoyer</button>
+  </form>
+</body>
+</html>

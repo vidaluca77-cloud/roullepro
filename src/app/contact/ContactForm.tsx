@@ -3,8 +3,8 @@ import { useState, FormEvent } from 'react';
 import { Mail, Send } from 'lucide-react';
 
 const SUBJECTS = [
-  'Question générale',
-  'Problème technique',
+  'Question generale',
+  'Probleme technique',
   'Signalement',
   'Partenariat',
   'Autre',
@@ -22,7 +22,7 @@ export default function ContactForm() {
 
     const formData = new FormData(e.currentTarget);
 
-    // Validation minimale côté client
+    // Validation minimale cote client
     const message = formData.get('message') as string;
     if (message.trim().length < 20) {
       setError(true);
@@ -31,10 +31,19 @@ export default function ContactForm() {
     }
 
     try {
-      const res = await fetch('/', {
+      // Soumettre vers le fichier HTML statique (requis par @netlify/plugin-nextjs v5)
+      // Le formulaire est detecte par Netlify via public/__forms.html
+      const res = await fetch('/__forms.html', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+        body: new URLSearchParams({
+          'form-name': 'contact',
+          'bot-field': (formData.get('bot-field') as string) || '',
+          full_name: (formData.get('full_name') as string) || '',
+          email: (formData.get('email') as string) || '',
+          subject: (formData.get('subject') as string) || '',
+          message: (formData.get('message') as string) || '',
+        }).toString(),
       });
       if (res.ok) {
         setSuccess(true);
@@ -56,9 +65,9 @@ export default function ContactForm() {
             <Mail className="text-green-600" size={24} />
           </div>
         </div>
-        <p className="text-green-800 font-semibold text-lg mb-1">Message envoyé !</p>
+        <p className="text-green-800 font-semibold text-lg mb-1">Message envoye !</p>
         <p className="text-green-700 text-sm">
-          Votre message a été envoyé. Nous vous répondrons sous 24h.
+          Votre message a ete envoye. Nous vous repondrons sous 24h.
         </p>
       </div>
     );
@@ -67,19 +76,15 @@ export default function ContactForm() {
   return (
     <form
       name="contact"
-      method="POST"
-      data-netlify="true"
-      netlify-honeypot="bot-field"
       onSubmit={handleSubmit}
       className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-5"
     >
-      {/* Champs cachés Netlify */}
-      <input type="hidden" name="form-name" value="contact" />
-      <input type="hidden" name="bot-field" className="hidden" />
+      {/* Champ cache honeypot anti-spam */}
+      <input type="hidden" name="bot-field" />
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-          Une erreur est survenue. Vérifiez le formulaire et réessayez.
+          Une erreur est survenue. Verifiez le formulaire et reessayez.
         </div>
       )}
 
@@ -135,7 +140,7 @@ export default function ContactForm() {
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1.5">
           Message <span className="text-red-500">*</span>
-          <span className="text-gray-400 font-normal ml-1">(min. 20 caractères)</span>
+          <span className="text-gray-400 font-normal ml-1">(min. 20 caracteres)</span>
         </label>
         <textarea
           id="message"
@@ -143,7 +148,7 @@ export default function ContactForm() {
           required
           minLength={20}
           rows={6}
-          placeholder="Décrivez votre demande en détail..."
+          placeholder="Decrivez votre demande en detail..."
           className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none"
         />
       </div>
@@ -157,7 +162,7 @@ export default function ContactForm() {
         {loading ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            Envoi en cours…
+            Envoi en cours...
           </>
         ) : (
           <>

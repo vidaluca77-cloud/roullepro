@@ -6,6 +6,8 @@
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
+# @netlify/plugin-nextjs v5 : le formulaire est defini dans public/__forms.html
+# Les fichiers Next.js ne doivent PAS contenir data-netlify pour eviter le build failure
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
