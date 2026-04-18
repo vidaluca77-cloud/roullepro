@@ -11,6 +11,7 @@ export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -28,6 +29,21 @@ export default function Navbar() {
       loadUser();
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await fetch('/api/messages?role=seller');
+        if (!res.ok) return;
+        const data = await res.json();
+        const count = (data || []).filter((m: any) => m.has_unread).length;
+        setUnreadCount(count);
+      } catch {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000); // toutes les 30s
+    return () => clearInterval(interval);
   }, []);
 
   const loadUser = async () => {
@@ -93,6 +109,11 @@ export default function Navbar() {
                     >
                       <LayoutDashboard className="h-4 w-4 mr-2" />
                       Dashboard
+                      {unreadCount > 0 && (
+                        <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
                     </Link>
                     <Link
                       href="/profil"
@@ -153,7 +174,14 @@ export default function Navbar() {
             ))}
             {user ? (
               <div className="border-t pt-2 space-y-2">
-                <Link href="/dashboard" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Dashboard</Link>
+                <Link href="/dashboard" className="flex items-center text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>
+                  Dashboard
+                  {unreadCount > 0 && (
+                    <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
                 <Link href="/profil" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Mon profil</Link>
                 <button onClick={() => { handleSignOut(); setIsOpen(false); }} className="block w-full text-left text-sm text-red-600 hover:text-red-700 py-1">Deconnexion</button>
               </div>

@@ -9,7 +9,7 @@ import ConversationThread from '@/components/ConversationThread';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
   Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
-  CheckCircle, Pencil,
+  CheckCircle, Pencil, X,
 } from 'lucide-react';
 
 type Category = { id: string; name: string; slug: string };
@@ -26,6 +26,7 @@ function DashboardPageInner() {
   const [loading, setLoading] = useState(true);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview'|'annonces'|'messages'|'favoris'|'alertes'>('overview');
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const loadFavoris = useCallback(async () => {
     try {
@@ -81,6 +82,11 @@ function DashboardPageInner() {
 
     await loadFavoris();
     await loadMessages();
+
+    // Bannière onboarding : nouveau compte (< 7j) sans annonce
+    const isNew = p && new Date(p.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    setShowOnboarding(!!(isNew && (a || []).length === 0));
+
     setLoading(false);
   };
 
@@ -262,6 +268,43 @@ function DashboardPageInner() {
         {/* ── Onglet Vue d'ensemble ── */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+
+            {/* Bannière onboarding */}
+            {showOnboarding && (
+              <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-white mb-6">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold mb-1">Bienvenue sur RoullePro !</h2>
+                    <p className="text-blue-100 text-sm mb-4">Voici vos premières étapes pour bien démarrer :</p>
+                    <div className="space-y-2">
+                      {[
+                        { done: !!profile?.full_name, label: 'Compléter votre profil professionnel' },
+                        { done: annonces.length > 0, label: 'Déposer votre première annonce' },
+                        { done: false, label: 'Activer les alertes pour être notifié des nouvelles annonces' },
+                      ].map((step, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm">
+                          {step.done
+                            ? <CheckCircle size={16} className="text-green-300 flex-shrink-0" />
+                            : <div className="w-4 h-4 rounded-full border-2 border-blue-300 flex-shrink-0" />}
+                          <span className={step.done ? 'line-through text-blue-200' : 'text-white'}>{step.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3 mt-5">
+                      <Link href="/deposer-annonce" className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-50 transition">
+                        Déposer une annonce
+                      </Link>
+                      <Link href="/profil" className="border border-blue-400 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition">
+                        Compléter mon profil
+                      </Link>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowOnboarding(false)} className="text-blue-200 hover:text-white ml-4 flex-shrink-0">
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Annonces récentes */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100">

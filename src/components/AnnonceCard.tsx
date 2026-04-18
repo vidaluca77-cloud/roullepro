@@ -4,6 +4,30 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Heart } from 'lucide-react';
 
+// Helpers localStorage pour visiteurs non connectes
+const LS_KEY = 'roullepro_favoris';
+
+function getLSFavoris(): string[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function addLSFavori(id: string) {
+  const current = getLSFavoris();
+  if (!current.includes(id)) {
+    localStorage.setItem(LS_KEY, JSON.stringify([...current, id]));
+  }
+}
+
+function removeLSFavori(id: string) {
+  const current = getLSFavoris();
+  localStorage.setItem(LS_KEY, JSON.stringify(current.filter((f) => f !== id)));
+}
+
 interface AnnonceCardProps {
   annonce: any;
   isFavorite?: boolean;
@@ -14,15 +38,25 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
   const [isFavorite, setIsFavorite] = useState(initialFavorite);
   const [loading, setLoading] = useState(false);
 
-    // Synchroniser le state interne avec la prop
+  // Synchroniser le state interne avec la prop
   useEffect(() => {
     setIsFavorite(initialFavorite);
   }, [initialFavorite]);
 
+  // Pour les visiteurs : charger l'etat depuis localStorage au montage
+  useEffect(() => {
+    if (!initialFavorite) {
+      const lsFavoris = getLSFavoris();
+      if (lsFavoris.includes(annonce.id)) {
+        setIsFavorite(true);
+      }
+    }
+  }, [annonce.id, initialFavorite]);
+
   const toggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setLoading(true);
     try {
       if (isFavorite) {
@@ -30,8 +64,14 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
         const response = await fetch(`/api/favoris?annonce_id=${annonce.id}`, {
           method: 'DELETE',
         });
-        
+
         if (response.ok) {
+          removeLSFavori(annonce.id);
+          setIsFavorite(false);
+          onFavoriteToggle?.(annonce.id, false);
+        } else if (response.status === 401) {
+          // Non connecte : retirer du localStorage
+          removeLSFavori(annonce.id);
           setIsFavorite(false);
           onFavoriteToggle?.(annonce.id, false);
         }
@@ -42,13 +82,16 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ annonce_id: annonce.id }),
         });
-        
+
         if (response.ok) {
+          addLSFavori(annonce.id);
           setIsFavorite(true);
           onFavoriteToggle?.(annonce.id, true);
         } else if (response.status === 401) {
-          // Rediriger vers login si non authentifié
-          window.location.href = '/auth';
+          // Non connecte : sauvegarder en localStorage (pas de redirection)
+          addLSFavori(annonce.id);
+          setIsFavorite(true);
+          onFavoriteToggle?.(annonce.id, true);
         }
       }
     } catch (error) {
@@ -77,7 +120,9 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
           )}
         </div>
         <div className="p-4">
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">{annonce.categories?.name || annonce.categorie}</span>
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+            {annonce.categories?.name || annonce.categorie}
+          </span>
           <h3 className="font-semibold mt-2 truncate">{annonce.title}</h3>
           <p className="text-blue-600 font-bold text-lg">
             {annonce.price ? `${Number(annonce.price).toLocaleString()} €` : 'Sur demande'}
@@ -92,7 +137,7 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
           </div>
         </div>
       </Link>
-      
+
       {/* Bouton Favoris */}
       <button
         onClick={toggleFavorite}
