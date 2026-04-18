@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight,
   MessageSquare, BadgeCheck, Eye,
@@ -45,7 +46,7 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
     }
   };
 
-  const images = annonce.images || annonce.photos || [];
+  const images: string[] = annonce.images || annonce.photos || [];
   const isOwner = currentUser?.id === annonce.user_id;
   const currentUserName = currentProfile
     ? (currentProfile.full_name || `${currentProfile.prenom || ''} ${currentProfile.nom || ''}`.trim())
@@ -74,10 +75,13 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
             >
               {images.length > 0 ? (
                 <>
-                  <img
+                  <Image
                     src={images[selectedImg]}
                     alt={`${annonce.title} - photo ${selectedImg + 1}`}
+                    width={800}
+                    height={600}
                     className="w-full h-full object-contain"
+                    priority={selectedImg === 0}
                   />
                   {images.length > 1 && (
                     <>
@@ -114,15 +118,17 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                   <button
                     key={idx}
                     onClick={() => setSelectedImg(idx)}
-                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition ${
+                    className={`flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition relative ${
                       selectedImg === idx
                         ? 'border-blue-600 shadow-lg'
                         : 'border-gray-300 hover:border-blue-400'
                     }`}
                   >
-                    <img
+                    <Image
                       src={img}
                       alt={`${annonce.title} photo ${idx + 1}`}
+                      width={96}
+                      height={96}
                       className="w-full h-full object-cover"
                     />
                   </button>

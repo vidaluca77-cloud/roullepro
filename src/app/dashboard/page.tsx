@@ -9,6 +9,7 @@ import ConversationThread from '@/components/ConversationThread';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
   Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
+  CheckCircle, Pencil,
 } from 'lucide-react';
 
 type Category = { id: string; name: string; slug: string };
@@ -87,6 +88,19 @@ function DashboardPageInner() {
     if (!confirm('Supprimer cette annonce ?')) return;
     await supabase.from('annonces').delete().eq('id', id);
     setAnnonces(prev => prev.filter(a => a.id !== id));
+  };
+
+  const fetchAnnonces = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase.from('annonces').select('*, categories(name, slug)').eq('user_id', user.id).order('created_at', { ascending: false });
+    setAnnonces(data || []);
+  };
+
+  const markAsSold = async (id: string) => {
+    if (!confirm('Marquer cette annonce comme vendue ?')) return;
+    await supabase.from('annonces').update({ status: 'sold' }).eq('id', id).eq('user_id', profile.id);
+    fetchAnnonces();
   };
   const signOut = async () => { await supabase.auth.signOut(); router.push('/'); };
 
@@ -386,6 +400,7 @@ function DashboardPageInner() {
                 pending:  { label: 'En attente', cls: 'bg-amber-100 text-amber-700' },
                 rejected: { label: 'Refusée',    cls: 'bg-red-100 text-red-700' },
                 suspended:{ label: 'Suspendue',  cls: 'bg-gray-100 text-gray-600' },
+                sold:     { label: 'Vendue',     cls: 'bg-purple-100 text-purple-700' },
               };
               const st = statusMap[a.status] || statusMap.suspended;
               return (
@@ -410,6 +425,20 @@ function DashboardPageInner() {
                       <Link href={`/annonces/${a.id}`} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition" title="Voir">
                         <Eye size={16} />
                       </Link>
+                    )}
+                    {(a.status === 'active' || a.status === 'pending' || a.status === 'rejected') && (
+                      <Link href={`/dashboard/annonces/${a.id}/edit`} className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition" title="Modifier">
+                        <Pencil size={16} />
+                      </Link>
+                    )}
+                    {(a.status === 'active' || a.status === 'pending') && (
+                      <button
+                        onClick={() => markAsSold(a.id)}
+                        className="p-2 text-gray-400 hover:text-green-600 rounded-lg hover:bg-green-50 transition"
+                        title="Marquer comme vendu"
+                      >
+                        <CheckCircle size={16} />
+                      </button>
                     )}
                     <button onClick={() => del(a.id)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Supprimer">
                       <Trash2 size={16} />

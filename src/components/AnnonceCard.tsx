@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, Heart } from 'lucide-react';
 
 interface AnnonceCardProps {
@@ -57,12 +58,20 @@ export default function AnnonceCard({ annonce, isFavorite: initialFavorite = fal
     }
   };
 
+  const imageSrc = annonce.images?.[0] || annonce.photos?.[0];
+
   return (
     <div className="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden relative group">
       <Link href={`/annonces/${annonce.id}`}>
         <div className="bg-gray-100 h-48 flex items-center justify-center relative">
-          {(annonce.images?.[0] || annonce.photos?.[0]) ? (
-            <img src={annonce.images?.[0] || annonce.photos?.[0]} alt={annonce.title} className="w-full h-full object-cover" />
+          {imageSrc ? (
+            <Image
+              src={imageSrc}
+              alt={annonce.title}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              className="object-cover"
+            />
           ) : (
             <span className="text-gray-400 text-sm">Pas de photo</span>
           )}

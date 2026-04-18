@@ -18,6 +18,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/', label: 'Accueil' },
     { href: '/annonces', label: 'Annonces' },
+    { href: '/comment-ca-marche', label: 'Comment ça marche' },
     { href: '/deposer-annonce', label: 'Déposer une annonce' },
   ];
 

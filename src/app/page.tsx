@@ -166,12 +166,26 @@ const AVANTAGES = [
   },
 ];
 
-const STATS = [
-  { value: '7', label: 'Catégories métier' },
-  { value: '100%', label: 'Dépôt gratuit' },
-  { value: 'B2B', label: 'Professionnels uniquement' },
-  { value: 'Vérifié', label: 'Chaque vendeur' },
-];
+
+
+async function getStats() {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const [{ count: annoncesCount }, { count: vendeursCount }] = await Promise.all([
+      supabase.from('annonces').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+    ]);
+    return {
+      annonces: annoncesCount ?? 0,
+      vendeurs: vendeursCount ?? 0,
+    };
+  } catch {
+    return { annonces: 0, vendeurs: 0 };
+  }
+}
 
 async function getRecentAnnonces() {
   try {
@@ -192,7 +206,14 @@ async function getRecentAnnonces() {
 }
 
 export default async function HomePage() {
-  const recentAnnonces = await getRecentAnnonces();
+  const [recentAnnonces, stats] = await Promise.all([getRecentAnnonces(), getStats()]);
+
+  const STATS = [
+    { value: stats.annonces > 0 ? `${stats.annonces}+` : '0', label: 'Annonces actives' },
+    { value: stats.vendeurs > 0 ? `${stats.vendeurs}+` : '0', label: 'Vendeurs certifiés' },
+    { value: '100%', label: 'Dépôt gratuit' },
+    { value: 'B2B', label: 'Pros uniquement' },
+  ];
 
   return (
     <div className="bg-white">
@@ -264,7 +285,7 @@ export default async function HomePage() {
       {/* ─── STATS BAR ────────────────────────────────────────── */}
       <section className="bg-slate-900 border-b border-slate-800">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {STATS.map((s) => (
+          {STATS.map((s: { value: string; label: string }) => (
             <div key={s.label}>
               <div className="text-2xl font-bold text-white">{s.value}</div>
               <div className="text-sm text-slate-400 mt-0.5">{s.label}</div>
