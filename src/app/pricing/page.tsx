@@ -67,7 +67,7 @@ function PricingInner() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white py-16">
       <div className="max-w-6xl mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Choisissez votre plan
           </h1>
@@ -75,6 +75,30 @@ function PricingInner() {
             Publiez vos annonces de véhicules utilitaires et professionnels.
             Sans engagement, résiliable à tout moment.
           </p>
+        </div>
+
+        <div className="max-w-3xl mx-auto mb-10">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-[2px] shadow-lg">
+            <div className="rounded-[14px] bg-white px-6 py-4 flex flex-col sm:flex-row items-center gap-3 sm:gap-5">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 text-orange-600 flex-shrink-0">
+                <Sparkles size={22} />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="text-sm font-semibold text-orange-600 uppercase tracking-wide">
+                  Offre de lancement
+                </div>
+                <div className="text-gray-900 font-semibold">
+                  3 mois offerts sur Pro ou Premium avec le code{" "}
+                  <span className="inline-block bg-gray-900 text-white font-mono text-sm px-2 py-0.5 rounded">
+                    EARLY100
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  À saisir au paiement · Limité aux 50 premiers inscrits
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {cancelled && (
