@@ -1,7 +1,9 @@
+import type { Metadata } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import AnnonceDetail from './AnnonceDetail';
+import SimilarAnnonces from './SimilarAnnonces';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
@@ -25,6 +27,51 @@ async function getAnnonce(id: string) {
 
 interface PageProps {
   params: { id: string };
+}
+
+/* ── Metadata dynamique (Open Graph + Twitter Card) ── */
+export async function generateMetadata(
+  { params }: PageProps
+): Promise<Metadata> {
+  const annonce = await getAnnonce(params.id);
+  if (!annonce) {
+    return {
+      title: 'Annonce introuvable — RoullePro',
+      robots: { index: false, follow: false },
+    };
+  }
+
+  const catName = annonce.categories?.name || '';
+  const price = annonce.price ? `${Number(annonce.price).toLocaleString('fr-FR')} €` : '';
+  const city = annonce.city ? ` à ${annonce.city}` : '';
+  const title = `${annonce.title}${price ? ' — ' + price : ''} — RoullePro`;
+  const description = annonce.description
+    ? annonce.description.slice(0, 160)
+    : `${catName || 'Véhicule professionnel'}${city} sur RoullePro, la marketplace B2B du transport routier.`;
+
+  const ogUrl = `${APP_URL}/api/og?id=${annonce.id}`;
+  const pageUrl = `${APP_URL}/annonces/${annonce.id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: 'RoullePro',
+      locale: 'fr_FR',
+      type: 'website',
+      images: [{ url: ogUrl, width: 1200, height: 630, alt: annonce.title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [ogUrl],
+    },
+  };
 }
 
 export default async function AnnonceDetailPage({ params }: PageProps) {
@@ -162,6 +209,13 @@ export default async function AnnonceDetailPage({ params }: PageProps) {
 
       {/* Composant client pour les interactions */}
       <AnnonceDetail annonce={annonce} vendeur={vendeur} />
+
+      {/* Annonces similaires (SSR) */}
+      <SimilarAnnonces
+        currentId={annonce.id}
+        categoryId={annonce.category_id || null}
+        price={price}
+      />
     </>
   );
 }

@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import StarRating from '@/components/StarRating';
 import AlertesCategoriesToggle from '@/components/AlertesCategoriesToggle';
 import ConversationThread from '@/components/ConversationThread';
+import PlanBadge from '@/components/PlanBadge';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
   Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
@@ -133,7 +134,29 @@ function DashboardPageInner() {
     await supabase.from('annonces').update({ status: 'sold' }).eq('id', id).eq('user_id', profile.id);
     fetchAnnonces();
   };
+
+  const renew = async (id: string) => {
+    if (!confirm('Renouveler cette annonce pour 60 jours ?')) return;
+    // Remet active + reset created_at pour repartir d'un nouveau cycle de 60 jours
+    await supabase
+      .from('annonces')
+      .update({ status: 'active', created_at: new Date().toISOString() })
+      .eq('id', id)
+      .eq('user_id', profile.id);
+    fetchAnnonces();
+  };
   const signOut = async () => { await supabase.auth.signOut(); router.push('/'); };
+
+  const openBillingPortal = async () => {
+    try {
+      const res = await fetch('/api/stripe/portal', { method: 'POST' });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+      else alert(data.error || "Impossible d'ouvrir le portail de facturation");
+    } catch {
+      alert('Erreur. Réessayez.');
+    }
+  };
 
   const deleteMessage = async (id: string) => {
     if (!confirm('Supprimer cette conversation ?')) return;
@@ -188,6 +211,9 @@ function DashboardPageInner() {
                   <BadgeCheck size={11} /> Vérifié
                 </span>
               )}
+              {(profile?.plan === 'pro' || profile?.plan === 'premium') && (
+                <span className="ml-2 inline-block"><PlanBadge plan={profile.plan} size="sm" /></span>
+              )}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -199,6 +225,17 @@ function DashboardPageInner() {
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition">
               <User size={16} /> Profil
             </Link>
+            {profile?.stripe_customer_id ? (
+              <button onClick={openBillingPortal}
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition">
+                <TrendingUp size={16} /> Mon abonnement
+              </button>
+            ) : (
+              <Link href="/pricing"
+                className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition">
+                <TrendingUp size={16} /> Passer Pro
+              </Link>
+            )}
             <button onClick={signOut}
               className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm transition">
               <LogOut size={16} /> Déconnexion
@@ -469,6 +506,7 @@ function DashboardPageInner() {
                 rejected: { label: 'Refusée',    cls: 'bg-red-100 text-red-700' },
                 suspended:{ label: 'Suspendue',  cls: 'bg-gray-100 text-gray-600' },
                 sold:     { label: 'Vendue',     cls: 'bg-purple-100 text-purple-700' },
+                expired:  { label: 'Expirée',    cls: 'bg-orange-100 text-orange-700' },
               };
               const st = statusMap[a.status] || statusMap.suspended;
               return (
@@ -506,6 +544,15 @@ function DashboardPageInner() {
                         title="Marquer comme vendu"
                       >
                         <CheckCircle size={16} />
+                      </button>
+                    )}
+                    {a.status === 'expired' && (
+                      <button
+                        onClick={() => renew(a.id)}
+                        className="px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                        title="Renouveler pour 60 jours"
+                      >
+                        Renouveler
                       </button>
                     )}
                     <button onClick={() => del(a.id)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Supprimer">

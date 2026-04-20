@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { AlertCircle, Image as ImageIcon, X, Truck, Car } from 'lucide-react';
+import { getPlan, canCreateAnnonce } from '@/lib/plans';
 
 const ENERGIES = ['Essence','Diesel','Hybride','Electrique','GPL','Hydrogène'];
 const BOITES = ['Manuelle','Automatique'];
@@ -127,6 +129,19 @@ export default function DeposerAnnoncePage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setError('Connectez-vous pour déposer une annonce'); setLoading(false); return; }
 
+      // Vérifier le quota selon le plan
+      const [{ data: profileRow }, { count: activeCount }] = await Promise.all([
+        supabase.from('profiles').select('plan').eq('id', user.id).single(),
+        supabase.from('annonces').select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id).in('status', ['active', 'pending']),
+      ]);
+      const userPlan = getPlan(profileRow?.plan);
+      if (!canCreateAnnonce(userPlan, activeCount || 0)) {
+        setError(`Vous avez atteint la limite de ${userPlan.limits.maxActiveAnnonces} annonce(s) active(s) pour le plan ${userPlan.name}. Passez Pro ou Premium pour en publier davantage.`);
+        setLoading(false);
+        return;
+      }
+
       const photoUrls = await uploadPhotos(user.id);
 
       // Construire l'objet annonce — champs spécifiques selon catégorie
@@ -201,7 +216,14 @@ export default function DeposerAnnoncePage() {
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex gap-2.5 items-start">
             <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={18} />
-            <p className="text-sm text-red-800">{error}</p>
+            <div className="flex-1">
+              <p className="text-sm text-red-800">{error}</p>
+              {error.includes('limite') && (
+                <Link href="/pricing" className="inline-block mt-2 text-sm font-semibold text-blue-600 hover:underline">
+                  Voir les abonnements →
+                </Link>
+              )}
+            </div>
           </div>
         )}
 

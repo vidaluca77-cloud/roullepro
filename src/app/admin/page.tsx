@@ -17,6 +17,7 @@ export default function AdminPage() {
   const supabase = createClient();
   const [annonces, setAnnonces] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('pending');
 
@@ -34,6 +35,13 @@ export default function AdminPage() {
     setAnnonces(a || []);
     const { data: p } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     setUsers(p || []);
+
+    // Stats avancées via API
+    try {
+      const r = await fetch('/api/admin/stats');
+      if (r.ok) setStats(await r.json());
+    } catch (e) { console.error('stats load', e); }
+
     setLoading(false);
   };
 
@@ -88,8 +96,8 @@ export default function AdminPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        {/* Stats principales */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="bg-white rounded-xl p-6 shadow-sm">
             <p className="text-3xl font-bold">{annonces.length}</p>
             <p className="text-gray-500">Annonces total</p>
@@ -107,6 +115,45 @@ export default function AdminPage() {
             <p className="text-gray-500">Utilisateurs</p>
           </div>
         </div>
+
+        {/* Stats enrichies (API) */}
+        {stats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <p className="text-2xl font-bold">{stats.messages.total}</p>
+              <p className="text-gray-500 text-sm">Messages total</p>
+              <p className="text-xs text-green-600 mt-1">+{stats.messages.last_7d} cette semaine</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <p className="text-2xl font-bold">{stats.users.last_30d}</p>
+              <p className="text-gray-500 text-sm">Nouveaux users 30j</p>
+              <p className="text-xs text-green-600 mt-1">{stats.users.last_7d} sur 7j</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <p className="text-2xl font-bold">{stats.notations}</p>
+              <p className="text-gray-500 text-sm">Avis déposés</p>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-sm">
+              <p className="text-2xl font-bold text-red-600">{stats.signalements_pending}</p>
+              <p className="text-gray-500 text-sm">Signalements à traiter</p>
+            </div>
+          </div>
+        )}
+
+        {/* Top catégories */}
+        {stats?.top_categories?.length > 0 && (
+          <div className="bg-white rounded-xl p-6 shadow-sm mb-8">
+            <h3 className="font-semibold text-gray-900 mb-4">Top catégories actives</h3>
+            <div className="space-y-2">
+              {stats.top_categories.map((c: any) => (
+                <div key={c.name} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-700">{c.name}</span>
+                  <span className="font-semibold text-blue-600">{c.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Export CSV */}
         <div className="flex flex-wrap gap-2 mb-6">
