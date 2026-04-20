@@ -80,15 +80,20 @@ export async function POST(request: Request) {
 
     const vendeur = annonce.profiles as any;
     if (vendeur?.email) {
-      sendVendeurNotification({
-        vendeurEmail: vendeur.email,
-        vendeurName: vendeur.full_name || '',
-        senderName: sender_name.trim(),
-        senderEmail: sender_email.trim(),
-        annonceTitle: annonce.title,
-        annonceId: annonce.id,
-        messageContent: content.trim(),
-      });
+      try {
+        await sendVendeurNotification({
+          vendeurEmail: vendeur.email,
+          vendeurName: vendeur.full_name || '',
+          senderName: sender_name.trim(),
+          senderEmail: sender_email.trim(),
+          annonceTitle: annonce.title,
+          annonceId: annonce.id,
+          messageContent: content.trim(),
+        });
+      } catch (emailErr) {
+        // L'email est non-bloquant : on log mais on ne fait pas échouer la requête
+        console.error('[api/messages] sendVendeurNotification failed:', emailErr);
+      }
     }
 
     return NextResponse.json({ message: 'Message envoyé avec succès', data }, { status: 201 });
