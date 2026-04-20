@@ -179,14 +179,126 @@ Cette page a une valeur informative. Consultez votre expert-comptable pour votre
   },
 ];
 
+// Tentative d'import des nouveaux articles (fichier optionnel)
+// Si blog-new-posts.ts n'existe pas encore, on fallback sur POSTS seul.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const NEW_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-new-posts");
+    return Array.isArray(mod?.NEW_POSTS) ? (mod.NEW_POSTS as BlogPost[]) : [];
+  } catch {
+    return [];
+  }
+})();
+
+const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS];
+
+/* ----------------------------- CATÉGORIES ----------------------------- */
+
+export interface BlogCategory {
+  slug: string;
+  label: string;
+  description: string;
+  color: string; // classe tailwind bg/text
+}
+
+export const CATEGORIES: BlogCategory[] = [
+  {
+    slug: "guide-vendeur",
+    label: "Guide vendeur",
+    description:
+      "Toutes les clés pour vendre un véhicule professionnel rapidement et au juste prix.",
+    color: "from-emerald-500 to-teal-600",
+  },
+  {
+    slug: "guide-acheteur",
+    label: "Guide acheteur",
+    description:
+      "Bien choisir, inspecter et négocier un utilitaire, un taxi ou un VTC d'occasion.",
+    color: "from-blue-500 to-indigo-600",
+  },
+  {
+    slug: "fiscalite",
+    label: "Fiscalité",
+    description:
+      "TVA, amortissements, taxes sur les véhicules de société, bonus écologique.",
+    color: "from-amber-500 to-orange-600",
+  },
+  {
+    slug: "financement",
+    label: "Financement",
+    description:
+      "Crédit, leasing, LOA, LLD : comparatifs et stratégies pour optimiser votre trésorerie.",
+    color: "from-violet-500 to-purple-600",
+  },
+  {
+    slug: "metier",
+    label: "Métier",
+    description:
+      "Guides spécifiques taxi, VTC, ambulance, transport sanitaire, artisan BTP.",
+    color: "from-rose-500 to-pink-600",
+  },
+  {
+    slug: "ecologie",
+    label: "Écologie",
+    description:
+      "Véhicules électriques, ZFE, transition énergétique pour les pros du transport.",
+    color: "from-green-500 to-lime-600",
+  },
+  {
+    slug: "actualites",
+    label: "Actualités",
+    description:
+      "L'actualité réglementaire et économique du transport professionnel.",
+    color: "from-slate-500 to-gray-700",
+  },
+];
+
+/** Convertit un libellé de catégorie ("Guide acheteur") en slug URL ("guide-acheteur") */
+export function categoryLabelToSlug(label: string): string {
+  return label
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export function getCategoryBySlug(slug: string): BlogCategory | null {
+  return CATEGORIES.find((c) => c.slug === slug) || null;
+}
+
+export function getPostsByCategorySlug(slug: string): BlogPost[] {
+  return ALL_POSTS.filter((p) => categoryLabelToSlug(p.category) === slug).sort(
+    (a, b) => (a.date < b.date ? 1 : -1)
+  );
+}
+
+/* ----------------------------- API PUBLIQUE ----------------------------- */
+
 export function getAllPosts(): BlogPost[] {
-  return [...POSTS].sort((a, b) => (a.date < b.date ? 1 : -1));
+  return [...ALL_POSTS].sort((a, b) => (a.date < b.date ? 1 : -1));
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
-  return POSTS.find((p) => p.slug === slug) || null;
+  return ALL_POSTS.find((p) => p.slug === slug) || null;
 }
 
 export function getAllSlugs(): string[] {
-  return POSTS.map((p) => p.slug);
+  return ALL_POSTS.map((p) => p.slug);
+}
+
+/** Articles similaires : même catégorie, excluant l'article courant, limit 3 */
+export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
+  return ALL_POSTS.filter(
+    (p) => p.category === post.category && p.slug !== post.slug
+  )
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .slice(0, limit);
+}
+
+/** Les N derniers articles toutes catégories confondues */
+export function getLatestPosts(limit = 3): BlogPost[] {
+  return getAllPosts().slice(0, limit);
 }

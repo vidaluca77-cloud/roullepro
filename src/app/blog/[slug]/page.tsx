@@ -1,19 +1,35 @@
 /**
- * /blog/[slug] — Article individuel SEO.
- * Rendu statique avec generateStaticParams + generateMetadata.
+ * /blog/[slug] — Article individuel SEO (v2, refonte visuelle complète).
  */
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { ArrowLeft } from "lucide-react";
-import { getAllSlugs, getPostBySlug } from "@/lib/blog";
+import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react";
+import {
+  getAllSlugs,
+  getPostBySlug,
+  getRelatedPosts,
+  categoryLabelToSlug,
+  getCategoryBySlug,
+} from "@/lib/blog";
+import {
+  MarkdownRenderer,
+  extractHeadings,
+} from "@/components/blog/MarkdownRenderer";
+import { ArticleCard } from "@/components/blog/ArticleCard";
+import { NewsletterInline } from "@/components/blog/NewsletterInline";
+import { BlogCTA } from "@/components/blog/BlogCTA";
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Metadata {
   const post = getPostBySlug(params.slug);
   if (!post) return { title: "Article introuvable" };
   return {
@@ -25,6 +41,7 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
       description: post.excerpt,
       type: "article",
       publishedTime: post.date,
+      url: `https://roullepro.com/blog/${post.slug}`,
     },
     alternates: {
       canonical: `https://roullepro.com/blog/${post.slug}`,
@@ -32,84 +49,19 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-/** Mini-rendu Markdown sans dépendance : titres, paragraphes, listes, gras. */
-function renderMarkdown(raw: string) {
-  const lines = raw.split("\n");
-  const blocks: any[] = [];
-  let currentList: string[] | null = null;
-
-  const pushList = () => {
-    if (currentList) {
-      blocks.push({ type: "ul", items: currentList });
-      currentList = null;
-    }
-  };
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) {
-      pushList();
-      continue;
-    }
-    if (trimmed.startsWith("### ")) {
-      pushList();
-      blocks.push({ type: "h3", text: trimmed.slice(4) });
-    } else if (trimmed.startsWith("## ")) {
-      pushList();
-      blocks.push({ type: "h2", text: trimmed.slice(3) });
-    } else if (trimmed.startsWith("- ")) {
-      if (!currentList) currentList = [];
-      currentList.push(trimmed.slice(2));
-    } else {
-      pushList();
-      blocks.push({ type: "p", text: trimmed });
-    }
-  }
-  pushList();
-
-  const inline = (s: string) => {
-    const parts = s.split(/(\*\*[^*]+\*\*)/);
-    return parts.map((part, i) =>
-      part.startsWith("**") && part.endsWith("**") ? (
-        <strong key={i}>{part.slice(2, -2)}</strong>
-      ) : (
-        <span key={i}>{part}</span>
-      )
-    );
-  };
-
-  return blocks.map((b, i) => {
-    if (b.type === "h2")
-      return (
-        <h2 key={i} className="text-2xl font-bold text-gray-900 mt-8 mb-3">
-          {b.text}
-        </h2>
-      );
-    if (b.type === "h3")
-      return (
-        <h3 key={i} className="text-xl font-semibold text-gray-900 mt-6 mb-2">
-          {b.text}
-        </h3>
-      );
-    if (b.type === "ul")
-      return (
-        <ul key={i} className="list-disc pl-6 space-y-1 text-gray-700 mb-4">
-          {b.items.map((it: string, j: number) => (
-            <li key={j}>{inline(it)}</li>
-          ))}
-        </ul>
-      );
-    return (
-      <p key={i} className="text-gray-700 leading-relaxed mb-4">
-        {inline(b.text)}
-      </p>
-    );
-  });
-}
-
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default function BlogPostPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const post = getPostBySlug(params.slug);
   if (!post) notFound();
+
+  const categorySlug = categoryLabelToSlug(post.category);
+  const cat = getCategoryBySlug(categorySlug);
+  const gradient = cat?.color || "from-blue-500 to-indigo-600";
+  const headings = extractHeadings(post.content);
+  const related = getRelatedPosts(post, 3);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -117,76 +69,227 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
     headline: post.title,
     description: post.excerpt,
     datePublished: post.date,
+    dateModified: post.date,
     author: { "@type": "Organization", name: "RoullePro" },
     publisher: {
       "@type": "Organization",
       name: "RoullePro",
       url: "https://roullepro.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://roullepro.com/logo.png",
+      },
     },
     mainEntityOfPage: `https://roullepro.com/blog/${post.slug}`,
+    keywords: post.keywords.join(", "),
+    articleSection: post.category,
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Blog",
+        item: "https://roullepro.com/blog",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: post.category,
+        item: `https://roullepro.com/blog/categorie/${categorySlug}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+      },
+    ],
+  };
+
+  const contentWords = post.content.split(/\s+/).length;
+  // Séparation à ~45% pour insérer la newsletter au milieu
+  const splitPoint = Math.floor(post.content.length * 0.45);
+  const breakIndex = post.content.indexOf("\n## ", splitPoint);
+  const firstHalf =
+    breakIndex > 0 ? post.content.slice(0, breakIndex) : post.content;
+  const secondHalf = breakIndex > 0 ? post.content.slice(breakIndex) : "";
+
   return (
-    <article className="min-h-screen bg-white py-12">
+    <article className="min-h-screen bg-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="max-w-3xl mx-auto px-4">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline mb-6"
-        >
-          <ArrowLeft size={14} /> Retour au blog
-        </Link>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+      />
 
-        <header className="mb-8">
-          <div className="text-xs uppercase tracking-wide text-blue-600 font-semibold mb-2">
-            {post.category}
+      {/* ─── HERO ─────────────────────────────── */}
+      <div
+        className={`relative overflow-hidden bg-gradient-to-br ${gradient} text-white`}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.2),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_100%,rgba(0,0,0,0.2),transparent_50%)]" />
+
+        <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-sm text-white/70 mb-6">
+            <Link
+              href="/blog"
+              className="hover:text-white transition inline-flex items-center gap-1"
+            >
+              <ArrowLeft size={14} />
+              Blog
+            </Link>
+            <span>/</span>
+            <Link
+              href={`/blog/categorie/${categorySlug}`}
+              className="hover:text-white transition"
+            >
+              {post.category}
+            </Link>
+          </nav>
+
+          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/25 rounded-full px-3 py-1.5 mb-5">
+            <Tag size={13} />
+            <span className="text-xs font-semibold tracking-wide uppercase">
+              {post.category}
+            </span>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-3">
+
+          <h1 className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-5">
             {post.title}
           </h1>
-          <p className="text-lg text-gray-600 mb-3">{post.excerpt}</p>
-          <div className="text-sm text-gray-400">
-            {new Date(post.date).toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
-            {" · "}
-            {post.readingTime} min de lecture
-          </div>
-        </header>
 
-        <div className="prose prose-blue max-w-none">
-          {renderMarkdown(post.content)}
-        </div>
-
-        <div className="mt-12 bg-blue-50 border border-blue-100 rounded-2xl p-6">
-          <h3 className="font-bold text-gray-900 mb-2">
-            Vendez plus vite avec RoullePro
-          </h3>
-          <p className="text-sm text-gray-700 mb-4">
-            Déposez votre annonce en 3 minutes, atteignez des milliers de
-            professionnels qualifiés.
+          <p className="text-lg md:text-xl text-white/85 leading-relaxed mb-6 max-w-3xl">
+            {post.excerpt}
           </p>
-          <div className="flex gap-3 flex-wrap">
-            <Link
-              href="/deposer-annonce"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition"
-            >
-              Déposer une annonce
-            </Link>
-            <Link
-              href="/pricing"
-              className="border border-blue-600 text-blue-600 hover:bg-blue-50 px-5 py-2 rounded-lg text-sm font-semibold transition"
-            >
-              Voir les abonnements
-            </Link>
+
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/75">
+            <div className="flex items-center gap-1.5">
+              <Calendar size={14} />
+              <time>
+                {new Date(post.date).toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </time>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock size={14} />
+              <span>{post.readingTime} min de lecture</span>
+            </div>
+            <div className="text-white/50">·</div>
+            <div>Par l&apos;équipe RoullePro</div>
           </div>
         </div>
       </div>
+
+      {/* ─── CORPS ─────────────────────────────── */}
+      <div className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <div className="grid lg:grid-cols-[1fr_240px] gap-10">
+          {/* Contenu principal */}
+          <div className="min-w-0">
+            <MarkdownRenderer content={firstHalf} />
+
+            {secondHalf && (
+              <>
+                <NewsletterInline />
+                <MarkdownRenderer content={secondHalf} />
+              </>
+            )}
+
+            {/* Mots-clés */}
+            {post.keywords.length > 0 && (
+              <div className="mt-10 pt-8 border-t border-gray-100">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+                  Mots-clés
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {post.keywords.map((k) => (
+                    <span
+                      key={k}
+                      className="inline-block bg-gray-100 text-gray-700 text-xs px-3 py-1.5 rounded-full"
+                    >
+                      #{k}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* CTA contextuel */}
+            <BlogCTA category={post.category} />
+          </div>
+
+          {/* Sommaire latéral (desktop) */}
+          {headings.length > 2 && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+                  Sommaire
+                </div>
+                <nav className="space-y-2 text-sm border-l border-gray-200 pl-4">
+                  {headings.map((h) => (
+                    <a
+                      key={h.id}
+                      href={`#${h.id}`}
+                      className="block text-gray-600 hover:text-blue-600 hover:border-blue-600 -ml-[17px] pl-4 border-l-2 border-transparent py-1 transition leading-snug"
+                    >
+                      {h.text}
+                    </a>
+                  ))}
+                </nav>
+
+                <div className="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-100">
+                  <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                    À propos
+                  </div>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    Article de {Math.round(contentWords / 200)} min rédigé
+                    par l&apos;équipe RoullePro, marketplace B2B du
+                    transport routier.
+                  </p>
+                </div>
+              </div>
+            </aside>
+          )}
+        </div>
+      </div>
+
+      {/* ─── ARTICLES SIMILAIRES ─────────────────── */}
+      {related.length > 0 && (
+        <div className="bg-gray-50 border-t border-gray-100 py-14 md:py-20">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <div className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1">
+                  À lire aussi
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                  Dans la même catégorie
+                </h2>
+              </div>
+              <Link
+                href={`/blog/categorie/${categorySlug}`}
+                className="text-sm font-semibold text-blue-600 hover:underline hidden md:inline-flex items-center gap-1"
+              >
+                Voir tous les articles {post.category}
+              </Link>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              {related.map((p) => (
+                <ArticleCard key={p.slug} post={p} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }

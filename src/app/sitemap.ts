@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
-import { getAllPosts } from '@/lib/blog';
+import { getAllPosts, CATEGORIES } from '@/lib/blog';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
@@ -105,5 +105,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.65,
   }));
 
-  return [...staticPages, ...categoryPages, ...annoncePages, ...blogPosts];
+  // Pages catégories blog
+  const blogCategoryPages: MetadataRoute.Sitemap = CATEGORIES.map((c) => ({
+    url: `${BASE_URL}/blog/categorie/${c.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.6,
+  }));
+
+  return [
+    ...staticPages,
+    ...categoryPages,
+    ...annoncePages,
+    ...blogPosts,
+    ...blogCategoryPages,
+  ];
 }
