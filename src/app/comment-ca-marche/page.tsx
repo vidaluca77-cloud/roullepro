@@ -5,6 +5,7 @@ import {
   UserPlus, FileText, Bell, LayoutDashboard,
 } from 'lucide-react';
 import FaqAccordion from './FaqAccordion';
+import { FAQ_ITEMS } from './faq-data';
 
 export const metadata: Metadata = {
   title: 'Comment ca marche — RoullePro',
@@ -63,9 +64,27 @@ const ADVANTAGES = [
   { value: '24h', label: 'Moderation rapide', desc: "Vos annonces sont verifiees et publiees sous 24 heures." },
 ];
 
+// JSON-LD FAQPage pour rich results Google
+const faqJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    '@type': 'Question',
+    name: item.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.answer,
+    },
+  })),
+};
+
 export default function CommentCaMarchePage() {
   return (
     <div className="min-h-screen bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
 
       {/* Hero */}
       <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-blue-900 text-white py-20">

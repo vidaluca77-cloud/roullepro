@@ -39,6 +39,18 @@ export default function RegisterPage() {
         phone: form.phone,
         company_name: form.company_name,
       });
+
+      // Email de bienvenue (non-bloquant : fire-and-forget)
+      fetch('/api/welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.email,
+          full_name: form.full_name,
+        }),
+      }).catch((err) => {
+        console.error('[register] welcome email failed:', err);
+      });
     }
 
     setSuccess(true);

@@ -424,3 +424,74 @@ export async function sendAlerteNouvelleAnnonce({
     html,
   });
 }
+
+/* ─────────────────────────────────────────
+   7. Email de bienvenue — nouvelle inscription
+───────────────────────────────────────── */
+export async function sendWelcomeEmail({
+  userEmail,
+  userName,
+}: {
+  userEmail: string;
+  userName?: string;
+}) {
+  const loginUrl = `${APP_URL}/auth/login`;
+  const deposerUrl = `${APP_URL}/deposer-annonce`;
+  const annoncesUrl = `${APP_URL}/annonces`;
+
+  const prenom = userName?.trim().split(' ')[0] || '';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      <div style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); padding: 40px 32px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">Bienvenue sur RoullePro</h1>
+        <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 15px;">La marketplace B2B du transport routier professionnel</p>
+      </div>
+      <div style="padding: 32px;">
+        <h2 style="color: #1f2937; margin-top: 0; font-size: 20px;">
+          Bonjour${prenom ? ' ' + prenom : ''},
+        </h2>
+        <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
+          Merci de rejoindre <strong>RoullePro</strong>, la première plateforme B2B dédiée aux professionnels du transport routier.
+          Votre compte est maintenant actif — voici par où commencer :
+        </p>
+
+        <div style="background: #f9fafb; border-radius: 10px; padding: 20px; margin: 24px 0;">
+          <h3 style="margin: 0 0 12px 0; font-size: 15px; color: #1f2937;">🚀 Premiers pas</h3>
+          <ul style="margin: 0; padding-left: 20px; color: #4b5563; font-size: 14px; line-height: 1.8;">
+            <li>Complétez votre profil vendeur (KBIS, SIRET)</li>
+            <li>Déposez votre première annonce <strong>gratuitement</strong></li>
+            <li>Parcourez les annonces disponibles (VTC, taxi, ambulance, TPMR, navette, utilitaires)</li>
+            <li>Activez les alertes sur les catégories qui vous intéressent</li>
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 32px 0;">
+          <a href="${deposerUrl}" style="background: #2563eb; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block; margin: 4px;">
+            Déposer une annonce
+          </a>
+          <a href="${annoncesUrl}" style="background: #f3f4f6; color: #1f2937; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block; margin: 4px;">
+            Parcourir les annonces
+          </a>
+        </div>
+
+        <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin-top: 24px;">
+          <strong>100% gratuit</strong> pour les vendeurs, aucune commission prélevée sur vos ventes.
+          Une question ? Répondez directement à cet email, notre équipe vous répondra sous 24h.
+        </p>
+
+        <p style="color: #9ca3af; font-size: 13px; text-align: center; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+          <a href="${loginUrl}" style="color: #2563eb;">Se connecter</a> ·
+          <a href="${APP_URL}/comment-ca-marche" style="color: #2563eb;">Comment ça marche</a> ·
+          <a href="${APP_URL}/contact" style="color: #2563eb;">Nous contacter</a>
+        </p>
+      </div>
+    </div>
+  `;
+
+  await sendEmail({
+    to: userEmail,
+    subject: 'Bienvenue sur RoullePro — votre compte est actif',
+    html,
+  });
+}
