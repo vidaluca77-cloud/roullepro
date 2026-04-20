@@ -98,14 +98,27 @@ async function syncSubscription(sub: Stripe.Subscription) {
 }
 
 export async function POST(request: Request) {
-  const stripe = getStripe();
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  // 1. Vérifier la présence du header AVANT toute init Stripe
   const signature = request.headers.get('stripe-signature');
-
-  if (!secret || !signature) {
+  if (!signature) {
     return NextResponse.json({ error: 'Signature manquante' }, { status: 400 });
   }
 
+  // 2. Vérifier la présence des secrets (renvoie 500 explicite si mal config)
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  const stripeKey = process.env.STRIPE_SECRET_KEY;
+  if (!secret || !stripeKey) {
+    console.error('[stripe webhook] config manquante', {
+      hasWebhookSecret: !!secret,
+      hasStripeKey: !!stripeKey,
+    });
+    return NextResponse.json(
+      { error: 'Config serveur incomplète (env vars)' },
+      { status: 500 }
+    );
+  }
+
+  const stripe = getStripe();
   const rawBody = await request.text();
 
   let event: Stripe.Event;
