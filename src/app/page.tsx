@@ -2,8 +2,10 @@ import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import {
   Search, Shield, Zap, Users, ArrowRight,
-  CheckCircle, Star, TrendingUp, Truck
+  CheckCircle, Star, TrendingUp, Truck, BookOpen
 } from 'lucide-react';
+import { getLatestPosts } from '@/lib/blog';
+import { ArticleCard } from '@/components/blog/ArticleCard';
 
 // Catégories avec SVG inline pour un rendu propre sans émojis
 const CATEGORIES = [
@@ -471,6 +473,38 @@ export default async function HomePage() {
                   <p className="text-slate-500 text-sm leading-relaxed">{item.description}</p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* BLOG / RESSOURCES PROS */}
+      <section className="bg-white py-20 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-4">
+                <BookOpen size={14} /> Ressources pros
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+                Nos derniers guides pour professionnels
+              </h2>
+              <p className="text-gray-600 mt-3 max-w-2xl">
+                Prix, fiscalité, financement, réglementation : tout ce qu&apos;il faut savoir pour
+                acheter et vendre malin dans le transport pro.
+              </p>
+            </div>
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-xl transition self-start"
+            >
+              Voir le blog <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {getLatestPosts(3).map((post) => (
+              <ArticleCard key={post.slug} post={post} />
             ))}
           </div>
         </div>

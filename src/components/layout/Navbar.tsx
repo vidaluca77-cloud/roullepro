@@ -20,6 +20,7 @@ export default function Navbar() {
     { href: '/', label: 'Accueil' },
     { href: '/annonces', label: 'Annonces' },
     { href: '/pricing', label: 'Tarifs' },
+    { href: '/blog', label: 'Blog' },
     { href: '/comment-ca-marche', label: 'Comment ça marche' },
     { href: '/deposer-annonce', label: 'Déposer une annonce' },
   ];
