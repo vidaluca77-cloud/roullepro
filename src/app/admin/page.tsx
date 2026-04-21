@@ -201,6 +201,18 @@ export default function AdminPage() {
           >
             Vérifications
           </Link>
+          <Link
+            href="/admin/garages"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+          >
+            Garages partenaires
+          </Link>
+          <Link
+            href="/admin/depots"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+          >
+            Dépôts-vente
+          </Link>
         </div>
 
         {/* Onglet Modération */}
