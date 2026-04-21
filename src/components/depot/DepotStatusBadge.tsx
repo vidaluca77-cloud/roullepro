@@ -2,6 +2,8 @@
 
 export type DepotStatut =
   | 'estimation'
+  | 'demande_en_attente'
+  | 'demande_refusee'
   | 'rdv_pris'
   | 'depose'
   | 'en_vente'
@@ -15,6 +17,14 @@ const STATUS_CONFIG: Record<DepotStatut, { label: string; className: string }> =
   estimation: {
     label: 'Estimation',
     className: 'bg-slate-100 text-slate-700 border border-slate-200',
+  },
+  demande_en_attente: {
+    label: 'Demande en attente',
+    className: 'bg-purple-100 text-purple-700 border border-purple-200',
+  },
+  demande_refusee: {
+    label: 'Demande refusée',
+    className: 'bg-rose-100 text-rose-700 border border-rose-200',
   },
   rdv_pris: {
     label: 'RDV pris',

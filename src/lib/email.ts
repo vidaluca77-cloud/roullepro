@@ -819,3 +819,123 @@ export async function sendDepotOffreAcheteur(
   `;
   await sendEmail({ to, subject: `[RoullePro] Votre offre de ${Number(offre.montant).toLocaleString('fr-FR')} € a été transmise`, html });
 }
+
+/* ── Accusé de réception de la demande au vendeur ── */
+export async function sendDepotDemandeAccuse(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null },
+  garage: { raison_sociale: string; ville?: string | null }
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(" ") || "votre véhicule";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Demande de dépôt-vente transmise")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Votre demande de dépôt-vente pour <strong>${vehicule}</strong> a bien été transmise au garage partenaire RoullePro${garage.ville ? " de " + garage.ville : ""}.</p>
+        <div style="background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 6px; font-size: 13px; color: #6b21a8; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Statut</p>
+          <p style="margin: 0; font-weight: 700; color: #6b21a8;">En attente de validation par le garage</p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">Le garage va examiner votre demande, valider le prix de vente proposé puis vous recontacter pour fixer le dépôt du véhicule. Vous recevrez un email dès que le garage aura répondu (généralement sous 48 heures).</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/dashboard" style="background: #7c3aed; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">Voir ma demande</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Demande de dépôt-vente transmise — ${vehicule}`, html });
+}
+
+/* ── Notification nouvelle demande au garage ── */
+export async function sendDepotDemandeGarage(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null; annee?: number | null; kilometrage?: number | null },
+  vendeur_name: string,
+  prix_propose_vendeur: number | null,
+  message_vendeur: string | null
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(" ") || "véhicule";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Nouvelle demande de dépôt-vente")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Un particulier souhaite vous confier son véhicule en dépôt-vente. Merci d'examiner la demande et de valider le prix de vente (ou de refuser si le véhicule ne convient pas).</p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280;">Véhicule</td><td style="padding: 8px 0; font-weight: 600;">${vehicule}${depot.annee ? " (" + depot.annee + ")" : ""}</td></tr>
+            ${depot.kilometrage ? `<tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280;">Kilométrage</td><td style="padding: 8px 0;">${Number(depot.kilometrage).toLocaleString("fr-FR")} km</td></tr>` : ""}
+            <tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280;">Vendeur</td><td style="padding: 8px 0;">${vendeur_name}</td></tr>
+            ${prix_propose_vendeur ? `<tr><td style="padding: 8px 0; color: #6b7280;">Prix souhaité</td><td style="padding: 8px 0; font-weight: 700; color: #2563eb;">${Number(prix_propose_vendeur).toLocaleString("fr-FR")} €</td></tr>` : ""}
+          </table>
+        </div>
+        ${message_vendeur ? `<div style="background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin: 16px 0;"><p style="margin: 0 0 4px; font-size: 12px; color: #a16207; font-weight: 600; text-transform: uppercase;">Message du vendeur</p><p style="margin: 0; font-size: 14px; color: #374151;">${message_vendeur}</p></div>` : ""}
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/garage/dashboard/depots/${depot.id}" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">Traiter la demande</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Nouvelle demande de dépôt-vente — ${vehicule}`, html });
+}
+
+/* ── Demande validée par le garage ── */
+export async function sendDepotDemandeValidee(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null },
+  info: { raison_sociale?: string; ville?: string | null; prix_valide: number; prix_vendeur_net: number; note_garage?: string | null }
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(" ") || "votre véhicule";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Demande validée — prochaine étape : dépôt")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonne nouvelle : votre demande de dépôt-vente pour <strong>${vehicule}</strong> a été validée par le garage partenaire RoullePro${info.ville ? " de " + info.ville : ""}.</p>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 6px; font-size: 13px; color: #166534; text-transform: uppercase; font-weight: 600;">Prix de vente validé</p>
+          <p style="margin: 0 0 12px; font-size: 28px; font-weight: 800; color: #16a34a;">${Number(info.prix_valide).toLocaleString("fr-FR")} €</p>
+          <p style="margin: 0 0 4px; font-size: 13px; color: #166534; text-transform: uppercase; font-weight: 600;">Vous touchez net</p>
+          <p style="margin: 0; font-size: 22px; font-weight: 700; color: #16a34a;">${Number(info.prix_vendeur_net).toLocaleString("fr-FR")} €</p>
+          <p style="margin: 6px 0 0; font-size: 12px; color: #6b7280;">Après commissions RoullePro (4 %) + garage (7 % + forfait préparation).</p>
+        </div>
+        ${info.note_garage ? `<div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0;"><p style="margin: 0 0 4px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase;">Message du garage</p><p style="margin: 0; font-size: 14px; color: #374151;">${info.note_garage}</p></div>` : ""}
+        <p style="font-size: 14px; color: #374151;">Prochaine étape : convenir avec le garage de la date à laquelle vous lui confiez le véhicule. Une fois déposé, il sera mis en vente et vous serez payé sous 48 h après la vente.</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/dashboard" style="background: #16a34a; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">Voir mon dépôt</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Demande validée — ${vehicule} à ${Number(info.prix_valide).toLocaleString("fr-FR")} €`, html });
+}
+
+/* ── Demande refusée par le garage ── */
+export async function sendDepotDemandeRefusee(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null },
+  garage: { raison_sociale?: string; ville?: string | null },
+  raison: string
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(" ") || "votre véhicule";
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Demande non retenue")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Nous vous remercions pour votre demande de dépôt-vente concernant <strong>${vehicule}</strong>.</p>
+        <p style="font-size: 14px; color: #374151;">Après examen, le garage partenaire RoullePro${garage.ville ? " de " + garage.ville : ""} n'est malheureusement pas en mesure d'accueillir ce véhicule.</p>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 4px; font-size: 12px; color: #991b1b; font-weight: 600; text-transform: uppercase;">Raison du refus</p>
+          <p style="margin: 0; font-size: 14px; color: #374151;">${raison}</p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">N'hésitez pas à essayer avec un autre garage partenaire RoullePro dans une autre ville, ou à mettre directement votre véhicule en vente en tant que particulier sur notre plateforme.</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/depot-vente/garages" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">Voir les autres garages</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Demande non retenue — ${vehicule}`, html });
+}

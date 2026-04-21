@@ -69,15 +69,59 @@ export default async function DepotDetailPage({ params }: { params: { id: string
             <p className="text-slate-400 text-sm mt-0.5 font-mono">{depot.immatriculation}</p>
           )}
         </div>
-        <a
-          href={`/api/depot-vente/${params.id}/contrat`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
-        >
-          Telecharger le contrat PDF
-        </a>
+        {!['demande_en_attente', 'demande_refusee'].includes(depot.statut) && (
+          <a
+            href={`/api/depot-vente/${params.id}/contrat`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+          >
+            Telecharger le contrat PDF
+          </a>
+        )}
       </div>
+
+      {/* Banniere statut demande */}
+      {depot.statut === 'demande_en_attente' && (
+        <div className="mb-6 bg-purple-50 border border-purple-200 rounded-xl p-5">
+          <p className="text-sm font-semibold text-purple-900 mb-1">Demande en cours d’examen par le garage</p>
+          <p className="text-sm text-purple-800">
+            Le garage partenaire{garage?.ville ? ` de ${garage.ville}` : ''} va examiner votre demande et valider le prix de vente sous 48 h. Vous serez notifié par email dès qu’il aura répondu.
+          </p>
+          {depot.prix_propose_vendeur && (
+            <p className="text-sm text-purple-900 mt-2">
+              Prix que vous souhaitez obtenir : <strong>{formatEuro(Number(depot.prix_propose_vendeur))}</strong>
+            </p>
+          )}
+        </div>
+      )}
+
+      {depot.statut === 'demande_refusee' && (
+        <div className="mb-6 bg-rose-50 border border-rose-200 rounded-xl p-5">
+          <p className="text-sm font-semibold text-rose-900 mb-1">Demande non retenue par le garage</p>
+          {depot.refus_raison && (
+            <p className="text-sm text-rose-800 mt-1">{depot.refus_raison}</p>
+          )}
+          <p className="text-sm text-rose-800 mt-3">
+            Vous pouvez contacter un autre garage partenaire RoullePro ou mettre votre véhicule en vente directement.
+          </p>
+          <Link href="/depot-vente/garages" className="inline-flex items-center gap-1.5 mt-3 text-sm text-rose-900 font-semibold hover:underline">
+            Voir les autres garages →
+          </Link>
+        </div>
+      )}
+
+      {depot.statut === 'rdv_pris' && depot.prix_valide_garage && (
+        <div className="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+          <p className="text-sm font-semibold text-emerald-900 mb-1">Demande validée — prochaine étape : dépôt du véhicule</p>
+          <p className="text-sm text-emerald-800">
+            Prix de vente validé : <strong>{formatEuro(Number(depot.prix_valide_garage))}</strong>
+            {depot.prix_vendeur_net && (
+              <> — vous toucherez net <strong>{formatEuro(Number(depot.prix_vendeur_net))}</strong></>
+            )}
+          </p>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-3 gap-6">
         {/* Colonne principale */}

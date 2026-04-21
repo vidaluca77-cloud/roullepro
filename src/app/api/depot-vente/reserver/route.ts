@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createSbClient } from '@supabase/supabase-js';
 import { apiError } from '@/lib/api-utils';
-import { sendDepotRdvConfirmation, sendDepotRdvNotification } from '@/lib/email';
+import { sendDepotDemandeAccuse, sendDepotDemandeGarage } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +23,8 @@ export async function POST(req: NextRequest) {
     code_postal_recuperation?: string | null;
     ville_recuperation?: string | null;
     frais_recuperation?: number | null;
+    prix_propose_vendeur?: number | null;
+    message_vendeur?: string | null;
   };
   try {
     body = await req.json();
@@ -39,6 +41,8 @@ export async function POST(req: NextRequest) {
     code_postal_recuperation,
     ville_recuperation,
     frais_recuperation,
+    prix_propose_vendeur,
+    message_vendeur,
   } = body;
 
   const recup = recuperation_domicile === true;
@@ -91,24 +95,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Ce garage ne peut pas accepter de dépôts pour le moment' }, { status: 400 });
     }
 
-    // Calculer date_limite = now + 90 jours
-    const dateLimit = new Date();
-    dateLimit.setDate(dateLimit.getDate() + 90);
-
-    // Mettre à jour le dépôt
+    // Mettre à jour le dépôt — la demande part en attente de validation par le garage
     const { error: updateError } = await sbService
       .from('depots')
       .update({
         garage_id,
         date_depot_prevu: date_depot_prevu ?? null,
-        statut: 'rdv_pris',
-        date_limite: dateLimit.toISOString(),
+        statut: 'demande_en_attente',
         recuperation_domicile: recup,
         adresse_recuperation: recup ? adresse_recuperation : null,
         code_postal_recuperation: recup ? code_postal_recuperation : null,
         ville_recuperation: recup ? ville_recuperation : null,
         frais_recuperation: recup ? (frais_recuperation ?? 79) : 0,
         date_recuperation_prevue: recup && date_depot_prevu ? date_depot_prevu : null,
+        prix_propose_vendeur: prix_propose_vendeur && Number(prix_propose_vendeur) > 0 ? Number(prix_propose_vendeur) : null,
+        message_vendeur: message_vendeur?.trim() || null,
       })
       .eq('id', depot_id);
 
@@ -116,12 +117,12 @@ export async function POST(req: NextRequest) {
       return apiError('POST /api/depot-vente/reserver', updateError, 500, "Erreur lors de la réservation");
     }
 
-    // Créer l'événement
+    // Créer l'événement — demande de dépôt-vente transmise au garage
     await sbService.from('depot_events').insert({
       depot_id,
-      type: recup ? 'rdv_recuperation_domicile' : 'rdv_pris',
+      type: 'demande_envoyee',
       ancien_statut: depot.statut,
-      nouveau_statut: 'rdv_pris',
+      nouveau_statut: 'demande_en_attente',
       acteur_id: user.id,
       payload: {
         garage_id,
@@ -131,6 +132,8 @@ export async function POST(req: NextRequest) {
         code_postal_recuperation: recup ? code_postal_recuperation : null,
         ville_recuperation: recup ? ville_recuperation : null,
         frais_recuperation: recup ? (frais_recuperation ?? 79) : 0,
+        prix_propose_vendeur: prix_propose_vendeur ?? null,
+        message_vendeur: message_vendeur ?? null,
       },
     });
 
@@ -144,13 +147,15 @@ export async function POST(req: NextRequest) {
     const vendeurEmail = user.email ?? '';
     const vendeurName = (profile as { full_name?: string } | null)?.full_name ?? vendeurEmail;
 
-    // Emails
+    // Emails — accusé de réception au vendeur + notification au garage
     await Promise.allSettled([
-      sendDepotRdvConfirmation(vendeurEmail, depot, garage),
-      sendDepotRdvNotification(
+      sendDepotDemandeAccuse(vendeurEmail, depot, garage),
+      sendDepotDemandeGarage(
         garage.contact_email,
         depot,
-        vendeurName
+        vendeurName,
+        prix_propose_vendeur ?? null,
+        message_vendeur ?? null
       ),
     ]);
 

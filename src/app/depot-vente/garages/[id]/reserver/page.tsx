@@ -14,6 +14,8 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
   const [adresseRecup, setAdresseRecup] = useState("");
   const [cpRecup, setCpRecup] = useState("");
   const [villeRecup, setVilleRecup] = useState("");
+  const [prixSouhaite, setPrixSouhaite] = useState("");
+  const [messageVendeur, setMessageVendeur] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -52,6 +54,8 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
           code_postal_recuperation: mode === "domicile" ? cpRecup.trim() : null,
           ville_recuperation: mode === "domicile" ? villeRecup.trim() : null,
           frais_recuperation: mode === "domicile" ? fraisRecuperation : 0,
+          prix_propose_vendeur: prixSouhaite ? Number(prixSouhaite) : null,
+          message_vendeur: messageVendeur.trim() || null,
         }),
       });
       const data = await res.json();
@@ -78,11 +82,9 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
           <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle size={32} className="text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Demande confirmée</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Demande transmise</h1>
           <p className="text-slate-500 mb-8">
-            {mode === "domicile"
-              ? "Votre demande de récupération à domicile est transmise au garage partenaire. Il vous contactera sous 24h pour convenir du créneau précis."
-              : "Vous allez recevoir un email de confirmation. Le garage vous contactera pour finaliser les détails du dépôt."}
+            Votre demande de dépôt-vente est transmise au garage partenaire. Il va examiner le dossier, valider le prix de vente, puis vous recontacter sous 48 h pour fixer le dépôt du véhicule. Vous serez notifié par email.
           </p>
           <Link
             href="/dashboard/depots"
@@ -100,9 +102,9 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
     <div className="min-h-screen bg-slate-50 py-16">
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-md p-8">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Comment souhaitez-vous procéder ?</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Votre demande de dépôt-vente</h1>
           <p className="text-slate-500 text-sm mb-8">
-            Choisissez entre déposer le véhicule au garage ou demander une récupération à domicile.
+            Précisez le prix que vous souhaiteriez obtenir et comment vous voulez procéder. Le garage validera le prix de vente final avant de lancer le dépôt.
           </p>
 
           {/* Toggle mode */}
@@ -145,6 +147,43 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label htmlFor="prix_souhaite" className="block text-sm font-medium text-slate-700 mb-1">
+                Prix de vente souhaité (optionnel)
+              </label>
+              <div className="relative">
+                <input
+                  id="prix_souhaite"
+                  type="number"
+                  min="500"
+                  step="100"
+                  value={prixSouhaite}
+                  onChange={(e) => setPrixSouhaite(e.target.value)}
+                  placeholder="Ex : 12500"
+                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 pr-10 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">€</span>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Le garage validera ou ajustera ce prix après examen du véhicule.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="message_vendeur" className="block text-sm font-medium text-slate-700 mb-1">
+                Message pour le garage (optionnel)
+              </label>
+              <textarea
+                id="message_vendeur"
+                rows={2}
+                maxLength={500}
+                value={messageVendeur}
+                onChange={(e) => setMessageVendeur(e.target.value)}
+                placeholder="Ex : véhicule très bien entretenu, historique complet dispo, disponible en semaine..."
+                className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              />
+            </div>
+
             <div>
               <label htmlFor="date_depot" className="block text-sm font-medium text-slate-700 mb-1">
                 {mode === "domicile" ? "Date souhaitée pour la récupération" : "Date de dépôt souhaitée"}
@@ -240,7 +279,7 @@ export default function ReserverPage({ params }: { params: { id: string } }) {
                 </span>
               ) : (
                 <>
-                  {mode === "domicile" ? "Confirmer la récupération" : "Confirmer le rendez-vous"}
+                  Envoyer la demande au garage
                   <ArrowRight size={18} />
                 </>
               )}

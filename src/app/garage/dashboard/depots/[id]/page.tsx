@@ -126,6 +126,9 @@ export default async function GarageDepotDetailPage({ params }: { params: { id: 
             depotId={params.id}
             statut={depot.statut}
             prixAffiche={depot.prix_affiche ?? null}
+            prixProposeVendeur={depot.prix_propose_vendeur ?? null}
+            messageVendeur={depot.message_vendeur ?? null}
+            refusRaison={depot.refus_raison ?? null}
           />
         </div>
 
