@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { sendVendeurNotification } from '@/lib/email';
+import { notifyUser } from '@/lib/notify';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 
 const getAdminClient = () =>
@@ -91,9 +92,18 @@ export async function POST(request: Request) {
           messageContent: content.trim(),
         });
       } catch (emailErr) {
-        // L'email est non-bloquant : on log mais on ne fait pas échouer la requête
         console.error('[api/messages] sendVendeurNotification failed:', emailErr);
       }
+    }
+
+    // Notification push (non bloquant)
+    if (annonce.user_id) {
+      notifyUser(annonce.user_id, {
+        title: `Nouveau message de ${sender_name.trim()}`,
+        body: content.trim().slice(0, 120),
+        url: `/dashboard/messages`,
+        tag: `msg-${annonce.id}`,
+      }).catch((e) => console.error('[api/messages] push error:', e?.message));
     }
 
     return NextResponse.json({ message: 'Message envoyé avec succès', data }, { status: 201 });

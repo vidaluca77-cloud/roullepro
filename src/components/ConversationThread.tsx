@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, X, User, Store, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
 
 interface Message {
   id: string;
@@ -67,6 +68,28 @@ export default function ConversationThread({
     setReplyText('');
     setError(null);
     loadThread();
+  }, [threadId]);
+
+  // Realtime : s'abonner aux nouveaux messages du thread (et recharger pour coalesce root/reply)
+  useEffect(() => {
+    if (!threadId) return;
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`thread-${threadId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          const m = payload.new as Message & { thread_id?: string };
+          const rootId = (m as any).thread_id || m.id;
+          if (rootId !== threadId) return;
+          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [threadId]);
 
   useEffect(() => {

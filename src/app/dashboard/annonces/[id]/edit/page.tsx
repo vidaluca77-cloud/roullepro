@@ -54,6 +54,7 @@ export default function EditAnnoncePage() {
     couleur: '',
     description: '',
     ville: '',
+    histovec_url: '',
     // Champs utilitaires
     ptac: '',
     charge_utile: '',
@@ -111,6 +112,7 @@ export default function EditAnnoncePage() {
         couleur: annonce.couleur || '',
         description: annonce.description || '',
         ville: annonce.city || '',
+        histovec_url: annonce.histovec_url || '',
         ptac: annonce.ptac != null ? String(annonce.ptac) : '',
         charge_utile: annonce.charge_utile != null ? String(annonce.charge_utile) : '',
         volume_utile: annonce.volume_utile != null ? String(annonce.volume_utile) : '',
@@ -248,6 +250,7 @@ export default function EditAnnoncePage() {
         description: form.description,
         city: form.ville,
         images: allPhotos,
+        histovec_url: form.histovec_url?.trim() || null,
         // Conserver le statut d'origine — ne pas repasser en pending
         status: originalStatus,
       };
@@ -467,6 +470,23 @@ export default function EditAnnoncePage() {
                 ? "Décrivez l'état général, l'historique d'entretien, les équipements (hayon, attelage, GPS...), l'usage professionnel..."
                 : "Décrivez l'état général, l'historique d'entretien, les équipements (GPS, caméra...), l'usage professionnel..."}
               className={inputCls + ' resize-none'}
+            />
+          </div>
+
+          {/* ── HistoVec ── */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-semibold text-gray-900 mb-1">Rapport HistoVec <span className="text-xs font-normal text-gray-400">(recommandé)</span></h2>
+            <p className="text-xs text-gray-500 mb-3">
+              Collez le lien de votre rapport officiel gratuit.{" "}
+              <a href="https://histovec.interieur.gouv.fr" target="_blank" rel="noopener" className="text-blue-600 underline">Générer mon rapport</a>
+            </p>
+            <input
+              type="url"
+              name="histovec_url"
+              value={form.histovec_url}
+              onChange={set}
+              placeholder="https://histovec.interieur.gouv.fr/rapport/..."
+              className={inputCls}
             />
           </div>
 

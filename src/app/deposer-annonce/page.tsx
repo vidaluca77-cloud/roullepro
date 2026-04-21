@@ -47,6 +47,7 @@ export default function DeposerAnnoncePage() {
     couleur: '',
     description: '',
     ville: '',
+    histovec_url: '',
     // Champs utilitaires
     ptac: '',
     charge_utile: '',
@@ -198,6 +199,7 @@ export default function DeposerAnnoncePage() {
         description: form.description,
         city: form.ville,
         images: photoUrls,
+        histovec_url: form.histovec_url?.trim() || null,
         user_id: user.id,
         status: 'pending',
       };
@@ -410,6 +412,23 @@ export default function DeposerAnnoncePage() {
                 ? "Décrivez l'état général, l'historique d'entretien, les équipements (hayon, attelage, GPS...), l'usage professionnel..."
                 : "Décrivez l'état général, l'historique d'entretien, les équipements (GPS, caméra...), l'usage professionnel..."}
               className={inputCls + ' resize-none'}
+            />
+          </div>
+
+          {/* ── HistoVec ── */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="font-semibold text-gray-900 mb-1">Rapport HistoVec <span className="text-xs font-normal text-gray-400">(recommandé)</span></h2>
+            <p className="text-xs text-gray-500 mb-3">
+              Affichez le rapport officiel gratuit pour rassurer l'acheteur : antécédents, sinistres, nombre de titulaires.{" "}
+              <a href="https://histovec.interieur.gouv.fr" target="_blank" rel="noopener" className="text-blue-600 underline">Générer mon rapport</a>
+            </p>
+            <input
+              type="url"
+              name="histovec_url"
+              value={form.histovec_url}
+              onChange={set}
+              placeholder="https://histovec.interieur.gouv.fr/rapport/..."
+              className={inputCls}
             />
           </div>
 

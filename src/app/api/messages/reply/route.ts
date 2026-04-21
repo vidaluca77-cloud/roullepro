@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { sendReplyNotification, sendVendeurNotification } from '@/lib/email';
+import { notifyUser } from '@/lib/notify';
 
 const getAdminClient = () =>
   createClient(
@@ -127,6 +128,17 @@ export async function POST(request: Request) {
           messageContent: content.trim(),
         });
       }
+    }
+
+    // Push (non bloquant)
+    const pushTarget = isVendeur ? rootMsg.buyer_id : rootMsg.seller_id;
+    if (pushTarget) {
+      notifyUser(pushTarget, {
+        title: isVendeur ? 'Réponse du vendeur' : 'Nouveau message',
+        body: content.trim().slice(0, 120),
+        url: '/dashboard/messages',
+        tag: `msg-${rootMsg.annonce_id}`,
+      }).catch((e) => console.error('[api/messages/reply] push error:', e?.message));
     }
 
     return NextResponse.json({ success: true, data: reply }, { status: 201 });

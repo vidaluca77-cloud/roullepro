@@ -12,6 +12,7 @@ import {
   sendVendeurAnnonceRefusee,
   sendAlerteNouvelleAnnonce,
 } from '@/lib/email';
+import { notifyUser } from '@/lib/notify';
 
 const getAdminClient = () =>
   createClient(
@@ -87,7 +88,7 @@ export async function PATCH(request: Request) {
 
       if (abonnes && abonnes.length > 0) {
         const images = (annonce.images as string[]) || [];
-        // Envoi en parallèle (non bloquant)
+        // Envoi emails en parallèle (non bloquant)
         Promise.allSettled(
           abonnes.map((ab: any) => {
             const p = ab.profiles;
@@ -103,6 +104,17 @@ export async function PATCH(request: Request) {
               annonceImageUrl: images[0] || '',
             });
           })
+        );
+        // Push aux abonnés (non bloquant)
+        Promise.allSettled(
+          abonnes.map((ab: any) =>
+            notifyUser(ab.user_id, {
+              title: `Nouvelle annonce : ${categorie?.name || 'véhicule'}`,
+              body: `${annonce.title}${annonce.price ? ' — ' + Number(annonce.price).toLocaleString('fr-FR') + ' €' : ''}`,
+              url: `/annonces/${annonce.id}`,
+              tag: `alerte-${annonce.id}`,
+            })
+          )
         );
       }
     }

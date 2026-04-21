@@ -237,6 +237,28 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
               </div>
             )}
 
+            {annonce.histovec_url && (
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 shadow-sm">
+                <div className="flex items-start gap-3">
+                  <BadgeCheck size={22} className="text-blue-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h2 className="text-lg font-bold text-blue-900 mb-1">Rapport HistoVec officiel</h2>
+                    <p className="text-sm text-blue-800 mb-3">
+                      Historique administratif vérifié par l'État français : antécédents, sinistres, nombre de titulaires.
+                    </p>
+                    <a
+                      href={annonce.histovec_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition text-sm"
+                    >
+                      Consulter le rapport HistoVec
+                    </a>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {vendeur && (
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-4">Vendeur</h2>
@@ -263,13 +285,41 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                   )}
 
                   {!isOwner ? (
-                    <button
-                      onClick={() => setContactModalOpen(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
-                    >
-                      <MessageSquare size={18} />
-                      Contacter le vendeur
-                    </button>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => setContactModalOpen(true)}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                      >
+                        <MessageSquare size={18} />
+                        Contacter le vendeur
+                      </button>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/escrow/checkout", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ annonce_id: annonce.id }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) {
+                              alert(data.error || "Erreur");
+                              return;
+                            }
+                            window.location.href = data.url;
+                          } catch (e: any) {
+                            alert(e?.message || "Erreur");
+                          }
+                        }}
+                        className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                      >
+                        <BadgeCheck size={18} />
+                        Acheter avec paiement sécurisé
+                      </button>
+                      <p className="text-[11px] text-gray-500 text-center leading-tight">
+                        Fonds séquestrés par RoullePro, libérés au vendeur après confirmation de la livraison.
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-lg font-medium text-center text-sm">

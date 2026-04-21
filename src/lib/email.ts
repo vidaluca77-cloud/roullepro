@@ -1093,3 +1093,57 @@ export async function sendDepotDemandeRefusee(
   `;
   await sendEmail({ to, subject: `[RoullePro] Demande non retenue — ${vehicule}`, html });
 }
+
+/* ── Expiration annonce 90j ── */
+export async function sendAnnonceExpiration(
+  to: string,
+  annonce: { id: string; title?: string | null; marque?: string | null; modele?: string | null }
+) {
+  const vehicule = annonce.title || [annonce.marque, annonce.modele].filter(Boolean).join(" ") || "Votre annonce";
+  const relanceUrl = `${APP_URL}/dashboard/annonces/${annonce.id}/edit`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Votre annonce a expiré")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour,</p>
+        <p style="font-size: 14px;">Votre annonce <strong>${vehicule}</strong> a atteint sa durée maximale de publication (90 jours) et vient d'expirer.</p>
+        <p style="font-size: 14px; color: #374151;">Vous avez 2 possibilités :</p>
+        <ul style="font-size: 14px; color: #374151; line-height: 1.6;">
+          <li><strong>Relancer</strong> gratuitement votre annonce pour 90 jours supplémentaires</li>
+          <li><strong>Confier votre véhicule</strong> à un garage partenaire en dépôt-vente pour vendre plus vite</li>
+        </ul>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${relanceUrl}" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block; margin: 0 6px;">Relancer mon annonce</a>
+          <a href="${APP_URL}/depot-vente/garages" style="background: #10b981; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block; margin: 6px;">Dépôt-vente</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Annonce expirée — ${vehicule}`, html });
+}
+
+/* ── Paiement séquestre en attente vendeur ── */
+export async function sendEscrowSellerFundsHeld(
+  to: string,
+  data: { annonceTitle: string; amountSeller: number; transactionId: string }
+) {
+  const amount = (data.amountSeller / 100).toFixed(2);
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Paiement reçu en séquestre")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonne nouvelle : un acheteur a payé <strong>${amount} €</strong> pour votre véhicule <strong>${data.annonceTitle}</strong>.</p>
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0; font-size: 14px; color: #1e40af;"><strong>Les fonds sont sécurisés sur notre compte séquestre.</strong> Ils seront transférés sur votre compte Stripe Connect dès la confirmation de la livraison du véhicule par l'acheteur.</p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">Organisez la livraison avec l'acheteur puis demandez-lui de confirmer la réception depuis son espace RoullePro.</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL}/dashboard/transactions/${data.transactionId}" style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">Voir la transaction</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Paiement sécurisé reçu — ${data.annonceTitle}`, html });
+}

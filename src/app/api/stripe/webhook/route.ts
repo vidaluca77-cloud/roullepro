@@ -19,6 +19,8 @@ import { NextResponse } from 'next/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/stripe';
 import { planFromPriceId, type PlanId } from '@/lib/plans';
+import { sendEscrowSellerFundsHeld } from '@/lib/email';
+import { notifyUser } from '@/lib/notify';
 import Stripe from 'stripe';
 
 export const dynamic = 'force-dynamic';
@@ -95,7 +97,7 @@ async function handleDepotVenteCheckout(session: Stripe.Checkout.Session) {
   });
 }
 
-/** Handler account.updated : synchronise l'etat Connect des garages partenaires */
+/** Handler account.updated : synchronise l'etat Connect des garages partenaires + vendeurs (profiles) */
 async function handleConnectAccountUpdated(account: Stripe.Account) {
   const db = admin();
   const chargesEnabled = account.charges_enabled === true;
@@ -105,7 +107,8 @@ async function handleConnectAccountUpdated(account: Stripe.Account) {
 
   const connectReady = chargesEnabled && payoutsEnabled && detailsSubmitted && transfersActive;
 
-  const { error } = await db
+  // Garages
+  await db
     .from("garages_partenaires")
     .update({
       stripe_connect_ready: connectReady,
@@ -116,9 +119,11 @@ async function handleConnectAccountUpdated(account: Stripe.Account) {
     })
     .eq("stripe_account_id", account.id);
 
-  if (error) {
-    console.error("[stripe webhook] account.updated sync fail", account.id, error);
-  }
+  // Vendeurs particuliers (profiles)
+  await db
+    .from("profiles")
+    .update({ stripe_connect_ready: connectReady })
+    .eq("stripe_account_id", account.id);
 }
 
 /** Handler account.application.deauthorized : garage a revoque la connexion */
@@ -155,6 +160,50 @@ async function handleDepotVenteRefund(paymentIntentId: string, eventType: string
     type_event: newStatut,
     description: `Evenement Stripe: ${eventType} - PI ${paymentIntentId}`,
   });
+}
+
+/** Handler escrow : paiement réussi → fonds en séquestre (status=held) */
+async function handleEscrowPaid(session: Stripe.Checkout.Session) {
+  const db = admin();
+  const txId = session.metadata?.escrow_tx_id;
+  if (!txId) return;
+
+  const piId = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent?.id;
+
+  const { data: tx } = await db
+    .from('escrow_transactions')
+    .select('id, status, amount_seller, seller_id, annonce_id, annonces(title)')
+    .eq('id', txId)
+    .single();
+
+  if (!tx || tx.status !== 'pending') return;
+
+  await db.from('escrow_transactions').update({
+    status: 'held',
+    payment_intent_id: piId || null,
+  }).eq('id', txId);
+
+  // Notifier vendeur (email + push)
+  if (tx.seller_id) {
+    const { data: sellerProfile } = await db
+      .from('profiles').select('email').eq('id', tx.seller_id).single();
+    const annonceTitle = (tx as any).annonces?.title || 'votre véhicule';
+    if (sellerProfile?.email) {
+      sendEscrowSellerFundsHeld(sellerProfile.email, {
+        annonceTitle,
+        amountSeller: tx.amount_seller,
+        transactionId: tx.id,
+      }).catch((e) => console.error('[escrow] email seller:', e?.message));
+    }
+    notifyUser(tx.seller_id, {
+      title: 'Paiement sécurisé reçu',
+      body: `${(tx.amount_seller / 100).toFixed(2)} € en séquestre — libérés après livraison`,
+      url: `/dashboard/transactions/${tx.id}`,
+      tag: `escrow-${tx.id}`,
+    }).catch(() => {});
+  }
 }
 
 /** Upsert subscription + met à jour profiles.plan */
@@ -273,6 +322,11 @@ export async function POST(request: Request) {
         // Cas 2 : paiement depot-vente (mode payment + metadata.type=depot_vente)
         if (session.mode === 'payment' && session.metadata?.type === 'depot_vente') {
           await handleDepotVenteCheckout(session);
+        }
+
+        // Cas 3 : paiement escrow annonce
+        if (session.mode === 'payment' && session.metadata?.escrow_tx_id) {
+          await handleEscrowPaid(session);
         }
         break;
       }
