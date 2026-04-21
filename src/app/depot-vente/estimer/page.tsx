@@ -1,47 +1,84 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { ArrowRight, Calculator, AlertCircle } from 'lucide-react';
-import EstimationCard from '@/components/depot/EstimationCard';
+import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { ArrowRight, Calculator, AlertCircle, Camera } from "lucide-react";
+import EstimationCard from "@/components/depot/EstimationCard";
+import DepotPhotosUploader from "@/components/depot/DepotPhotosUploader";
 
 interface EstimationResult {
   estimation_min: number;
   estimation_max: number;
   estimation_centrale?: number;
   categorie?: string;
-  confiance?: 'haute' | 'moyenne' | 'basse';
+  confiance?: "haute" | "moyenne" | "basse";
   depot_id: string | null;
 }
 
-export default function EstimerPage() {
+function EstimerPageInner() {
+  const searchParams = useSearchParams();
+  const prefillId = searchParams.get("prefill");
+
   const [formData, setFormData] = useState({
-    immatriculation: '',
-    marque: '',
-    modele: '',
-    annee: '',
-    kilometrage: '',
-    etat_general: 'moyen',
-    email: '',
+    immatriculation: "",
+    marque: "",
+    modele: "",
+    annee: "",
+    kilometrage: "",
+    etat_general: "moyen",
+    email: "",
+    photos: [] as string[],
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [prefilling, setPrefilling] = useState(false);
+  const [error, setError] = useState("");
   const [result, setResult] = useState<EstimationResult | null>(null);
+
+  // Prefill depuis une annonce existante
+  useEffect(() => {
+    if (!prefillId) return;
+    let cancelled = false;
+    (async () => {
+      setPrefilling(true);
+      try {
+        const res = await fetch(`/api/depot-vente/prefill/${prefillId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        setFormData((prev) => ({
+          ...prev,
+          marque: data.marque ?? prev.marque,
+          modele: data.modele ?? prev.modele,
+          annee: data.annee ? String(data.annee) : prev.annee,
+          kilometrage: data.kilometrage ? String(data.kilometrage) : prev.kilometrage,
+          photos: Array.isArray(data.images) ? data.images.slice(0, 12) : prev.photos,
+        }));
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) setPrefilling(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [prefillId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError('');
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      const res = await fetch('/api/depot-vente/estimer', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/depot-vente/estimer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           immatriculation: formData.immatriculation,
           marque: formData.marque,
@@ -50,6 +87,7 @@ export default function EstimerPage() {
           kilometrage: Number(formData.kilometrage),
           etat_general: formData.etat_general,
           email: formData.email,
+          photos: formData.photos,
         }),
       });
 
@@ -84,6 +122,14 @@ export default function EstimerPage() {
             Renseignez les informations ci-dessous pour obtenir une fourchette de prix instantanée.
             Gratuit et sans engagement.
           </p>
+          {prefilling && (
+            <p className="text-xs text-blue-600 mt-3">Pré-remplissage depuis votre annonce...</p>
+          )}
+          {prefillId && !prefilling && (
+            <p className="text-xs text-emerald-600 mt-3">
+              Informations reprises depuis votre annonce. Complétez et validez.
+            </p>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 items-start">
@@ -192,9 +238,22 @@ export default function EstimerPage() {
                 </select>
               </div>
 
+              {/* Photos du véhicule */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
+                  <Camera size={14} />
+                  Photos du véhicule <span className="text-slate-400 text-xs font-normal">(optionnel, recommandé)</span>
+                </label>
+                <DepotPhotosUploader
+                  photos={formData.photos}
+                  onChange={(urls) => setFormData((prev) => ({ ...prev, photos: urls }))}
+                  max={12}
+                />
+              </div>
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
-                  Email <span className="text-slate-400 text-xs">(pour recevoir l'estimation)</span>
+                  Email <span className="text-slate-400 text-xs">(pour recevoir l&apos;estimation)</span>
                 </label>
                 <input
                   id="email"
@@ -249,7 +308,7 @@ export default function EstimerPage() {
                   annee={formData.annee ? Number(formData.annee) : undefined}
                 />
                 <Link
-                  href={`/depot-vente/garages${result.depot_id ? '?estimation=' + result.depot_id : ''}`}
+                  href={`/depot-vente/garages${result.depot_id ? "?estimation=" + result.depot_id : ""}`}
                   className="flex items-center justify-center gap-2 w-full bg-white border-2 border-blue-600 text-blue-700 hover:bg-blue-50 font-bold py-3.5 rounded-xl transition"
                 >
                   Trouver un garage partenaire
@@ -280,5 +339,13 @@ export default function EstimerPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EstimerPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-50" />}>
+      <EstimerPageInner />
+    </Suspense>
   );
 }

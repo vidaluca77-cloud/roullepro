@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
     marque?: string;
     modele?: string;
     email?: string;
+    photos?: string[];
   };
 
   try {
@@ -32,7 +33,11 @@ export async function POST(req: NextRequest) {
     return apiError('POST /api/depot-vente/estimer', 'Invalid JSON', 400, 'Corps de requete invalide');
   }
 
-  const { immatriculation, kilometrage, annee, etat_general, marque, modele } = body;
+  const { immatriculation, kilometrage, annee, etat_general, marque, modele, photos } = body;
+
+  const photosClean = Array.isArray(photos)
+    ? photos.filter((u): u is string => typeof u === "string" && u.startsWith("http")).slice(0, 12)
+    : [];
 
   if (!annee || !kilometrage || !etat_general) {
     return NextResponse.json(
@@ -91,6 +96,7 @@ export async function POST(req: NextRequest) {
           estimation_min: estimation.estimation_min,
           estimation_max: estimation.estimation_max,
           statut: 'estimation',
+          photos_hd: photosClean.length > 0 ? photosClean : null,
         })
         .select('id')
         .single();

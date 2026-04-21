@@ -689,6 +689,15 @@ function DashboardPageInner() {
                         <CheckCircle size={16} />
                       </button>
                     )}
+                    {a.status === 'active' && (
+                      <Link
+                        href={`/depot-vente/estimer?prefill=${a.id}`}
+                        className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition"
+                        title="Mettre en dépôt-vente"
+                      >
+                        <Package size={16} />
+                      </Link>
+                    )}
                     {a.status === 'expired' && (
                       <button
                         onClick={() => renew(a.id)}

@@ -7,6 +7,7 @@ import Image from 'next/image';
 import {
   Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight,
   MessageSquare, BadgeCheck, Eye, Share2, Copy, Check,
+  Package,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import SignalementModal from '@/components/SignalementModal';
@@ -270,8 +271,20 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                       Contacter le vendeur
                     </button>
                   ) : (
-                    <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-lg font-medium text-center text-sm">
-                      Votre annonce
+                    <div className="space-y-2">
+                      <div className="w-full bg-gray-100 text-gray-500 py-3 rounded-lg font-medium text-center text-sm">
+                        Votre annonce
+                      </div>
+                      <Link
+                        href={`/depot-vente/estimer?prefill=${annonce.id}`}
+                        className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+                      >
+                        <Package size={18} />
+                        Mettre en dépôt-vente
+                      </Link>
+                      <p className="text-xs text-slate-500 text-center">
+                        Confiez la vente à un garage partenaire : plus rapide, sécurisé, meilleur prix.
+                      </p>
                     </div>
                   )}
 
