@@ -95,6 +95,48 @@ async function handleDepotVenteCheckout(session: Stripe.Checkout.Session) {
   });
 }
 
+/** Handler account.updated : synchronise l'etat Connect des garages partenaires */
+async function handleConnectAccountUpdated(account: Stripe.Account) {
+  const db = admin();
+  const chargesEnabled = account.charges_enabled === true;
+  const payoutsEnabled = account.payouts_enabled === true;
+  const detailsSubmitted = account.details_submitted === true;
+  const transfersActive = account.capabilities?.transfers === "active";
+
+  const connectReady = chargesEnabled && payoutsEnabled && detailsSubmitted && transfersActive;
+
+  const { error } = await db
+    .from("garages_partenaires")
+    .update({
+      stripe_connect_ready: connectReady,
+      stripe_connect_details_submitted: detailsSubmitted,
+      stripe_connect_charges_enabled: chargesEnabled,
+      stripe_connect_payouts_enabled: payoutsEnabled,
+      stripe_connect_updated_at: new Date().toISOString(),
+    })
+    .eq("stripe_account_id", account.id);
+
+  if (error) {
+    console.error("[stripe webhook] account.updated sync fail", account.id, error);
+  }
+}
+
+/** Handler account.application.deauthorized : garage a revoque la connexion */
+async function handleConnectDeauthorized(accountId: string) {
+  const db = admin();
+  await db
+    .from("garages_partenaires")
+    .update({
+      stripe_account_id: null,
+      stripe_connect_ready: false,
+      stripe_connect_details_submitted: false,
+      stripe_connect_charges_enabled: false,
+      stripe_connect_payouts_enabled: false,
+      stripe_connect_deauthorized_at: new Date().toISOString(),
+    })
+    .eq("stripe_account_id", accountId);
+}
+
 /** Handler refund ou echec paiement depot-vente */
 async function handleDepotVenteRefund(paymentIntentId: string, eventType: string) {
   const db = admin();
@@ -248,6 +290,25 @@ export async function POST(request: Request) {
           ? (typeof obj.payment_intent === 'string' ? obj.payment_intent : obj.payment_intent?.id)
           : obj.id;
         if (piId) await handleDepotVenteRefund(piId, event.type);
+        break;
+      }
+      case 'account.updated': {
+        const account = event.data.object as Stripe.Account;
+        await handleConnectAccountUpdated(account);
+        break;
+      }
+      case 'account.application.deauthorized': {
+        // L'objet est une Application ; l'account ID est dans event.account
+        const accountId = event.account;
+        if (accountId) await handleConnectDeauthorized(accountId);
+        break;
+      }
+      case 'transfer.created':
+      case 'transfer.updated':
+      case 'transfer.reversed': {
+        // Log uniquement pour l'instant - aucune table transfers cote RoullePro
+        const transfer = event.data.object as Stripe.Transfer;
+        console.log(`[stripe webhook] ${event.type}`, transfer.id, transfer.amount, transfer.destination);
         break;
       }
       default:

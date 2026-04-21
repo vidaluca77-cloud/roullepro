@@ -96,7 +96,9 @@ export default async function AdminGaragesPage({
               list.map((g) => (
                 <tr key={g.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition">
                   <td className="px-5 py-4">
-                    <div className="font-medium text-slate-900">{g.raison_sociale}</div>
+                    <Link href={`/admin/garages/${g.id}`} className="font-medium text-slate-900 hover:text-blue-600">
+                      {g.raison_sociale}
+                    </Link>
                     <div className="text-xs text-slate-400">{[g.code_postal, g.ville].filter(Boolean).join(' ')}</div>
                   </td>
                   <td className="px-5 py-4 text-slate-600">
