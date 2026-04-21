@@ -89,6 +89,13 @@ export default function ContactModal({
       const data = await response.json();
 
       if (response.ok) {
+        // Tracking GA4 : contact vendeur réussi
+        if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+          (window as any).gtag("event", "contact_vendeur", {
+            annonce_id: annonceId,
+            categorie: annonceDetails?.categorie,
+          });
+        }
         setFeedback({ type: 'success', text: 'Votre message a bien \u00e9t\u00e9 envoy\u00e9 ! Le vendeur vous contactera prochainement.' });
         setTimeout(() => {
           onClose();

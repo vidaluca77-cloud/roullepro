@@ -224,6 +224,15 @@ export default function DeposerAnnoncePage() {
       const { error: err } = await supabase.from('annonces').insert(annonceData);
       if (err) { setError(err.message); return; }
 
+      // Tracking GA4 : dépôt d'annonce réussi
+      if (typeof window !== "undefined" && typeof window.gtag === "function") {
+        window.gtag("event", "depot_annonce", {
+          categorie: annonceData.categorie,
+          ville: annonceData.ville,
+          prix: annonceData.prix,
+        });
+      }
+
       // Notif admin (non bloquant)
       const { data: inserted } = await supabase
         .from('annonces').select('id').eq('user_id', user.id).eq('status', 'pending')

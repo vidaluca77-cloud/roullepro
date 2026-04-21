@@ -350,6 +350,11 @@ export default function AnnonceDetail({ annonce, vendeur }: AnnonceDetailProps) 
                       {vendeur.telephone && (
                         <a
                           href={`tel:${vendeur.telephone}`}
+                          onClick={() => {
+                            if (typeof window !== "undefined" && typeof (window as any).gtag === "function") {
+                              (window as any).gtag("event", "clic_telephone", { source: "annonce_detail" });
+                            }
+                          }}
                           className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
                         >
                           <Phone size={18} />
