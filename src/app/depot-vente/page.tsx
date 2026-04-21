@@ -383,6 +383,15 @@ export default function DepotVentePage() {
             </details>
           ))}
         </div>
+
+        <div className="text-center mt-8">
+          <Link
+            href="/depot-vente/faq"
+            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm"
+          >
+            Voir les 15 questions fréquentes <ArrowRight size={14} />
+          </Link>
+        </div>
       </section>
 
       {/* ─── CTA FINAL ────────────────────────────────────────────── */}

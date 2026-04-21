@@ -73,6 +73,14 @@ export default async function DepotDetailPage({ params }: { params: { id: string
             <p className="text-slate-400 text-sm mt-0.5 font-mono">{depot.immatriculation}</p>
           )}
         </div>
+        <a
+          href={`/api/depot-vente/${params.id}/contrat`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition"
+        >
+          Telecharger le contrat PDF
+        </a>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
