@@ -1187,4 +1187,418 @@ Cet argument est désormais intégré dans les appels d'offres logistiques des g
 RoullePro référence de plus en plus de véhicules utilitaires électriques d'occasion issus de flottes professionnelles renouvelées. Consultez les annonces avec le filtre "Énergie : Électrique" pour trouver des fourgons de moins de 4 ans avec rapport d'état de batterie (SOH). En tant que vendeur d'un utilitaire électrique, mentionnez systématiquement dans l'annonce : la capacité de batterie, le SOH mesuré, le kilométrage moyen quotidien, l'historique de charge et les équipements de recharge inclus dans la transaction. Ces informations sont déterminantes pour l'acheteur et accélèrent la vente.
 `,
   },
+  {
+    slug: "comment-fonctionne-depot-vente-vehicule-professionnel-2026",
+    title: "Comment fonctionne le dépôt-vente de véhicules professionnels en 2026",
+    excerpt:
+      "Mandat, commission, délais, sécurité juridique, paiement : le guide complet du dépôt-vente d'utilitaires et véhicules pros, avec le fonctionnement précis de la formule RoullePro.",
+    category: "Guide vendeur",
+    date: "2026-04-20",
+    readingTime: 10,
+    keywords: [
+      "dépôt-vente véhicule professionnel",
+      "dépôt-vente utilitaire",
+      "mandat dépôt-vente",
+      "commission dépôt-vente",
+      "contrat dépôt-vente 2026",
+      "vendre utilitaire par garage",
+      "dépôt-vente fourgon",
+    ],
+    content: `
+## Le dépôt-vente, une alternative à la vente directe
+
+Le dépôt-vente de véhicules professionnels consiste à confier son utilitaire, son taxi, son VTC ou son VSL à un garage partenaire qui se charge intégralement de la revente : expertise, photos, annonce, visites, négociation, paiement. Le vendeur reste propriétaire jusqu'à la conclusion effective de la vente et touche une part définie à l'avance du prix de cession.
+
+Cette formule n'est pas nouvelle : elle existe depuis des décennies dans la vente de véhicules d'occasion entre particuliers. Ce qui change en 2026, c'est sa professionnalisation via des plateformes spécialisées comme RoullePro, qui encadrent juridiquement le mandat, sécurisent les paiements via Stripe et standardisent les contrats tripartites entre vendeur, garage et plateforme.
+
+## Le cadre juridique : un mandat, pas une vente
+
+Juridiquement, le dépôt-vente repose sur un **mandat de vente** signé entre le propriétaire du véhicule et le dépositaire (le garage). Ce mandat précise la durée (généralement 90 jours chez RoullePro), le prix net minimum attendu par le vendeur, la commission du dépositaire et les obligations respectives des parties.
+
+Tant que la vente n'est pas effective, le vendeur reste propriétaire du véhicule. Le garage ne fait que le conserver et le présenter à des acheteurs potentiels. Cette distinction est importante sur le plan fiscal et assurantiel : le véhicule reste immatriculé au nom du vendeur durant toute la durée du mandat.
+
+### Les obligations du dépositaire
+
+Le garage dépositaire est tenu à une obligation de conservation du véhicule (article 1915 du Code civil). Il doit prendre les précautions raisonnables pour éviter tout dommage pendant la durée du dépôt, notamment : stationnement sécurisé, batterie entretenue, pneus à la bonne pression, véhicule couvert ou placé en intérieur selon les saisons.
+
+Le mandat précise également ses obligations commerciales : qualité de présentation, photos professionnelles, réactivité aux demandes acheteurs, tentatives de négociation loyales.
+
+### Les obligations du vendeur
+
+Le vendeur doit remettre un véhicule conforme à la description contractuelle, avec tous les documents légaux à jour : carte grise, contrôle technique récent (moins de 6 mois), certificat de non-gage, factures d'entretien. Il s'engage à ne pas vendre le véhicule en parallèle durant la durée du mandat (clause d'exclusivité).
+
+## Le modèle économique : qui gagne quoi
+
+Chez RoullePro, la répartition du prix de vente est totalement transparente et standardisée :
+
+- **Vendeur** : 88% du prix de vente (prix net vendeur)
+- **Garage partenaire** : 7% de commission + 250 € de frais de préparation
+- **RoullePro** : 4% de commission plateforme
+- **Stripe** : environ 1% de frais de paiement
+
+Pour un véhicule vendu 14 000 €, le vendeur perçoit donc environ 12 210 € nets. Ce niveau de rémunération se compare très favorablement aux professionnels traditionnels du dépôt-vente qui pratiquent souvent 15 à 20% de commission, ou aux plateformes de rachat express qui appliquent une décote de 20 à 30% sur la valeur argus.
+
+### Pourquoi cette structure fonctionne
+
+La plateforme mutualise les coûts d'acquisition de leads (SEO, Google Ads, référencement) et de gestion technique (hébergement, développement, support). Le garage mutualise ses coûts d'atelier, de stockage et d'expertise. Le vendeur bénéficie donc de prix plus compétitifs que s'il devait faire appel à chacun séparément.
+
+## Le parcours concret d'un dépôt-vente
+
+### Étape 1 — Estimation gratuite en ligne
+
+Le vendeur saisit les caractéristiques de son véhicule sur RoullePro (marque, modèle, année, kilométrage, état). Une estimation indicative est fournie en moins de deux minutes, basée sur les cotes professionnelles du marché utilitaire.
+
+### Étape 2 — Rendez-vous chez le garage partenaire
+
+Le vendeur sélectionne un garage partenaire RoullePro proche de chez lui. En 2026, le réseau couvre Caen (Normandie), Chelles (Île-de-France) et Marseille (PACA), avec une expansion en cours. Si le vendeur ne peut pas se déplacer, le garage peut récupérer le véhicule à domicile dans un rayon de 50 km (79 € forfait).
+
+### Étape 3 — Expertise et mise en annonce
+
+Le garage réalise une expertise 40 points : mécanique, carrosserie, intérieur, pneumatiques, électronique embarquée, boîte, transmission. Les résultats sont consignés dans un rapport visible par les acheteurs. Des photos HD professionnelles sont prises. L'annonce est publiée sur RoullePro et poussée sur les canaux partenaires.
+
+### Étape 4 — Gestion des offres
+
+Les acheteurs potentiels contactent le garage via la messagerie intégrée RoullePro. Le garage organise les visites, répond aux questions techniques, négocie dans les limites fixées par le vendeur. Toute offre ferme est soumise au vendeur pour validation.
+
+### Étape 5 — Paiement sécurisé et transfert
+
+Lorsqu'une offre est acceptée, l'acheteur verse un acompte de 500 € via Stripe, sécurisé en séquestre sur le compte RoullePro. Le solde est versé lors de la remise du véhicule chez le garage. RoullePro transfère ensuite automatiquement la part du garage (via Stripe Connect) et virements SEPA au vendeur sous 48 heures ouvrées.
+
+## Le filet de sécurité : la reprise garantie
+
+La spécificité du dépôt-vente RoullePro réside dans la **reprise garantie à 90 jours** : si le véhicule n'est pas vendu à l'issue du mandat, le vendeur le récupère sans aucun frais ni pénalité. Aucune commission n'est due, aucun frais de préparation n'est facturé. Le vendeur repart simplement avec son véhicule dans l'état où il a été déposé.
+
+Cette garantie distingue le dépôt-vente RoullePro des dépôts-ventes traditionnels, qui facturent souvent des frais fixes ou conservent le véhicule au-delà de la durée initiale contre la volonté du vendeur.
+
+## Avantages fiscaux du dépôt-vente professionnel
+
+La vente via dépôt-vente conserve tous les avantages fiscaux de la vente entre professionnels : TVA récupérable par l'acheteur si le vendeur est assujetti, facture de cession conforme, exonération de plus-value pour les véhicules inscrits à l'actif selon certaines conditions.
+
+Le vendeur reçoit de RoullePro une attestation détaillée de la transaction pour sa comptabilité. Les frais payés (commission garage, commission RoullePro) sont intégralement déductibles du résultat imposable de l'entreprise vendeuse.
+
+## Pour qui le dépôt-vente est-il adapté
+
+Le dépôt-vente s'adresse principalement aux :
+
+- **Artisans du BTP** qui renouvellent leur fourgon et n'ont ni le temps ni l'expertise pour vendre en direct
+- **Taxis et VTC** qui changent de véhicule et veulent maximiser la valeur de revente sans y consacrer de journées
+- **Gestionnaires de flottes** (ambulances, transports, livraison) qui cèdent plusieurs véhicules en même temps
+- **Auto-entrepreneurs** qui veulent céder un utilitaire sans se former aux techniques de vente
+
+Pour des véhicules très spécifiques ou haut de gamme (camions-grues, véhicules d'intervention médicalisée, utilitaires sur mesure), la vente directe ou l'enchère professionnelle restent parfois plus pertinentes. RoullePro oriente alors le vendeur vers la solution la plus adaptée.
+
+## Comparatif rapide dépôt-vente vs alternatives
+
+| Critère | Dépôt-vente RoullePro | Vente directe | Rachat express |
+|---|---|---|---|
+| Prix final | ~88% du prix marché | 100% (si on trouve) | 70 à 80% |
+| Temps à investir | 0 h (tout est géré) | 10 à 30 h | 1 h |
+| Délai moyen | 25 à 35 jours | Variable (1 à 90j) | Immédiat |
+| Risque d'impayé | Nul (Stripe séquestre) | Modéré | Nul |
+| Démarches administratives | Assistance complète | 100% à gérer | 100% géré |
+
+## Conclusion
+
+Le dépôt-vente de véhicules professionnels en 2026 combine le meilleur des trois mondes : un prix proche de celui de la vente directe, la sécurité juridique et financière d'un rachat express, et la simplicité d'un service clé en main. Pour un professionnel qui valorise son temps, la formule est imbattable sur un large spectre d'utilitaires et véhicules de société courants.
+`,
+  },
+  {
+    slug: "depot-vente-vs-vente-directe-vs-reprise-concession-comparatif-2026",
+    title: "Dépôt-vente vs vente directe vs reprise concession : le comparatif chiffré 2026",
+    excerpt:
+      "Quelle est la méthode la plus rentable pour vendre son utilitaire professionnel en 2026 ? Simulations chiffrées sur 3 véhicules types pour comparer dépôt-vente, vente directe et reprise concessionnaire.",
+    category: "Guide vendeur",
+    date: "2026-04-20",
+    readingTime: 12,
+    keywords: [
+      "dépôt-vente vs vente directe",
+      "reprise concession utilitaire",
+      "meilleure méthode vendre utilitaire",
+      "comparatif vente véhicule pro",
+      "prix reprise concessionnaire",
+      "simulation revente fourgon",
+    ],
+    content: `
+## Trois méthodes, trois logiques économiques
+
+Quand un professionnel décide de vendre son utilitaire, il se retrouve face à trois options principales en 2026 : vendre lui-même en direct sur les plateformes d'annonces, confier son véhicule en dépôt-vente à un garage partenaire (RoullePro), ou négocier une reprise chez un concessionnaire à l'occasion de l'achat d'un véhicule neuf. Chacune a sa logique, ses avantages et surtout ses coûts cachés.
+
+Cet article compare les trois méthodes sur des critères objectifs : prix net final perçu, temps investi, risque assumé, délai de vente. Nous simulerons ensuite ces trois scenarios sur trois véhicules types : un fourgon d'artisan, un VTC premium et un utilitaire de livraison.
+
+## Méthode 1 — La vente directe
+
+Le vendeur rédige lui-même l'annonce, prend ses photos, la publie sur La Centrale, Le Bon Coin, ParuVendu et les plateformes professionnelles. Il gère toutes les demandes : appels, visites, tentatives de négociation, contrôles techniques à refaire, éventuelles fraudes (faux chèques, chèques sans provision, acheteurs fictifs).
+
+### Avantages
+- **Pas de commission** : 100% du prix de vente perçu
+- **Contrôle total** sur le prix et les conditions
+- **Flexibilité** de calendrier
+
+### Coûts cachés
+- **Temps** : en moyenne 15 à 30 heures sur 3 à 8 semaines (annonces, réponses, visites, négociations)
+- **Photos professionnelles** : 80 à 150 € si on veut des photos vendeuses
+- **Diffusion payante** : option "à la une" 20 à 40 € par plateforme
+- **Risque fraude** : chèque de banque falsifié, virement qui ne vient jamais, arnaque à l'acompte
+- **Risque juridique** : garantie des vices cachés difficilement opposable entre professionnels mais litiges possibles
+- **Décote négociation** : un acheteur bien préparé obtient en moyenne 8 à 12% de baisse sur le prix affiché
+
+### Quand c'est la meilleure option
+
+La vente directe reste pertinente pour un professionnel qui a du temps, de la patience, des connaissances mécaniques pour rassurer les acheteurs, et un véhicule très recherché (utilitaire rare, configuration demandée). Elle l'est moins pour quelqu'un qui travaille à plein temps ou qui ne veut pas gérer les imprévus.
+
+## Méthode 2 — Le dépôt-vente RoullePro
+
+Le vendeur confie son véhicule à un garage partenaire. RoullePro et le garage gèrent toute la chaîne : expertise, photos HD, rédaction d'annonce, diffusion multicanale, visites, négociation, paiement sécurisé Stripe, virement SEPA au vendeur.
+
+### Avantages
+- **0 heure investie** : le propriétaire dépose son véhicule, récupère son argent
+- **Expertise 40 points** qui rassure les acheteurs et accélère la vente
+- **Photos HD professionnelles** incluses
+- **Paiement 100% sécurisé** via séquestre Stripe
+- **Reprise garantie à 90 jours** si pas vendu
+- **Délai moyen** : 25 à 35 jours (selon ville et véhicule)
+
+### Coût
+- **Commission totale** : 12% du prix de vente (7% garage + 4% plateforme + 1% Stripe) + 250 € frais préparation
+- Sur un véhicule à 14 000 € : vendeur perçoit environ 12 210 €
+
+### Quand c'est la meilleure option
+
+Le dépôt-vente est optimal pour un professionnel qui valorise son temps à plus de 30 à 40 € de l'heure, qui veut zéro risque d'impayé, qui n'a pas de concessionnaire avec qui négocier une reprise avantageuse.
+
+## Méthode 3 — La reprise en concession
+
+Le professionnel achète un véhicule neuf ou récent chez un concessionnaire et négocie simultanément la reprise de son ancien véhicule. La reprise est déduite du prix de facturation du nouveau véhicule.
+
+### Avantages
+- **Transaction en un seul rendez-vous** : tout est bouclé dans la journée
+- **Simplicité administrative** : la concession gère tout le transfert
+- **Garantie de prix** : le prix de reprise est acté avant la livraison du neuf
+- **Aucune démarche commerciale** pour le vendeur
+
+### Coûts cachés
+- **Décote massive** : le concessionnaire reprend en moyenne 25 à 40% en dessous du prix de marché
+- **Compensation opaque** : le concessionnaire "surclasse" la reprise mais augmente la marge sur le neuf — en réalité, le vendeur paie deux fois
+- **Obligation d'achat** : on doit acheter un véhicule chez eux pour bénéficier de la reprise
+- **Modèles limités** : la marque représentée restreint les choix
+
+### Quand c'est la meilleure option
+
+La reprise concession est pertinente uniquement si le professionnel achète de toute façon un véhicule neuf chez ce concessionnaire ET si son véhicule à céder est en mauvais état ou très ancien (plus de 8 ans, plus de 250 000 km), où les autres canaux ne rapporteraient guère davantage.
+
+## Simulations chiffrées sur 3 véhicules types
+
+### Scenario 1 — Fourgon d'artisan Renault Master L2H2 2021, 98 000 km
+
+Prix de marché estimé : 18 500 €
+
+| Méthode | Prix perçu | Temps investi | Délai | Risque |
+|---|---|---|---|---|
+| Vente directe | 17 500 € (après négo -5%) | 22 h | 6 semaines | Modéré |
+| Dépôt-vente RoullePro | 16 130 € (88%) | 1 h | 30 jours | Nul |
+| Reprise concession | 13 500 € (-27%) | 0 h | Immédiat | Nul |
+
+**Verdict** : la vente directe l'emporte en brut (17 500 €), mais à raison de 22 h investies, le taux horaire net (gain vs dépôt-vente = 1 370 €) ressort à 62 €/h. Si le professionnel gagne plus que cela à son cœur de métier, le dépôt-vente est plus rentable en coût d'opportunité.
+
+### Scenario 2 — VTC Mercedes Vito Tourer 2022, 128 000 km
+
+Prix de marché estimé : 29 800 €
+
+| Méthode | Prix perçu | Temps investi | Délai | Risque |
+|---|---|---|---|---|
+| Vente directe | 28 100 € | 28 h | 7 semaines | Modéré |
+| Dépôt-vente RoullePro | 25 950 € (88%) | 1 h | 25 jours | Nul |
+| Reprise concession | 22 000 € (-26%) | 0 h | Immédiat | Nul |
+
+**Verdict** : sur un véhicule premium où les acheteurs sont exigeants (inspection minutieuse, demandes d'essai, contrôles techniques récents), la vente directe prend beaucoup plus de temps. Le dépôt-vente devient presque toujours plus rentable pour un VTC en activité.
+
+### Scenario 3 — Peugeot Partner livraison 2020, 185 000 km
+
+Prix de marché estimé : 8 900 €
+
+| Méthode | Prix perçu | Temps investi | Délai | Risque |
+|---|---|---|---|---|
+| Vente directe | 8 200 € | 18 h | 5 semaines | Modéré |
+| Dépôt-vente RoullePro | 7 570 € (88%) | 1 h | 35 jours | Nul |
+| Reprise concession | 5 500 € (-38%) | 0 h | Immédiat | Nul |
+
+**Verdict** : sur les véhicules de moins de 10 000 €, la reprise concession décote massivement (30 à 40%). La vente directe redevient intéressante, mais le dépôt-vente reste le meilleur rapport temps/rentabilité/sécurité.
+
+## Le taux horaire implicite, critère clé
+
+Pour choisir la bonne méthode, il faut raisonner en **taux horaire implicite** : combien de gain supplémentaire ma méthode me rapporte-t-elle par heure investie, comparée à la plus simple ?
+
+- Si le gain vente directe vs dépôt-vente divisé par les heures investies dépasse votre taux horaire habituel : vendez en direct
+- Sinon : confiez en dépôt-vente
+
+Pour la plupart des artisans, VTC et professionnels actifs, ce seuil est facilement atteint par le dépôt-vente.
+
+## Quand la reprise concession est vraiment intéressante
+
+La reprise concession ne devient intéressante que dans trois cas précis :
+
+1. Le véhicule est **invendable** (panne majeure, sinistre grave, très vieux) : autant l'échanger contre un nouveau.
+2. Le concessionnaire propose une **offre promotionnelle exceptionnelle** sur le neuf, dont la reprise est un déclencheur marketing (2 000 à 5 000 € de surcote documentés).
+3. Le professionnel a **besoin immédiat** du nouveau véhicule et ne peut pas se permettre un délai de vente.
+
+## Recommandation finale
+
+Pour un utilitaire professionnel courant, en bon état, d'une valeur comprise entre 8 000 et 35 000 €, le **dépôt-vente RoullePro** offre le meilleur compromis en 2026. Le gain brut de la vente directe est rarement justifié par les heures investies, et la décote de la reprise concession est trop pénalisante.
+
+Pour les véhicules très haut de gamme, très rares ou au contraire invendables, d'autres canaux restent pertinents au cas par cas.
+`,
+  },
+  {
+    slug: "fiscalite-vente-depot-vtc-taxi-artisan-guide-2026",
+    title: "Fiscalité d'une vente en dépôt-vente : guide pour VTC, taxis et artisans (2026)",
+    excerpt:
+      "TVA, plus-value, amortissements, déductibilité des commissions : tout ce qu'il faut savoir sur la fiscalité d'une vente en dépôt-vente de véhicule professionnel en 2026.",
+    category: "Fiscalité & admin",
+    date: "2026-04-20",
+    readingTime: 11,
+    keywords: [
+      "fiscalité dépôt-vente véhicule",
+      "TVA vente utilitaire professionnel",
+      "plus-value cession véhicule pro",
+      "amortissement véhicule VTC",
+      "commission dépôt-vente déductible",
+      "fiscalité cession fourgon",
+      "dépôt-vente comptabilité 2026",
+    ],
+    content: `
+## Pourquoi la fiscalité du dépôt-vente mérite une attention particulière
+
+La vente d'un véhicule professionnel n'est pas une transaction neutre sur le plan fiscal. Selon le régime d'imposition du vendeur (micro-entreprise, BNC réel, BIC, société), le traitement TVA, la plus-value, les commissions payées et les reports comptables peuvent varier sensiblement. En 2026, les règles françaises restent stables mais demandent rigueur et anticipation pour optimiser le résultat net après impôt.
+
+Ce guide détaille la fiscalité applicable à la vente en dépôt-vente pour les trois profils les plus concernés : VTC, taxis et artisans. Il ne remplace pas les conseils d'un expert-comptable mais donne les grandes lignes à connaître avant de signer un mandat.
+
+## La TVA : le point clé du vendeur professionnel
+
+### Vendeur assujetti à la TVA
+
+Si le vendeur est soumis à la TVA (régime réel, société, auto-entrepreneur au-dessus des seuils), la vente de son véhicule professionnel est **soumise à la TVA** au taux normal (20% en 2026), à condition que le véhicule ait ouvert droit à déduction de TVA à l'achat.
+
+**Cas des utilitaires et fourgons** : la TVA d'achat est intégralement déductible (véhicules utilitaires N1, N2 au sens européen). La TVA de cession est donc due à 20% sur le prix de vente HT.
+
+**Cas des véhicules de tourisme utilisés en VTC ou taxi** : la TVA d'achat est non déductible à 80% pour le VTC et 100% pour le taxi depuis 2017 (régime spécial). À la revente, pas de TVA due si la TVA d'achat n'a pas été déduite.
+
+### Vendeur en micro-entreprise (franchise TVA)
+
+Si le vendeur est en micro-entreprise et bénéficie de la franchise en base de TVA (chiffre d'affaires inférieur à 85 800 € en 2026 pour les activités d'achat-vente, 36 800 € pour les services), il ne facture pas de TVA à la vente.
+
+Cette spécificité rend son prix plus attractif pour un particulier, moins attractif pour un acheteur professionnel qui ne pourra rien récupérer.
+
+### Mention obligatoire sur la facture
+
+La facture de cession (ou l'attestation fournie par RoullePro) doit mentionner :
+- Le prix HT, le taux de TVA, le montant de TVA (ou la mention "TVA non applicable art. 293 B du CGI" pour la franchise)
+- L'identité complète du vendeur (raison sociale, adresse, SIRET)
+- Les coordonnées de l'acheteur
+- Les caractéristiques précises du véhicule (marque, modèle, immatriculation, VIN, kilométrage)
+
+## La plus-value de cession : régimes applicables
+
+### Véhicule inscrit à l'actif
+
+Si le véhicule figure à l'actif de l'entreprise (société, BIC réel, BNC réel), la vente génère une **plus-value professionnelle** calculée ainsi :
+
+**Plus-value = Prix de vente HT - Valeur nette comptable (VNC)**
+
+La VNC correspond au prix d'achat HT diminué des amortissements cumulés. Un véhicule acheté 30 000 € HT il y a 4 ans, amorti sur 5 ans, a une VNC de 6 000 €. Revendu 12 000 €, il génère une plus-value de 6 000 €.
+
+### Régime de la plus-value professionnelle
+
+- **Plus-value à court terme** (élément amortissable cédé dans les 2 ans) : intégrée au résultat imposable, taxée au taux d'impôt normal
+- **Plus-value à court terme** (élément amortissable cédé après 2 ans, à hauteur des amortissements pratiqués) : intégrée au résultat imposable
+- **Plus-value à long terme** (fraction au-dessus des amortissements pour un élément cédé après 2 ans) : imposée à 12,8% + 17,2% de prélèvements sociaux pour les entrepreneurs individuels
+
+En pratique, pour un véhicule utilitaire totalement amorti au moment de la revente, toute la plus-value est à court terme et intégrée au résultat.
+
+### Exonération pour les TPE
+
+L'article 151 septies du CGI prévoit une **exonération totale ou partielle** de plus-value professionnelle pour les entreprises dont les recettes annuelles n'excèdent pas :
+- 250 000 € pour une activité de vente de biens ou prestation de services à titre principal
+- 90 000 € pour les autres prestations de services
+
+Cette exonération s'applique si l'activité a été exercée pendant au moins 5 ans. Elle est intéressante pour les artisans et petits transporteurs qui revendent occasionnellement un véhicule.
+
+### Véhicule non inscrit à l'actif (BNC réel, notamment)
+
+En BNC au réel (VTC, taxi), le véhicule peut ne pas être inscrit à l'actif. Dans ce cas, la vente est neutre fiscalement : ni plus-value ni moins-value, mais aussi pas d'amortissements déductibles durant la détention. Ce choix se fait au moment de l'achat et doit être cohérent sur toute la durée.
+
+## La déductibilité des commissions RoullePro et garage
+
+Les commissions versées au garage partenaire et à RoullePro (7% + 4% + 250 € préparation) sont **intégralement déductibles** du résultat imposable de l'entreprise vendeuse, qu'elle soit au régime du réel BIC, BNC réel ou soumise à l'IS.
+
+RoullePro fournit automatiquement une attestation détaillée de la transaction comportant :
+- Prix de vente brut
+- Commission RoullePro (4%) avec TVA détaillée
+- Commission garage partenaire (7%) avec TVA détaillée
+- Frais de préparation (250 €) avec TVA détaillée
+- Frais Stripe (1% environ)
+- Net vendeur
+
+Cette attestation suffit à la comptabilité du vendeur pour passer les écritures de cession.
+
+## Le cas spécifique du VTC et du taxi
+
+Les VTC et taxis utilisent majoritairement des véhicules de tourisme (berlines, monospaces, SUV premium). La fiscalité spécifique à connaître :
+
+### Amortissement plafonné
+
+Pour les véhicules de tourisme, l'amortissement est plafonné fiscalement selon leurs émissions de CO₂ :
+- 30 000 € si CO₂ < 20 g/km (électrique)
+- 20 300 € si 20 ≤ CO₂ < 50 g/km (hybride rechargeable)
+- 18 300 € si 50 ≤ CO₂ < 160 g/km
+- 9 900 € si CO₂ ≥ 160 g/km
+
+Ce plafonnement limite l'amortissement déductible mais n'affecte pas le calcul comptable de la VNC.
+
+### Exception taxi et VTC
+
+Les taxis sont exonérés de la limitation des amortissements (véhicule considéré comme outil de travail au sens fiscal). Les VTC bénéficient d'un régime intermédiaire selon leur statut. Consultez un expert-comptable pour votre cas précis.
+
+### Déduction de la TVA à l'achat
+
+- **Taxi** : TVA déductible à 100% à l'achat, TVA due à la revente si le véhicule est revendu HT
+- **VTC** : TVA déductible uniquement pour les véhicules de transport collectif (plus de 8 places), sinon non déductible
+
+## Le cas spécifique de l'artisan du BTP
+
+Les artisans utilisent principalement des utilitaires (fourgons, camionnettes). Le régime fiscal est plus simple :
+
+- TVA intégralement déductible à l'achat, due à la revente
+- Amortissement non plafonné (véhicule utilitaire = outil de travail)
+- Plus-value de cession traitée selon les règles générales (article 151 septies applicable pour les petites entreprises)
+
+L'artisan en micro-BIC ou micro-BNC qui vend un véhicule qu'il utilisait pour son activité professionnelle n'a pas de déclaration spécifique à faire : la vente suit le régime de la franchise en base TVA et la plus-value éventuelle reste dans le champ de la micro-entreprise (pas de déclaration distincte, pas d'imposition supplémentaire).
+
+## Cas pratique : un VTC vend son Mercedes Classe E 2022
+
+Monsieur Dupont, VTC sous statut EI au réel BNC, vend en avril 2026 sa Mercedes Classe E acquise en mars 2022 pour 48 000 € TTC (40 000 € HT, TVA non récupérée car véhicule de tourisme).
+
+- Valeur d'amortissement prise en compte : 18 300 € (plafond VTC tourisme)
+- Amortissements pratiqués sur 4 ans : 14 640 € (80%)
+- VNC : 40 000 € - 14 640 € = 25 360 € (mais fiscalement, seuls les 18 300 € sont déductibles)
+- Prix de vente via RoullePro : 28 000 € brut → 24 640 € net vendeur
+- Attestation RoullePro fournie : 3 360 € de commissions et frais déductibles
+- Plus-value comptable : 28 000 € - 25 360 € = 2 640 € (à intégrer au résultat BNC)
+
+Résultat net fiscal approximatif : +2 640 € à intégrer, -3 360 € de charges déductibles → impact fiscal neutre, léger bénéfice comptable.
+
+## Recommandations avant de signer un mandat
+
+1. **Faites le point comptable** sur votre véhicule avec votre expert-comptable : VNC exacte, amortissements pratiqués, régime TVA
+2. **Vérifiez votre éligibilité** à l'article 151 septies (recettes < 250 000 € et activité exercée depuis au moins 5 ans)
+3. **Conservez toutes les factures** d'entretien pour justifier d'une éventuelle plus-value limitée
+4. **Récupérez l'attestation RoullePro** immédiatement après la vente et transmettez-la à votre comptable
+5. **Intégrez le résultat de cession** dans votre prochaine liasse fiscale ou déclaration 2042 C Pro
+
+## Conclusion
+
+La fiscalité d'une vente en dépôt-vente n'est pas plus complexe que celle d'une vente directe. Elle a même l'avantage de fournir une attestation claire, datée, avec détail des commissions déductibles. Pour un professionnel rigoureux, le dépôt-vente optimise le rapport rentabilité/simplicité fiscale dans la très grande majorité des cas.
+
+Cet article a une valeur d'information générale et ne constitue pas un conseil fiscal individualisé. Consultez votre expert-comptable pour valider votre situation spécifique avant toute cession importante.
+`,
+  },
 ];
