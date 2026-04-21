@@ -1484,7 +1484,7 @@ Si le vendeur est soumis à la TVA (régime réel, société, auto-entrepreneur 
 
 ### Vendeur en micro-entreprise (franchise TVA)
 
-Si le vendeur est en micro-entreprise et bénéficie de la franchise en base de TVA (chiffre d'affaires inférieur à 85 800 € en 2026 pour les activités d'achat-vente, 36 800 € pour les services), il ne facture pas de TVA à la vente.
+Si le vendeur est en micro-entreprise et bénéficie de la franchise en base de TVA (seuils 2026 maintenus : 85 000 € pour les activités d'achat-vente, 37 500 € pour les prestations de services), il ne facture pas de TVA à la vente.
 
 Cette spécificité rend son prix plus attractif pour un particulier, moins attractif pour un acheteur professionnel qui ne pourra rien récupérer.
 
