@@ -693,6 +693,112 @@ export async function sendGarageStatusUpdate(
   await sendEmail({ to, subject, html });
 }
 
+/* ── Bienvenue garage — après définition du mot de passe ── */
+export async function sendGarageWelcome(
+  to: string,
+  raison_sociale: string
+) {
+  const dashboardUrl = `${APP_URL_DV}/garage/dashboard`;
+  const connectUrl = `${APP_URL_DV}/garage/dashboard?tab=stripe`;
+
+  const subject = "[RoullePro] Bienvenue \u2014 premiers pas avec votre espace garage";
+
+  const step = (
+    n: string,
+    color: string,
+    title: string,
+    body: string
+  ) => `
+          <tr>
+            <td style="width: 36px; vertical-align: top; padding: 10px 12px 10px 0;">
+              <div style="width: 28px; height: 28px; border-radius: 50%; background: ${color}; color: white; font-weight: 700; font-size: 14px; text-align: center; line-height: 28px;">${n}</div>
+            </td>
+            <td style="padding: 10px 0;">
+              <p style="margin: 0; color: #111827; font-weight: 600; font-size: 15px;">${title}</p>
+              <p style="margin: 4px 0 0; color: #4b5563; font-size: 14px;">${body}</p>
+            </td>
+          </tr>`;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; background: #f9fafb;">
+      ${emailHeader("Bienvenue sur RoullePro")}
+      <div style="background: white; padding: 28px 32px;">
+        <p style="font-size: 15px; color: #374151;">Bonjour <strong>${raison_sociale}</strong>,</p>
+
+        <div style="background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 10px; padding: 18px; margin: 20px 0;">
+          <p style="margin: 0; color: #065f46; font-weight: 600; font-size: 15px;">
+            Votre mot de passe est défini, votre compte garage est prêt.
+          </p>
+          <p style="margin: 6px 0 0 0; color: #047857; font-size: 14px;">
+            Vous pouvez maintenant recevoir des demandes de dépôt-vente et gérer vos véhicules depuis votre tableau de bord.
+          </p>
+        </div>
+
+        <h2 style="color: #111827; font-size: 17px; margin: 28px 0 14px;">Vos premiers pas</h2>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 12px 0;">
+          ${step(
+            "1",
+            "#2563eb",
+            "Activez les paiements Stripe",
+            "Connectez votre compte Stripe pour recevoir automatiquement votre commission \u00e0 chaque vente. Indispensable avant la premi\u00e8re vente."
+          )}
+          ${step(
+            "2",
+            "#2563eb",
+            "Recevez les demandes de d\u00e9p\u00f4t-vente",
+            "D\u00e8s qu\u2019un vendeur de votre zone fait une demande, elle appara\u00eet dans l\u2019onglet &laquo;&nbsp;Demandes \u00e0 traiter&nbsp;&raquo;. Validez ou refusez le prix propos\u00e9 en un clic."
+          )}
+          ${step(
+            "3",
+            "#2563eb",
+            "Mettez le v\u00e9hicule en vente",
+            "Apr\u00e8s r\u00e9ception du v\u00e9hicule, marquez-le comme re\u00e7u depuis le d\u00e9tail du d\u00e9p\u00f4t. Il passe automatiquement en vente sur votre page publique."
+          )}
+          ${step(
+            "4",
+            "#10b981",
+            "Encaissez automatiquement",
+            "L\u2019acheteur paie via Stripe Checkout sur votre page publique. Votre commission (7&nbsp;% + 250&nbsp;\u20ac de frais de pr\u00e9paration) est vers\u00e9e automatiquement sur votre compte Stripe."
+          )}
+        </table>
+
+        <div style="text-align: center; margin: 32px 0 16px;">
+          <a href="${dashboardUrl}"
+            style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
+            Accéder à mon tableau de bord
+          </a>
+        </div>
+
+        <div style="text-align: center; margin: 12px 0 24px;">
+          <a href="${connectUrl}"
+            style="background: white; color: #2563eb; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block; border: 1px solid #bfdbfe;">
+            Activer les paiements Stripe
+          </a>
+        </div>
+
+        <div style="background: #f9fafb; border-radius: 10px; padding: 18px; margin: 28px 0 20px;">
+          <p style="margin: 0 0 6px; color: #111827; font-weight: 600; font-size: 14px;">Comment ça marche pour vous&nbsp;?</p>
+          <p style="margin: 0; color: #4b5563; font-size: 13px; line-height: 1.6;">
+            • Aucun frais de mise en ligne, vous ne payez que quand vous vendez.<br>
+            • Votre page publique est protégée&nbsp;: ni votre SIRET ni votre raison sociale n’y apparaissent.<br>
+            • RoullePro gère les photos HD, l’expertise 40 points, le contrat et l’encaissement.
+          </p>
+        </div>
+
+        <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 24px 0 16px;">
+          Une question&nbsp;? Répondez à cet email ou écrivez à
+          <a href="mailto:contact@roullepro.com" style="color: #2563eb;">contact@roullepro.com</a>.
+        </p>
+
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+
+  await sendEmail({ to, subject, html });
+}
+
 /* ── Confirmation RDV dépôt au vendeur ── */
 export async function sendDepotRdvConfirmation(
   to: string,

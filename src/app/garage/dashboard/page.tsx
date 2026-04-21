@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import DepotStatusBadge from '@/components/depot/DepotStatusBadge';
+import WelcomeTrigger from './WelcomeTrigger';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export default async function GarageDashboardPage({
   // Vérifier que le user a un garage actif
   const { data: garage } = await sbService
     .from('garages_partenaires')
-    .select('id, raison_sociale, statut, note_moyenne, nb_ventes_total')
+    .select('id, raison_sociale, statut, note_moyenne, nb_ventes_total, welcome_email_sent_at')
     .eq('user_id', user.id)
     .single();
 
@@ -85,8 +86,11 @@ export default async function GarageDashboardPage({
     ? list.filter((d) => ['en_vente', 'offre_en_cours'].includes(d.statut))
     : list.filter((d) => d.statut === activeTab);
 
+  const shouldSendWelcome = !garage.welcome_email_sent_at;
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+      <WelcomeTrigger enabled={shouldSendWelcome} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-slate-900">{garage.raison_sociale}</h1>
         <p className="text-slate-500 text-sm mt-0.5">Tableau de bord garage partenaire RoullePro</p>
