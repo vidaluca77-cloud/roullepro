@@ -602,13 +602,43 @@ export async function sendGarageCandidatureAdminNotification(
 export async function sendGarageStatusUpdate(
   to: string,
   raison_sociale: string,
-  statut: string
+  statut: string,
+  setupLink?: string | null,
+  accountCreated?: boolean
 ) {
   let statusHtml = '';
   let subject = '';
 
   if (statut === 'actif') {
     subject = "[RoullePro] Votre garage a été validé — bienvenue !";
+    const accessBlock = setupLink
+      ? `
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 8px 0; color: #1e3a8a; font-weight: 700; font-size: 15px;">${accountCreated ? "Votre compte a été créé" : "Accès à votre espace garage"}</p>
+        <p style="margin: 0; color: #1e3a8a; font-size: 14px;">
+          ${accountCreated
+            ? `Un compte a été créé avec l'adresse <strong>${to}</strong>. Cliquez sur le bouton ci-dessous pour définir votre mot de passe et accéder à votre tableau de bord.`
+            : `Cliquez sur le bouton ci-dessous pour accéder en un clic à votre tableau de bord ou redéfinir votre mot de passe.`}
+        </p>
+      </div>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${setupLink}"
+          style="background: #2563eb; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+          ${accountCreated ? "Définir mon mot de passe" : "Accéder à mon dashboard"}
+        </a>
+      </div>
+      <p style="color: #6b7280; font-size: 13px; text-align: center;">
+        Ce lien est valable 1 heure. Si vous avez déjà un compte, vous pouvez aussi vous connecter directement sur
+        <a href="${APP_URL_DV}/auth/login" style="color: #2563eb;">roullepro.com</a>.
+      </p>`
+      : `
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${APP_URL_DV}/garage/dashboard"
+          style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+          Accéder à mon dashboard
+        </a>
+      </div>`;
+
     statusHtml = `
       <div style="background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <p style="margin: 0; color: #065f46; font-weight: 600;">Félicitations ! Votre garage est maintenant actif sur RoullePro.</p>
@@ -616,12 +646,7 @@ export async function sendGarageStatusUpdate(
       <p style="color: #374151; font-size: 15px;">
         Vous pouvez accéder à votre tableau de bord pour recevoir vos premiers dépôts.
       </p>
-      <div style="text-align: center; margin: 24px 0;">
-        <a href="${APP_URL_DV}/garage/dashboard"
-          style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
-          Accéder à mon dashboard
-        </a>
-      </div>
+      ${accessBlock}
     `;
   } else if (statut === 'pre_valide') {
     subject = "[RoullePro] Votre candidature est pré-validée";
