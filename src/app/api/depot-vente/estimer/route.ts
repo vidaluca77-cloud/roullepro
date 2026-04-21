@@ -3,39 +3,17 @@ import { createClient } from '@/lib/supabase/server';
 import { createClient as createSbClient } from '@supabase/supabase-js';
 import { checkRateLimit, getClientIp } from '@/lib/rate-limit';
 import { apiError } from '@/lib/api-utils';
+import { estimerVehicule, type EtatGeneral } from '@/lib/estimation-vehicule';
 
 export const dynamic = 'force-dynamic';
 
-function estimerVehicule(
-  annee: number,
-  kilometrage: number,
-  etat_general: string
-): { estimation_min: number; estimation_max: number } {
-  const currentYear = new Date().getFullYear();
-  const age = currentYear - annee;
-  let prix = 18000 - age * 1500 - kilometrage * 0.03;
-
-  if (etat_general === 'bon') {
-    prix = prix * 1.05;
-  } else if (etat_general === 'a_revoir') {
-    prix = prix * 0.85;
-  }
-  // 'moyen' => pas de modification
-
-  // Borner entre 3000 et 50000
-  prix = Math.max(3000, Math.min(50000, prix));
-
-  const estimation_min = Math.round(prix * 0.92);
-  const estimation_max = Math.round(prix * 1.08);
-
-  return { estimation_min, estimation_max };
-}
+const ETATS_VALIDES: EtatGeneral[] = ['bon', 'moyen', 'a_revoir'];
 
 export async function POST(req: NextRequest) {
   const ip = getClientIp(req);
   const { ok } = checkRateLimit(`estimer:${ip}`, 10, 60 * 60 * 1000);
   if (!ok) {
-    return NextResponse.json({ error: 'Trop de requêtes. Réessayez dans une heure.' }, { status: 429 });
+    return NextResponse.json({ error: 'Trop de requetes. Reessayez dans une heure.' }, { status: 429 });
   }
 
   let body: {
@@ -51,10 +29,10 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return apiError('POST /api/depot-vente/estimer', 'Invalid JSON', 400, 'Corps de requête invalide');
+    return apiError('POST /api/depot-vente/estimer', 'Invalid JSON', 400, 'Corps de requete invalide');
   }
 
-  const { immatriculation, kilometrage, annee, etat_general, marque, modele, email } = body;
+  const { immatriculation, kilometrage, annee, etat_general, marque, modele } = body;
 
   if (!annee || !kilometrage || !etat_general) {
     return NextResponse.json(
@@ -63,19 +41,38 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { estimation_min, estimation_max } = estimerVehicule(
-    Number(annee),
-    Number(kilometrage),
-    etat_general
-  );
+  if (!ETATS_VALIDES.includes(etat_general as EtatGeneral)) {
+    return NextResponse.json(
+      { error: "etat_general invalide (valeurs acceptees : bon, moyen, a_revoir)" },
+      { status: 400 }
+    );
+  }
 
-  // Essayer de récupérer l'utilisateur auth
+  const currentYear = new Date().getFullYear();
+  const anneeNum = Number(annee);
+  const kmNum = Number(kilometrage);
+
+  if (anneeNum < 1990 || anneeNum > currentYear) {
+    return NextResponse.json({ error: "Annee invalide" }, { status: 400 });
+  }
+  if (kmNum < 0 || kmNum > 2_000_000) {
+    return NextResponse.json({ error: "Kilometrage invalide" }, { status: 400 });
+  }
+
+  const estimation = estimerVehicule({
+    annee: anneeNum,
+    kilometrage: kmNum,
+    etat_general: etat_general as EtatGeneral,
+    marque: marque ?? null,
+    modele: modele ?? null,
+  });
+
+  // Essayer de recuperer l'utilisateur auth
   try {
     const sb = await createClient();
     const { data: { user } } = await sb.auth.getUser();
 
     if (user) {
-      // Insérer un dépôt en statut estimation
       const sbService = createSbClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -86,28 +83,37 @@ export async function POST(req: NextRequest) {
         .insert({
           vendeur_id: user.id,
           immatriculation: immatriculation ?? null,
-          kilometrage: Number(kilometrage),
-          annee: Number(annee),
-          etat_general: etat_general,
+          kilometrage: kmNum,
+          annee: anneeNum,
+          etat_general,
           marque: marque ?? null,
           modele: modele ?? null,
-          estimation_min,
-          estimation_max,
+          estimation_min: estimation.estimation_min,
+          estimation_max: estimation.estimation_max,
           statut: 'estimation',
         })
         .select('id')
         .single();
 
       return NextResponse.json({
-        estimation_min,
-        estimation_max,
+        estimation_min: estimation.estimation_min,
+        estimation_max: estimation.estimation_max,
+        estimation_centrale: estimation.estimation_centrale,
+        categorie: estimation.categorie,
+        confiance: estimation.confiance,
         depot_id: depot?.id ?? null,
       });
     }
   } catch {
-    // Pas d'auth ou erreur — on retourne juste l'estimation
+    // Pas d'auth ou erreur -- on retourne juste l'estimation
   }
 
-  // Utilisateur non authentifié — retourner l'estimation sans insertion
-  return NextResponse.json({ estimation_min, estimation_max, depot_id: null });
+  return NextResponse.json({
+    estimation_min: estimation.estimation_min,
+    estimation_max: estimation.estimation_max,
+    estimation_centrale: estimation.estimation_centrale,
+    categorie: estimation.categorie,
+    confiance: estimation.confiance,
+    depot_id: null,
+  });
 }

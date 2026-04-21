@@ -8,6 +8,9 @@ import EstimationCard from '@/components/depot/EstimationCard';
 interface EstimationResult {
   estimation_min: number;
   estimation_max: number;
+  estimation_centrale?: number;
+  categorie?: string;
+  confiance?: 'haute' | 'moyenne' | 'basse';
   depot_id: string | null;
 }
 
@@ -238,6 +241,9 @@ export default function EstimerPage() {
                 <EstimationCard
                   min={result.estimation_min}
                   max={result.estimation_max}
+                  centrale={result.estimation_centrale}
+                  categorie={result.categorie}
+                  confiance={result.confiance}
                   marque={formData.marque}
                   modele={formData.modele}
                   annee={formData.annee ? Number(formData.annee) : undefined}

@@ -18,7 +18,13 @@ export type ContratDepotData = {
   vehicule_vin?: string | null;
   vehicule_annee?: number | null;
   vehicule_kilometrage?: number | null;
-  vehicule_prix_demande: number; // euros
+  /**
+   * Estimation Argus-like indicative (min/max en euros). Ne pre-remplit JAMAIS
+   * le prix de vente demande dans le contrat : le vendeur doit negocier et
+   * inscrire lui-meme le prix retenu avec le depositaire lors de la signature.
+   */
+  estimation_min?: number | null;
+  estimation_max?: number | null;
   // Commissions
   commission_roullepro_pct: number; // 4
   commission_garage_pct: number; // 7
@@ -175,7 +181,19 @@ export async function generateContratDepotPDF(data: ContratDepotData): Promise<U
   if (data.vehicule_kilometrage) drawText(ctx, `Kilometrage : ${data.vehicule_kilometrage.toLocaleString("fr-FR")} km`);
   if (data.vehicule_immatriculation) drawText(ctx, `Immatriculation : ${data.vehicule_immatriculation}`);
   if (data.vehicule_vin) drawText(ctx, `Numero VIN : ${data.vehicule_vin}`);
-  drawText(ctx, `Prix de vente demande : ${formatEUR(data.vehicule_prix_demande)}`, { bold: true });
+  // Le prix de vente demande est LAISSE A COMPLETER manuellement lors de la
+  // signature physique entre Mandant et Depositaire (negociation libre).
+  ctx.y -= 2;
+  drawText(ctx, "Prix de vente demande (a convenir entre les parties) : ________________________ EUR", { bold: true });
+  if (data.estimation_min != null && data.estimation_max != null) {
+    drawText(
+      ctx,
+      `Fourchette indicative (estimation Argus) : ${formatEUR(data.estimation_min)} - ${formatEUR(data.estimation_max)}. Ce prix est fourni a titre informatif et n'engage ni le Mandant ni le Depositaire.`,
+      { size: 9, color: [0.45, 0.45, 0.45] }
+    );
+  } else {
+    drawText(ctx, "(Le prix est librement negocie entre le Mandant et le Depositaire.)", { size: 9, color: [0.45, 0.45, 0.45] });
+  }
   drawSeparator(ctx);
 
   // Durée
