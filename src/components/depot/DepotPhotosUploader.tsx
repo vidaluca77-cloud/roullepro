@@ -86,16 +86,37 @@ export default function DepotPhotosUploader({
           file = rawFile;
         }
 
+        // Si la compression n'a pas suffi (rare : grosse photo + navigateur recalcitrant),
+        // on retente une passe encore plus agressive
+        if (file.size > 8 * 1024 * 1024) {
+          try {
+            file = await compressImage(file, { targetSizeKB: 2000, maxDim: 1600 });
+          } catch {
+            // on garde tel quel, Supabase accepte jusqu'a 50Mo
+          }
+        }
+
+        // Extension finale : .jpg si on a compresse (File.type = image/jpeg),
+        // sinon on garde l'extension d'origine
+        const finalType = file.type || "image/jpeg";
+        const ext =
+          finalType === "image/jpeg"
+            ? "jpg"
+            : finalType === "image/png"
+            ? "png"
+            : finalType === "image/webp"
+            ? "webp"
+            : "jpg";
         const path = `${user.id}/${Date.now()}-${i}-${Math.random()
           .toString(36)
-          .slice(2, 8)}.jpg`;
+          .slice(2, 8)}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from(BUCKET)
           .upload(path, file, {
             cacheControl: "3600",
             upsert: false,
-            contentType: file.type || "image/jpeg",
+            contentType: finalType,
           });
 
         if (upErr) {
