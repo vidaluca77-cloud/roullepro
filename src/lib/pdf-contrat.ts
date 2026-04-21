@@ -9,13 +9,8 @@ export type ContratDepotData = {
   vendeur_adresse?: string | null;
   vendeur_telephone?: string | null;
   vendeur_siret?: string | null;
-  // Dépositaire (garage)
-  garage_raison_sociale: string;
-  garage_siret: string;
-  garage_adresse: string;
-  garage_code_postal: string;
+  // Dépositaire (garage) - anonymisé : uniquement la ville, le reste sera rempli manuellement
   garage_ville: string;
-  garage_contact_nom?: string | null;
   // Véhicule
   vehicule_marque: string;
   vehicule_modele: string;
@@ -158,10 +153,14 @@ export async function generateContratDepotPDF(data: ContratDepotData): Promise<U
   ctx.y -= 8;
 
   drawText(ctx, "LE DEPOSITAIRE (Garage partenaire)", { bold: true, size: 11 });
-  drawText(ctx, `Raison sociale : ${data.garage_raison_sociale}`);
-  drawText(ctx, `SIRET : ${data.garage_siret}`);
-  drawText(ctx, `Adresse : ${data.garage_adresse}, ${data.garage_code_postal} ${data.garage_ville}`);
-  if (data.garage_contact_nom) drawText(ctx, `Representant : ${data.garage_contact_nom}`);
+  drawText(ctx, `Partenaire RoullePro - ${data.garage_ville}`);
+  ctx.y -= 4;
+  drawText(ctx, "Raison sociale : _________________________________________________", { color: [0.55, 0.55, 0.55] });
+  drawText(ctx, "SIRET : ___________________________________", { color: [0.55, 0.55, 0.55] });
+  drawText(ctx, "Adresse : _________________________________________________", { color: [0.55, 0.55, 0.55] });
+  drawText(ctx, "Representant : ____________________________________", { color: [0.55, 0.55, 0.55] });
+  ctx.y -= 4;
+  drawText(ctx, "(A completer manuellement par le Depositaire lors de la signature physique)", { size: 8, color: [0.5, 0.5, 0.5] });
   ctx.y -= 8;
 
   drawText(ctx, "LA PLATEFORME", { bold: true, size: 11 });
@@ -239,7 +238,7 @@ export async function generateContratDepotPDF(data: ContratDepotData): Promise<U
   // Signatures
   ensureSpace(ctx, 120);
   drawTitle(ctx, "SIGNATURES");
-  drawText(ctx, `Fait a ${data.garage_ville}, le ${formatDate(data.date_signature)}.`);
+  drawText(ctx, `Fait a ____________________, le ${formatDate(data.date_signature)}.`);
   ctx.y -= 20;
 
   // Blocs de signature

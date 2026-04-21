@@ -31,6 +31,90 @@ function admin() {
   );
 }
 
+/** Handler paiement depot-vente reussi : cree la transaction et met a jour le depot */
+async function handleDepotVenteCheckout(session: Stripe.Checkout.Session) {
+  const db = admin();
+  const depotId = session.metadata?.depot_id;
+  if (!depotId) {
+    console.error('[stripe webhook] depot-vente sans depot_id', session.id);
+    return;
+  }
+
+  const piId = typeof session.payment_intent === 'string'
+    ? session.payment_intent
+    : session.payment_intent?.id;
+
+  // Verifier qu'on n'a pas deja traite ce paiement (idempotence)
+  const { data: existing } = await db
+    .from('transactions_depot')
+    .select('id')
+    .eq('stripe_checkout_session_id', session.id)
+    .maybeSingle();
+
+  if (existing) {
+    console.log('[stripe webhook] depot-vente session deja traitee:', session.id);
+    return;
+  }
+
+  const montantTotalCents = session.amount_total ?? 0;
+  const partVendeur = parseInt(session.metadata?.part_vendeur_cents ?? '0', 10);
+  const partGarage = parseInt(session.metadata?.part_garage_cents ?? '0', 10);
+  const partRp = parseInt(session.metadata?.part_roullepro_cents ?? '0', 10);
+  const forfaitPrep = parseInt(session.metadata?.forfait_preparation_cents ?? '25000', 10);
+  const offreId = session.metadata?.offre_id || null;
+  const acheteurEmail = session.metadata?.acheteur_email
+    || session.customer_details?.email
+    || session.customer_email
+    || '';
+
+  await db.from('transactions_depot').insert({
+    depot_id: depotId,
+    offre_id: offreId,
+    acheteur_email: acheteurEmail,
+    montant_total_cents: montantTotalCents,
+    part_vendeur_cents: partVendeur,
+    part_garage_cents: partGarage,
+    part_roullepro_cents: partRp,
+    forfait_preparation_cents: forfaitPrep,
+    stripe_checkout_session_id: session.id,
+    stripe_payment_intent_id: piId ?? null,
+    statut: 'paid',
+    paye_at: new Date().toISOString(),
+  });
+
+  await db.from('depots').update({
+    statut: 'vendu_paye',
+    prix_final_vente: montantTotalCents / 100,
+    date_vente: new Date().toISOString(),
+  }).eq('id', depotId);
+
+  await db.from('depot_events').insert({
+    depot_id: depotId,
+    type_event: 'paiement_acheteur_recu',
+    description: `Paiement Stripe Checkout recu - ${montantTotalCents / 100} EUR - session ${session.id}`,
+  });
+}
+
+/** Handler refund ou echec paiement depot-vente */
+async function handleDepotVenteRefund(paymentIntentId: string, eventType: string) {
+  const db = admin();
+  const { data: tx } = await db
+    .from('transactions_depot')
+    .select('id, depot_id, statut')
+    .eq('stripe_payment_intent_id', paymentIntentId)
+    .maybeSingle();
+  if (!tx) return;
+
+  const newStatut = eventType === 'charge.refunded' ? 'refunded' : 'failed';
+  await db.from('transactions_depot').update({ statut: newStatut }).eq('id', tx.id);
+
+  await db.from('depot_events').insert({
+    depot_id: tx.depot_id,
+    type_event: newStatut,
+    description: `Evenement Stripe: ${eventType} - PI ${paymentIntentId}`,
+  });
+}
+
 /** Upsert subscription + met à jour profiles.plan */
 async function syncSubscription(sub: Stripe.Subscription) {
   const db = admin();
@@ -133,12 +217,20 @@ export async function POST(request: Request) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+
+        // Cas 1 : abonnement SaaS
         if (session.mode === 'subscription' && session.subscription) {
           const subId = typeof session.subscription === 'string'
             ? session.subscription
             : session.subscription.id;
           const sub = await stripe.subscriptions.retrieve(subId);
           await syncSubscription(sub);
+          break;
+        }
+
+        // Cas 2 : paiement depot-vente (mode payment + metadata.type=depot_vente)
+        if (session.mode === 'payment' && session.metadata?.type === 'depot_vente') {
+          await handleDepotVenteCheckout(session);
         }
         break;
       }
@@ -147,6 +239,15 @@ export async function POST(request: Request) {
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
         await syncSubscription(sub);
+        break;
+      }
+      case 'charge.refunded':
+      case 'payment_intent.payment_failed': {
+        const obj = event.data.object as Stripe.Charge | Stripe.PaymentIntent;
+        const piId = 'payment_intent' in obj
+          ? (typeof obj.payment_intent === 'string' ? obj.payment_intent : obj.payment_intent?.id)
+          : obj.id;
+        if (piId) await handleDepotVenteRefund(piId, event.type);
         break;
       }
       default:

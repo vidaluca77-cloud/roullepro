@@ -61,10 +61,10 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Acces refuse" }, { status: 403 });
     }
 
-    // Recuperation garage
+    // Recuperation garage - uniquement la ville (anonymisation contrat)
     const { data: garage, error: garageErr } = await sbService
       .from("garages_partenaires")
-      .select("*")
+      .select("id, ville")
       .eq("id", depot.garage_id)
       .single();
 
@@ -87,12 +87,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       vendeur_adresse: vendeur?.city ?? null,
       vendeur_telephone: vendeur?.phone ?? null,
       vendeur_siret: vendeur?.siret ?? null,
-      garage_raison_sociale: garage.raison_sociale,
-      garage_siret: garage.siret,
-      garage_adresse: garage.adresse || "",
-      garage_code_postal: garage.code_postal || "",
       garage_ville: garage.ville || "",
-      garage_contact_nom: garage.contact_nom ?? null,
       vehicule_marque: depot.marque || "",
       vehicule_modele: depot.modele || "",
       vehicule_immatriculation: depot.immatriculation ?? null,
