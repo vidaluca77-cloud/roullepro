@@ -47,10 +47,9 @@ export default function DepotPhotosUploader({
         data: { user },
       } = await supabase.auth.getUser();
 
-      if (!user) {
-        setError("Vous devez etre connecte pour ajouter des photos.");
-        return;
-      }
+      // On accepte les uploads anonymes (page /estimer publique). Le bucket
+      // depot-vente-photos autorise insert sans auth.
+      const folder = user?.id ?? "anon";
 
       let successCount = 0;
       let failCount = 0;
@@ -107,7 +106,7 @@ export default function DepotPhotosUploader({
             : finalType === "image/webp"
             ? "webp"
             : "jpg";
-        const path = `${user.id}/${Date.now()}-${i}-${Math.random()
+        const path = `${folder}/${Date.now()}-${i}-${Math.random()
           .toString(36)
           .slice(2, 8)}.${ext}`;
 
@@ -121,6 +120,9 @@ export default function DepotPhotosUploader({
 
         if (upErr) {
           failCount++;
+          // eslint-disable-next-line no-console
+          console.error("[DepotPhotosUploader] upload error:", upErr);
+          setError(`Echec upload: ${upErr.message}`);
           continue;
         }
 
