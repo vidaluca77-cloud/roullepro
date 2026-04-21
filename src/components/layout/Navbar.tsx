@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Truck, Menu, X, User, LogOut, LayoutDashboard, Wrench } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -12,6 +12,8 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [hasGarage, setHasGarage] = useState(false);
+  const [garageDemandes, setGarageDemandes] = useState(0);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -55,8 +57,31 @@ export default function Navbar() {
     if (user) {
       const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
       setProfile(data);
+      // Détecter si l'utilisateur a un garage partenaire
+      const { data: garage } = await supabase
+        .from('garages_partenaires')
+        .select('id, statut')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      if (garage) {
+        setHasGarage(true);
+        // Compter les demandes en attente de ce garage
+        if (garage.statut === 'actif') {
+          const { count } = await supabase
+            .from('depots')
+            .select('id', { count: 'exact', head: true })
+            .eq('garage_id', garage.id)
+            .eq('statut', 'demande_en_attente');
+          setGarageDemandes(count ?? 0);
+        }
+      } else {
+        setHasGarage(false);
+        setGarageDemandes(0);
+      }
     } else {
       setProfile(null);
+      setHasGarage(false);
+      setGarageDemandes(0);
     }
   };
 
@@ -104,23 +129,38 @@ export default function Navbar() {
                   <span>{profile?.full_name || user.email}</span>
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-10">
                     <Link
                       href="/dashboard"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <LayoutDashboard className="h-4 w-4 mr-2" />
-                      Dashboard
+                      Mon espace vendeur
                       {unreadCount > 0 && (
                         <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                           {unreadCount > 9 ? '9+' : unreadCount}
                         </span>
                       )}
                     </Link>
+                    {hasGarage && (
+                      <Link
+                        href="/garage/dashboard"
+                        className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 font-semibold border-t border-slate-100"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Wrench className="h-4 w-4 mr-2" />
+                        Espace garage
+                        {garageDemandes > 0 && (
+                          <span className="ml-auto bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                            {garageDemandes > 9 ? '9+' : garageDemandes}
+                          </span>
+                        )}
+                      </Link>
+                    )}
                     <Link
                       href="/profil"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t border-slate-100"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <User className="h-4 w-4 mr-2" />
@@ -178,13 +218,23 @@ export default function Navbar() {
             {user ? (
               <div className="border-t pt-2 space-y-2">
                 <Link href="/dashboard" className="flex items-center text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>
-                  Dashboard
+                  Mon espace vendeur
                   {unreadCount > 0 && (
                     <span className="ml-1.5 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
                 </Link>
+                {hasGarage && (
+                  <Link href="/garage/dashboard" className="flex items-center text-sm text-purple-700 hover:text-purple-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                    Espace garage
+                    {garageDemandes > 0 && (
+                      <span className="ml-1.5 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {garageDemandes > 9 ? '9+' : garageDemandes}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 <Link href="/profil" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Mon profil</Link>
                 <button onClick={() => { handleSignOut(); setIsOpen(false); }} className="block w-full text-left text-sm text-red-600 hover:text-red-700 py-1">Deconnexion</button>
               </div>

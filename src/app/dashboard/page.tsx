@@ -10,7 +10,7 @@ import PlanBadge from '@/components/PlanBadge';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
   Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
-  CheckCircle, Pencil, X, Package, ArrowRight,
+  CheckCircle, Pencil, X, Package, ArrowRight, Wrench,
 } from 'lucide-react';
 import DepotStatusBadge from '@/components/depot/DepotStatusBadge';
 
@@ -26,6 +26,7 @@ function DashboardPageInner() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendeurStats, setVendeurStats] = useState<any>(null);
   const [depots, setDepots] = useState<any[]>([]);
+  const [garageInfo, setGarageInfo] = useState<{ id: string; raison_sociale: string; statut: string; demandes: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview'|'annonces'|'depots'|'messages'|'favoris'|'alertes'>('overview');
@@ -104,6 +105,25 @@ function DashboardPageInner() {
     setAnnonces(a || []);
     setCategories(cats || []);
     setDepots(dps || []);
+
+    // Détection compte garage partenaire
+    const { data: garage } = await supabase
+      .from('garages_partenaires')
+      .select('id, raison_sociale, statut')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (garage) {
+      let demandes = 0;
+      if (garage.statut === 'actif') {
+        const { count } = await supabase
+          .from('depots')
+          .select('id', { count: 'exact', head: true })
+          .eq('garage_id', garage.id)
+          .eq('statut', 'demande_en_attente');
+        demandes = count ?? 0;
+      }
+      setGarageInfo({ ...garage, demandes });
+    }
 
     // Stats vendeur : vues totales + notations
     const [notationsRes] = await Promise.all([
@@ -344,6 +364,37 @@ function DashboardPageInner() {
         {/* ── Onglet Vue d'ensemble ── */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+
+            {/* Bannière Espace garage */}
+            {garageInfo && (
+              <div className="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl p-6 text-white mb-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-white/20 rounded-xl p-2.5">
+                      <Wrench size={22} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold">Espace garage — {garageInfo.raison_sociale}</h2>
+                      {garageInfo.statut === 'actif' ? (
+                        <p className="text-purple-100 text-sm mt-0.5">
+                          {garageInfo.demandes > 0
+                            ? <>Vous avez <strong>{garageInfo.demandes} demande{garageInfo.demandes > 1 ? 's' : ''}</strong> en attente de validation.</>
+                            : 'Consultez vos dépôts-vente et les ventes en cours.'}
+                        </p>
+                      ) : (
+                        <p className="text-purple-100 text-sm mt-0.5">Votre compte garage est en attente de validation.</p>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href={garageInfo.statut === 'actif' ? '/garage/dashboard' : '/garage/dashboard/attente'}
+                    className="bg-white text-purple-700 px-4 py-2 rounded-lg text-sm font-bold hover:bg-purple-50 transition whitespace-nowrap"
+                  >
+                    Accéder
+                  </Link>
+                </div>
+              </div>
+            )}
 
             {/* Bannière onboarding */}
             {showOnboarding && (

@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import DepotStatusBadge from '@/components/depot/DepotStatusBadge';
 import DepotTimeline from '@/components/depot/DepotTimeline';
 import GarageDepotActions from './GarageDepotActions';
+import PublicLinkCard from './PublicLinkCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,6 +121,9 @@ export default async function GarageDepotDetailPage({ params }: { params: { id: 
               </div>
             </div>
           )}
+
+          {/* Lien public si en vente */}
+          <PublicLinkCard garageId={depot.garage_id} statut={depot.statut} />
 
           {/* Actions garage */}
           <GarageDepotActions
