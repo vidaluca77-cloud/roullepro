@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Camera, X, Loader2, ImagePlus, ImageIcon } from "lucide-react";
+import { Camera, X, Loader2 } from "lucide-react";
 import { compressImage } from "@/lib/image-compress";
 
 type Props = {
@@ -13,7 +13,8 @@ type Props = {
 };
 
 const BUCKET = "depot-vente-photos";
-const MAX_SIZE_MB = 10; // on accepte plus grand car on compresse ensuite
+// On accepte grand en entree, la compression cote client ramene tout a ~2.5 Mo
+const MAX_INPUT_MB = 50;
 
 export default function DepotPhotosUploader({
   photos,
@@ -24,25 +25,19 @@ export default function DepotPhotosUploader({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<{ current: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
-
-  const isMobile =
-    typeof window !== "undefined" &&
-    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setError(null);
 
     const remaining = max - photos.length;
-    const toUpload = Array.from(files).slice(0, remaining);
-
-    if (toUpload.length === 0) {
-      setError(`Maximum ${max} photos.`);
+    if (remaining <= 0) {
+      setError(`Maximum ${max} photos atteint.`);
       return;
     }
+    const toUpload = Array.from(files).slice(0, remaining);
 
     setUploading(true);
     setProgress({ current: 0, total: toUpload.length });
@@ -53,56 +48,47 @@ export default function DepotPhotosUploader({
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError("Vous devez etre connecte pour televerser des photos.");
+        setError("Vous devez etre connecte pour ajouter des photos.");
         return;
       }
 
-      const urls: string[] = [];
+      let successCount = 0;
+      let failCount = 0;
+      const newUrls: string[] = [];
+
       for (let i = 0; i < toUpload.length; i++) {
         const rawFile = toUpload[i];
         setProgress({ current: i + 1, total: toUpload.length });
 
-        // Accepter tout type image (y compris HEIC/HEIF iOS qui sera converti)
+        // Filtre tres permissif : on accepte tout ce qui ressemble a une image
         const typeLower = (rawFile.type || "").toLowerCase();
         const nameLower = rawFile.name.toLowerCase();
-        const isImage =
+        const looksLikeImage =
           typeLower.startsWith("image/") ||
-          nameLower.endsWith(".heic") ||
-          nameLower.endsWith(".heif") ||
-          nameLower.endsWith(".jpg") ||
-          nameLower.endsWith(".jpeg") ||
-          nameLower.endsWith(".png") ||
-          nameLower.endsWith(".webp");
+          /\.(jpg|jpeg|png|webp|heic|heif|avif|gif|bmp)$/i.test(nameLower);
 
-        if (!isImage) {
-          setError("Seules les images sont acceptees.");
+        if (!looksLikeImage) {
+          failCount++;
           continue;
         }
 
-        if (rawFile.size > MAX_SIZE_MB * 1024 * 1024 * 3) {
-          // Photo vraiment enorme (>30Mo) : on refuse
-          setError(`Photo trop lourde. Reduisez avant d'envoyer.`);
+        // Cap tres large en entree (50 Mo) : au-dela c'est probablement une erreur
+        if (rawFile.size > MAX_INPUT_MB * 1024 * 1024) {
+          failCount++;
           continue;
         }
 
-        // Compression cote client (reduit dimension + convertit HEIC en JPEG)
+        // Compression cote client (agressive : vise 2.5 Mo)
         let file: File;
         try {
-          file = await compressImage(rawFile, { maxDim: 2048, quality: 0.85 });
+          file = await compressImage(rawFile, { targetSizeKB: 2500, maxDim: 2560 });
         } catch {
           file = rawFile;
         }
 
-        // Si apres compression toujours trop gros, on refuse
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          setError(`Photo trop lourde meme apres compression.`);
-          continue;
-        }
-
-        const ext = (file.type === "image/jpeg" ? "jpg" : file.name.split(".").pop()?.toLowerCase()) || "jpg";
-        const path = `${user.id}/${Date.now()}-${Math.random()
+        const path = `${user.id}/${Date.now()}-${i}-${Math.random()
           .toString(36)
-          .slice(2, 10)}.${ext}`;
+          .slice(2, 8)}.jpg`;
 
         const { error: upErr } = await supabase.storage
           .from(BUCKET)
@@ -113,22 +99,28 @@ export default function DepotPhotosUploader({
           });
 
         if (upErr) {
-          setError(`Erreur d'envoi : ${upErr.message}`);
+          failCount++;
           continue;
         }
 
         const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        urls.push(data.publicUrl);
+        newUrls.push(data.publicUrl);
+        successCount++;
       }
 
-      if (urls.length > 0) {
-        onChange([...photos, ...urls]);
+      if (newUrls.length > 0) {
+        onChange([...photos, ...newUrls]);
+      }
+
+      if (failCount > 0 && successCount === 0) {
+        setError(`Aucune photo n'a pu etre envoyee. Reessayez ou choisissez d'autres photos.`);
+      } else if (failCount > 0) {
+        setError(`${successCount} photo(s) ajoutee(s), ${failCount} non envoyee(s).`);
       }
     } finally {
       setUploading(false);
       setProgress(null);
-      if (cameraInputRef.current) cameraInputRef.current.value = "";
-      if (galleryInputRef.current) galleryInputRef.current.value = "";
+      if (inputRef.current) inputRef.current.value = "";
     }
   };
 
@@ -140,27 +132,27 @@ export default function DepotPhotosUploader({
 
   return (
     <div>
-      {/* Grille des photos existantes */}
+      {/* Photos existantes */}
       {photos.length > 0 && (
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
           {photos.map((url, i) => (
             <div
               key={url}
-              className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-50 group"
+              className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100"
             >
               <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
               {!disabled && (
                 <button
                   type="button"
                   onClick={() => removePhoto(url)}
-                  className="absolute top-1.5 right-1.5 w-7 h-7 sm:w-6 sm:h-6 rounded-full bg-white/95 hover:bg-white text-red-600 flex items-center justify-center shadow-sm sm:opacity-0 sm:group-hover:opacity-100 transition"
+                  className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-white/95 text-red-600 flex items-center justify-center shadow-md active:scale-95"
                   aria-label="Supprimer la photo"
                 >
-                  <X size={14} />
+                  <X size={16} strokeWidth={2.5} />
                 </button>
               )}
               {i === 0 && (
-                <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-medium">
+                <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-semibold">
                   Principale
                 </span>
               )}
@@ -169,72 +161,53 @@ export default function DepotPhotosUploader({
         </div>
       )}
 
-      {/* Boutons d'ajout : 2 CTA distincts sur mobile (Camera / Galerie) */}
+      {/* UN SEUL gros bouton. Sur mobile le navigateur propose nativement
+          Camera / Photos / Fichiers via accept=image/* sans capture */}
       {canAdd && (
-        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1"} gap-2`}>
-          {isMobile && (
-            <button
-              type="button"
-              disabled={uploading}
-              onClick={() => cameraInputRef.current?.click()}
-              className="flex items-center justify-center gap-2 border-2 border-dashed border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold rounded-xl py-4 px-3 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {uploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
-              <span className="text-sm">Prendre photo</span>
-            </button>
+        <button
+          type="button"
+          disabled={uploading}
+          onClick={() => inputRef.current?.click()}
+          className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-70 text-white font-bold rounded-xl py-5 px-4 shadow-sm transition"
+        >
+          {uploading ? (
+            <>
+              <Loader2 size={22} className="animate-spin" />
+              <span>
+                {progress ? `Envoi ${progress.current}/${progress.total}...` : "Envoi..."}
+              </span>
+            </>
+          ) : (
+            <>
+              <Camera size={22} />
+              <span className="text-base">
+                {photos.length === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
+              </span>
+            </>
           )}
-          <button
-            type="button"
-            disabled={uploading}
-            onClick={() => galleryInputRef.current?.click()}
-            className={`flex items-center justify-center gap-2 border-2 border-dashed ${
-              isMobile
-                ? "border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700"
-                : "border-slate-300 hover:border-blue-500 hover:bg-blue-50 text-slate-600 hover:text-blue-700"
-            } font-semibold rounded-xl py-4 px-3 transition disabled:opacity-50 disabled:cursor-not-allowed`}
-          >
-            {uploading ? (
-              <>
-                <Loader2 size={20} className="animate-spin" />
-                <span className="text-sm">
-                  {progress ? `Envoi ${progress.current}/${progress.total}` : "Envoi..."}
-                </span>
-              </>
-            ) : (
-              <>
-                {isMobile ? <ImageIcon size={20} /> : <ImagePlus size={20} />}
-                <span className="text-sm">
-                  {isMobile ? "Galerie" : photos.length === 0 ? "Ajouter des photos" : "Ajouter d'autres photos"}
-                </span>
-              </>
-            )}
-          </button>
-        </div>
+        </button>
       )}
 
-      {/* Inputs caches - un pour camera direct, un pour galerie */}
+      {/* Input file ultra-permissif : multiple, pas de capture (laisse le navigateur
+          proposer le menu natif camera/galerie/fichiers sur mobile) */}
       <input
-        ref={cameraInputRef}
+        ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
-        hidden
-        onChange={(e) => handleFiles(e.target.files)}
-      />
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*,.heic,.heif"
         multiple
         hidden
         onChange={(e) => handleFiles(e.target.files)}
       />
 
-      <div className="flex items-center justify-between mt-2 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mt-2">
         <p className="text-xs text-slate-500">
-          {photos.length} / {max} photos &middot; redimensionnement auto
+          {photos.length} / {max} photos &middot; redimensionnement automatique
         </p>
-        {error && <p className="text-xs text-red-600 text-right">{error}</p>}
+        {error && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+            {error}
+          </p>
+        )}
       </div>
     </div>
   );

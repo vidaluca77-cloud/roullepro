@@ -1,99 +1,103 @@
 /**
- * Compression image cote client pour reduire la taille et la dimension
- * avant upload. Supporte HEIC iOS via conversion en JPEG.
+ * Compression image cote client robuste et progressive.
  *
- * - Redimensionne au max MAX_DIM px (cote le plus long)
- * - Sortie JPEG qualite 0.85
- * - Retourne un File compresse (ou l'original si deja <= maxSizeKB et dimension ok)
+ * Strategie :
+ * - Redimensionne en etapes (2560 -> 1920 -> 1600 -> 1280) jusqu'a passer sous targetSizeKB
+ * - Baisse la qualite si toujours trop gros (0.85 -> 0.75 -> 0.65 -> 0.55)
+ * - Convertit tout (HEIC, PNG, WebP) en JPEG pour compatibilite universelle
+ * - Retourne un File JPEG pret a uploader
+ * - Si compression impossible (e.g. HEIC non decode par le navigateur), retourne l'original
+ *   pour laisser Supabase essayer (limite serveur = 50Mo)
  */
-
-const MAX_DIM = 2048;
-const QUALITY = 0.85;
 
 export async function compressImage(
   file: File,
-  options?: { maxDim?: number; quality?: number; maxSizeKB?: number }
+  options?: { targetSizeKB?: number; maxDim?: number }
 ): Promise<File> {
-  const maxDim = options?.maxDim ?? MAX_DIM;
-  const quality = options?.quality ?? QUALITY;
-  const maxSizeKB = options?.maxSizeKB ?? 2000;
+  const targetSizeKB = options?.targetSizeKB ?? 2500; // 2.5 Mo cible
+  const maxDimStart = options?.maxDim ?? 2560;
 
-  // Cas ou pas de compression necessaire (petit fichier, format standard)
-  if (
-    file.size <= maxSizeKB * 1024 &&
-    (file.type === "image/jpeg" || file.type === "image/png" || file.type === "image/webp")
-  ) {
-    // Encore, on verifie la dimension. Si on ne peut pas lire, on retourne tel quel.
-    try {
-      const dims = await readImageDimensions(file);
-      if (dims.width <= maxDim && dims.height <= maxDim) {
-        return file;
-      }
-    } catch {
-      return file;
-    }
-  }
+  // Si deja petit et format standard, on ne touche pas
+  const typeLower = (file.type || "").toLowerCase();
+  const isStandardFormat =
+    typeLower === "image/jpeg" || typeLower === "image/png" || typeLower === "image/webp";
 
-  try {
-    const img = await loadImage(file);
-
-    // Calcul dimensions cibles en preservant ratio
-    let { width, height } = img;
-    if (width > maxDim || height > maxDim) {
-      if (width >= height) {
-        height = Math.round((height * maxDim) / width);
-        width = maxDim;
-      } else {
-        width = Math.round((width * maxDim) / height);
-        height = maxDim;
-      }
-    }
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return file;
-    ctx.drawImage(img, 0, 0, width, height);
-
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", quality)
-    );
-    if (!blob) return file;
-
-    const newName = file.name.replace(/\.[^.]+$/, "") + ".jpg";
-    return new File([blob], newName, { type: "image/jpeg", lastModified: Date.now() });
-  } catch {
+  if (file.size <= targetSizeKB * 1024 && isStandardFormat) {
     return file;
   }
+
+  let img: HTMLImageElement;
+  try {
+    img = await loadImage(file);
+  } catch {
+    // Navigateur ne sait pas decoder (rare HEIC tres specifique). On laisse passer.
+    return file;
+  }
+
+  const dims = [maxDimStart, 1920, 1600, 1280, 1024];
+  const qualities = [0.85, 0.75, 0.65, 0.55];
+
+  for (const maxDim of dims) {
+    for (const q of qualities) {
+      const blob = await render(img, maxDim, q);
+      if (!blob) continue;
+      if (blob.size <= targetSizeKB * 1024) {
+        return blobToFile(blob, file.name);
+      }
+    }
+  }
+
+  // En dernier recours : plus petite version meme si encore un peu au-dessus
+  const fallback = await render(img, 1024, 0.55);
+  if (fallback) return blobToFile(fallback, file.name);
+
+  return file;
+}
+
+function render(img: HTMLImageElement, maxDim: number, quality: number): Promise<Blob | null> {
+  let { width, height } = img;
+  if (width > maxDim || height > maxDim) {
+    if (width >= height) {
+      height = Math.round((height * maxDim) / width);
+      width = maxDim;
+    } else {
+      width = Math.round((width * maxDim) / height);
+      height = maxDim;
+    }
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return Promise.resolve(null);
+
+  // Fond blanc pour PNG transparents
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), "image/jpeg", quality);
+  });
+}
+
+function blobToFile(blob: Blob, originalName: string): File {
+  const newName = originalName.replace(/\.[^.]+$/, "") + ".jpg";
+  return new File([blob], newName, { type: "image/jpeg", lastModified: Date.now() });
 }
 
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
+    const cleanup = () => URL.revokeObjectURL(url);
     img.onload = () => {
-      URL.revokeObjectURL(url);
+      cleanup();
       resolve(img);
     };
     img.onerror = (e) => {
-      URL.revokeObjectURL(url);
-      reject(e);
-    };
-    img.src = url;
-  });
-}
-
-function readImageDimensions(file: File): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const img = new Image();
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve({ width: img.width, height: img.height });
-    };
-    img.onerror = (e) => {
-      URL.revokeObjectURL(url);
+      cleanup();
       reject(e);
     };
     img.src = url;
