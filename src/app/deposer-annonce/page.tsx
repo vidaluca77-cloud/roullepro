@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { AlertCircle, Image as ImageIcon, X, Truck, Car } from 'lucide-react';
 import { getPlan, canCreateAnnonce } from '@/lib/plans';
+import { compressImage } from '@/lib/image-compress';
 
 const ENERGIES = ['Essence','Diesel','Hybride','Electrique','GPL','Hydrogène'];
 const BOITES = ['Manuelle','Automatique'];
@@ -14,8 +15,7 @@ const TYPES_CARROSSERIE_UTILITAIRE = [
 ];
 
 const MAX_PHOTOS = 10;
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const MAX_INPUT_SIZE = 50 * 1024 * 1024; // on accepte grand en entree, on compresse ensuite
 
 // Slugs des catégories utilitaires (véhicules de charge)
 const SLUGS_UTILITAIRES = ['utilitaire'];
@@ -87,12 +87,23 @@ export default function DeposerAnnoncePage() {
       setError(`Maximum ${MAX_PHOTOS} photos`);
       return;
     }
-    const invalid = files.filter(f => !ALLOWED_IMAGE_TYPES.includes(f.type) || f.size > MAX_FILE_SIZE);
-    if (invalid.length > 0) {
-      setError('Fichiers invalides (JPG/PNG/WEBP, max 5 MB)');
+    // Filtre tres permissif : accepte tout ce qui ressemble a une image
+    const validFiles = files.filter((f) => {
+      const isImg =
+        (f.type || '').startsWith('image/') ||
+        /\.(jpg|jpeg|png|webp|heic|heif|avif|gif|bmp)$/i.test(f.name);
+      return isImg && f.size <= MAX_INPUT_SIZE;
+    });
+    if (validFiles.length === 0) {
+      setError('Aucune image valide. Choisissez des photos (max 50 Mo chacune).');
       return;
     }
-    setPhotoPreview(prev => [...prev, ...files.map(file => ({ file, preview: URL.createObjectURL(file) }))]);
+    setPhotoPreview((prev) => [
+      ...prev,
+      ...validFiles.map((file) => ({ file, preview: URL.createObjectURL(file) })),
+    ]);
+    // Reinitialise l'input pour pouvoir re-selectionner le meme fichier
+    if (e.target) e.target.value = '';
   };
 
   const removePhoto = (index: number) => {
@@ -106,11 +117,39 @@ export default function DeposerAnnoncePage() {
     setUploadingPhotos(true);
     const urls: string[] = [];
     try {
-      for (const {file} of photoPreview) {
-        const ext = file.name.split('.').pop();
-        const path = `${userId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-        const { data, error: upErr } = await supabase.storage.from('annonces-photos').upload(path, file, { upsert: false });
-        if (upErr) throw upErr;
+      for (let i = 0; i < photoPreview.length; i++) {
+        const raw = photoPreview[i].file;
+
+        // Compression / conversion en JPEG (gere PNG, HEIC, gros fichiers)
+        let file: File;
+        try {
+          file = await compressImage(raw, { targetSizeKB: 2500, maxDim: 2560 });
+        } catch {
+          file = raw;
+        }
+        if (file.size > 8 * 1024 * 1024) {
+          try {
+            file = await compressImage(file, { targetSizeKB: 2000, maxDim: 1600 });
+          } catch {
+            // ok, on garde
+          }
+        }
+
+        const finalType = file.type || 'image/jpeg';
+        const ext =
+          finalType === 'image/jpeg' ? 'jpg' :
+          finalType === 'image/png' ? 'png' :
+          finalType === 'image/webp' ? 'webp' : 'jpg';
+
+        const path = `${userId}/${Date.now()}_${i}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { data, error: upErr } = await supabase.storage
+          .from('annonces-photos')
+          .upload(path, file, { upsert: false, contentType: finalType, cacheControl: '3600' });
+        if (upErr) {
+          // eslint-disable-next-line no-console
+          console.error('[deposer-annonce] upload error:', upErr);
+          throw new Error(`Echec upload photo ${i + 1}: ${upErr.message}`);
+        }
         const { data: { publicUrl } } = supabase.storage.from('annonces-photos').getPublicUrl(data.path);
         urls.push(publicUrl);
       }
