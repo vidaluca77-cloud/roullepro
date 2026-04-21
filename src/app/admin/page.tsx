@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Check, X, Eye, Clock, AlertCircle, Download } from 'lucide-react';
+import { Shield, Check, X, Eye, Clock, AlertCircle, Download, Trash2, Pause, Play } from 'lucide-react';
 import Link from 'next/link';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -46,27 +46,36 @@ export default function AdminPage() {
   };
 
   const updateStatut = async (id: string, status: string) => {
-    // Pour approve/reject : passer par l'API route qui déclenche les emails
-    if (status === 'active' || status === 'rejected') {
-      const action = status === 'active' ? 'approve' : 'reject';
-      const res = await fetch('/api/admin/moderation', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ annonce_id: id, action }),
-      });
-      if (!res.ok) {
-        console.error('Erreur moderation API:', await res.text());
-      }
-    } else {
-      // Pour suspended / autres statuts : Supabase direct
-      await supabase.from('annonces').update({ status }).eq('id', id);
+    const actionMap: Record<string, string> = {
+      active: 'approve',
+      rejected: 'reject',
+      suspended: 'suspend',
+    };
+    const action = actionMap[status] || 'approve';
+    // Tout passe par l'API admin (service role, pas de RLS bloquant)
+    const res = await fetch('/api/admin/moderation', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ annonce_id: id, action }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erreur' }));
+      alert(`Erreur: ${err.error || 'Action impossible'}`);
+      return;
     }
     setAnnonces(prev => prev.map(a => a.id === id ? { ...a, status } : a));
   };
 
   const deleteAnnonce = async (id: string) => {
-    if (!confirm('Supprimer cette annonce définitivement ?')) return;
-    await supabase.from('annonces').delete().eq('id', id);
+    if (!confirm('Supprimer cette annonce définitivement ? Cette action est irréversible.')) return;
+    const res = await fetch(`/api/admin/moderation?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erreur' }));
+      alert(`Suppression impossible: ${err.error || 'Erreur serveur'}`);
+      return;
+    }
     setAnnonces(prev => prev.filter(a => a.id !== id));
   };
 
@@ -296,30 +305,56 @@ export default function AdminPage() {
                       <span className={`px-2 py-0.5 rounded-full text-xs ${st.className}`}>{st.label}</span>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Link href={`/annonces/${a.id}`} className="p-2 text-gray-400 hover:text-blue-600"><Eye size={16} /></Link>
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Link
+                      href={`/annonces/${a.id}`}
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                      title="Voir"
+                    >
+                      <Eye size={16} />
+                    </Link>
                     {a.status === 'pending' && (
-                      <button onClick={() => updateStatut(a.id, 'active')} className="p-2 text-gray-400 hover:text-green-600" title="Approuver">
-                        <Check size={16} />
-                      </button>
+                      <>
+                        <button
+                          onClick={() => updateStatut(a.id, 'active')}
+                          className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
+                          title="Approuver"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={() => updateStatut(a.id, 'rejected')}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                          title="Refuser"
+                        >
+                          <X size={16} />
+                        </button>
+                      </>
                     )}
                     {a.status !== 'active' && a.status !== 'pending' && (
-                      <button onClick={() => updateStatut(a.id, 'active')} className="p-2 text-gray-400 hover:text-green-600" title="Réactiver">
-                        <Check size={16} />
+                      <button
+                        onClick={() => updateStatut(a.id, 'active')}
+                        className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition"
+                        title="Réactiver"
+                      >
+                        <Play size={16} />
                       </button>
                     )}
                     {a.status === 'active' && (
-                      <button onClick={() => updateStatut(a.id, 'suspended')} className="p-2 text-gray-400 hover:text-orange-600" title="Suspendre">
-                        <AlertCircle size={16} />
+                      <button
+                        onClick={() => updateStatut(a.id, 'suspended')}
+                        className="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition"
+                        title="Suspendre"
+                      >
+                        <Pause size={16} />
                       </button>
                     )}
-                    {a.status === 'pending' && (
-                      <button onClick={() => updateStatut(a.id, 'rejected')} className="p-2 text-gray-400 hover:text-red-600" title="Refuser">
-                        <X size={16} />
-                      </button>
-                    )}
-                    <button onClick={() => deleteAnnonce(a.id)} className="p-2 text-gray-400 hover:text-red-600" title="Supprimer">
-                      <X size={16} />
+                    <button
+                      onClick={() => deleteAnnonce(a.id)}
+                      className="p-2 text-gray-400 hover:text-red-700 hover:bg-red-50 rounded-lg transition"
+                      title="Supprimer définitivement"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>

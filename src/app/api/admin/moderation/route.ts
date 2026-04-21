@@ -31,11 +31,16 @@ export async function PATCH(request: Request) {
     if (!profile || profile.role !== 'admin') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
 
     const { annonce_id, action } = await request.json();
-    if (!annonce_id || !['approve', 'reject'].includes(action)) {
+    if (!annonce_id || !['approve', 'reject', 'suspend', 'reactivate'].includes(action)) {
       return NextResponse.json({ error: 'Paramètres invalides' }, { status: 400 });
     }
 
-    const newStatus = action === 'approve' ? 'active' : 'rejected';
+    const newStatus =
+      action === 'approve' ? 'active' :
+      action === 'reject' ? 'rejected' :
+      action === 'suspend' ? 'suspended' :
+      action === 'reactivate' ? 'active' :
+      'active';
 
     // Récupérer l'annonce complète + vendeur + catégorie
     const { data: annonce, error: fetchErr } = await admin
@@ -105,6 +110,36 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ success: true, status: newStatus });
   } catch (err: any) {
     console.error('[api/admin/moderation] error:', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
+
+/**
+ * DELETE /api/admin/moderation?id=<annonce_id>
+ * Suppression definitive d'une annonce (admin uniquement).
+ */
+export async function DELETE(request: Request) {
+  try {
+    const supabase = await createServerClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+
+    const admin = getAdminClient();
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single();
+    if (!profile || profile.role !== 'admin') return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    if (!id) return NextResponse.json({ error: 'id manquant' }, { status: 400 });
+
+    const { error } = await admin.from('annonces').delete().eq('id', id);
+    if (error) {
+      console.error('[api/admin/moderation DELETE] error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ success: true });
+  } catch (err: any) {
+    console.error('[api/admin/moderation DELETE] error:', err);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
