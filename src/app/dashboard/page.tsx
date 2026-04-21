@@ -10,8 +10,9 @@ import PlanBadge from '@/components/PlanBadge';
 import {
   Plus, Trash2, Eye, LogOut, User, Heart, MessageSquare,
   Clock, TrendingUp, Bell, BadgeCheck, BarChart2, Mail, Users,
-  CheckCircle, Pencil, X,
+  CheckCircle, Pencil, X, Package, ArrowRight,
 } from 'lucide-react';
+import DepotStatusBadge from '@/components/depot/DepotStatusBadge';
 
 type Category = { id: string; name: string; slug: string };
 
@@ -24,9 +25,10 @@ function DashboardPageInner() {
   const [messages, setMessages] = useState<any[]>([]); // liste unifiée enrichie
   const [categories, setCategories] = useState<Category[]>([]);
   const [vendeurStats, setVendeurStats] = useState<any>(null);
+  const [depots, setDepots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview'|'annonces'|'messages'|'favoris'|'alertes'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview'|'annonces'|'depots'|'messages'|'favoris'|'alertes'>('overview');
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   const loadFavoris = useCallback(async () => {
@@ -87,15 +89,21 @@ function DashboardPageInner() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/login'); return; }
 
-    const [{ data: p }, { data: a }, { data: cats }] = await Promise.all([
+    const [{ data: p }, { data: a }, { data: cats }, { data: dps }] = await Promise.all([
       supabase.from('profiles').select('*').eq('id', user.id).single(),
       supabase.from('annonces').select('*, categories(name, slug)').eq('user_id', user.id).order('created_at', { ascending: false }),
       supabase.from('categories').select('id, name, slug').order('sort_order'),
+      supabase
+        .from('depots')
+        .select('id, statut, marque, modele, annee, kilometrage, prix_affiche, prix_final_vente, created_at, date_vente, garages_partenaires(ville)')
+        .eq('vendeur_id', user.id)
+        .order('created_at', { ascending: false }),
     ]);
 
     setProfile(p);
     setAnnonces(a || []);
     setCategories(cats || []);
+    setDepots(dps || []);
 
     // Stats vendeur : vues totales + notations
     const [notationsRes] = await Promise.all([
@@ -322,6 +330,12 @@ function DashboardPageInner() {
           <button className={tabCls('favoris')} onClick={() => setActiveTab('favoris')}>
             Favoris {favoris.length > 0 && <span className="ml-1 opacity-70">({favoris.length})</span>}
           </button>
+          <button className={tabCls('depots')} onClick={() => setActiveTab('depots')}>
+            <span className="flex items-center gap-1.5">
+              <Package size={13} /> Dépôts-vente
+              {depots.length > 0 && <span className="ml-1 opacity-70">({depots.length})</span>}
+            </span>
+          </button>
           <button className={tabCls('alertes')} onClick={() => setActiveTab('alertes')}>
             <span className="flex items-center gap-1.5"><Bell size={13} /> Alertes</span>
           </button>
@@ -419,6 +433,84 @@ function DashboardPageInner() {
                           </button>
                         </div>
                       </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Synthèse Dépôts-vente */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              <div className="p-5 border-b flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package size={16} className="text-blue-600" />
+                  <h2 className="font-semibold text-gray-900">Mes dépôts-vente</h2>
+                  {depots.length > 0 && (
+                    <span className="text-xs text-gray-400">({depots.length})</span>
+                  )}
+                </div>
+                {depots.length > 0 ? (
+                  <button onClick={() => setActiveTab('depots')} className="text-sm text-blue-600 hover:underline">
+                    Tout voir
+                  </button>
+                ) : (
+                  <Link href="/depot-vente" className="text-sm text-blue-600 hover:underline">
+                    Découvrir
+                  </Link>
+                )}
+              </div>
+              {depots.length === 0 ? (
+                <div className="p-6 text-center">
+                  <p className="text-sm text-gray-500 mb-2">
+                    Vous n'avez pas encore confié de véhicule en dépôt-vente.
+                  </p>
+                  <p className="text-xs text-gray-400 mb-3">
+                    Confiez votre véhicule à un partenaire RoullePro et touchez jusqu'à 88% du prix de vente.
+                  </p>
+                  <Link
+                    href="/depot-vente/estimer"
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-500 transition"
+                  >
+                    <Plus size={14} /> Estimer mon véhicule
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {depots.slice(0, 3).map((d: any) => {
+                    const garage = d.garages_partenaires as { ville?: string } | null;
+                    const prix = d.statut === 'vendu' && d.prix_final_vente
+                      ? Number(d.prix_final_vente)
+                      : d.prix_affiche
+                      ? Number(d.prix_affiche)
+                      : null;
+                    return (
+                      <Link
+                        key={d.id}
+                        href={`/dashboard/depots/${d.id}`}
+                        className="p-4 flex items-center gap-4 hover:bg-gray-50 transition"
+                      >
+                        <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                          <Package size={18} className="text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate text-sm">
+                            {[d.marque, d.modele].filter(Boolean).join(' ') || 'Véhicule'}
+                            {d.annee ? ` (${d.annee})` : ''}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <DepotStatusBadge statut={d.statut} />
+                            {prix != null && (
+                              <span className="text-sm text-blue-600 font-semibold">
+                                {prix.toLocaleString('fr-FR')} €
+                              </span>
+                            )}
+                            {garage?.ville && (
+                              <span className="text-xs text-gray-400">Partenaire — {garage.ville}</span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight size={14} className="text-gray-400 flex-shrink-0" />
+                      </Link>
                     );
                   })}
                 </div>
@@ -720,6 +812,121 @@ function DashboardPageInner() {
                 <Eye size={16} className="text-gray-400 flex-shrink-0" />
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* ── Onglet Dépôts-vente ── */}
+        {activeTab === 'depots' && (
+          <div className="space-y-5">
+            {/* Stats dépôts */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {(() => {
+                const enVente = depots.filter((d: any) => ['en_vente', 'offre_en_cours'].includes(d.statut)).length;
+                const vendus = depots.filter((d: any) => d.statut === 'vendu').length;
+                const caGenere = depots
+                  .filter((d: any) => d.statut === 'vendu' && d.prix_final_vente)
+                  .reduce((s: number, d: any) => s + (Number(d.prix_final_vente) || 0), 0);
+                const netVendeur = Math.round(caGenere * 0.88);
+                return [
+                  { label: 'Total dépôts', value: depots.length },
+                  { label: 'En vente', value: enVente },
+                  { label: 'Vendus', value: vendus },
+                  {
+                    label: 'Vous avez touché',
+                    value: netVendeur > 0
+                      ? `${netVendeur.toLocaleString('fr-FR')} €`
+                      : '—',
+                  },
+                ].map((s) => (
+                  <div key={s.label} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 text-center">
+                    <div className="text-2xl font-extrabold text-gray-900">{s.value}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{s.label}</div>
+                  </div>
+                ));
+              })()}
+            </div>
+
+            {/* Liste dépôts */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+              <div className="p-5 border-b flex items-center justify-between">
+                <div>
+                  <h2 className="font-semibold text-gray-900">Mes dépôts-vente</h2>
+                  <p className="text-xs text-gray-500 mt-0.5">Suivez l'avancement de la vente de vos véhicules confiés à un partenaire RoullePro</p>
+                </div>
+                <Link
+                  href="/depot-vente/estimer"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold px-4 py-2 rounded-lg transition text-sm"
+                >
+                  <Plus size={14} /> Nouveau dépôt
+                </Link>
+              </div>
+
+              {depots.length === 0 ? (
+                <div className="p-10 text-center">
+                  <Package size={36} className="mx-auto text-gray-200 mb-3" />
+                  <p className="text-gray-500 mb-1 font-medium">Aucun dépôt-vente pour le moment</p>
+                  <p className="text-gray-400 text-sm mb-4">
+                    Confiez votre véhicule à un partenaire RoullePro et touchez jusqu'à 88% du prix de vente.
+                  </p>
+                  <Link
+                    href="/depot-vente"
+                    className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                  >
+                    Découvrir le dépôt-vente <ArrowRight size={14} />
+                  </Link>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {depots.map((d: any) => {
+                    const garage = d.garages_partenaires as { ville?: string } | null;
+                    const prix = d.statut === 'vendu' && d.prix_final_vente
+                      ? Number(d.prix_final_vente)
+                      : d.prix_affiche
+                      ? Number(d.prix_affiche)
+                      : null;
+                    return (
+                      <Link
+                        key={d.id}
+                        href={`/dashboard/depots/${d.id}`}
+                        className="p-4 flex items-center gap-4 hover:bg-gray-50 transition"
+                      >
+                        <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+                          <Package size={20} className="text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 truncate">
+                            {[d.marque, d.modele].filter(Boolean).join(' ') || 'Véhicule'}
+                            {d.annee ? ` (${d.annee})` : ''}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <DepotStatusBadge statut={d.statut} />
+                            {prix != null && (
+                              <span className="text-sm text-blue-600 font-semibold">
+                                {prix.toLocaleString('fr-FR')} €
+                              </span>
+                            )}
+                            {garage?.ville && (
+                              <span className="text-xs text-gray-400">Partenaire — {garage.ville}</span>
+                            )}
+                          </div>
+                        </div>
+                        <ArrowRight size={16} className="text-gray-400 flex-shrink-0" />
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Bloc pédagogique */}
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 text-sm text-blue-700">
+              <p className="font-medium mb-1">Comment fonctionne le dépôt-vente RoullePro ?</p>
+              <ul className="space-y-1 text-blue-600 list-disc list-inside">
+                <li>Vous confiez votre véhicule à un partenaire RoullePro certifié</li>
+                <li>Le partenaire réalise l'expertise, les photos HD et gère la vente</li>
+                <li>Vous recevez 88% du prix de vente net (mandat 90 jours, reprise garantie si non vendu)</li>
+              </ul>
+            </div>
           </div>
         )}
 

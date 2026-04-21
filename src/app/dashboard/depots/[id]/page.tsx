@@ -25,7 +25,7 @@ export default async function DepotDetailPage({ params }: { params: { id: string
 
   const { data: depot } = await sbService
     .from('depots')
-    .select('*, garages_partenaires(raison_sociale, adresse, ville, contact_telephone, contact_email)')
+    .select('*, garages_partenaires(ville)')
     .eq('id', params.id)
     .eq('vendeur_id', user.id)
     .single();
@@ -45,11 +45,7 @@ export default async function DepotDetailPage({ params }: { params: { id: string
     .order('created_at', { ascending: false });
 
   const garage = depot.garages_partenaires as {
-    raison_sociale?: string;
-    adresse?: string;
     ville?: string;
-    contact_telephone?: string;
-    contact_email?: string;
   } | null;
 
   const photos: string[] = Array.isArray(depot.photos_hd) ? depot.photos_hd : [];
@@ -165,17 +161,20 @@ export default async function DepotDetailPage({ params }: { params: { id: string
 
         {/* Colonne latérale */}
         <div className="space-y-6">
-          {/* Garage */}
-          {garage && (
+          {/* Partenaire (anonymise) */}
+          {garage?.ville && (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <h2 className="font-bold text-slate-900 mb-3">Garage partenaire</h2>
-              <p className="font-semibold text-slate-800">{garage.raison_sociale}</p>
-              {garage.adresse && <p className="text-sm text-slate-500 mt-1">{garage.adresse}, {garage.ville}</p>}
-              {garage.contact_telephone && (
-                <a href={`tel:${garage.contact_telephone.replace(/\s/g, '')}`} className="text-sm text-blue-600 hover:underline mt-1 block">
-                  {garage.contact_telephone}
-                </a>
-              )}
+              <h2 className="font-bold text-slate-900 mb-3">Partenaire RoullePro</h2>
+              <p className="font-semibold text-slate-800">Partenaire RoullePro — {garage.ville}</p>
+              <p className="text-xs text-slate-400 mt-2">
+                Pour contacter le partenaire qui détient votre véhicule, passez par la messagerie RoullePro ou contactez notre support.
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 mt-3 text-sm text-blue-600 hover:underline font-medium"
+              >
+                Contacter le support RoullePro
+              </Link>
             </div>
           )}
 

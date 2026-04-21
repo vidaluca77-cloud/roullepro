@@ -17,7 +17,7 @@ export default async function DashboardDepotsPage() {
 
   const { data: depots } = await sb
     .from('depots')
-    .select('id, statut, marque, modele, annee, kilometrage, prix_affiche, prix_final_vente, garage_id, created_at, date_vente, garages_partenaires(raison_sociale, ville)')
+    .select('id, statut, marque, modele, annee, kilometrage, prix_affiche, prix_final_vente, garage_id, created_at, date_vente, garages_partenaires(ville)')
     .eq('vendeur_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -82,7 +82,7 @@ export default async function DashboardDepotsPage() {
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 <th className="text-left px-5 py-3 text-slate-500 font-medium">Véhicule</th>
-                <th className="text-left px-5 py-3 text-slate-500 font-medium">Garage</th>
+                <th className="text-left px-5 py-3 text-slate-500 font-medium">Partenaire</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-medium">Prix</th>
                 <th className="text-left px-5 py-3 text-slate-500 font-medium">Statut</th>
                 <th className="px-5 py-3" />
@@ -90,7 +90,7 @@ export default async function DashboardDepotsPage() {
             </thead>
             <tbody>
               {list.map((d) => {
-                const garage = d.garages_partenaires as { raison_sociale?: string; ville?: string } | null;
+                const garage = d.garages_partenaires as { ville?: string } | null;
                 return (
                   <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition">
                     <td className="px-5 py-4">
@@ -105,8 +105,14 @@ export default async function DashboardDepotsPage() {
                       )}
                     </td>
                     <td className="px-5 py-4 text-slate-600">
-                      {garage?.raison_sociale ?? <span className="text-slate-300">—</span>}
-                      {garage?.ville && <div className="text-xs text-slate-400">{garage.ville}</div>}
+                      {garage?.ville ? (
+                        <>
+                          <div className="font-medium text-slate-700">Partenaire RoullePro</div>
+                          <div className="text-xs text-slate-400">{garage.ville}</div>
+                        </>
+                      ) : (
+                        <span className="text-slate-300">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-4 font-semibold text-slate-900">
                       {d.statut === 'vendu' && d.prix_final_vente
