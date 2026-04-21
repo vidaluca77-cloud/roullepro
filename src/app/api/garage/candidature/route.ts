@@ -109,11 +109,71 @@ export async function POST(req: NextRequest) {
       return apiError('POST /api/garage/candidature', error, 500, "Erreur lors de l'enregistrement");
     }
 
+    // Creer (ou retrouver) un compte Supabase Auth pour que le garage puisse
+    // definir son mot de passe des maintenant, via un magic link type 'recovery'.
+    let setupLink: string | null = null;
+    try {
+      const emailClean = String(contact_email).toLowerCase().trim();
+      // Chercher un utilisateur existant
+      let existingUserId: string | null = null;
+      const { data: usersList } = await sbService.auth.admin.listUsers({ perPage: 200 });
+      if (usersList?.users) {
+        const found = usersList.users.find(
+          (u) => (u.email ?? "").toLowerCase() === emailClean
+        );
+        if (found) existingUserId = found.id;
+      }
+
+      if (!existingUserId) {
+        const { data: created } = await sbService.auth.admin.createUser({
+          email: emailClean,
+          email_confirm: true,
+          user_metadata: {
+            role: "garage",
+            raison_sociale: String(raison_sociale).trim(),
+          },
+        });
+        if (created?.user) existingUserId = created.user.id;
+      }
+
+      if (existingUserId) {
+        // Lier le user_id a la candidature
+        await sbService
+          .from("garages_partenaires")
+          .update({ user_id: existingUserId })
+          .eq("id", data.id);
+
+        // Creer ou mettre a jour le profil
+        await sbService.from("profiles").upsert(
+          {
+            id: existingUserId,
+            email: emailClean,
+            role: "garage",
+            full_name: contact_nom ? String(contact_nom).trim() : String(raison_sociale).trim(),
+          },
+          { onConflict: "id" }
+        );
+
+        // Generer un lien de setup (type recovery = permet de definir mot de passe)
+        const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com"}/auth/reinitialiser`;
+        const { data: linkData } = await sbService.auth.admin.generateLink({
+          type: "recovery",
+          email: emailClean,
+          options: { redirectTo },
+        });
+        setupLink = linkData?.properties?.action_link ?? null;
+      }
+    } catch {
+      // Non bloquant : si la creation echoue, la candidature existe, admin peut agir
+      setupLink = null;
+    }
+
     // Emails en parallèle (sans bloquer en cas d'erreur email)
     await Promise.allSettled([
       sendGarageCandidatureConfirmation(
         String(contact_email),
-        String(raison_sociale)
+        String(raison_sociale),
+        setupLink
       ),
       sendGarageCandidatureAdminNotification(
         data.id,

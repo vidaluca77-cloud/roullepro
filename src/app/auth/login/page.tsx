@@ -37,7 +37,12 @@ export default function LoginPage() {
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="votre@email.fr" className="w-full border rounded-lg px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
+              <Link href="/auth/mot-de-passe-oublie" className="text-xs text-blue-600 hover:underline font-medium">
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required className="w-full border rounded-lg px-3 py-2 text-sm" />
           </div>
           <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50">

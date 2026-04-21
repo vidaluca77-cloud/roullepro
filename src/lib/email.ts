@@ -524,8 +524,30 @@ function emailFooter() {
 /* ── Candidature garage — confirmation au candidat ── */
 export async function sendGarageCandidatureConfirmation(
   to: string,
-  raison_sociale: string
+  raison_sociale: string,
+  setupLink?: string | null
 ) {
+  const passwordBlock = setupLink
+    ? `
+        <div style="background: #ecfdf5; border-left: 4px solid #10b981; border-radius: 0 8px 8px 0; padding: 16px 18px; margin: 20px 0;">
+          <p style="margin: 0 0 10px 0; color: #065f46; font-size: 14px; font-weight: 600;">
+            Étape suivante : définissez votre mot de passe
+          </p>
+          <p style="margin: 0 0 14px 0; color: #047857; font-size: 13px;">
+            Créez dès maintenant votre mot de passe pour accéder à votre espace garage dès la validation de votre dossier.
+          </p>
+          <div style="text-align: center;">
+            <a href="${setupLink}"
+              style="background: #059669; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+              Définir mon mot de passe
+            </a>
+          </div>
+          <p style="margin: 12px 0 0 0; color: #6b7280; font-size: 11px; text-align: center;">
+            Ce lien est valide 1 heure. Vous pourrez en générer un nouveau via la page « mot de passe oublié ».
+          </p>
+        </div>`
+    : "";
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
       ${emailHeader("Candidature reçue")}
@@ -540,6 +562,7 @@ export async function sendGarageCandidatureConfirmation(
             Notre équipe examine votre dossier et vous contactera sous <strong>48 heures ouvrées</strong>.
           </p>
         </div>
+        ${passwordBlock}
         <p style="font-size: 14px; color: #6b7280;">
           En attendant, n'hésitez pas à consulter notre site pour en savoir plus sur le partenariat.
         </p>

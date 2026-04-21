@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { User, Mail, Phone, MapPin, Building, AlertCircle } from 'lucide-react';
 import VerificationSection from './VerificationSection';
+import PasswordSection from '@/components/profil/PasswordSection';
 
 export default function ProfilPage() {
   const router = useRouter();
@@ -207,6 +208,8 @@ export default function ProfilPage() {
             companyName={profile.company_name}
             onStatusChange={loadProfile}
           />
+
+          <PasswordSection />
         </div>
       </div>
     </div>
