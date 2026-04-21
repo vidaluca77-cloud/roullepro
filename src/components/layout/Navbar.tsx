@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck, Menu, X, User, LogOut, LayoutDashboard, Wrench } from 'lucide-react';
+import { Truck, Menu, X, User, LogOut, LayoutDashboard, Wrench, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -158,6 +158,26 @@ export default function Navbar() {
                         )}
                       </Link>
                     )}
+                    {profile?.role === "admin" && (
+                      <>
+                        <Link
+                          href="/admin/garages"
+                          className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold border-t border-slate-100"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin garages
+                        </Link>
+                        <Link
+                          href="/admin/depots"
+                          className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Shield className="h-4 w-4 mr-2" />
+                          Admin dépôts
+                        </Link>
+                      </>
+                    )}
                     <Link
                       href="/profil"
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 border-t border-slate-100"
@@ -234,6 +254,16 @@ export default function Navbar() {
                       </span>
                     )}
                   </Link>
+                )}
+                {profile?.role === "admin" && (
+                  <>
+                    <Link href="/admin/garages" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                      <Shield className="h-4 w-4" /> Admin garages
+                    </Link>
+                    <Link href="/admin/depots" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                      <Shield className="h-4 w-4" /> Admin dépôts
+                    </Link>
+                  </>
                 )}
                 <Link href="/profil" className="block text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>Mon profil</Link>
                 <button onClick={() => { handleSignOut(); setIsOpen(false); }} className="block w-full text-left text-sm text-red-600 hover:text-red-700 py-1">Deconnexion</button>
