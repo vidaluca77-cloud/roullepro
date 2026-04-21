@@ -14,14 +14,42 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Authentification requise' }, { status: 401 });
   }
 
-  let body: { depot_id?: string; garage_id?: string; date_depot_prevu?: string };
+  let body: {
+    depot_id?: string;
+    garage_id?: string;
+    date_depot_prevu?: string;
+    recuperation_domicile?: boolean;
+    adresse_recuperation?: string | null;
+    code_postal_recuperation?: string | null;
+    ville_recuperation?: string | null;
+    frais_recuperation?: number | null;
+  };
   try {
     body = await req.json();
   } catch {
-    return apiError('POST /api/depot-vente/reserver', 'Invalid JSON', 400, 'Corps de requête invalide');
+    return apiError('POST /api/depot-vente/reserver', 'Invalid JSON', 400, "Corps de requête invalide");
   }
 
-  const { depot_id, garage_id, date_depot_prevu } = body;
+  const {
+    depot_id,
+    garage_id,
+    date_depot_prevu,
+    recuperation_domicile,
+    adresse_recuperation,
+    code_postal_recuperation,
+    ville_recuperation,
+    frais_recuperation,
+  } = body;
+
+  const recup = recuperation_domicile === true;
+  if (recup) {
+    if (!adresse_recuperation?.trim() || !code_postal_recuperation?.trim() || !ville_recuperation?.trim()) {
+      return NextResponse.json(
+        { error: "Adresse de récupération incomplète" },
+        { status: 400 }
+      );
+    }
+  }
 
   if (!depot_id || !garage_id) {
     return NextResponse.json({ error: 'depot_id et garage_id sont requis' }, { status: 400 });
@@ -75,6 +103,12 @@ export async function POST(req: NextRequest) {
         date_depot_prevu: date_depot_prevu ?? null,
         statut: 'rdv_pris',
         date_limite: dateLimit.toISOString(),
+        recuperation_domicile: recup,
+        adresse_recuperation: recup ? adresse_recuperation : null,
+        code_postal_recuperation: recup ? code_postal_recuperation : null,
+        ville_recuperation: recup ? ville_recuperation : null,
+        frais_recuperation: recup ? (frais_recuperation ?? 79) : 0,
+        date_recuperation_prevue: recup && date_depot_prevu ? date_depot_prevu : null,
       })
       .eq('id', depot_id);
 
@@ -85,11 +119,19 @@ export async function POST(req: NextRequest) {
     // Créer l'événement
     await sbService.from('depot_events').insert({
       depot_id,
-      type: 'rdv_pris',
+      type: recup ? 'rdv_recuperation_domicile' : 'rdv_pris',
       ancien_statut: depot.statut,
       nouveau_statut: 'rdv_pris',
       acteur_id: user.id,
-      payload: { garage_id, date_depot_prevu: date_depot_prevu ?? null },
+      payload: {
+        garage_id,
+        date_depot_prevu: date_depot_prevu ?? null,
+        recuperation_domicile: recup,
+        adresse_recuperation: recup ? adresse_recuperation : null,
+        code_postal_recuperation: recup ? code_postal_recuperation : null,
+        ville_recuperation: recup ? ville_recuperation : null,
+        frais_recuperation: recup ? (frais_recuperation ?? 79) : 0,
+      },
     });
 
     // Récupérer l'email vendeur

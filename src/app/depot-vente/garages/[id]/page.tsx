@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
-import { createClient as createSbClient } from '@supabase/supabase-js';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
-import { MapPin, Phone, Globe, ArrowRight, Star } from 'lucide-react';
+import type { Metadata } from "next";
+import { createClient as createSbClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { MapPin, ArrowRight, Star, ShieldCheck, CheckCircle2 } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: { id: string };
@@ -17,20 +17,21 @@ async function getGarage(id: string) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
   const { data } = await sb
-    .from('garages_partenaires')
-    .select('*')
-    .eq('id', id)
-    .eq('statut', 'actif')
+    .from("garages_partenaires")
+    .select("id, ville, code_postal, specialites, note_moyenne, nb_ventes_total, nb_places_parking, statut")
+    .eq("id", id)
+    .eq("statut", "actif")
     .single();
   return data;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const g = await getGarage(params.id);
-  if (!g) return { title: 'Garage introuvable — RoullePro' };
+  if (!g) return { title: "Garage introuvable — RoullePro" };
+  const ville = g.ville ?? "France";
   return {
-    title: `Dépôt-vente utilitaire ${g.ville ?? ''} — ${g.raison_sociale} | RoullePro`,
-    description: `Confiez votre véhicule à ${g.raison_sociale} à ${g.ville ?? 'France'}. Garage partenaire certifié RoullePro pour votre dépôt-vente professionnel.`,
+    title: `Dépôt-vente utilitaire ${ville} — Partenaire vérifié | RoullePro`,
+    description: `Confiez votre véhicule à un garage partenaire RoullePro vérifié à ${ville}. Photos HD, visibilité premium, paiement sécurisé. Récupération à domicile possible.`,
     alternates: { canonical: `https://roullepro.com/depot-vente/garages/${params.id}` },
   };
 }
@@ -40,6 +41,8 @@ export default async function GarageFichePage({ params, searchParams }: PageProp
   if (!g) notFound();
 
   const estimationId = searchParams.estimation ?? null;
+  const ville = g.ville ?? "France";
+  const titre = `Partenaire RoullePro — ${ville}`;
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">
@@ -51,7 +54,7 @@ export default async function GarageFichePage({ params, searchParams }: PageProp
           <span>/</span>
           <Link href="/depot-vente/garages" className="hover:text-blue-600 transition">Garages</Link>
           <span>/</span>
-          <span className="text-slate-600">{g.raison_sociale}</span>
+          <span className="text-slate-600">{ville}</span>
         </nav>
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-md overflow-hidden">
@@ -59,11 +62,13 @@ export default async function GarageFichePage({ params, searchParams }: PageProp
           <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-10 text-white">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <div className="text-blue-200 text-sm font-medium mb-2">Garage partenaire certifié RoullePro</div>
-                <h1 className="text-3xl font-extrabold mb-2">{g.raison_sociale}</h1>
+                <div className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/15 border border-white/20 rounded-full px-2.5 py-0.5 mb-3">
+                  <ShieldCheck size={12} /> Garage vérifié par RoullePro
+                </div>
+                <h1 className="text-3xl font-extrabold mb-2">{titre}</h1>
                 <div className="flex items-center gap-2 text-blue-100 text-sm">
                   <MapPin size={14} />
-                  <span>{[g.adresse, g.code_postal, g.ville].filter(Boolean).join(', ')}</span>
+                  <span>{[g.code_postal, g.ville].filter(Boolean).join(" ")}</span>
                 </div>
               </div>
               {g.note_moyenne && (
@@ -77,44 +82,30 @@ export default async function GarageFichePage({ params, searchParams }: PageProp
 
           {/* Infos */}
           <div className="p-8">
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-8 text-sm text-blue-900">
+              <p className="font-semibold mb-1">Confidentialité de nos partenaires</p>
+              <p className="text-blue-800">
+                L&apos;identité complète du garage, son adresse précise et ses coordonnées directes vous sont communiquées après validation de votre demande de dépôt. Cette démarche protège à la fois nos partenaires et la qualité du service.
+              </p>
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-8 mb-8">
-              {/* Coordonnées */}
+              {/* Zone d'intervention */}
               <div>
-                <h2 className="font-bold text-slate-900 mb-4">Coordonnées</h2>
-                <div className="space-y-3">
-                  {g.contact_telephone && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Phone size={16} className="text-blue-600 flex-shrink-0" />
-                      <a href={`tel:${g.contact_telephone.replace(/\s/g, '')}`} className="text-slate-700 hover:text-blue-600 transition">
-                        {g.contact_telephone}
-                      </a>
-                    </div>
-                  )}
-                  {g.adresse && (
-                    <div className="flex items-start gap-3 text-sm">
-                      <MapPin size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
-                      <span className="text-slate-700">
-                        {g.adresse}<br />
-                        {g.code_postal} {g.ville}
-                      </span>
-                    </div>
-                  )}
-                  {g.site_web && (
-                    <div className="flex items-center gap-3 text-sm">
-                      <Globe size={16} className="text-blue-600 flex-shrink-0" />
-                      <a
-                        href={g.site_web.startsWith('http') ? g.site_web : `https://${g.site_web}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline truncate"
-                      >
-                        {g.site_web}
-                      </a>
-                    </div>
-                  )}
+                <h2 className="font-bold text-slate-900 mb-4">Zone d&apos;intervention</h2>
+                <div className="space-y-3 text-sm text-slate-700">
+                  <div className="flex items-start gap-3">
+                    <MapPin size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+                    <span>Secteur de {ville}{g.code_postal ? ` (${g.code_postal})` : ""}</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <span>Récupération à domicile possible dans un rayon de 50 km</span>
+                  </div>
                   {g.nb_places_parking && (
-                    <div className="text-sm text-slate-500">
-                      {g.nb_places_parking} place{g.nb_places_parking > 1 ? 's' : ''} de parking disponible{g.nb_places_parking > 1 ? 's' : ''}
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0 mt-0.5" />
+                      <span>{g.nb_places_parking} places de parking sécurisées</span>
                     </div>
                   )}
                 </div>
@@ -141,7 +132,7 @@ export default async function GarageFichePage({ params, searchParams }: PageProp
                 {g.nb_ventes_total !== null && g.nb_ventes_total !== undefined && g.nb_ventes_total > 0 && (
                   <div className="mt-4 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                     <div className="text-2xl font-extrabold text-emerald-600">{g.nb_ventes_total}</div>
-                    <div className="text-sm text-emerald-700">vente{g.nb_ventes_total > 1 ? 's' : ''} réalisée{g.nb_ventes_total > 1 ? 's' : ''} via RoullePro</div>
+                    <div className="text-sm text-emerald-700">vente{g.nb_ventes_total > 1 ? "s" : ""} réalisée{g.nb_ventes_total > 1 ? "s" : ""} via RoullePro</div>
                   </div>
                 )}
               </div>

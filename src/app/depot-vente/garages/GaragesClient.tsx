@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { MapPin, Star, Phone, ArrowRight, Search } from 'lucide-react';
+import { MapPin, Star, ArrowRight, Search, ShieldCheck } from 'lucide-react';
 
 interface Garage {
   id: string;
@@ -30,8 +30,7 @@ export default function GaragesClient({ garages, estimationId }: Props) {
     const q = search.toLowerCase();
     return (
       (g.code_postal ?? '').includes(q) ||
-      (g.ville ?? '').toLowerCase().includes(q) ||
-      (g.raison_sociale ?? '').toLowerCase().includes(q)
+      (g.ville ?? '').toLowerCase().includes(q)
     );
   });
 
@@ -39,9 +38,12 @@ export default function GaragesClient({ garages, estimationId }: Props) {
     <div className="min-h-screen bg-slate-50 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Garages partenaires RoullePro</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900 mb-2">Nos garages partenaires</h1>
           <p className="text-slate-500 text-lg">
-            {garages.length} garage{garages.length > 1 ? 's' : ''} certifié{garages.length > 1 ? 's' : ''} — choisissez le plus proche de vous.
+            {garages.length} partenaire{garages.length > 1 ? 's' : ''} vérifié{garages.length > 1 ? 's' : ''} par RoullePro — réservez un créneau près de chez vous.
+          </p>
+          <p className="text-slate-400 text-sm mt-2">
+            L&apos;identité complète du garage vous est communiquée après confirmation de votre demande de dépôt.
           </p>
         </div>
 
@@ -79,7 +81,14 @@ export default function GaragesClient({ garages, estimationId }: Props) {
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-4 mb-2">
-                    <h2 className="font-bold text-slate-900 text-lg truncate">{g.raison_sociale}</h2>
+                    <div className="min-w-0">
+                      <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-2.5 py-0.5 mb-2">
+                        <ShieldCheck size={12} /> Garage vérifié
+                      </div>
+                      <h2 className="font-bold text-slate-900 text-lg truncate">
+                        Partenaire RoullePro — {g.ville ?? "France"}
+                      </h2>
+                    </div>
                     {g.note_moyenne !== null && g.note_moyenne !== undefined && (
                       <div className="flex items-center gap-1 flex-shrink-0 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1">
                         <Star size={13} className="text-amber-500 fill-amber-500" />
@@ -93,7 +102,7 @@ export default function GaragesClient({ garages, estimationId }: Props) {
                   <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-3">
                     <MapPin size={14} />
                     <span>
-                      {[g.adresse, g.code_postal, g.ville].filter(Boolean).join(', ') || 'Adresse non renseignée'}
+                      {[g.code_postal, g.ville].filter(Boolean).join(" ")}
                     </span>
                   </div>
 
@@ -116,15 +125,6 @@ export default function GaragesClient({ garages, estimationId }: Props) {
                 </div>
 
                 <div className="flex flex-col gap-2 sm:w-44">
-                  {g.contact_telephone && (
-                    <a
-                      href={`tel:${g.contact_telephone.replace(/\s/g, '')}`}
-                      className="flex items-center justify-center gap-2 border border-slate-200 text-slate-700 hover:border-slate-300 rounded-xl py-2.5 text-sm font-medium transition"
-                    >
-                      <Phone size={14} />
-                      {g.contact_telephone}
-                    </a>
-                  )}
                   {estimationId ? (
                     <Link
                       href={`/depot-vente/garages/${g.id}/reserver?estimation=${estimationId}`}
