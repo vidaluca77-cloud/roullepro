@@ -25,6 +25,22 @@ async function getAnnonce(id: string) {
   return data;
 }
 
+async function getDepotForAnnonce(annonceId: string) {
+  try {
+    const supabase = getSupabase();
+    const { data } = await supabase
+      .from('depots')
+      .select('id, statut, garages_partenaires(raison_sociale)')
+      .eq('annonce_id', annonceId)
+      .not('statut', 'eq', 'annule')
+      .limit(1)
+      .single();
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 interface PageProps {
   params: { id: string };
 }
@@ -75,7 +91,10 @@ export async function generateMetadata(
 }
 
 export default async function AnnonceDetailPage({ params }: PageProps) {
-  const annonce = await getAnnonce(params.id);
+  const [annonce, depot] = await Promise.all([
+    getAnnonce(params.id),
+    getDepotForAnnonce(params.id),
+  ]);
 
   if (!annonce) {
     return (
@@ -206,6 +225,21 @@ export default async function AnnonceDetailPage({ params }: PageProps) {
         {annonce.kilometrage && <p>Kilométrage : {Number(annonce.kilometrage).toLocaleString('fr-FR')} km</p>}
         {annonce.description && <p>{annonce.description}</p>}
       </div>
+
+      {/* Badge depot-vente verifie */}
+      {depot && (
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-4">
+          <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-full">
+            <svg viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm3.707 6.707l-4 4a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L7 8.586l3.293-3.293a1 1 0 011.414 1.414z"/></svg>
+            Depot-vente verifie
+            {(depot.garages_partenaires as { raison_sociale?: string } | null)?.raison_sociale && (
+              <span className="font-normal text-emerald-600">
+                — Prepare par {(depot.garages_partenaires as { raison_sociale?: string }).raison_sociale}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Composant client pour les interactions */}
       <AnnonceDetail annonce={annonce} vendeur={vendeur} />

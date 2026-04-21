@@ -495,3 +495,327 @@ export async function sendWelcomeEmail({
     html,
   });
 }
+
+/* ═══════════════════════════════════════════════════════════
+   DÉPÔT-VENTE — fonctions email
+═══════════════════════════════════════════════════════════ */
+
+const APP_URL_DV = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
+
+function emailHeader(title?: string) {
+  return `
+    <div style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 28px 32px;">
+      <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">RoullePro</h1>
+      <p style="color: rgba(255,255,255,0.75); margin: 4px 0 0; font-size: 13px;">Service dépôt-vente professionnel</p>
+      ${title ? `<p style="color: white; font-weight: 600; margin: 12px 0 0; font-size: 16px;">${title}</p>` : ''}
+    </div>
+  `;
+}
+
+function emailFooter() {
+  return `
+    <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0; border-top: 1px solid #f3f4f6; padding-top: 20px;">
+      RoullePro — Service dépôt-vente |
+      <a href="${APP_URL_DV}" style="color: #6b7280;">roullepro.com</a>
+    </p>
+  `;
+}
+
+/* ── Candidature garage — confirmation au candidat ── */
+export async function sendGarageCandidatureConfirmation(
+  to: string,
+  raison_sociale: string
+) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Candidature reçue")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px; color: #374151;">Bonjour,</p>
+        <p style="font-size: 15px; color: #374151;">
+          Nous avons bien reçu la candidature de <strong>${raison_sociale}</strong>
+          pour devenir garage partenaire RoullePro.
+        </p>
+        <div style="background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 24px 0;">
+          <p style="margin: 0; color: #1d4ed8; font-size: 14px;">
+            Notre équipe examine votre dossier et vous contactera sous <strong>48 heures ouvrées</strong>.
+          </p>
+        </div>
+        <p style="font-size: 14px; color: #6b7280;">
+          En attendant, n'hésitez pas à consulter notre site pour en savoir plus sur le partenariat.
+        </p>
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${APP_URL_DV}/depot-vente"
+            style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+            En savoir plus
+          </a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to,
+    subject: "[RoullePro] Candidature garage partenaire bien reçue",
+    html,
+  });
+}
+
+/* ── Candidature garage — notification admin ── */
+export async function sendGarageCandidatureAdminNotification(
+  candidatureId: string,
+  raison_sociale: string
+) {
+  const adminUrl = `${APP_URL_DV}/admin/garages/${candidatureId}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Nouvelle candidature garage")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Nouvelle candidature garage partenaire reçue.</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; margin: 16px 0;">
+          <tr style="border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 8px 0; color: #6b7280; width: 140px;">Raison sociale</td>
+            <td style="padding: 8px 0; font-weight: 600;">${raison_sociale}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0; color: #6b7280;">ID candidature</td>
+            <td style="padding: 8px 0; font-family: monospace; font-size: 12px;">${candidatureId}</td>
+          </tr>
+        </table>
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="${adminUrl}"
+            style="background: #111827; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+            Traiter la candidature
+          </a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: "admin@roullepro.com",
+    subject: `[RoullePro Admin] Nouvelle candidature garage : ${raison_sociale}`,
+    html,
+  });
+}
+
+/* ── Changement statut garage ── */
+export async function sendGarageStatusUpdate(
+  to: string,
+  raison_sociale: string,
+  statut: string
+) {
+  let statusHtml = '';
+  let subject = '';
+
+  if (statut === 'actif') {
+    subject = "[RoullePro] Votre garage a été validé — bienvenue !";
+    statusHtml = `
+      <div style="background: #d1fae5; border: 1px solid #6ee7b7; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0; color: #065f46; font-weight: 600;">Félicitations ! Votre garage est maintenant actif sur RoullePro.</p>
+      </div>
+      <p style="color: #374151; font-size: 15px;">
+        Vous pouvez accéder à votre tableau de bord pour recevoir vos premiers dépôts.
+      </p>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${APP_URL_DV}/garage/dashboard"
+          style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+          Accéder à mon dashboard
+        </a>
+      </div>
+    `;
+  } else if (statut === 'pre_valide') {
+    subject = "[RoullePro] Votre candidature est pré-validée";
+    statusHtml = `
+      <div style="background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0; color: #92400e; font-weight: 600;">Votre dossier est pré-validé. Un conseiller RoullePro vous contactera sous peu.</p>
+      </div>
+    `;
+  } else if (statut === 'refuse') {
+    subject = "[RoullePro] Candidature garage non retenue";
+    statusHtml = `
+      <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0; color: #991b1b; font-weight: 600;">Votre candidature n'a pas été retenue à ce stade.</p>
+      </div>
+      <p style="color: #374151; font-size: 15px;">
+        Pour toute question, n'hésitez pas à nous contacter via <a href="mailto:contact@roullepro.com" style="color: #2563eb;">contact@roullepro.com</a>.
+      </p>
+    `;
+  } else if (statut === 'suspendu') {
+    subject = "[RoullePro] Compte garage suspendu";
+    statusHtml = `
+      <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 16px; margin: 20px 0;">
+        <p style="margin: 0; color: #9a3412; font-weight: 600;">Votre compte garage a été temporairement suspendu.</p>
+      </div>
+      <p style="color: #374151; font-size: 15px;">
+        Contactez-nous à <a href="mailto:contact@roullepro.com" style="color: #2563eb;">contact@roullepro.com</a> pour plus d'informations.
+      </p>
+    `;
+  } else {
+    subject = `[RoullePro] Mise à jour de votre dossier garage (${statut})`;
+    statusHtml = `<p style="color: #374151; font-size: 15px;">Statut de votre dossier : <strong>${statut}</strong></p>`;
+  }
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader()}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px; color: #374151;">Bonjour <strong>${raison_sociale}</strong>,</p>
+        ${statusHtml}
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject, html });
+}
+
+/* ── Confirmation RDV dépôt au vendeur ── */
+export async function sendDepotRdvConfirmation(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null; date_depot_prevu?: string | null },
+  garage: { raison_sociale: string; adresse?: string | null; ville?: string | null; contact_telephone?: string | null }
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'votre véhicule';
+  const dateStr = depot.date_depot_prevu
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(depot.date_depot_prevu))
+    : 'date à confirmer';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Rendez-vous de dépôt confirmé")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Votre rendez-vous de dépôt pour <strong>${vehicule}</strong> est confirmé.</p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Garage</p>
+          <p style="margin: 0 0 4px; font-weight: 700; font-size: 16px;">${garage.raison_sociale}</p>
+          ${garage.adresse ? `<p style="margin: 0; color: #374151; font-size: 14px;">${garage.adresse}${garage.ville ? ', ' + garage.ville : ''}</p>` : ''}
+          ${garage.contact_telephone ? `<p style="margin: 4px 0 0; color: #2563eb; font-size: 14px;">${garage.contact_telephone}</p>` : ''}
+          <p style="margin: 12px 0 0; font-size: 13px; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Date prévue</p>
+          <p style="margin: 4px 0 0; font-weight: 600; color: #1f2937;">${dateStr}</p>
+        </div>
+        <p style="font-size: 13px; color: #6b7280;">Pensez à apporter la carte grise et les clés du véhicule.</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/dashboard/depots/${depot.id}"
+            style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+            Voir mon dépôt
+          </a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] RDV de dépôt confirmé — ${vehicule}`, html });
+}
+
+/* ── Notification RDV au garage ── */
+export async function sendDepotRdvNotification(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null; annee?: number | null; kilometrage?: number | null; date_depot_prevu?: string | null },
+  vendeur_name: string
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'véhicule';
+  const dateStr = depot.date_depot_prevu
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(depot.date_depot_prevu))
+    : 'date à confirmer';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Nouveau véhicule à recevoir")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Un nouveau dépôt a été planifié dans votre garage.</p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin: 20px 0;">
+          <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <td style="padding: 8px 0; color: #6b7280;">Véhicule</td>
+              <td style="padding: 8px 0; font-weight: 600;">${vehicule}${depot.annee ? ' (' + depot.annee + ')' : ''}</td>
+            </tr>
+            ${depot.kilometrage ? `<tr style="border-bottom: 1px solid #e5e7eb;"><td style="padding: 8px 0; color: #6b7280;">Kilométrage</td><td style="padding: 8px 0;">${Number(depot.kilometrage).toLocaleString('fr-FR')} km</td></tr>` : ''}
+            <tr style="border-bottom: 1px solid #e5e7eb;">
+              <td style="padding: 8px 0; color: #6b7280;">Vendeur</td>
+              <td style="padding: 8px 0;">${vendeur_name}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #6b7280;">Date prévue</td>
+              <td style="padding: 8px 0; font-weight: 600; color: #2563eb;">${dateStr}</td>
+            </tr>
+          </table>
+        </div>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/garage/dashboard/depots/${depot.id}"
+            style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+            Voir la fiche dépôt
+          </a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Nouveau dépôt prévu — ${vehicule} le ${dateStr}`, html });
+}
+
+/* ── Notification nouvelle offre au vendeur ── */
+export async function sendDepotOffreVendeur(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null },
+  offre: { id: string; montant: number; message?: string | null; expire_at?: string | null }
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'votre véhicule';
+  const expireStr = offre.expire_at
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(offre.expire_at))
+    : '48 heures';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Nouvelle offre reçue")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Vous avez reçu une nouvelle offre pour <strong>${vehicule}</strong>.</p>
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em;">Montant proposé</p>
+          <p style="margin: 8px 0 0; font-size: 32px; font-weight: 800; color: #2563eb;">${Number(offre.montant).toLocaleString('fr-FR')} €</p>
+        </div>
+        ${offre.message ? `
+          <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0;">
+            <p style="margin: 0 0 4px; font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase;">Message de l'acheteur</p>
+            <p style="margin: 0; font-size: 14px; color: #374151;">${offre.message}</p>
+          </div>
+        ` : ''}
+        <p style="font-size: 13px; color: #ef4444; font-weight: 600;">Cette offre expire le ${expireStr}. Répondez rapidement !</p>
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${APP_URL_DV}/dashboard/depots/${depot.id}"
+            style="background: #2563eb; color: white; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-block;">
+            Accepter ou refuser l'offre
+          </a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Nouvelle offre de ${Number(offre.montant).toLocaleString('fr-FR')} € pour ${vehicule}`, html });
+}
+
+/* ── Confirmation offre à l'acheteur ── */
+export async function sendDepotOffreAcheteur(
+  to: string,
+  depot: { id: string; marque?: string | null; modele?: string | null; annee?: number | null },
+  offre: { id: string; montant: number; expire_at?: string | null }
+) {
+  const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'le véhicule';
+  const expireStr = offre.expire_at
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(offre.expire_at))
+    : 'sous 48 heures';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader("Offre transmise au vendeur")}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Votre offre pour <strong>${vehicule}${depot.annee ? ' (' + depot.annee + ')' : ''}</strong> a bien été transmise au vendeur.</p>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #6b7280; text-transform: uppercase; font-weight: 600;">Votre offre</p>
+          <p style="margin: 8px 0 0; font-size: 32px; font-weight: 800; color: #16a34a;">${Number(offre.montant).toLocaleString('fr-FR')} €</p>
+        </div>
+        <p style="font-size: 14px; color: #374151;">Le vendeur a jusqu'au <strong>${expireStr}</strong> pour accepter ou décliner votre offre. Vous recevrez un email dès qu'il aura répondu.</p>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({ to, subject: `[RoullePro] Votre offre de ${Number(offre.montant).toLocaleString('fr-FR')} € a été transmise`, html });
+}

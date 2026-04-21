@@ -21,6 +21,7 @@ export default function Navbar() {
     { href: '/annonces', label: 'Annonces' },
     { href: '/pricing', label: 'Tarifs' },
     { href: '/blog', label: 'Blog' },
+    { href: '/depot-vente', label: 'Dépôt-vente' },
     { href: '/comment-ca-marche', label: 'Comment ça marche' },
     { href: '/deposer-annonce', label: 'Déposer une annonce' },
   ];

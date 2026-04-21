@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
 import {
   Search, Shield, Zap, Users, ArrowRight,
-  CheckCircle, Star, TrendingUp, Truck, BookOpen
+  CheckCircle, Star, TrendingUp, Truck, BookOpen,
+  Camera, MapPin, CreditCard
 } from 'lucide-react';
 import { getLatestPosts } from '@/lib/blog';
 import { ArticleCard } from '@/components/blog/ArticleCard';
@@ -506,6 +507,72 @@ export default async function HomePage() {
             {getLatestPosts(3).map((post) => (
               <ArticleCard key={post.slug} post={post} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── DEPOT-VENTE ──────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-20 border-t border-blue-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
+                Nouveau service
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+                Confiez-nous la vente de votre véhicule
+              </h2>
+              <p className="text-slate-600 text-lg leading-relaxed mb-6">
+                Le service dépôt-vente RoullePro gère tout pour vous : expertise, photos HD, publication et offres.
+                Vous touchez jusqu'à <strong>88% du prix de vente</strong>. Si pas vendu en 90 jours, vous reprenez votre véhicule sans frais.
+              </p>
+              <div className="space-y-3 mb-8">
+                {[
+                  { icon: TrendingUp, text: 'Estimation gratuite et instantanée' },
+                  { icon: Camera, text: 'Photos HD et expertise 40 points par le garage' },
+                  { icon: MapPin, text: 'Réseau de garages partenaires certifiés' },
+                  { icon: CreditCard, text: 'Paiement sécurisé via Stripe — zéro risque' },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.text} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Icon size={15} className="text-white" />
+                      </div>
+                      <span className="text-slate-700 text-sm font-medium">{item.text}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/depot-vente/estimer"
+                  className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3.5 rounded-xl transition"
+                >
+                  Estimer mon véhicule
+                  <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/depot-vente"
+                  className="inline-flex items-center justify-center gap-2 border border-blue-200 text-blue-700 hover:bg-blue-50 font-semibold px-6 py-3.5 rounded-xl transition"
+                >
+                  En savoir plus
+                </Link>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { label: '88%', desc: 'du prix de vente reversé' },
+                { label: '90 j', desc: 'de mandat garanti' },
+                { label: '0 €', desc: 'si pas vendu' },
+                { label: '48h', desc: 'pour répondre aux offres' },
+              ].map((stat) => (
+                <div key={stat.label} className="bg-white rounded-2xl border border-blue-100 p-6 text-center shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                  <div className="text-3xl font-extrabold text-blue-600 mb-1">{stat.label}</div>
+                  <div className="text-sm text-slate-500">{stat.desc}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

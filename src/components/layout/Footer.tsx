@@ -32,6 +32,8 @@ export default function Footer() {
               <li><Link href="/" className="hover:text-white transition">Accueil</Link></li>
               <li><Link href="/annonces" className="hover:text-white transition">Annonces</Link></li>
               <li><Link href="/deposer-annonce" className="hover:text-white transition">Déposer une annonce</Link></li>
+              <li><Link href="/depot-vente" className="hover:text-white transition">Dépôt-vente</Link></li>
+              <li><Link href="/garage/inscription" className="hover:text-white transition">Devenir garage partenaire</Link></li>
               <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
               <li><Link href="/dashboard" className="hover:text-white transition">Mon espace</Link></li>
               <li><Link href="/contact" className="hover:text-white transition">Contact</Link></li>
