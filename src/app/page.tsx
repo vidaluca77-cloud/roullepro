@@ -19,6 +19,50 @@ import {
 import { getLatestPosts } from "@/lib/blog";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import AnnoncesTicker from "@/components/AnnoncesTicker";
+import FAQSection from "@/components/FAQSection";
+
+const HOME_FAQ = [
+  {
+    question: "Qu'est-ce que RoullePro ?",
+    answer:
+      "RoullePro est la premiere place de marche francaise dediee aux vehicules professionnels du transport routier : taxi, VTC, ambulance, VSL, TPMR, navette et utilitaires. Tous les vendeurs sont verifies par SIRET contre le registre INSEE, les transactions sont securisees par paiement sequestre Stripe, et chaque annonce est moderee manuellement sous 24 heures.",
+  },
+  {
+    question: "Combien coute le depot d'une annonce ?",
+    answer:
+      "Le depot d'annonce est 100 pourcent gratuit pour les professionnels verifies. Une formule Pro et Premium existe pour mettre en avant les annonces, obtenir plus de photos et un placement prioritaire dans les resultats.",
+  },
+  {
+    question: "Comment fonctionne la verification SIRET ?",
+    answer:
+      "A l'inscription, chaque vendeur fournit son numero SIRET. Notre systeme interroge l'API publique du registre INSEE pour confirmer l'existence de l'entreprise, sa forme juridique, son activite declaree (NAF) et son statut (active ou fermee). Les comptes sont actives sous 24 heures apres validation manuelle.",
+  },
+  {
+    question: "Comment le paiement securise par sequestre fonctionne ?",
+    answer:
+      "Lorsque l'acheteur valide la transaction, les fonds sont bloques par notre partenaire Stripe Connect sur un compte sequestre. Le vendeur est notifie et prepare la remise. Apres reception du vehicule et signature du proces-verbal, les fonds sont liberes vers le vendeur. En cas de litige, RoullePro intervient avec un mediateur.",
+  },
+  {
+    question: "Puis-je vendre une licence de taxi avec le vehicule ?",
+    answer:
+      "Oui. Les annonces de la categorie Taxi permettent de mentionner explicitement si la licence (autorisation de stationnement) est cessible et incluse dans la vente. Le prix peut etre indique separement dans la description. La cession doit respecter les regles locales de la prefecture concernee.",
+  },
+  {
+    question: "Quelles categories de vehicules sont disponibles ?",
+    answer:
+      "RoullePro regroupe sept categories principales : VTC (berlines premium), Taxi (avec licence cessible), Ambulance et VSL (types A, B, C et vehicules sanitaires legers), TPMR (vehicules amenages PMR), Navette et minibus (transport collectif), Utilitaires (fourgonnettes et fourgons) et Materiel et equipement (accessoires pro).",
+  },
+  {
+    question: "Comment beneficier du service depot-vente ?",
+    answer:
+      "Le depot-vente est un service cle en main realise par nos garages partenaires : ils recuperent le vehicule, effectuent une expertise 40 points, realisent les photos HD, publient l'annonce et gerent les visites. Un mandat de vente est signe. La commission est prelevee sur le prix de vente final, sans frais initiaux pour le vendeur.",
+  },
+  {
+    question: "Dans quelles villes RoullePro est-il disponible ?",
+    answer:
+      "RoullePro couvre l'ensemble du territoire francais. Le service est particulierement actif a Paris, Lyon, Marseille, Toulouse, Bordeaux, Lille, Nantes, Rennes, Strasbourg, Montpellier, Nice, Rouen, Grenoble et Reims. Les garages partenaires pour le depot-vente sont progressivement deployes region par region.",
+  },
+];
 
 // Rafraîchissement toutes les 5 minutes pour toujours afficher les dernières annonces
 export const revalidate = 300;
@@ -527,6 +571,15 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          FAQ — optimisee pour citations IA (schema FAQPage)
+          ═══════════════════════════════════════════════════════════ */}
+      <FAQSection
+        title="Questions frequentes sur RoullePro"
+        subtitle="Les reponses aux questions les plus posees par les professionnels du transport."
+        items={HOME_FAQ}
+      />
     </div>
   );
 }

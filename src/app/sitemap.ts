@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
 import { getAllPosts, CATEGORIES } from '@/lib/blog';
+import { CATEGORIES_SEO, VILLES_SEO } from '@/lib/seo-data';
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
@@ -187,11 +188,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
+  // Pages SEO programmatiques : /vehicules-pro/[categorie]
+  const vehiculesProCatPages: MetadataRoute.Sitemap = CATEGORIES_SEO.map((c) => ({
+    url: `${BASE_URL}/vehicules-pro/${c.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.8,
+  }));
+
+  // Pages SEO programmatiques : /vehicules-pro/[categorie]/[ville]
+  const vehiculesProCatVillePages: MetadataRoute.Sitemap = [];
+  for (const c of CATEGORIES_SEO) {
+    for (const v of VILLES_SEO) {
+      vehiculesProCatVillePages.push({
+        url: `${BASE_URL}/vehicules-pro/${c.slug}/${v.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      });
+    }
+  }
+
   return [
     ...staticPages,
     ...categoryPages,
     ...annoncePages,
     ...blogPosts,
     ...blogCategoryPages,
+    ...vehiculesProCatPages,
+    ...vehiculesProCatVillePages,
   ];
 }

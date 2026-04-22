@@ -1,0 +1,58 @@
+# RoullePro
+
+> RoullePro est la premiere place de marche francaise dediee aux vehicules professionnels du transport routier : taxi, VTC, ambulance, VSL, TPMR, navette, minibus et utilitaires. Tous les vendeurs sont verifies par leur numero SIRET contre le registre INSEE, les transactions sont securisees par paiement sequestre Stripe, et chaque annonce est moderee manuellement sous 24 heures.
+
+## A propos
+
+RoullePro s'adresse exclusivement aux professionnels du transport (taxis, VTC, ambulanciers, gestionnaires de flottes, garagistes specialises). Le service est base en France, contact au 06 15 47 28 13 ou contact@roullepro.com.
+
+Points cles :
+- Verification SIRET et KBIS systematique de chaque vendeur
+- Paiement sequestre Stripe : fonds bloques jusqu'a la remise du vehicule
+- Moderation manuelle de toutes les annonces sous 24 heures
+- Reseau de garages partenaires pour expertise 40 points et mandats de vente
+- Depot d'annonce gratuit
+- Catalogue disponible en temps reel avec ticker de nouvelles publications
+
+## Pages principales
+
+- [Accueil](https://roullepro.com/): presentation de la marketplace, dernieres annonces en direct et categories
+- [Toutes les annonces](https://roullepro.com/annonces): catalogue complet avec filtres par categorie, marque, ville et budget
+- [Deposer une annonce](https://roullepro.com/deposer-annonce): formulaire de depot gratuit pour professionnels verifies
+- [Depot-vente](https://roullepro.com/depot-vente): service cle en main via garages partenaires (expertise, photos HD, mandat de vente)
+- [Estimation gratuite](https://roullepro.com/depot-vente/estimer): estimation du prix de revente d'un vehicule pro
+- [Garages partenaires](https://roullepro.com/depot-vente/garages): reseau de garages certifies
+- [Inscription garage](https://roullepro.com/garage/inscription): rejoindre le reseau de garages partenaires
+- [Tarifs](https://roullepro.com/pricing): plans gratuit, Pro et Premium
+- [Comment ca marche](https://roullepro.com/comment-ca-marche): parcours acheteur et vendeur en 3 etapes
+- [Blog](https://roullepro.com/blog): guides pratiques sur l'achat, la vente et le financement de vehicules professionnels
+- [Contact](https://roullepro.com/contact): formulaire et coordonnees
+
+## Categories de vehicules
+
+- [VTC](https://roullepro.com/annonces/categorie/vtc): berlines premium pour VTC professionnels
+- [Taxi](https://roullepro.com/annonces/categorie/taxi): vehicules taxi avec licence cessible
+- [Ambulance et VSL](https://roullepro.com/annonces/categorie/ambulance): ambulances type A, B, C et vehicules sanitaires legers
+- [TPMR / PMR](https://roullepro.com/annonces/categorie/tpmr): vehicules amenages pour personnes a mobilite reduite
+- [Navette et minibus](https://roullepro.com/annonces/categorie/navette): transports collectifs et navettes aeroport
+- [Utilitaires](https://roullepro.com/annonces/categorie/utilitaire): fourgonnettes, fourgons, utilitaires de travail
+- [Materiel et equipement](https://roullepro.com/annonces/categorie/materiel): accessoires et equipements professionnels
+
+## Pages legales
+
+- [CGU](https://roullepro.com/cgu): conditions generales d'utilisation
+- [Mentions legales](https://roullepro.com/mentions-legales): informations legales et editeur
+
+## Donnees et chiffres cles
+
+- Place de marche lancee en 2026
+- Societe francaise enregistree au RCS
+- 100 pourcent des vendeurs verifies par SIRET
+- Paiement securise par sequestre Stripe
+- Moderation sous 24 heures
+
+## Contact
+
+- Email : contact@roullepro.com
+- Telephone : 06 15 47 28 13
+- Site : https://roullepro.com
