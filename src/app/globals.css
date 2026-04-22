@@ -13,3 +13,15 @@ body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #f8f9fa; }
 /* Masquage propre de la scrollbar horizontale (bandeau catégories) */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes ticker-slide {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-ticker {
+  animation: ticker-slide 60s linear infinite;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker { animation: none; }
+}

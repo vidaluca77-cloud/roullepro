@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { getLatestPosts } from "@/lib/blog";
 import { ArticleCard } from "@/components/blog/ArticleCard";
+import AnnoncesTicker from "@/components/AnnoncesTicker";
 
 // Rafraîchissement toutes les 5 minutes pour toujours afficher les dernières annonces
 export const revalidate = 300;
@@ -55,10 +56,10 @@ async function getRecentAnnonces() {
     );
     const { data } = await supabase
       .from("annonces")
-      .select("id, title, price, city, images, annee, kilometrage, categories(name, slug)")
+      .select("id, title, price, city, images, annee, kilometrage, created_at, categories(name, slug)")
       .eq("status", "active")
       .order("created_at", { ascending: false })
-      .limit(8);
+      .limit(12);
     return data || [];
   } catch {
     return [];
@@ -160,6 +161,22 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ═══════════════════════════════════════════════════════════
+          BANDEAU TEMPS RÉEL — nouvelles annonces sans rechargement
+          ═══════════════════════════════════════════════════════════ */}
+      <AnnoncesTicker
+        initial={recentAnnonces.map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          price: a.price,
+          city: a.city,
+          created_at: a.created_at,
+          categories: a.categories
+            ? { name: a.categories.name, slug: a.categories.slug }
+            : null,
+        }))}
+      />
 
       {/* ═══════════════════════════════════════════════════════════
           BANDEAU CATÉGORIES — discret, sous le hero
