@@ -9,3 +9,7 @@
 * { box-sizing: border-box; padding: 0; margin: 0; }
 
 body { font-family: 'Inter', sans-serif; color: #1a1a1a; background: #f8f9fa; }
+
+/* Masquage propre de la scrollbar horizontale (bandeau catégories) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
