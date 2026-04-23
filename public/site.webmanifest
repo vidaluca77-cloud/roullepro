@@ -1,0 +1,24 @@
+{
+  "name": "RoullePro",
+  "short_name": "RoullePro",
+  "description": "Marketplace des véhicules professionnels : taxi, VTC, ambulance, TPMR, navette.",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#0B1120",
+  "background_color": "#FFFFFF",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

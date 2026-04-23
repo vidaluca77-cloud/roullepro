@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Truck, Menu, X, User, LogOut, LayoutDashboard, Wrench, Shield } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, Wrench, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -98,9 +99,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <Truck className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-blue-600">RoullePro</span>
+            <Link href="/" className="flex items-center" aria-label="RoullePro - Accueil">
+              <Image
+                src="/logo-roullepro-horizontal.png"
+                alt="RoullePro"
+                width="180"
+                height="48"
+                priority
+                className="h-10 w-auto"
+              />
             </Link>
           </div>
 
