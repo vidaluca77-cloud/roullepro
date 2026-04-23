@@ -10,6 +10,13 @@ const PRICE_ENV_MAP: Record<string, string> = {
   pro_plus: "STRIPE_PRICE_SANITAIRE_PROPLUS",
 };
 
+// Prix Stripe live créés pour l'annuaire sanitaire — fallback si env non définie
+const PRICE_ID_DEFAULTS: Record<string, string> = {
+  essential: "price_1TPTHrJQRPoIacwzO3PxAv8M",
+  premium: "price_1TPTHrJQRPoIacwzXphLkYRy",
+  pro_plus: "price_1TPTHrJQRPoIacwz0HDK9iC1",
+};
+
 const PLAN_AMOUNT_FALLBACK: Record<string, number> = {
   essential: 1990,
   premium: 3900,
@@ -47,7 +54,7 @@ export async function POST(req: Request) {
 
     const stripe = getStripe();
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
-    const priceId = process.env[PRICE_ENV_MAP[plan_key]];
+    const priceId = process.env[PRICE_ENV_MAP[plan_key]] || PRICE_ID_DEFAULTS[plan_key];
 
     const lineItems = priceId
       ? [{ price: priceId, quantity: 1 }]

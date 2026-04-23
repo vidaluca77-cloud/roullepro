@@ -247,6 +247,32 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════
+          BANDEAU TRANSPORT SANITAIRE — service patients
+          ======================================================= */}
+      <section className="bg-gradient-to-r from-[#0066CC] to-[#0f1d3a] text-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+              <ShieldCheck size={20} className="text-white" />
+            </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-blue-200 font-semibold mb-0.5">Service patients</div>
+              <div className="text-base font-semibold">
+                Besoin d'une ambulance, d'un VSL ou d'un taxi conventionné ? L'annuaire est gratuit.
+              </div>
+            </div>
+          </div>
+          <Link
+            href="/transport-medical"
+            className="inline-flex items-center gap-2 bg-white text-[#0066CC] font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 transition flex-shrink-0"
+          >
+            Ouvrir l'annuaire
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
+
+      {/* =======================================================
           ANNONCES RÉCENTES — en premier pour l'effet marketplace
           ═══════════════════════════════════════════════════════════ */}
       {recentAnnonces.length > 0 && (

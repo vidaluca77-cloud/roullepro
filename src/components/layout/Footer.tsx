@@ -7,7 +7,7 @@ export default function Footer() {
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="mb-4">
               <Image
@@ -57,7 +57,7 @@ export default function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Catégories</h3>
+            <h3 className="font-semibold mb-4">Catégories véhicules</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/annonces/categorie/vtc" className="hover:text-white transition">VTC</Link></li>
               <li><Link href="/annonces/categorie/taxi" className="hover:text-white transition">Taxi</Link></li>
@@ -66,6 +66,20 @@ export default function Footer() {
               <li><Link href="/annonces/categorie/navette" className="hover:text-white transition">Navette / Minibus</Link></li>
               <li><Link href="/annonces/categorie/materiel" className="hover:text-white transition">Matériel & Équipement</Link></li>
               <li><Link href="/annonces/categorie/utilitaire" className="hover:text-white transition">Véhicules utilitaires</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-4">Transport sanitaire</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li><Link href="/transport-medical" className="hover:text-white transition">Annuaire patients</Link></li>
+              <li><Link href="/transport-medical/recherche" className="hover:text-white transition">Rechercher par ville</Link></li>
+              <li><Link href="/transport-medical/caen" className="hover:text-white transition">Caen</Link></li>
+              <li><Link href="/transport-medical/rouen" className="hover:text-white transition">Rouen</Link></li>
+              <li><Link href="/transport-medical/rennes" className="hover:text-white transition">Rennes</Link></li>
+              <li><Link href="/transport-medical/brest" className="hover:text-white transition">Brest</Link></li>
+              <li><Link href="/transport-medical/pro" className="hover:text-white transition">Espace professionnel</Link></li>
+              <li><Link href="/transport-medical/tarifs" className="hover:text-white transition">Abonnements pro</Link></li>
             </ul>
           </div>
         </div>
