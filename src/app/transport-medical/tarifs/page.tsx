@@ -172,7 +172,7 @@ function PlanCol({
         <CheckoutButton planKey={planKey} ficheId={ficheId} popular={popular} />
       ) : (
         <Link
-          href={userConnected ? "/transport-medical/pro" : "/auth/signin?next=/transport-medical/tarifs"}
+          href={userConnected ? "/transport-medical/pro" : "/auth/login?next=/transport-medical/tarifs"}
           className={`block text-center font-semibold px-4 py-2.5 rounded-xl transition ${popular ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-[#0066CC] hover:bg-[#0052a3] text-white"}`}
         >
           {userConnected ? "Réclamer ma fiche" : "Se connecter pour commencer"}

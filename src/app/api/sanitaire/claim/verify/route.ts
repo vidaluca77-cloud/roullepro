@@ -92,6 +92,16 @@ export async function POST(req: Request) {
 
       if (found) {
         userId = found.id;
+        // User existant : on reset le mot de passe pour que le user puisse se connecter
+        // avec le mot de passe temporaire envoye dans l email de bienvenue
+        tempPassword = generateTempPassword();
+        try {
+          await supabaseAdmin.auth.admin.updateUserById(found.id, {
+            password: tempPassword,
+          });
+        } catch {
+          tempPassword = null;
+        }
       } else {
         // Crée un nouveau compte avec mot de passe temporaire
         tempPassword = generateTempPassword();
@@ -170,7 +180,7 @@ export async function POST(req: Request) {
   <h2 style="color:#0066CC;margin-top:32px">Bienvenue ${nomAffiche}</h2>
   <p>Votre fiche professionnelle est maintenant associée à votre compte. Elle affiche désormais le badge <strong>« Pro vérifié »</strong> visible de tous les patients.</p>
 
-  ${createdAccount && tempPassword ? `
+  ${tempPassword ? `
   <div style="background:#f0f6ff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin:24px 0">
     <div style="font-size:13px;color:#0066CC;font-weight:600;margin-bottom:8px">VOS IDENTIFIANTS DE CONNEXION</div>
     <div style="font-family:monospace;font-size:14px">
@@ -229,6 +239,8 @@ export async function POST(req: Request) {
       pro_id: claim.pro_id,
       created_account: createdAccount,
       magic_link: magicLink,
+      email: accountEmail,
+      has_temp_password: !!tempPassword,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

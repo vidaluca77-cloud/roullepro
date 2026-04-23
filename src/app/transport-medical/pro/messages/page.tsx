@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function MessagesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/signin?next=/transport-medical/pro/messages");
+  if (!user) redirect("/auth/login?next=/transport-medical/pro/messages");
 
   const { data: pro } = await supabase
     .from("pros_sanitaire")

@@ -30,7 +30,7 @@ export default async function ProDashboard({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    redirect("/auth/signin?next=/transport-medical/pro/dashboard");
+    redirect("/auth/login?next=/transport-medical/pro/dashboard&claimed=1");
   }
 
   const { data: pros } = await supabase

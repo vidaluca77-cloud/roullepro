@@ -1,22 +1,33 @@
-'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { Truck, AlertCircle } from 'lucide-react';
+"use client";
+import { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Truck, AlertCircle, CheckCircle2 } from "lucide-react";
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = searchParams.get("next") || "/dashboard";
+  const prefillEmail = searchParams.get("email") || "";
+  const justClaimed = searchParams.get("claimed") === "1";
   const supabase = createClient();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(prefillEmail);
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (prefillEmail) setEmail(prefillEmail);
+  }, [prefillEmail]);
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); setError(''); setLoading(true);
+    e.preventDefault();
+    setError("");
+    setLoading(true);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) setError(err.message); else router.push('/dashboard');
+    if (err) setError(err.message);
+    else router.push(nextPath);
     setLoading(false);
   };
 
@@ -30,6 +41,15 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-bold">Connexion</h1>
         </div>
+        {justClaimed && (
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4 flex gap-2 items-start">
+            <CheckCircle2 size={18} className="mt-0.5 flex-shrink-0" />
+            <div className="text-sm">
+              <div className="font-semibold">Votre fiche a bien ete reclamee</div>
+              <div>Connectez-vous avec l&apos;email utilise ou cliquez sur &laquo;&nbsp;Mot de passe oublie&nbsp;&raquo; si c&apos;est votre premiere connexion.</div>
+            </div>
+          </div>
+        )}
         {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex gap-2 items-center"><AlertCircle size={18}/>{error}</div>}
         <form onSubmit={handleLogin} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
           <div>
@@ -49,8 +69,16 @@ export default function LoginPage() {
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">Pas de compte ? <Link href="/auth/register" className="text-blue-600 font-medium">S'inscrire</Link></p>
+        <p className="text-center text-sm text-gray-500 mt-4">Pas de compte ? <Link href="/auth/register" className="text-blue-600 font-medium">S&apos;inscrire</Link></p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -47,13 +47,22 @@ async function getTopVilles() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data } = await supabase
-    .from("pros_sanitaire")
-    .select("ville, ville_slug, departement")
-    .order("ville")
-    .limit(500);
+  // Recupere jusqu a 10 000 lignes pour avoir un comptage fiable
+  const rows: { ville: string; ville_slug: string; departement: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 10; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("ville, ville_slug, departement")
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < size) break;
+    from += size;
+  }
   const map = new Map<string, { ville: string; ville_slug: string; departement: string; count: number }>();
-  (data || []).forEach((row: { ville: string; ville_slug: string; departement: string }) => {
+  rows.forEach((row) => {
     const key = row.ville_slug;
     if (!map.has(key)) map.set(key, { ...row, count: 0 });
     map.get(key)!.count += 1;
@@ -63,9 +72,38 @@ async function getTopVilles() {
     .slice(0, 24);
 }
 
+async function getRegionsCouvertes() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const rows: { region: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 25; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("region")
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < size) break;
+    from += size;
+  }
+  const counts = new Map<string, number>();
+  rows.forEach((r) => {
+    if (!r.region) return;
+    counts.set(r.region, (counts.get(r.region) || 0) + 1);
+  });
+  return Array.from(counts.entries())
+    .map(([nom, count]) => ({ nom, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export default async function TransportMedicalHome() {
   const stats = await getStats();
   const topVilles = await getTopVilles();
+  const regionsCouvertes = await getRegionsCouvertes();
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/40 to-white">
@@ -148,8 +186,8 @@ export default async function TransportMedicalHome() {
 
       <section className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Par ville — Normandie et Bretagne</h2>
-          <p className="text-gray-600 mb-8">Lancement du service dans ces deux régions, extension progressive à toute la France.</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Les villes les plus actives</h2>
+          <p className="text-gray-600 mb-8">Plus de {stats.total.toLocaleString("fr-FR")} professionnels référencés dans {regionsCouvertes.length} régions françaises.</p>
           {topVilles.length === 0 ? (
             <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
               <p className="text-gray-600">L'annuaire est en cours d'import. Les premières fiches arrivent dans quelques minutes.</p>
@@ -169,16 +207,19 @@ export default async function TransportMedicalHome() {
             </div>
           )}
 
-          <div className="mt-8 flex flex-wrap gap-2">
-            {REGIONS_MVP.map((r) => (
-              <Link
-                key={r.slug}
-                href={`/transport-medical/region/${r.slug}`}
-                className="inline-flex items-center gap-1 text-sm text-[#0066CC] hover:underline"
-              >
-                Toute la {r.nom} <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            ))}
+          <div className="mt-10">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Régions couvertes</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {regionsCouvertes.map((r) => (
+                <div
+                  key={r.nom}
+                  className="bg-white border border-gray-200 rounded-xl px-4 py-3"
+                >
+                  <div className="text-sm font-semibold text-gray-900">{r.nom}</div>
+                  <div className="text-xs text-gray-500">{r.count.toLocaleString("fr-FR")} pros</div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>

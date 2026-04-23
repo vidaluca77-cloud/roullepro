@@ -55,12 +55,15 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Code invalide");
       setStep("done");
-      // Si un magic link est fourni, redirige vers celui-ci pour connexion auto
+      // Redirection : magic link > dashboard direct > login avec email prefill
       setTimeout(() => {
         if (data.magic_link) {
           window.location.href = data.magic_link;
         } else {
-          router.push("/transport-medical/pro/dashboard?welcome=1");
+          const fallback = `/auth/login?next=/transport-medical/pro/dashboard?welcome=1&claimed=1&email=${encodeURIComponent(
+            data.email || contact
+          )}`;
+          router.push(fallback);
         }
       }, 1800);
     } catch (err) {
