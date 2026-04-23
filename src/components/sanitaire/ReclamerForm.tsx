@@ -55,9 +55,14 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Code invalide");
       setStep("done");
+      // Si un magic link est fourni, redirige vers celui-ci pour connexion auto
       setTimeout(() => {
-        router.push("/transport-medical/pro/dashboard");
-      }, 1500);
+        if (data.magic_link) {
+          window.location.href = data.magic_link;
+        } else {
+          router.push("/transport-medical/pro/dashboard?welcome=1");
+        }
+      }, 1800);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -70,7 +75,8 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
         <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
         <div className="font-bold text-gray-900 mb-2">Fiche réclamée avec succès</div>
-        <p className="text-sm text-gray-600">Redirection vers votre espace pro…</p>
+        <p className="text-sm text-gray-600 mb-2">Un email de bienvenue vient d'être envoyé à {contact} avec vos identifiants.</p>
+        <p className="text-xs text-gray-500">Connexion automatique en cours…</p>
       </div>
     );
   }
@@ -139,22 +145,17 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
           </div>
         </label>
 
-        <label className={`flex items-start gap-3 p-4 border-2 rounded-xl cursor-pointer transition ${method === "sms" ? "border-[#0066CC] bg-blue-50" : "border-gray-200 hover:border-gray-300"}`}>
-          <input
-            type="radio"
-            name="method"
-            checked={method === "sms"}
-            onChange={() => setMethod("sms")}
-            className="mt-1"
-          />
+        <label className="flex items-start gap-3 p-4 border-2 border-gray-100 bg-gray-50 rounded-xl cursor-not-allowed opacity-60">
+          <input type="radio" name="method" disabled className="mt-1" />
           <div className="flex-1">
-            <div className="flex items-center gap-2 font-semibold text-gray-900">
+            <div className="flex items-center gap-2 font-semibold text-gray-500">
               <Phone className="w-4 h-4" />
               SMS sur le numéro public
+              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Bientôt</span>
             </div>
-            <p className="text-sm text-gray-600 mt-1">
-              Recevez un code au numéro public de l'entreprise.
-              {telephonePublic && <span className="block mt-1 text-xs text-gray-500">Numéro enregistré : {telephonePublic}</span>}
+            <p className="text-sm text-gray-500 mt-1">
+              Pour l'instant, utilisez l'email professionnel de votre entreprise.
+              {telephonePublic && <span className="block mt-1 text-xs text-gray-400">Numéro enregistré : {telephonePublic}</span>}
             </p>
           </div>
         </label>

@@ -174,33 +174,22 @@ export default async function FicheProPage({ params }: Props) {
           )}
 
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">Contacter cette entreprise</h2>
-            {showMessageForm ? (
-              <ContactProForm proId={pro.id} proNom={pro.nom_commercial || pro.raison_sociale} />
-            ) : (
-              <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-xl p-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <MessageCircle className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-semibold text-gray-900 mb-1">Contact direct par téléphone</div>
-                    <p className="text-sm text-gray-600">
-                      {pro.telephone_public
-                        ? "Appelez directement le professionnel aux coordonnées ci-dessous."
-                        : "Ce professionnel n'a pas encore vérifié sa fiche. Utilisez la recherche pour trouver une alternative disponible à proximité."}
-                    </p>
-                  </div>
-                </div>
-                {pro.telephone_public && (
-                  <a
-                    href={`tel:${pro.telephone_public.replace(/\s/g, "")}`}
-                    className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition w-full justify-center"
-                  >
-                    <Phone className="w-4 h-4" />
-                    Appeler le {pro.telephone_public}
-                  </a>
-                )}
-              </div>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Contacter cette entreprise</h2>
+            {!isPremium && pro.telephone_public && (
+              <p className="text-sm text-gray-600 mb-4">
+                Pour une réponse immédiate, appelez directement. Vous pouvez aussi laisser un message ci-dessous.
+              </p>
             )}
+            {!isPremium && pro.telephone_public && (
+              <a
+                href={`tel:${pro.telephone_public.replace(/\s/g, "")}`}
+                className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition w-full justify-center mb-5"
+              >
+                <Phone className="w-4 h-4" />
+                Appeler le {pro.telephone_public}
+              </a>
+            )}
+            <ContactProForm proId={pro.id} proNom={pro.nom_commercial || pro.raison_sociale} />
           </div>
         </div>
 

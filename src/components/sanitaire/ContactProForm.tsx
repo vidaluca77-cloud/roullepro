@@ -10,6 +10,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -28,11 +29,12 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           content: content.trim(),
         }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Erreur lors de l'envoi");
       }
       setSent(true);
+      if (data.warning) setWarning(data.warning);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -48,6 +50,11 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
         <p className="text-sm text-gray-600">
           {proNom} a été notifié. Une réponse vous parviendra par email à l'adresse renseignée.
         </p>
+        {warning && (
+          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
+            {warning}
+          </p>
+        )}
       </div>
     );
   }

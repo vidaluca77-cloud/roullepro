@@ -15,10 +15,18 @@ import {
 } from "lucide-react";
 import { planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
+import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProDashboard() {
+export default async function ProDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ welcome?: string; upgraded?: string }>;
+}) {
+  const params = await searchParams;
+  const showWelcome = params.welcome === "1";
+  const showUpgraded = params.upgraded === "1";
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -117,6 +125,19 @@ export default async function ProDashboard() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-8">
+        {(showWelcome || showUpgraded) && (
+          <WelcomeBanner
+            upgraded={showUpgraded}
+            nomAffiche={fiche.nom_commercial || fiche.raison_sociale}
+            completude={{
+              telephone: !!fiche.telephone_public,
+              email: !!fiche.email_public,
+              description: !!fiche.description && fiche.description.length > 50,
+              horaires: !!fiche.horaires && Object.keys(fiche.horaires || {}).length > 0,
+              photos: !!fiche.photos && fiche.photos.length > 0,
+            }}
+          />
+        )}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatBox icon={<Eye className="w-5 h-5" />} label="Vues (30 j.)" value={vuesRecentes ?? 0} />
           <StatBox icon={<Phone className="w-5 h-5" />} label="Appels cliqués" value={fiche.appels_cliques} />
