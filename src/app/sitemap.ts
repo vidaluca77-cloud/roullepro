@@ -217,10 +217,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/transport-medical/recherche`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.6 },
   ];
 
-  const { data: villes } = await supabase
-    .from('pros_sanitaire')
-    .select('ville_slug')
-    .limit(5000);
+  // Villes: pagination pour depasser la limite Supabase par defaut (1000)
+  const villesAll: { ville_slug: string }[] = [];
+  {
+    let from = 0;
+    const size = 1000;
+    // 25 pages max = 25 000 lignes, largement suffisant
+    for (let i = 0; i < 25; i += 1) {
+      const { data } = await supabase
+        .from('pros_sanitaire')
+        .select('ville_slug')
+        .range(from, from + size - 1);
+      if (!data || data.length === 0) break;
+      villesAll.push(...data);
+      if (data.length < size) break;
+      from += size;
+    }
+  }
+  const villes = villesAll;
   const villesUniques = Array.from(new Set((villes || []).map((v: { ville_slug: string }) => v.ville_slug).filter(Boolean)));
   const sanitaireVillePages: MetadataRoute.Sitemap = villesUniques.map((slug) => ({
     url: `${BASE_URL}/transport-medical/${slug}`,
@@ -242,11 +256,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  const { data: proSlugs } = await supabase
-    .from('pros_sanitaire')
-    .select('slug, ville_slug, categorie')
-    .order('claimed', { ascending: false })
-    .limit(3000);
+  // Fiches pros: pagination pour recuperer toutes les fiches
+  const proSlugsAll: { slug: string; ville_slug: string; categorie: string }[] = [];
+  {
+    let from = 0;
+    const size = 1000;
+    for (let i = 0; i < 30; i += 1) {
+      const { data } = await supabase
+        .from('pros_sanitaire')
+        .select('slug, ville_slug, categorie')
+        .order('claimed', { ascending: false })
+        .range(from, from + size - 1);
+      if (!data || data.length === 0) break;
+      proSlugsAll.push(...data);
+      if (data.length < size) break;
+      from += size;
+    }
+  }
+  const proSlugs = proSlugsAll;
   const sanitaireFichePages: MetadataRoute.Sitemap = (proSlugs || []).map((p: { slug: string; ville_slug: string; categorie: string }) => ({
     url: `${BASE_URL}/transport-medical/${p.ville_slug}/${p.categorie === 'taxi_conventionne' ? 'taxi-conventionne' : p.categorie}/${p.slug}`,
     lastModified: new Date(),
