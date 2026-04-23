@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { AlertCircle, Image as ImageIcon, X, Truck, Car } from 'lucide-react';
 import { getPlan, canCreateAnnonce } from '@/lib/plans';
 import { compressImage } from '@/lib/image-compress';
+import { trackDepotAnnonce } from '@/lib/google-ads-conversions';
 
 const ENERGIES = ['Essence','Diesel','Hybride','Electrique','GPL','Hydrogène'];
 const BOITES = ['Manuelle','Automatique'];
@@ -244,6 +245,7 @@ export default function DeposerAnnoncePage() {
           body: JSON.stringify({ annonce_id: inserted.id }),
         }).catch(() => {});
       }
+      trackDepotAnnonce(form.price ? Number(form.price) : undefined);
       router.push('/dashboard?annonce=pending');
     } catch (err: any) {
       setError(err.message);

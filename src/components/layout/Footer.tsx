@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import PhoneLink from './PhoneLink';
 
 export default function Footer() {
   return (
@@ -28,7 +29,11 @@ export default function Footer() {
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={16} />
-                <a href="tel:+33615472813" className="hover:text-white transition">06 15 47 28 13</a>
+                <PhoneLink
+                  telNumber="+33615472813"
+                  displayNumber="06 15 47 28 13"
+                  className="hover:text-white transition"
+                />
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin size={16} />

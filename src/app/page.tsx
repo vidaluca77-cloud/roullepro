@@ -20,6 +20,7 @@ import { getLatestPosts } from "@/lib/blog";
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import AnnoncesTicker from "@/components/AnnoncesTicker";
 import FAQSection from "@/components/FAQSection";
+import PhoneLink from "@/components/layout/PhoneLink";
 
 const HOME_FAQ = [
   {
@@ -556,10 +557,10 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-14 pt-10 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-sm text-slate-400">
-            <a href="tel:0615472813" className="inline-flex items-center gap-2 hover:text-white transition">
+            <span className="inline-flex items-center gap-2 hover:text-white transition">
               <Phone size={15} className="text-blue-400" />
-              06 15 47 28 13
-            </a>
+              <PhoneLink telNumber="+33615472813" displayNumber="06 15 47 28 13" className="hover:text-white transition" />
+            </span>
             <a href="mailto:contact@roullepro.com" className="inline-flex items-center gap-2 hover:text-white transition">
               <Mail size={15} className="text-blue-400" />
               contact@roullepro.com

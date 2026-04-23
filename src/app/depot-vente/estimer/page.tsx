@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowRight, Calculator, AlertCircle, Camera } from "lucide-react";
 import EstimationCard from "@/components/depot/EstimationCard";
 import DepotPhotosUploader from "@/components/depot/DepotPhotosUploader";
+import { trackDemandeEstimation } from "@/lib/google-ads-conversions";
 
 interface EstimationResult {
   estimation_min: number;
@@ -99,6 +100,7 @@ function EstimerPageInner() {
       }
 
       setResult(data);
+      trackDemandeEstimation();
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau et réessayez.");
     } finally {

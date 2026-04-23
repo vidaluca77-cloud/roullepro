@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ArrowRight, CheckCircle, AlertCircle, Building2 } from 'lucide-react';
+import { trackInscriptionGarage } from '@/lib/google-ads-conversions';
 
 const SPECIALITES_OPTIONS = [
   'Utilitaires',
@@ -68,6 +69,7 @@ export default function GarageInscriptionPage() {
       }
 
       setSuccess(true);
+      trackInscriptionGarage();
     } catch {
       setError("Erreur de connexion. Vérifiez votre réseau et réessayez.");
     } finally {
