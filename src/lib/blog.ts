@@ -192,7 +192,18 @@ const NEW_POSTS: BlogPost[] = (() => {
   }
 })();
 
-const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS];
+// Fichier additionnel pour les articles SEO long-format
+const SEO_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-seo-posts");
+    return Array.isArray(mod?.SEO_POSTS) ? (mod.SEO_POSTS as BlogPost[]) : [];
+  } catch {
+    return [];
+  }
+})();
+
+const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS, ...SEO_POSTS];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */
 
