@@ -22,7 +22,7 @@ function getResendClient(): Resend | null {
   return new Resend(apiKey);
 }
 
-async function sendEmail(payload: {
+export async function sendEmail(payload: {
   to: string;
   subject: string;
   html: string;

@@ -209,6 +209,51 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
+  // Annuaire transport sanitaire
+  const sanitaireStatic: MetadataRoute.Sitemap = [
+    { url: `${BASE_URL}/transport-medical`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.9 },
+    { url: `${BASE_URL}/transport-medical/pro`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.6 },
+    { url: `${BASE_URL}/transport-medical/tarifs`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.6 },
+    { url: `${BASE_URL}/transport-medical/recherche`, lastModified: new Date(), changeFrequency: 'daily' as const, priority: 0.6 },
+  ];
+
+  const { data: villes } = await supabase
+    .from('pros_sanitaire')
+    .select('ville_slug')
+    .limit(5000);
+  const villesUniques = Array.from(new Set((villes || []).map((v: { ville_slug: string }) => v.ville_slug).filter(Boolean)));
+  const sanitaireVillePages: MetadataRoute.Sitemap = villesUniques.map((slug) => ({
+    url: `${BASE_URL}/transport-medical/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.7,
+  }));
+
+  const categoriesSanitaire = ['ambulance', 'vsl', 'taxi-conventionne'];
+  const sanitaireVilleCatPages: MetadataRoute.Sitemap = [];
+  for (const slug of villesUniques) {
+    for (const c of categoriesSanitaire) {
+      sanitaireVilleCatPages.push({
+        url: `${BASE_URL}/transport-medical/${slug}/${c}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.6,
+      });
+    }
+  }
+
+  const { data: proSlugs } = await supabase
+    .from('pros_sanitaire')
+    .select('slug, ville_slug, categorie')
+    .order('claimed', { ascending: false })
+    .limit(3000);
+  const sanitaireFichePages: MetadataRoute.Sitemap = (proSlugs || []).map((p: { slug: string; ville_slug: string; categorie: string }) => ({
+    url: `${BASE_URL}/transport-medical/${p.ville_slug}/${p.categorie === 'taxi_conventionne' ? 'taxi-conventionne' : p.categorie}/${p.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }));
+
   return [
     ...staticPages,
     ...categoryPages,
@@ -217,5 +262,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogCategoryPages,
     ...vehiculesProCatPages,
     ...vehiculesProCatVillePages,
+    ...sanitaireStatic,
+    ...sanitaireVillePages,
+    ...sanitaireVilleCatPages,
+    ...sanitaireFichePages,
   ];
 }

@@ -272,6 +272,34 @@ async function syncSubscription(sub: Stripe.Subscription) {
   await db.from('profiles').update({ plan: effectivePlan }).eq('id', userId);
 }
 
+async function handleSanitaireSubscription(sub: Stripe.Subscription, session: Stripe.Checkout.Session | null) {
+  const db = admin();
+  const proId = sub.metadata?.pro_id || session?.metadata?.pro_id;
+  const planKey = sub.metadata?.plan_key || session?.metadata?.plan_key;
+  if (!proId) {
+    console.error("[sanitaire webhook] pas de pro_id sur sub", sub.id);
+    return;
+  }
+
+  const active = sub.status === "active" || sub.status === "trialing";
+  const deleted = sub.status === "canceled" || sub.status === "incomplete_expired" || sub.status === "unpaid";
+  const planToSet = deleted ? "gratuit" : active && planKey ? planKey : "gratuit";
+  const periodEnd = (sub as unknown as { current_period_end?: number }).current_period_end;
+  const activeUntil = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
+
+  const { error } = await db
+    .from("pros_sanitaire")
+    .update({
+      plan: planToSet,
+      plan_active_until: activeUntil,
+      stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
+      stripe_subscription_id: sub.id,
+    })
+    .eq("id", proId);
+
+  if (error) console.error("[sanitaire webhook] update error", error.message);
+}
+
 export async function POST(request: Request) {
   // 1. Vérifier la présence du header AVANT toute init Stripe
   const signature = request.headers.get('stripe-signature');
@@ -309,6 +337,14 @@ export async function POST(request: Request) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
 
+        // Cas 1bis : abonnement annuaire sanitaire
+        if (session.mode === 'subscription' && session.metadata?.source === 'sanitaire' && session.subscription) {
+          const subId = typeof session.subscription === 'string' ? session.subscription : session.subscription.id;
+          const sub = await stripe.subscriptions.retrieve(subId);
+          await handleSanitaireSubscription(sub, session);
+          break;
+        }
+
         // Cas 1 : abonnement SaaS
         if (session.mode === 'subscription' && session.subscription) {
           const subId = typeof session.subscription === 'string'
@@ -334,6 +370,10 @@ export async function POST(request: Request) {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.pro_id) {
+          await handleSanitaireSubscription(sub, null);
+          break;
+        }
         await syncSubscription(sub);
         break;
       }
