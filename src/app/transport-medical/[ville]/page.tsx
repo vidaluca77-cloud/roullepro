@@ -328,12 +328,20 @@ export default async function VillePage({ params }: Props) {
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-xl font-bold text-gray-900 mb-2">Vous êtes pro à {nomVille} ?</h2>
           <p className="text-gray-600 mb-4">Votre fiche est déjà pré-remplie. Récupérez-la gratuitement en 2 minutes.</p>
-          <Link
-            href="/transport-medical/pro"
-            className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
-          >
-            Réclamer ma fiche
-          </Link>
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Link
+              href="/transport-medical/pro"
+              className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
+            >
+              Réclamer ma fiche
+            </Link>
+            <Link
+              href="/transport-medical/inscription"
+              className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 hover:bg-white font-semibold px-5 py-3 rounded-xl transition"
+            >
+              Votre entreprise n&apos;apparaît pas à {nomVille} ? Inscrivez-la
+            </Link>
+          </div>
         </div>
       </section>
     </main>

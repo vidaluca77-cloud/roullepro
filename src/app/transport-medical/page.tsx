@@ -273,6 +273,24 @@ export default async function TransportMedicalHome() {
           </div>
         </div>
       </section>
+
+      {/* CTA inscription */}
+      <section className="bg-gradient-to-r from-blue-600 to-blue-700 py-12">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+            Votre entreprise n'est pas listée ?
+          </h2>
+          <p className="text-blue-100 mb-6 leading-relaxed">
+            Inscrivez-la gratuitement &mdash; 14 jours Pro offerts, sans CB
+          </p>
+          <Link
+            href="/transport-medical/inscription"
+            className="inline-flex items-center gap-2 bg-white text-[#0066CC] hover:bg-blue-50 font-semibold px-6 py-3 rounded-xl transition"
+          >
+            Inscrire mon entreprise
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

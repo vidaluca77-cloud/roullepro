@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public")
+      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public, source, free_trial_ends_at")
       .eq("id", pro_id)
       .maybeSingle();
     if (!pro) return NextResponse.json({ error: "Fiche introuvable" }, { status: 404 });
@@ -55,21 +55,48 @@ export async function POST(req: Request) {
     const nomAffiche = pro.nom_commercial || pro.raison_sociale;
 
     if (action === "approve") {
+      const isSelfRegistered = (pro as typeof pro & { source: string | null }).source === "self_registration";
+      const updatePayload: Record<string, unknown> = {
+        claim_status: "approved",
+        verified: true,
+        validated_at: new Date().toISOString(),
+        validated_by: user.id,
+        rejection_reason: null,
+      };
+      // Pour les inscriptions spontanées, rendre la fiche active
+      if (isSelfRegistered) {
+        updatePayload.actif = true;
+      }
       const { error } = await supabaseAdmin
         .from("pros_sanitaire")
-        .update({
-          claim_status: "approved",
-          verified: true,
-          validated_at: new Date().toISOString(),
-          validated_by: user.id,
-          rejection_reason: null,
-        })
+        .update(updatePayload)
         .eq("id", pro_id);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
       if (proEmail) {
-        const html = `
-<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
+        const freeTrialEnd = (pro as typeof pro & { free_trial_ends_at: string | null }).free_trial_ends_at;
+        const trialDateStr = freeTrialEnd
+          ? new Date(freeTrialEnd).toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })
+          : null;
+        const ficheUrl = `${APP_URL}/transport-medical/${pro.ville_slug}/${pro.categorie === "taxi_conventionne" ? "taxi-conventionne" : pro.categorie}/${pro.slug}`;
+        const html = isSelfRegistered
+          ? `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
+  <h2 style="color:#0B8C3F">Votre fiche est désormais visible !</h2>
+  <p>Bonne nouvelle, votre inscription pour <strong>${nomAffiche}</strong> a été validée par notre équipe. Votre fiche est désormais visible à l'adresse&nbsp;:</p>
+  <div style="text-align:center;margin:16px 0">
+    <a href="${ficheUrl}" style="display:inline-block;background:#f0f6ff;color:#0066CC;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid #bfdbfe">${ficheUrl}</a>
+  </div>
+  ${trialDateStr ? `<p>Vous bénéficiez de <strong>14 jours Pro gratuits</strong> jusqu\'au <strong>${trialDateStr}</strong>. Profitez-en pour enrichir votre fiche et recevoir vos premiers patients.</p>` : ""}
+  <div style="text-align:center;margin:24px 0">
+    <a href="${APP_URL}/transport-medical/pro/dashboard" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">Acc&eacute;der &agrave; mon espace pro</a>
+  </div>
+  <p style="font-size:13px;color:#6b7280">Besoin d&rsquo;aide ? contact@roullepro.com</p>
+</div>`
+          : `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
   <h2 style="color:#0B8C3F">Votre fiche est validée</h2>
   <p>Bonne nouvelle, la fiche <strong>${nomAffiche}</strong> est désormais certifiée sur RoullePro. Elle affiche le badge <strong>&laquo;&nbsp;Pro vérifié&nbsp;&raquo;</strong> visible de tous les patients.</p>
   <div style="text-align:center;margin:24px 0">
@@ -79,7 +106,9 @@ export async function POST(req: Request) {
 </div>`;
         await sendEmail({
           to: proEmail,
-          subject: `Fiche ${nomAffiche} validée sur RoullePro`,
+          subject: isSelfRegistered
+            ? `Votre fiche ${nomAffiche} est validée — RoullePro`
+            : `Fiche ${nomAffiche} validée sur RoullePro`,
           html,
         }).catch(() => undefined);
       }

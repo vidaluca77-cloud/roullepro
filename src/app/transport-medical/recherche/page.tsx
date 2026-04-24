@@ -87,9 +87,18 @@ export default async function RecherchePage({ searchParams }: Props) {
             <p className="text-gray-600 mb-4">
               Aucun professionnel référencé pour cette recherche. Essayez une ville voisine ou élargissez le type.
             </p>
-            <Link href="/transport-medical" className="text-[#0066CC] font-medium hover:underline">
-              Retour à l'annuaire
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/transport-medical" className="text-[#0066CC] font-medium hover:underline">
+                Retour à l&apos;annuaire
+              </Link>
+              <span className="hidden sm:block text-gray-300">|</span>
+              <Link
+                href="/transport-medical/inscription"
+                className="inline-flex items-center gap-1 text-[#0066CC] font-medium hover:underline"
+              >
+                Votre entreprise n&apos;est pas listée ? Inscrivez-la gratuitement
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 gap-4">

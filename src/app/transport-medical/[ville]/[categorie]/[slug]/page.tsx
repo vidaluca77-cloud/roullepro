@@ -287,6 +287,14 @@ export default async function FicheProPage({ params }: Props) {
               >
                 Réclamer ma fiche
               </Link>
+              <p className="text-center mt-2">
+                <Link
+                  href="/transport-medical/inscription"
+                  className="text-xs text-[#0066CC] hover:underline"
+                >
+                  Ou inscrire une autre entreprise
+                </Link>
+              </p>
             </div>
           )}
         </aside>

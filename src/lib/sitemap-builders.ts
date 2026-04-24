@@ -157,6 +157,7 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/transport-medical/pro`, changefreq: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/transport-medical/tarifs`, changefreq: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/transport-medical/recherche`, changefreq: "daily", priority: 0.6 },
+    { url: `${BASE_URL}/transport-medical/inscription`, changefreq: "monthly", priority: 0.7 },
   ];
 
   return [
