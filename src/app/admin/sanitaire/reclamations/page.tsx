@@ -19,6 +19,8 @@ type ReclamationItem = {
   claimed_at: string | null;
   claim_status: string | null;
   justificatif_url: string | null;
+  kbis_url: string | null;
+  kbis_uploaded_at: string | null;
   email_public: string | null;
   rejection_reason: string | null;
   validated_at: string | null;
@@ -36,7 +38,7 @@ async function fetchReclamations(filter: "pending" | "approved" | "rejected"): P
   const { data } = await supabase
     .from("pros_sanitaire")
     .select(
-      "id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, siret, claimed_at, claim_status, justificatif_url, email_public, rejection_reason, validated_at, claimed_by, source"
+      "id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, siret, claimed_at, claim_status, justificatif_url, kbis_url, kbis_uploaded_at, email_public, rejection_reason, validated_at, claimed_by, source"
     )
     .eq("claim_status", status)
     .order("claimed_at", { ascending: filter === "pending" });

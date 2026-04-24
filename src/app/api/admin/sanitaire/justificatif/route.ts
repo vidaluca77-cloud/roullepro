@@ -28,10 +28,22 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const path = searchParams.get("path");
+    const bucketParam = searchParams.get("bucket");
     if (!path) return NextResponse.json({ error: "path manquant" }, { status: 400 });
 
+    // Détection automatique du bucket selon le préfixe du chemin
+    let bucket = bucketParam || "sanitaire-justificatifs";
+    if (!bucketParam && path.startsWith("kbis/")) {
+      bucket = "sanitaire-documents";
+    }
+    // Sécurité : seuls ces buckets sont autorisés
+    const allowedBuckets = ["sanitaire-justificatifs", "sanitaire-documents"];
+    if (!allowedBuckets.includes(bucket)) {
+      return NextResponse.json({ error: "Bucket non autorisé" }, { status: 400 });
+    }
+
     const { data, error } = await supabaseAdmin.storage
-      .from("sanitaire-justificatifs")
+      .from(bucket)
       .createSignedUrl(path, 300); // URL valide 5 minutes
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

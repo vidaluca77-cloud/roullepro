@@ -171,6 +171,10 @@ const InscriptionSchema = z.object({
   prenom: z.string().min(2, "Prénom requis"),
   password: z.string().min(8, "Mot de passe : 8 caractères minimum"),
   captcha_token: z.string().optional().default(""),
+  kbis_path: z
+    .string()
+    .min(1, "Justificatif Kbis requis")
+    .refine((v) => v.startsWith("kbis/"), { message: "Chemin de justificatif invalide" }),
   rgpd_accepted: z.literal(true, { errorMap: () => ({ message: "Vous devez accepter les CGU" }) }),
 });
 
@@ -366,6 +370,8 @@ export async function POST(req: Request) {
         description: data.description || null,
         services: data.services && data.services.length > 0 ? data.services : null,
         source: "self_registration",
+        kbis_url: data.kbis_path,
+        kbis_uploaded_at: new Date().toISOString(),
         claimed: true,
         claimed_by: createdUserId,
         claimed_at: new Date().toISOString(),
@@ -423,6 +429,7 @@ export async function POST(req: Request) {
       status: "created",
       pro_id: proData.id,
       user_id: createdUserId,
+      kbis_url: data.kbis_path,
     });
 
     // 13. Emails
@@ -462,6 +469,7 @@ export async function POST(req: Request) {
     <tr><td style="padding:6px;color:#6b7280">Email</td><td style="padding:6px">${data.email}</td></tr>
     <tr><td style="padding:6px;color:#6b7280">Téléphone</td><td style="padding:6px">${data.telephone}</td></tr>
     <tr><td style="padding:6px;color:#6b7280">Gérant</td><td style="padding:6px">${fullName}</td></tr>
+    <tr><td style="padding:6px;color:#6b7280">Justificatif Kbis</td><td style="padding:6px;color:#059669;font-weight:600">✓ Téléversé (à vérifier dans l'admin)</td></tr>
   </table>
   <a href="${APP_URL}/admin/sanitaire/reclamations?tab=pending&source=self_registration" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Voir dans l'admin</a>
 </div>`,

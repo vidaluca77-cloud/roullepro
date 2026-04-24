@@ -16,6 +16,8 @@ type Item = {
   siret: string;
   claimed_at: string | null;
   justificatif_url: string | null;
+  kbis_url: string | null;
+  kbis_uploaded_at: string | null;
   email_public: string | null;
   rejection_reason: string | null;
   validated_at: string | null;
@@ -30,6 +32,7 @@ export default function ReclamationRow({ item, mode }: { item: Item; mode: "pend
   const [rejectReason, setRejectReason] = useState("");
   const [showReject, setShowReject] = useState(false);
   const [justUrlLoading, setJustUrlLoading] = useState(false);
+  const [kbisUrlLoading, setKbisUrlLoading] = useState(false);
 
   const openJustificatif = async () => {
     if (!item.justificatif_url) return;
@@ -43,6 +46,21 @@ export default function ReclamationRow({ item, mode }: { item: Item; mode: "pend
       setError((err as Error).message);
     } finally {
       setJustUrlLoading(false);
+    }
+  };
+
+  const openKbis = async () => {
+    if (!item.kbis_url) return;
+    setKbisUrlLoading(true);
+    try {
+      const res = await fetch(`/api/admin/sanitaire/justificatif?path=${encodeURIComponent(item.kbis_url)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      window.open(data.url, "_blank", "noopener,noreferrer");
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setKbisUrlLoading(false);
     }
   };
 
@@ -125,18 +143,37 @@ export default function ReclamationRow({ item, mode }: { item: Item; mode: "pend
         </div>
       </div>
 
-      {item.justificatif_url && (
-        <button
-          type="button"
-          onClick={openJustificatif}
-          disabled={justUrlLoading}
-          className="inline-flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 text-[#0066CC] font-medium px-3 py-2 rounded-lg transition mb-4 disabled:opacity-60"
-        >
-          {justUrlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-          Consulter le justificatif
-          <ExternalLink className="w-3 h-3" />
-        </button>
-      )}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {item.kbis_url && (
+          <button
+            type="button"
+            onClick={openKbis}
+            disabled={kbisUrlLoading}
+            className="inline-flex items-center gap-2 text-sm bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-medium px-3 py-2 rounded-lg transition disabled:opacity-60"
+          >
+            {kbisUrlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+            Consulter le Kbis
+            <ExternalLink className="w-3 h-3" />
+          </button>
+        )}
+        {item.justificatif_url && (
+          <button
+            type="button"
+            onClick={openJustificatif}
+            disabled={justUrlLoading}
+            className="inline-flex items-center gap-2 text-sm bg-blue-50 hover:bg-blue-100 text-[#0066CC] font-medium px-3 py-2 rounded-lg transition disabled:opacity-60"
+          >
+            {justUrlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+            Consulter le justificatif
+            <ExternalLink className="w-3 h-3" />
+          </button>
+        )}
+        {!item.kbis_url && !item.justificatif_url && mode === "pending" && (
+          <span className="inline-flex items-center gap-2 text-sm bg-amber-50 text-amber-700 px-3 py-2 rounded-lg">
+            <FileText className="w-4 h-4" /> Aucun document fourni
+          </span>
+        )}
+      </div>
 
       {mode === "rejected" && item.rejection_reason && (
         <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-sm text-red-800 mb-4">
