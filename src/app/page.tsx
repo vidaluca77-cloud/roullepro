@@ -33,10 +33,10 @@ async function getStats() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const [total, ambulances, vsl, taxis] = await Promise.all([
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "ambulance"),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "vsl"),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "taxi_conventionne"),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "ambulance"),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "vsl"),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "taxi_conventionne"),
   ]);
   return {
     total: total.count ?? 0,
@@ -58,6 +58,7 @@ async function getTopVilles() {
     const { data } = await supabase
       .from("pros_sanitaire")
       .select("ville, ville_slug, departement")
+      .eq("actif", true)
       .range(from, from + size - 1);
     if (!data || data.length === 0) break;
     rows.push(...data);
@@ -85,6 +86,7 @@ async function getRegionsCount() {
     const { data } = await supabase
       .from("pros_sanitaire")
       .select("region")
+      .eq("actif", true)
       .range(from, from + size - 1);
     if (!data || data.length === 0) break;
     rows.push(...(data as { region: string }[]));

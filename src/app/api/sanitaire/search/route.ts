@@ -17,6 +17,7 @@ export async function GET(req: Request) {
   const query = supabase
     .from("pros_sanitaire")
     .select("id, siret, raison_sociale, nom_commercial, ville, code_postal, categorie, claimed")
+    .eq("actif", true)
     .limit(12);
 
   const { data } = isSiret

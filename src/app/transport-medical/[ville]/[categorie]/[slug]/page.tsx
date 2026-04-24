@@ -18,6 +18,13 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { getCategorieBySlug, planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
+import {
+  buildProJsonLd,
+  buildFaqJsonLd,
+  buildBreadcrumbJsonLd,
+  getFicheFaq,
+  getVillesVoisines,
+} from "@/lib/sanitaire-seo";
 import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
 import OwnerBanner from "@/components/sanitaire/OwnerBanner";
@@ -36,6 +43,7 @@ async function fetchPro(slug: string) {
   const { data } = await supabase
     .from("pros_sanitaire")
     .select("*")
+    .eq("actif", true)
     .eq("slug", slug)
     .maybeSingle();
   return data as ProSanitaire | null;
@@ -65,27 +73,36 @@ export default async function FicheProPage({ params }: Props) {
   const plan = planDisplay(pro.plan);
   const showMessageForm = isPremium;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: pro.nom_commercial || pro.raison_sociale,
-    telephone: pro.telephone_public || undefined,
-    url: `https://roullepro.com/transport-medical/${ville}/${categorie}/${slug}`,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: pro.adresse || undefined,
-      postalCode: pro.code_postal,
-      addressLocality: pro.ville,
-      addressCountry: "FR",
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const villesVoisines = await getVillesVoisines(
+    supabase,
+    pro.latitude,
+    pro.longitude,
+    pro.ville_slug || ville,
+    6
+  );
+
+  const proLd = buildProJsonLd(pro, ville, categorie, slug);
+  const faqQuestions = getFicheFaq(pro);
+  const faqLd = buildFaqJsonLd(faqQuestions);
+  const breadLd = buildBreadcrumbJsonLd([
+    { name: "Annuaire", url: "/transport-medical" },
+    { name: pro.ville, url: `/transport-medical/${ville}` },
+    { name: cat?.labelPluriel || "Fiche", url: `/transport-medical/${ville}/${categorie}` },
+    {
+      name: pro.nom_commercial || pro.raison_sociale,
+      url: `/transport-medical/${ville}/${categorie}/${slug}`,
     },
-    geo: pro.latitude && pro.longitude
-      ? { "@type": "GeoCoordinates", latitude: pro.latitude, longitude: pro.longitude }
-      : undefined,
-  };
+  ]);
 
   return (
     <main className="min-h-screen bg-gray-50">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(proLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
       <TrackVue proId={pro.id} />
       <OwnerBanner proId={pro.id} claimedBy={pro.claimed_by || null} />
 
@@ -274,6 +291,41 @@ export default async function FicheProPage({ params }: Props) {
           )}
         </aside>
       </section>
+
+      <section className="max-w-5xl mx-auto px-4 pb-10">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Questions fréquentes</h2>
+          <div className="space-y-4">
+            {faqQuestions.map((q, i) => (
+              <div key={i}>
+                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {villesVoisines.length > 0 && (
+        <section className="max-w-5xl mx-auto px-4 pb-12">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">Transport sanitaire près de {pro.ville}</h2>
+            <p className="text-sm text-gray-600 mb-4">Villes voisines avec des professionnels référencés.</p>
+            <div className="flex flex-wrap gap-2">
+              {villesVoisines.map((v) => (
+                <Link
+                  key={v.ville_slug}
+                  href={`/transport-medical/${v.ville_slug}`}
+                  className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#0066CC] text-sm px-3 py-1.5 rounded-full transition"
+                >
+                  {v.ville}
+                  <span className="text-xs text-gray-500">· {v.nb}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </main>
   );
 }

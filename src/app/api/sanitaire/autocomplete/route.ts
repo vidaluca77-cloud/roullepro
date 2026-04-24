@@ -23,11 +23,13 @@ export async function GET(req: Request) {
     ? await supabase
         .from("pros_sanitaire")
         .select("ville, ville_slug, code_postal, departement")
+        .eq("actif", true)
         .ilike("code_postal", `${q}%`)
         .limit(200)
     : await supabase
         .from("pros_sanitaire")
         .select("ville, ville_slug, code_postal, departement")
+        .eq("actif", true)
         .ilike("ville", `${q}%`)
         .limit(200);
 

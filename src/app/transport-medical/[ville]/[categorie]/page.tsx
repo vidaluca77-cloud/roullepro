@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
+import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
 
 export const revalidate = 3600;
 
@@ -19,6 +20,7 @@ async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string) 
   const { data } = await supabase
     .from("pros_sanitaire")
     .select("*")
+    .eq("actif", true)
     .eq("ville_slug", villeSlug)
     .eq("categorie", categorieKey)
     .order("plan", { ascending: false })
@@ -63,11 +65,21 @@ export default async function VilleCategoriePage({ params }: Props) {
     url: `https://roullepro.com/transport-medical/${ville}/${categorie}`,
   };
 
+  const faqQuestions = getVilleFaq(nomVille, pros.length);
+  const faqLd = buildFaqJsonLd(faqQuestions);
+  const breadLd = buildBreadcrumbJsonLd([
+    { name: "Annuaire", url: "/transport-medical" },
+    { name: nomVille, url: `/transport-medical/${ville}` },
+    { name: cat.labelPluriel, url: `/transport-medical/${ville}/${categorie}` },
+  ]);
+
   const seoContent = buildSeoContent(cat.key, nomVille, pros.length);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-6xl mx-auto px-4 py-12">

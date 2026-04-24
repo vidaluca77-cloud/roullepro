@@ -10,6 +10,12 @@ import {
   planDisplay,
   type ProSanitaire,
 } from "@/lib/sanitaire-data";
+import {
+  buildFaqJsonLd,
+  buildBreadcrumbJsonLd,
+  getVilleFaq,
+  getVillesVoisines,
+} from "@/lib/sanitaire-seo";
 
 export const revalidate = 3600;
 
@@ -25,6 +31,7 @@ async function fetchProsForVille(villeSlug: string) {
   const { data, error } = await supabase
     .from("pros_sanitaire")
     .select("*")
+    .eq("actif", true)
     .eq("ville_slug", villeSlug)
     .order("plan", { ascending: false })
     .order("claimed", { ascending: false })
@@ -128,12 +135,36 @@ export default async function VillePage({ params }: Props) {
     },
   };
 
+  const faqQuestions = getVilleFaq(nomVille, pros.length);
+  const faqLd = buildFaqJsonLd(faqQuestions);
+  const breadLd = buildBreadcrumbJsonLd([
+    { name: "Annuaire", url: "/transport-medical" },
+    { name: nomVille, url: `/transport-medical/${ville}` },
+  ]);
+
+  const firstWithGeo = pros.find((p) => p.latitude && p.longitude);
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const villesVoisines = firstWithGeo
+    ? await getVillesVoisines(
+        supabase,
+        firstWithGeo.latitude,
+        firstWithGeo.longitude,
+        ville,
+        8
+      )
+    : [];
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-6xl mx-auto px-4 py-12">
@@ -169,11 +200,22 @@ export default async function VillePage({ params }: Props) {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-10">
-        <p className="text-gray-600 mb-6 leading-relaxed">
-          Retrouvez l'ensemble des {pros.length} professionnels du transport sanitaire à {nomVille}.
-          Les fiches vérifiées (badge bleu) ont confirmé leurs coordonnées. Le transport en VSL ou
-          taxi conventionné est pris en charge par la Sécurité sociale sur prescription médicale.
-        </p>
+        <div className="prose prose-sm max-w-none text-gray-700 mb-8">
+          <p className="leading-relaxed">
+            L'annuaire RoullePro recense <strong>{pros.length} professionnels du transport sanitaire
+            à {nomVille}</strong> ({departement}, {region}) : {grouped.ambulance.length} ambulance{grouped.ambulance.length > 1 ? "s" : ""},{" "}
+            {grouped.vsl.length} VSL et {grouped.taxi_conventionne.length} taxi{grouped.taxi_conventionne.length > 1 ? "s" : ""} conventionné{grouped.taxi_conventionne.length > 1 ? "s" : ""}.
+            Chaque fiche est identifiée par un numéro SIRET officiel. Les transports en ambulance, VSL et
+            taxi conventionné sont pris en charge par la Sécurité sociale sur prescription médicale,
+            avec tiers payant : vous n'avancez pas les frais.
+          </p>
+          <p className="leading-relaxed mt-3">
+            Les ambulances assurent les transports médicalisés (urgences, patients allongés) avec un
+            équipage diplômé (DEA). Les VSL prennent en charge les patients stables en position assise.
+            Les taxis conventionnés transportent les patients autonomes vers leur lieu de soins. Tous
+            doivent être agréés par l'ARS (ambulances, VSL) ou la CPAM (taxis).
+          </p>
+        </div>
 
         {(["ambulance", "vsl", "taxi_conventionne"] as const).map((key) => {
           const cat = getCategorieByKey(key);
@@ -207,6 +249,41 @@ export default async function VillePage({ params }: Props) {
           );
         })}
       </section>
+
+      <section className="max-w-6xl mx-auto px-4 pb-10">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Questions fréquentes — {nomVille}</h2>
+          <div className="space-y-4">
+            {faqQuestions.map((q, i) => (
+              <div key={i}>
+                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {villesVoisines.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 pb-10">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Transport sanitaire près de {nomVille}</h2>
+            <p className="text-sm text-gray-600 mb-4">Villes voisines avec des professionnels référencés.</p>
+            <div className="flex flex-wrap gap-2">
+              {villesVoisines.map((v) => (
+                <Link
+                  key={v.ville_slug}
+                  href={`/transport-medical/${v.ville_slug}`}
+                  className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#0066CC] text-sm px-3 py-1.5 rounded-full transition"
+                >
+                  {v.ville}
+                  <span className="text-xs text-gray-500">· {v.nb}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-gray-50 py-10 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 text-center">

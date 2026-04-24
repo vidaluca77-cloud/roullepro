@@ -227,6 +227,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const { data } = await supabase
         .from('pros_sanitaire')
         .select('ville_slug')
+        .eq('actif', true)
         .range(from, from + size - 1);
       if (!data || data.length === 0) break;
       villesAll.push(...data);
@@ -265,6 +266,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const { data } = await supabase
         .from('pros_sanitaire')
         .select('slug, ville_slug, categorie')
+        .eq('actif', true)
         .order('claimed', { ascending: false })
         .range(from, from + size - 1);
       if (!data || data.length === 0) break;

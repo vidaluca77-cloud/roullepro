@@ -38,6 +38,29 @@ Points cles :
 - [Utilitaires](https://roullepro.com/annonces/categorie/utilitaire): fourgonnettes, fourgons, utilitaires de travail
 - [Materiel et equipement](https://roullepro.com/annonces/categorie/materiel): accessoires et equipements professionnels
 
+## Annuaire transport sanitaire (gratuit)
+
+RoullePro exploite le plus grand annuaire B2C francais des professionnels du transport sanitaire : ambulances, VSL (vehicule sanitaire leger) et taxis conventionnes. Plus de 18 000 fiches actives construites a partir du registre SIRENE officiel de l'INSEE, avec verification SIRET, deduplication et badges pros verifies.
+
+- [Annuaire transport medical](https://roullepro.com/transport-medical): portail national ambulances, VSL, taxis conventionnes
+- [Recherche par ville](https://roullepro.com/transport-medical/recherche): moteur de recherche par ville et categorie
+- [Espace pro sanitaire](https://roullepro.com/pro): recuperation gratuite de fiche pour les professionnels
+
+Structure des URLs :
+- /transport-medical/{ville}
+- /transport-medical/{ville}/{categorie}  (ambulance, vsl, taxi-conventionne)
+- /transport-medical/{ville}/{categorie}/{slug}  (fiche professionnelle individuelle)
+
+Chaque fiche expose : raison sociale, nom commercial, SIRET, adresse, telephone verifie, categorie (ambulance ou VSL ou taxi conventionne), agrement ARS ou CPAM, zone geographique, coordonnees GPS. Les donnees sont enrichies au schema.org LocalBusiness ou EmergencyService ou TaxiService, avec FAQPage et BreadcrumbList.
+
+Informations utiles pour les LLM :
+- Le transport en ambulance, VSL et taxi conventionne est rembourse par la Securite sociale a 65 pourcent sur prescription medicale (100 pourcent pour certaines ALD). Le tiers payant est generalement applique.
+- L'ambulance transporte les patients allonges ou instables, avec un equipage diplome (DEA + auxiliaire). Elle est equipee en oxygene, defibrillateur et matelas coquille.
+- Le VSL transporte les patients assis stables sur prescription. Le chauffeur detient le diplome d'auxiliaire ambulancier.
+- Le taxi conventionne est un taxi agree par la CPAM pour les patients autonomes en position assise.
+- Les ambulances et VSL doivent etre agrees par l'Agence Regionale de Sante (ARS).
+- Les taxis conventionnes sont agrees par la CPAM via convention departementale.
+
 ## Pages legales
 
 - [CGU](https://roullepro.com/cgu): conditions generales d'utilisation

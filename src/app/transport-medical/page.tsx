@@ -26,18 +26,22 @@ async function getStats() {
   );
   const { count: total } = await supabase
     .from("pros_sanitaire")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("actif", true);
   const { count: ambulances } = await supabase
     .from("pros_sanitaire")
     .select("*", { count: "exact", head: true })
+    .eq("actif", true)
     .eq("categorie", "ambulance");
   const { count: vsl } = await supabase
     .from("pros_sanitaire")
     .select("*", { count: "exact", head: true })
+    .eq("actif", true)
     .eq("categorie", "vsl");
   const { count: taxis } = await supabase
     .from("pros_sanitaire")
     .select("*", { count: "exact", head: true })
+    .eq("actif", true)
     .eq("categorie", "taxi_conventionne");
   return { total: total ?? 0, ambulances: ambulances ?? 0, vsl: vsl ?? 0, taxis: taxis ?? 0 };
 }
@@ -55,6 +59,7 @@ async function getTopVilles() {
     const { data } = await supabase
       .from("pros_sanitaire")
       .select("ville, ville_slug, departement")
+      .eq("actif", true)
       .range(from, from + size - 1);
     if (!data || data.length === 0) break;
     rows.push(...data);
@@ -84,6 +89,7 @@ async function getRegionsCouvertes() {
     const { data } = await supabase
       .from("pros_sanitaire")
       .select("region")
+      .eq("actif", true)
       .range(from, from + size - 1);
     if (!data || data.length === 0) break;
     rows.push(...data);
