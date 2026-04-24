@@ -20,6 +20,7 @@ import {
 import { getCategorieBySlug, planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
 import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
+import OwnerBanner from "@/components/sanitaire/OwnerBanner";
 
 export const revalidate = 1800;
 
@@ -86,6 +87,7 @@ export default async function FicheProPage({ params }: Props) {
     <main className="min-h-screen bg-gray-50">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <TrackVue proId={pro.id} />
+      <OwnerBanner proId={pro.id} claimedBy={pro.claimed_by || null} />
 
       <section className={`${isPremium ? "bg-gradient-to-br from-indigo-700 via-indigo-800 to-[#0066CC]" : "bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC]"} text-white`}>
         <div className="max-w-5xl mx-auto px-4 py-10">

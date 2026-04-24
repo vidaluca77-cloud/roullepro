@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
 const getAdminClient = () =>
@@ -21,10 +22,10 @@ export async function PATCH(req: Request) {
     if (!pro_id) return NextResponse.json({ error: "pro_id requis" }, { status: 400 });
 
     const supabaseAdmin = getAdminClient();
-    // Vérifie ownership
+    // Vérifie ownership + récupère les infos nécessaires pour revalidation
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("claimed_by")
+      .select("claimed_by, slug, ville_slug, categorie")
       .eq("id", pro_id)
       .maybeSingle();
     if (!pro || pro.claimed_by !== user.id) {
@@ -51,6 +52,15 @@ export async function PATCH(req: Request) {
 
     const { error } = await supabaseAdmin.from("pros_sanitaire").update(allowed).eq("id", pro_id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Invalide le cache des pages publiques impactées
+    const categorieUrl = pro.categorie === "taxi_conventionne" ? "taxi-conventionne" : pro.categorie;
+    try {
+      revalidatePath(`/transport-medical/${pro.ville_slug}/${categorieUrl}/${pro.slug}`);
+      revalidatePath(`/transport-medical/${pro.ville_slug}/${categorieUrl}`);
+      revalidatePath(`/transport-medical/${pro.ville_slug}`);
+      revalidatePath("/transport-medical");
+    } catch {}
 
     return NextResponse.json({ ok: true });
   } catch (err) {
