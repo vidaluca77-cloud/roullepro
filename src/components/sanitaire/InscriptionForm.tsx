@@ -188,6 +188,8 @@ export default function InscriptionForm() {
           sitekey,
           size: "invisible",
           callback: (token: string) => setCaptchaToken(token),
+          "error-callback": () => setCaptchaToken(""),
+          "expired-callback": () => setCaptchaToken(""),
         });
         widgetIdRef.current = id;
       }
@@ -261,15 +263,30 @@ export default function InscriptionForm() {
     setLoading(true);
     setApiError(null);
 
-    // Tenter d'exécuter hCaptcha si pas encore token
+    // Tenter d'exécuter hCaptcha si pas encore token (non-bloquant)
     let token = captchaToken;
-    if (!token && typeof window !== "undefined" && (window as typeof window & { hcaptcha?: { execute: (id: string) => void } }).hcaptcha && widgetIdRef.current !== null) {
+    const w = typeof window !== "undefined"
+      ? (window as typeof window & {
+          hcaptcha?: {
+            execute: (id: string, opts?: { async?: boolean }) => Promise<{ response: string }> | void;
+          };
+        })
+      : null;
+    if (!token && w?.hcaptcha && widgetIdRef.current !== null) {
       try {
-        (window as typeof window & { hcaptcha: { execute: (id: string) => void } }).hcaptcha.execute(widgetIdRef.current!);
-        await new Promise<void>((resolve) => setTimeout(resolve, 1500));
-        token = captchaToken;
+        // Mode async : execute() retourne une Promise avec le token
+        const result = w.hcaptcha.execute(widgetIdRef.current!, { async: true });
+        if (result && typeof (result as Promise<{ response: string }>).then === "function") {
+          const resolved = await Promise.race([
+            result as Promise<{ response: string }>,
+            new Promise<{ response: string }>((_, reject) =>
+              setTimeout(() => reject(new Error("hcaptcha-timeout")), 8000)
+            ),
+          ]).catch(() => null);
+          if (resolved?.response) token = resolved.response;
+        }
       } catch {
-        // Non-bloquant
+        // Non-bloquant — on envoie sans token, le backend laissera passer si HCAPTCHA_SECRET non configuré
       }
     }
 

@@ -217,9 +217,16 @@ export async function POST(req: Request) {
     }
     const data = parsed.data;
 
-    // 3. Vérification hCaptcha
+    // 3. Vérification hCaptcha — non-bloquante (logging only).
+    // Le rate limit (20/h/IP) + l'anti-doublon SIRET servent de filet.
+    // On log les échecs pour détecter d'éventuels spams ultérieurement.
     const captchaOk = await verifyCaptcha(data.captcha_token);
     if (!captchaOk) {
+      console.warn("[hCaptcha] token invalide ou vide — on laisse passer", {
+        ip,
+        email: data.email,
+        hasToken: Boolean(data.captcha_token),
+      });
       await supabaseAdmin.from("sanitaire_inscription_logs").insert({
         siret: data.siret || null,
         email: data.email,
@@ -227,10 +234,10 @@ export async function POST(req: Request) {
         ville: data.ville,
         ip,
         user_agent: req.headers.get("user-agent") || "",
-        status: "rejected_captcha",
-        reason: "hCaptcha échoué",
-      });
-      return NextResponse.json({ error: "Vérification anti-spam échouée. Rechargez la page." }, { status: 400 });
+        status: "captcha_warning",
+        reason: data.captcha_token ? "hCaptcha token refusé" : "hCaptcha token vide",
+      }).then(() => undefined, () => undefined);
+      // Pas de return — on continue le flow
     }
 
     // 4. Unicité SIRET
