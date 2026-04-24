@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, Loader2, CheckCircle2, Copy, LogIn } from "lucide-react";
+import { Mail, Phone, Loader2, CheckCircle2, Copy, LogIn, Upload, FileCheck2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 type Props = {
@@ -25,6 +25,9 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
   const [accountEmail, setAccountEmail] = useState<string>("");
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [autoConnecting, setAutoConnecting] = useState(false);
+  const [justificatif, setJustificatif] = useState<File | null>(null);
+  const [justificatifPath, setJustificatifPath] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,15 +50,54 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
     }
   };
 
+  const uploadJustificatif = async (file: File): Promise<string | null> => {
+    setUploading(true);
+    setError(null);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("claim_id", claimId);
+      const res = await fetch("/api/sanitaire/claim/upload-justificatif", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Upload impossible");
+      return data.justificatif_path as string;
+    } catch (err) {
+      setError((err as Error).message);
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    if (!justificatif && !justificatifPath) {
+      setError("Ajoutez votre justificatif (KBIS ou agrément préfectoral) avant de valider.");
+      return;
+    }
+
     setLoading(true);
     try {
+      // Upload du justificatif si pas encore fait
+      let path = justificatifPath;
+      if (!path && justificatif) {
+        path = await uploadJustificatif(justificatif);
+        if (!path) {
+          setLoading(false);
+          return;
+        }
+        setJustificatifPath(path);
+      }
+
       const res = await fetch("/api/sanitaire/claim/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ claim_id: claimId, code: code.trim() }),
+        body: JSON.stringify({ claim_id: claimId, code: code.trim(), justificatif_url: path }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Code invalide");
@@ -107,8 +149,8 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       <div className="bg-white border border-green-200 rounded-2xl p-6 space-y-5">
         <div className="text-center">
           <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-          <div className="font-bold text-gray-900 mb-1">Fiche réclamée avec succès</div>
-          <p className="text-sm text-gray-600">Voici vos identifiants de connexion pour accéder à votre espace pro.</p>
+          <div className="font-bold text-gray-900 mb-1">Réclamation enregistrée</div>
+          <p className="text-sm text-gray-600">Votre demande est <strong>en attente de validation</strong> par notre équipe (sous 24h ouvrées). En attendant, vous pouvez accéder à votre espace pro pour compléter votre fiche.</p>
         </div>
 
         {tempPassword ? (
@@ -195,14 +237,56 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
           className="w-full px-4 py-3 border border-gray-200 rounded-xl text-center text-2xl tracking-widest focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none"
           required
         />
+
+        <div className="pt-2 border-t border-gray-100">
+          <label className="block text-sm font-semibold text-gray-900 mb-1">Justificatif professionnel</label>
+          <p className="text-xs text-gray-600 mb-3">
+            Joignez votre <strong>KBIS</strong> (moins de 3 mois) ou votre <strong>agrément préfectoral de transport sanitaire</strong>. Le document doit mentionner votre nom et le SIRET de l&apos;entreprise. Il reste strictement confidentiel.
+          </p>
+          <label className={`flex items-center gap-3 w-full px-4 py-3 border-2 border-dashed rounded-xl cursor-pointer transition ${justificatif ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-[#0066CC] bg-gray-50"}`}>
+            <input
+              type="file"
+              accept="application/pdf,image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                if (f && f.size > 10 * 1024 * 1024) {
+                  setError("Fichier trop volumineux (max 10 Mo)");
+                  return;
+                }
+                setError(null);
+                setJustificatif(f);
+                setJustificatifPath(null);
+              }}
+              className="hidden"
+            />
+            {justificatif ? (
+              <>
+                <FileCheck2 className="w-5 h-5 text-green-600" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-gray-900 truncate">{justificatif.name}</div>
+                  <div className="text-xs text-gray-500">{(justificatif.size / 1024).toFixed(0)} Ko — Cliquer pour remplacer</div>
+                </div>
+              </>
+            ) : (
+              <>
+                <Upload className="w-5 h-5 text-gray-400" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-700">Choisir un fichier</div>
+                  <div className="text-xs text-gray-500">PDF, JPG, PNG — 10 Mo max</div>
+                </div>
+              </>
+            )}
+          </label>
+        </div>
+
         {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</div>}
         <button
           type="submit"
-          disabled={loading || code.length !== 6}
+          disabled={loading || uploading || code.length !== 6 || !justificatif}
           className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
         >
-          {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-          Vérifier le code
+          {(loading || uploading) && <Loader2 className="w-4 h-4 animate-spin" />}
+          {uploading ? "Envoi du justificatif…" : "Valider ma réclamation"}
         </button>
         <button
           type="button"

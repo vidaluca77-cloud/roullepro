@@ -195,6 +195,11 @@ export type ProSanitaire = {
   vues_totales: number;
   appels_cliques: number;
   verified: boolean;
+  claim_status: "none" | "en_attente_validation" | "approved" | "rejected" | null;
+  justificatif_url: string | null;
+  rejection_reason: string | null;
+  validated_at: string | null;
+  validated_by: string | null;
   created_at: string;
   updated_at: string;
 };

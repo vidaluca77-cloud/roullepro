@@ -125,6 +125,26 @@ export default async function ProDashboard({
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-8">
+        {fiche.claim_status === "en_attente_validation" && (
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold text-amber-900 mb-1">Votre réclamation est en attente de validation</div>
+              <p className="text-sm text-amber-800">Notre équipe vérifie votre justificatif (sous 24h ouvrées). Votre fiche affichera le badge <strong>« Pro vérifié »</strong> dès validation. En attendant, vous pouvez déjà compléter vos informations.</p>
+            </div>
+          </div>
+        )}
+        {fiche.claim_status === "rejected" && fiche.rejection_reason && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
+            <div className="font-semibold text-red-900 mb-2">Réclamation refusée</div>
+            <p className="text-sm text-red-800 mb-2">Motif : {fiche.rejection_reason}</p>
+            <p className="text-xs text-red-700">Vous pouvez soumettre une nouvelle réclamation avec un justificatif conforme.</p>
+          </div>
+        )}
         {(showWelcome || showUpgraded) && (
           <WelcomeBanner
             upgraded={showUpgraded}

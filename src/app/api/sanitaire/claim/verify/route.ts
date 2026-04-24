@@ -28,8 +28,9 @@ export async function POST(req: Request) {
     const { ok } = checkRateLimit(`claim-verify:${ip}`, 10, 60_000);
     if (!ok) return NextResponse.json({ error: "Trop de tentatives" }, { status: 429 });
 
-    const { claim_id, code } = await req.json();
+    const { claim_id, code, justificatif_url } = await req.json();
     if (!claim_id || !code) return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
+    if (!justificatif_url) return NextResponse.json({ error: "Justificatif manquant (KBIS ou agrément préfectoral requis)" }, { status: 400 });
 
     const supabaseAdmin = getAdminClient();
     const { data: claim } = await supabaseAdmin
@@ -142,12 +143,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Lie le pro au user
+    // Lie le pro au user mais en attente de validation admin (verified reste false)
     const updates: Record<string, unknown> = {
       claimed: true,
       claimed_by: userId,
       claimed_at: new Date().toISOString(),
-      verified: true,
+      verified: false,
+      claim_status: "en_attente_validation",
+      justificatif_url,
+      rejection_reason: null,
     };
     if (claim.method === "email_domaine") {
       updates.email_public = claim.contact;
@@ -189,7 +193,8 @@ export async function POST(req: Request) {
     <div style="font-size:24px;font-weight:700;color:#0066CC">RoullePro — Transport sanitaire</div>
   </div>
   <h2 style="color:#0066CC;margin-top:32px">Bienvenue ${nomAffiche}</h2>
-  <p>Votre fiche professionnelle est maintenant associée à votre compte. Elle affiche désormais le badge <strong>« Pro vérifié »</strong> visible de tous les patients.</p>
+  <p>Votre réclamation de fiche est bien enregistrée et <strong>en attente de validation</strong> par notre équipe (généralement sous 24h ouvrées). Vous avez dès à présent accès à votre espace pro pour compléter votre fiche.</p>
+  <p>Une fois validée, votre fiche affichera le badge <strong>« Pro vérifié »</strong> visible de tous les patients.</p>
 
   ${tempPassword ? `
   <div style="background:#f0f6ff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin:24px 0">
@@ -240,10 +245,38 @@ export async function POST(req: Request) {
 
       await sendEmail({
         to: accountEmail,
-        subject: `Bienvenue sur RoullePro — Votre fiche ${nomAffiche} est activée`,
+        subject: `Bienvenue sur RoullePro — Réclamation de ${nomAffiche} en cours de validation`,
         html,
       }).catch(() => undefined);
     }
+
+    // Notification admin
+    try {
+      const nomAffiche = pro.nom_commercial || pro.raison_sociale;
+      const adminUrl = `${APP_URL}/admin/sanitaire/reclamations`;
+      const adminHtml = `
+<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
+  <h2 style="color:#0066CC">Nouvelle réclamation à valider</h2>
+  <div style="background:#f0f6ff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin:16px 0">
+    <div><strong>Fiche :</strong> ${nomAffiche}</div>
+    <div><strong>Ville :</strong> ${pro.ville}</div>
+    <div><strong>Catégorie :</strong> ${pro.categorie}</div>
+    <div><strong>Email réclamant :</strong> ${accountEmail}</div>
+    <div><strong>Méthode :</strong> ${claim.method}</div>
+  </div>
+  <p>Un justificatif a été uploadé (KBIS ou agrément préfectoral). Vérifiez qu'il correspond à l'entreprise et au réclamant avant d'approuver.</p>
+  <div style="text-align:center;margin:24px 0">
+    <a href="${adminUrl}" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">
+      Ouvrir la file d'attente
+    </a>
+  </div>
+</div>`;
+      await sendEmail({
+        to: "contact@roullepro.com",
+        subject: `[RoullePro Admin] Réclamation en attente : ${nomAffiche}`,
+        html: adminHtml,
+      }).catch(() => undefined);
+    } catch {}
 
     return NextResponse.json({
       ok: true,
