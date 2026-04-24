@@ -64,36 +64,40 @@ export async function POST(req: Request) {
     // Détermine l'email à associer au compte
     const accountEmail = claim.method === "email_domaine" ? claim.contact : null;
 
-    // Tente de récupérer user connecté en session
+    // Session utilisateur actuelle (si connecté)
     const supabaseUser = await createServerClient();
     const { data: { user: sessionUser } } = await supabaseUser.auth.getUser();
-    let userId = sessionUser?.id ?? null;
+    let userId: string | null = null;
     let createdAccount = false;
     let tempPassword: string | null = null;
 
-    // Si pas de session : crée ou réutilise un compte Supabase via admin
-    if (!userId) {
-      if (!accountEmail) {
-        // Flux SMS sans session impossible (on n'a pas d'email pour créer le compte)
-        return NextResponse.json(
-          { error: "Connectez-vous avant de réclamer via SMS.", requires_auth: true },
-          { status: 401 }
-        );
-      }
-
-      // Cherche un user existant avec cet email
-      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers({
-        page: 1,
-        perPage: 200,
-      });
-      const found = existingUsers?.users?.find(
-        (u) => u.email?.toLowerCase() === accountEmail.toLowerCase()
-      );
+    // REGLE : si un email est fourni (email_domaine), le compte associe est TOUJOURS
+    // celui de cet email, meme si un autre user est connecte en session.
+    // Cela evite d attribuer la fiche au mauvais compte.
+    if (accountEmail) {
+      // Cherche un user existant avec cet email via getUserByEmail (plus fiable que listUsers pagine)
+      let found: { id: string; email?: string } | null = null;
+      try {
+        // Pagination complete pour trouver l user existant
+        for (let page = 1; page <= 20; page++) {
+          const { data: pageUsers } = await supabaseAdmin.auth.admin.listUsers({
+            page,
+            perPage: 1000,
+          });
+          const match = pageUsers?.users?.find(
+            (u) => u.email?.toLowerCase() === accountEmail.toLowerCase()
+          );
+          if (match) {
+            found = { id: match.id, email: match.email };
+            break;
+          }
+          if (!pageUsers?.users || pageUsers.users.length < 1000) break;
+        }
+      } catch {}
 
       if (found) {
         userId = found.id;
-        // User existant : on reset le mot de passe pour que le user puisse se connecter
-        // avec le mot de passe temporaire envoye dans l email de bienvenue
+        // User existant : on reset le mot de passe pour permettre la connexion
         tempPassword = generateTempPassword();
         try {
           await supabaseAdmin.auth.admin.updateUserById(found.id, {
@@ -120,7 +124,6 @@ export async function POST(req: Request) {
         userId = created.user.id;
         createdAccount = true;
 
-        // Crée aussi la ligne profiles liée (si RLS le permet)
         try {
           await supabaseAdmin.from("profiles").upsert({
             id: userId,
@@ -129,6 +132,14 @@ export async function POST(req: Request) {
           });
         } catch {}
       }
+    } else if (sessionUser?.id) {
+      // Flux SMS : on utilise la session existante (email non fourni par la reclamation)
+      userId = sessionUser.id;
+    } else {
+      return NextResponse.json(
+        { error: "Connectez-vous avant de réclamer via SMS.", requires_auth: true },
+        { status: 401 }
+      );
     }
 
     // Lie le pro au user
@@ -241,6 +252,7 @@ export async function POST(req: Request) {
       magic_link: magicLink,
       email: accountEmail,
       has_temp_password: !!tempPassword,
+      temp_password: tempPassword,
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

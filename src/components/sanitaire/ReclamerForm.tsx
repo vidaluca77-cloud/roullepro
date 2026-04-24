@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, Phone, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, Loader2, CheckCircle2, Copy, LogIn } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 type Props = {
   proId: string;
@@ -20,6 +21,10 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
   const [claimId, setClaimId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tempPassword, setTempPassword] = useState<string | null>(null);
+  const [accountEmail, setAccountEmail] = useState<string>("");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [autoConnecting, setAutoConnecting] = useState(false);
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,18 +59,16 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Code invalide");
+
+      // Deconnecte toute session existante pour eviter les conflits de compte
+      const supabase = createClient();
+      try {
+        await supabase.auth.signOut();
+      } catch {}
+
+      setAccountEmail(data.email || contact);
+      setTempPassword(data.temp_password || null);
       setStep("done");
-      // Redirection : magic link > dashboard direct > login avec email prefill
-      setTimeout(() => {
-        if (data.magic_link) {
-          window.location.href = data.magic_link;
-        } else {
-          const fallback = `/auth/login?next=/transport-medical/pro/dashboard?welcome=1&claimed=1&email=${encodeURIComponent(
-            data.email || contact
-          )}`;
-          router.push(fallback);
-        }
-      }, 1800);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -73,13 +76,102 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
     }
   };
 
+  const connectAuto = async () => {
+    if (!accountEmail || !tempPassword) return;
+    setAutoConnecting(true);
+    setError(null);
+    try {
+      const supabase = createClient();
+      const { error: signErr } = await supabase.auth.signInWithPassword({
+        email: accountEmail,
+        password: tempPassword,
+      });
+      if (signErr) throw signErr;
+      window.location.href = "/transport-medical/pro/dashboard?welcome=1";
+    } catch (err) {
+      setError((err as Error).message || "Connexion impossible");
+      setAutoConnecting(false);
+    }
+  };
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {}
+  };
+
   if (step === "done") {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
-        <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
-        <div className="font-bold text-gray-900 mb-2">Fiche réclamée avec succès</div>
-        <p className="text-sm text-gray-600 mb-2">Un email de bienvenue vient d'être envoyé à {contact} avec vos identifiants.</p>
-        <p className="text-xs text-gray-500">Connexion automatique en cours…</p>
+      <div className="bg-white border border-green-200 rounded-2xl p-6 space-y-5">
+        <div className="text-center">
+          <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
+          <div className="font-bold text-gray-900 mb-1">Fiche réclamée avec succès</div>
+          <p className="text-sm text-gray-600">Voici vos identifiants de connexion pour accéder à votre espace pro.</p>
+        </div>
+
+        {tempPassword ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
+            <div>
+              <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Email</div>
+              <div className="flex items-center justify-between gap-2 bg-white border border-blue-100 rounded-lg px-3 py-2">
+                <span className="font-mono text-sm text-gray-900 break-all">{accountEmail}</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(accountEmail, "email")}
+                  className="shrink-0 text-blue-600 hover:text-blue-800 text-xs font-medium inline-flex items-center gap-1"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copiedField === "email" ? "Copié" : "Copier"}
+                </button>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Mot de passe temporaire</div>
+              <div className="flex items-center justify-between gap-2 bg-white border border-blue-100 rounded-lg px-3 py-2">
+                <span className="font-mono text-sm text-gray-900">{tempPassword}</span>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(tempPassword, "pwd")}
+                  className="shrink-0 text-blue-600 hover:text-blue-800 text-xs font-medium inline-flex items-center gap-1"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copiedField === "pwd" ? "Copié" : "Copier"}
+                </button>
+              </div>
+            </div>
+            <div className="text-xs text-gray-600">
+              Ces identifiants vous sont aussi envoyés par email à {accountEmail}. Changez votre mot de passe après la première connexion.
+            </div>
+          </div>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+            Un email avec vos identifiants vient d&apos;être envoyé à {accountEmail}. Si vous ne le recevez pas, utilisez &laquo; Mot de passe oublié &raquo; sur la page de connexion.
+          </div>
+        )}
+
+        {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</div>}
+
+        {tempPassword ? (
+          <button
+            type="button"
+            onClick={connectAuto}
+            disabled={autoConnecting}
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
+          >
+            {autoConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+            Me connecter à mon espace pro
+          </button>
+        ) : (
+          <a
+            href={`/auth/login?next=/transport-medical/pro/dashboard?welcome=1&email=${encodeURIComponent(accountEmail)}`}
+            className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
+          >
+            <LogIn className="w-4 h-4" />
+            Aller à la page de connexion
+          </a>
+        )}
       </div>
     );
   }
