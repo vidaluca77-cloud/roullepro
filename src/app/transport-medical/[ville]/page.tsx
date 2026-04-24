@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `Cross, VSL, Taxi conventionné à ${nomVille} — ${pros.length} pros`,
+    title: `Ambulance, VSL, Taxi conventionné à ${nomVille} — ${pros.length} pros`,
     description: `Trouvez ${pros.length} professionnels du transport sanitaire à ${nomVille} : ambulances, VSL, taxis conventionnés. Numéros directs, horaires, remboursement Sécurité sociale.`,
     alternates: { canonical: `/transport-medical/${ville}` },
     openGraph: {

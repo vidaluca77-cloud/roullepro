@@ -7,12 +7,12 @@ import { CATEGORIES_SANITAIRE, REGIONS_MVP } from "@/lib/sanitaire-data";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Annuaire du transport sanitaire — Cross, VSL, Taxi conventionné",
+  title: "Annuaire du transport sanitaire — Ambulance, VSL, Taxi conventionné",
   description:
     "Trouvez gratuitement une ambulance, un VSL ou un taxi conventionné près de chez vous. Numéros directs, horaires, avis. Annuaire gratuit du transport médical en France.",
   alternates: { canonical: "/transport-medical" },
   openGraph: {
-    title: "Annuaire du transport sanitaire — Cross, VSL, Taxi conventionné",
+    title: "Annuaire du transport sanitaire — Ambulance, VSL, Taxi conventionné",
     description:
       "Trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous. Numéros directs, horaires, avis. 100 % gratuit pour les patients.",
     type: "website",
