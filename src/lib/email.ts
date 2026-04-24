@@ -6,21 +6,15 @@
  * sinon tombe sur onboarding@resend.dev (domaine de test Resend, fonctionnel sans vérification).
  */
 
-import { Resend } from 'resend';
+/**
+ * Helpers d'envoi d'email via l'API Resend (fetch direct, pas le SDK).
+ * Plus robuste sur Netlify Functions.
+ */
 
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || 'RoullePro <onboarding@resend.dev>';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
-
-function getResendClient(): Resend | null {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
-    return null;
-  }
-  return new Resend(apiKey);
-}
 
 export async function sendEmail(payload: {
   to: string;
@@ -28,21 +22,40 @@ export async function sendEmail(payload: {
   html: string;
   reply_to?: string;
 }) {
-  const resend = getResendClient();
-  if (!resend) return;
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
+    return;
+  }
 
-  console.log('[Resend] Envoi email →', payload.to, '|', payload.subject);
+  console.log('[Resend] Envoi email →', payload.to, '|', payload.subject, '| from:', FROM_EMAIL);
 
-  const { error } = await resend.emails.send({
-    from: FROM_EMAIL,
-    to: payload.to,
-    subject: payload.subject,
-    html: payload.html,
-    ...(payload.reply_to ? { replyTo: payload.reply_to } : {}),
-  });
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: payload.to,
+        subject: payload.subject,
+        html: payload.html,
+        ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
+      }),
+    });
 
-  if (error) {
-    console.error('[Resend] Erreur envoi email:', error.message);
+    if (!res.ok) {
+      const body = await res.text();
+      console.error('[Resend] HTTP', res.status, body);
+      return;
+    }
+
+    const data = await res.json().catch(() => null);
+    console.log('[Resend] OK', data?.id);
+  } catch (e) {
+    console.error('[Resend] Exception:', e instanceof Error ? e.message : String(e));
   }
 }
 
