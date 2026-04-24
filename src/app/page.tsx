@@ -1,612 +1,397 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import {
-  ArrowRight,
-  ShieldCheck,
-  Lock,
-  BadgeCheck,
-  Wrench,
-  FileCheck2,
-  Truck,
-  Search,
+  Cross,
+  Car,
+  Users,
   MapPin,
   Phone,
-  Mail,
-  Camera,
-  CreditCard,
-  TrendingUp,
+  ShieldCheck,
+  Search,
+  ChevronRight,
+  Building2,
+  BadgeCheck,
+  Clock,
+  Heart,
 } from "lucide-react";
-import { getLatestPosts } from "@/lib/blog";
-import { ArticleCard } from "@/components/blog/ArticleCard";
-import AnnoncesTicker from "@/components/AnnoncesTicker";
-import FAQSection from "@/components/FAQSection";
-import PhoneLink from "@/components/layout/PhoneLink";
+import SearchHero from "@/components/sanitaire/SearchHero";
+import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 
-const HOME_FAQ = [
-  {
-    question: "Qu'est-ce que RoullePro ?",
-    answer:
-      "RoullePro est la premiere place de marche francaise dediee aux vehicules professionnels du transport routier : taxi, VTC, ambulance, VSL, TPMR, navette et utilitaires. Tous les vendeurs sont verifies par SIRET contre le registre INSEE, les transactions sont securisees par paiement sequestre Stripe, et chaque annonce est moderee manuellement sous 24 heures.",
-  },
-  {
-    question: "Combien coute le depot d'une annonce ?",
-    answer:
-      "Le depot d'annonce est 100 pourcent gratuit pour les professionnels verifies. Une formule Pro et Premium existe pour mettre en avant les annonces, obtenir plus de photos et un placement prioritaire dans les resultats.",
-  },
-  {
-    question: "Comment fonctionne la verification SIRET ?",
-    answer:
-      "A l'inscription, chaque vendeur fournit son numero SIRET. Notre systeme interroge l'API publique du registre INSEE pour confirmer l'existence de l'entreprise, sa forme juridique, son activite declaree (NAF) et son statut (active ou fermee). Les comptes sont actives sous 24 heures apres validation manuelle.",
-  },
-  {
-    question: "Comment le paiement securise par sequestre fonctionne ?",
-    answer:
-      "Lorsque l'acheteur valide la transaction, les fonds sont bloques par notre partenaire Stripe Connect sur un compte sequestre. Le vendeur est notifie et prepare la remise. Apres reception du vehicule et signature du proces-verbal, les fonds sont liberes vers le vendeur. En cas de litige, RoullePro intervient avec un mediateur.",
-  },
-  {
-    question: "Puis-je vendre une licence de taxi avec le vehicule ?",
-    answer:
-      "Oui. Les annonces de la categorie Taxi permettent de mentionner explicitement si la licence (autorisation de stationnement) est cessible et incluse dans la vente. Le prix peut etre indique separement dans la description. La cession doit respecter les regles locales de la prefecture concernee.",
-  },
-  {
-    question: "Quelles categories de vehicules sont disponibles ?",
-    answer:
-      "RoullePro regroupe sept categories principales : VTC (berlines premium), Taxi (avec licence cessible), Ambulance et VSL (types A, B, C et vehicules sanitaires legers), TPMR (vehicules amenages PMR), Navette et minibus (transport collectif), Utilitaires (fourgonnettes et fourgons) et Materiel et equipement (accessoires pro).",
-  },
-  {
-    question: "Comment beneficier du service depot-vente ?",
-    answer:
-      "Le depot-vente est un service cle en main realise par nos garages partenaires : ils recuperent le vehicule, effectuent une expertise 40 points, realisent les photos HD, publient l'annonce et gerent les visites. Un mandat de vente est signe. La commission est prelevee sur le prix de vente final, sans frais initiaux pour le vendeur.",
-  },
-  {
-    question: "Dans quelles villes RoullePro est-il disponible ?",
-    answer:
-      "RoullePro couvre l'ensemble du territoire francais. Le service est particulierement actif a Paris, Lyon, Marseille, Toulouse, Bordeaux, Lille, Nantes, Rennes, Strasbourg, Montpellier, Nice, Rouen, Grenoble et Reims. Les garages partenaires pour le depot-vente sont progressivement deployes region par region.",
-  },
-];
+export const revalidate = 3600;
 
-// Rafraîchissement toutes les 5 minutes pour toujours afficher les dernières annonces
-export const revalidate = 300;
+export const metadata: Metadata = {
+  title: "RoullePro — Trouvez une ambulance, un VSL ou un taxi conventionné",
+  description:
+    "Annuaire gratuit du transport sanitaire en France. Trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous. Numéros directs, horaires, tarifs.",
+  alternates: { canonical: "/" },
+};
 
-// ─── DONNÉES ───────────────────────────────────────────────
-const CATEGORIES = [
-  { name: "VTC", slug: "vtc", tag: "Premium", accent: "from-blue-500/10 to-blue-500/0 border-blue-200", dot: "bg-blue-500" },
-  { name: "Taxi", slug: "taxi", tag: "Licencié", accent: "from-amber-500/10 to-amber-500/0 border-amber-200", dot: "bg-amber-500" },
-  { name: "Ambulance / VSL", slug: "ambulance", tag: "Sanitaire", accent: "from-rose-500/10 to-rose-500/0 border-rose-200", dot: "bg-rose-500" },
-  { name: "TPMR / PMR", slug: "tpmr", tag: "Aménagé", accent: "from-emerald-500/10 to-emerald-500/0 border-emerald-200", dot: "bg-emerald-500" },
-  { name: "Navette / Minibus", slug: "navette", tag: "Collectif", accent: "from-violet-500/10 to-violet-500/0 border-violet-200", dot: "bg-violet-500" },
-  { name: "Utilitaires", slug: "utilitaire", tag: "Pro", accent: "from-orange-500/10 to-orange-500/0 border-orange-200", dot: "bg-orange-500" },
-  { name: "Matériel & Équipement", slug: "materiel", tag: "Accessoires", accent: "from-slate-500/10 to-slate-500/0 border-slate-200", dot: "bg-slate-500" },
-];
-
-const TRUST_POINTS = [
-  { icon: ShieldCheck, title: "Vérification SIRET & KBIS", desc: "Chaque vendeur est contrôlé contre le registre national des entreprises avant publication." },
-  { icon: Lock, title: "Paiement séquestre", desc: "Les fonds sont bloqués par notre partenaire Stripe jusqu'à la remise du véhicule." },
-  { icon: BadgeCheck, title: "Annonces modérées", desc: "Chaque annonce est revue manuellement sous 24h pour garantir un catalogue de qualité." },
-  { icon: Wrench, title: "Réseau de garages partenaires", desc: "Expertise 40 points, photos HD et mandat de vente signé chez des pros certifiés." },
-];
-
-const STEPS = [
-  { n: "01", title: "Créez votre compte pro", desc: "Inscription gratuite avec vérification SIRET et KBIS. Profil activé sous 24h." },
-  { n: "02", title: "Publiez ou recherchez", desc: "Dépôt en moins de 5 minutes. Recherche filtrée par catégorie, marque, ville et budget." },
-  { n: "03", title: "Transaction sécurisée", desc: "Échangez dans votre messagerie, puis concluez via paiement séquestre Stripe." },
-];
-
-// ─── DATA FETCH ────────────────────────────────────────────
-async function getRecentAnnonces() {
-  try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    );
-    const { data } = await supabase
-      .from("annonces")
-      .select("id, title, price, city, images, annee, kilometrage, created_at, categories(name, slug)")
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(12);
-    return data || [];
-  } catch {
-    return [];
-  }
+async function getStats() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const [total, ambulances, vsl, taxis] = await Promise.all([
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "ambulance"),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "vsl"),
+    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("categorie", "taxi_conventionne"),
+  ]);
+  return {
+    total: total.count ?? 0,
+    ambulances: ambulances.count ?? 0,
+    vsl: vsl.count ?? 0,
+    taxis: taxis.count ?? 0,
+  };
 }
 
-// ─── PAGE ──────────────────────────────────────────────────
+async function getTopVilles() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const rows: { ville: string; ville_slug: string; departement: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 22; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("ville, ville_slug, departement")
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < size) break;
+    from += size;
+  }
+  const map = new Map<string, { ville: string; ville_slug: string; departement: string; count: number }>();
+  rows.forEach((row) => {
+    const key = row.ville_slug;
+    if (!map.has(key)) map.set(key, { ...row, count: 0 });
+    map.get(key)!.count += 1;
+  });
+  return Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 12);
+}
+
+async function getRegionsCount() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const rows: { region: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 22; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("region")
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...(data as { region: string }[]));
+    if (data.length < size) break;
+    from += size;
+  }
+  const map = new Map<string, number>();
+  rows.forEach((row) => {
+    if (!row.region) return;
+    map.set(row.region, (map.get(row.region) || 0) + 1);
+  });
+  return Array.from(map.entries())
+    .map(([region, count]) => ({ region, count, slug: region.toLowerCase().replace(/\s+/g, "-").replace(/'/g, "-") }))
+    .sort((a, b) => b.count - a.count);
+}
+
 export default async function HomePage() {
-  const recentAnnonces = await getRecentAnnonces();
-  const latestPosts = getLatestPosts(3);
+  const [stats, topVilles, regions] = await Promise.all([getStats(), getTopVilles(), getRegionsCount()]);
 
   return (
-    <div className="bg-white">
-      {/* ═══════════════════════════════════════════════════════════
-          HERO — Éditorial, sobre, affirmé
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden bg-[#0B1120] text-white">
-        {/* Motif radial subtil */}
-        <div
-          className="absolute inset-0 opacity-30 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59,130,246,0.25), transparent 60%)",
-          }}
-        />
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-            maskImage: "radial-gradient(ellipse 70% 50% at 50% 50%, black, transparent 70%)",
-          }}
-        />
+    <main className="min-h-screen bg-white">
+      <section className="relative bg-gradient-to-br from-[#0B1120] via-[#0f2048] to-[#0066CC] text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-10" aria-hidden="true">
+          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.5" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#grid)" />
+          </svg>
+        </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-24 pb-28 lg:pt-32 lg:pb-36">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm px-3 py-1 text-xs font-medium text-blue-200">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-60 animate-ping" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
-              </span>
-              Marketplace B2B du transport professionnel
+        <div className="relative max-w-6xl mx-auto px-4 pt-16 pb-20 sm:pt-24 sm:pb-28">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-xs font-medium mb-6">
+              <BadgeCheck className="w-3.5 h-3.5" />
+              Annuaire officiel — {stats.total.toLocaleString("fr-FR")} professionnels référencés
             </div>
-
-            <h1 className="mt-7 text-[44px] sm:text-5xl lg:text-[68px] font-semibold tracking-[-0.03em] leading-[1.02]">
-              Le marché des véhicules pros
-              <span className="block text-blue-300/90 italic font-light mt-1">
-                entre professionnels.
-              </span>
+            <h1 className="text-3xl sm:text-5xl font-bold leading-tight mb-4">
+              Trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous
             </h1>
-
-            <p className="mt-8 text-lg lg:text-xl text-slate-300 leading-relaxed max-w-2xl">
-              VTC, taxi, ambulance, utilitaire, TPMR, navette — achetez et vendez
-              sereinement avec des pros vérifiés, un paiement séquestre et
-              un accompagnement par de vrais humains.
+            <p className="text-base sm:text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
+              Numéros directs, horaires, tarifs. 100 % gratuit pour les patients. Transport médical dans toute la France.
             </p>
 
-            {/* Recherche */}
-            <form
-              action="/annonces"
-              method="get"
-              className="mt-10 flex flex-col sm:flex-row gap-3 max-w-2xl"
-            >
-              <div className="relative flex-1 group">
-                <Search
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  name="q"
-                  placeholder="Renault Trafic, Tesla Model 3, ambulance Paris…"
-                  className="w-full h-14 pl-12 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-400/60 focus:bg-white/[0.08] transition backdrop-blur-sm"
-                />
-              </div>
-              <button
-                type="submit"
-                className="h-14 px-7 bg-white text-slate-900 hover:bg-blue-50 font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20"
-              >
-                Explorer
-                <ArrowRight size={16} />
-              </button>
-            </form>
+            <SearchHero variant="hero" />
 
-            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-slate-400">
-              <span className="flex items-center gap-2">
-                <ShieldCheck size={15} className="text-blue-400" />
-                Vendeurs vérifiés SIRET
-              </span>
-              <span className="flex items-center gap-2">
-                <Lock size={15} className="text-blue-400" />
-                Paiement séquestre Stripe
-              </span>
-              <span className="flex items-center gap-2">
-                <BadgeCheck size={15} className="text-blue-400" />
-                Dépôt 100 % gratuit
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          BANDEAU TEMPS RÉEL — nouvelles annonces sans rechargement
-          ═══════════════════════════════════════════════════════════ */}
-      <AnnoncesTicker
-        initial={recentAnnonces.map((a: any) => ({
-          id: a.id,
-          title: a.title,
-          price: a.price,
-          city: a.city,
-          created_at: a.created_at,
-          categories: a.categories
-            ? { name: a.categories.name, slug: a.categories.slug }
-            : null,
-        }))}
-      />
-
-      {/* ═══════════════════════════════════════════════════════════
-          BANDEAU CATÉGORIES — discret, sous le hero
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="border-b border-slate-100 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-5">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-            <span className="text-xs uppercase tracking-widest text-slate-400 font-semibold flex-shrink-0 mr-2">
-              Catégories
-            </span>
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.slug}
-                href={`/annonces/categorie/${cat.slug}`}
-                className="flex-shrink-0 inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 text-sm text-slate-700 hover:border-slate-900 hover:text-slate-900 transition"
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${cat.dot}`} />
-                {cat.name}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-sm">
+              <span className="text-blue-200">Recherches populaires :</span>
+              <Link href="/transport-medical/recherche?q=Paris&categorie=ambulance" className="text-white hover:underline">
+                Ambulance Paris
               </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          BANDEAU TRANSPORT SANITAIRE — service patients
-          ======================================================= */}
-      <section className="bg-gradient-to-r from-[#0066CC] to-[#0f1d3a] text-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between">
-          <div className="flex items-start sm:items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
-              <ShieldCheck size={20} className="text-white" />
-            </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-blue-200 font-semibold mb-0.5">Service patients</div>
-              <div className="text-base font-semibold">
-                Besoin d'une ambulance, d'un VSL ou d'un taxi conventionné ? L'annuaire est gratuit.
-              </div>
-            </div>
-          </div>
-          <Link
-            href="/transport-medical"
-            className="inline-flex items-center gap-2 bg-white text-[#0066CC] font-semibold px-5 py-2.5 rounded-lg hover:bg-blue-50 transition flex-shrink-0"
-          >
-            Ouvrir l'annuaire
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-      </section>
-
-      {/* =======================================================
-          ANNONCES RÉCENTES — en premier pour l'effet marketplace
-          ═══════════════════════════════════════════════════════════ */}
-      {recentAnnonces.length > 0 && (
-        <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <div className="text-xs uppercase tracking-widest text-blue-600 font-bold mb-2">
-                Dernières opportunités
-              </div>
-              <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900">
-                Récemment publiés
-              </h2>
-            </div>
-            <Link
-              href="/annonces"
-              className="hidden sm:inline-flex items-center gap-1.5 text-slate-900 hover:text-blue-600 font-medium text-sm transition group"
-            >
-              Tout le catalogue
-              <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {recentAnnonces.slice(0, 8).map((a: any) => (
-              <Link
-                key={a.id}
-                href={`/annonces/${a.id}`}
-                className="group block"
-              >
-                <div className="relative aspect-[4/3] rounded-2xl bg-slate-100 overflow-hidden ring-1 ring-slate-200/70 group-hover:ring-slate-900/20 transition">
-                  {a.images?.[0] ? (
-                    <img
-                      src={a.images[0]}
-                      alt={a.title}
-                      className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-                      <Truck size={36} className="text-slate-300" />
-                    </div>
-                  )}
-                  {(a.categories as any)?.name && (
-                    <div className="absolute top-3 left-3 inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-slate-800 text-[11px] font-semibold px-2.5 py-1 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                      {(a.categories as any).name}
-                    </div>
-                  )}
-                </div>
-                <div className="mt-4 px-0.5">
-                  <h3 className="font-semibold text-slate-900 text-[15px] leading-snug line-clamp-2 group-hover:text-blue-600 transition-colors">
-                    {a.title}
-                  </h3>
-                  <div className="mt-1.5 flex items-center gap-2 text-xs text-slate-500">
-                    {a.annee && <span>{a.annee}</span>}
-                    {a.annee && a.kilometrage && <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />}
-                    {a.kilometrage && <span>{Number(a.kilometrage).toLocaleString("fr-FR")} km</span>}
-                    {a.city && (
-                      <>
-                        {(a.annee || a.kilometrage) && <span className="w-0.5 h-0.5 rounded-full bg-slate-300" />}
-                        <span className="flex items-center gap-1">
-                          <MapPin size={11} /> {a.city}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div className="mt-3 text-lg font-bold text-slate-900">
-                    {a.price ? `${Number(a.price).toLocaleString("fr-FR")} €` : "Sur demande"}
-                  </div>
-                </div>
+              <span className="text-blue-300">·</span>
+              <Link href="/transport-medical/recherche?q=Lyon&categorie=vsl" className="text-white hover:underline">
+                VSL Lyon
               </Link>
-            ))}
-          </div>
-
-          <div className="mt-10 sm:hidden text-center">
-            <Link
-              href="/annonces"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition"
-            >
-              Voir toutes les annonces <ArrowRight size={16} />
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════════════════════════════════════════════════════
-          CONFIANCE — argumentaire dense, éditorial
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-slate-50 border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24">
-          <div className="max-w-2xl mb-14">
-            <div className="text-xs uppercase tracking-widest text-blue-600 font-bold mb-2">
-              Infrastructure de confiance
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 leading-tight">
-              Pensé pour les pros,<br />
-              <span className="text-slate-500">construit comme une banque.</span>
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-slate-200 rounded-3xl overflow-hidden ring-1 ring-slate-200">
-            {TRUST_POINTS.map((p) => {
-              const Icon = p.icon;
-              return (
-                <div key={p.title} className="bg-white p-7 lg:p-8 hover:bg-slate-50 transition">
-                  <div className="w-11 h-11 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-5">
-                    <Icon size={20} strokeWidth={2} />
-                  </div>
-                  <h3 className="font-semibold text-slate-900 mb-2 text-[15px]">{p.title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{p.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          DÉPÔT-VENTE — offre phare
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            <div className="lg:col-span-6">
-              <div className="text-xs uppercase tracking-widest text-blue-600 font-bold mb-3">
-                Service Dépôt-vente
-              </div>
-              <h2 className="text-3xl lg:text-[42px] font-semibold tracking-tight text-slate-900 leading-[1.1]">
-                On vend votre véhicule pour vous,
-                <span className="block text-slate-500">pendant que vous roulez.</span>
-              </h2>
-              <p className="mt-6 text-slate-600 text-lg leading-relaxed">
-                Expertise 40 points, photos HD, mandat chez un garage partenaire.
-                Vous touchez jusqu'à <strong className="text-slate-900">88 % du prix de vente</strong>.
-                Si votre véhicule n'est pas vendu en 90 jours, vous le récupérez sans frais.
-              </p>
-
-              <div className="mt-8 grid sm:grid-cols-2 gap-3">
-                {[
-                  { icon: TrendingUp, text: "Estimation gratuite instantanée" },
-                  { icon: Camera, text: "Photos HD + expertise 40 points" },
-                  { icon: MapPin, text: "Garages partenaires certifiés" },
-                  { icon: CreditCard, text: "Paiement séquestre Stripe" },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.text} className="flex items-start gap-3">
-                      <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Icon size={14} className="text-white" />
-                      </div>
-                      <span className="text-slate-700 text-sm leading-snug">{item.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-10 flex flex-col sm:flex-row gap-3">
-                <Link
-                  href="/depot-vente/estimer"
-                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-6 py-3.5 rounded-xl transition"
-                >
-                  Estimer mon véhicule
-                  <ArrowRight size={15} />
-                </Link>
-                <Link
-                  href="/depot-vente"
-                  className="inline-flex items-center justify-center gap-2 border border-slate-200 text-slate-900 hover:border-slate-900 font-semibold px-6 py-3.5 rounded-xl transition"
-                >
-                  Comprendre le mandat
-                </Link>
-              </div>
-            </div>
-
-            <div className="lg:col-span-6">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "88 %", desc: "du prix reversé", tone: "bg-slate-900 text-white" },
-                  { label: "90 j", desc: "de mandat", tone: "bg-white text-slate-900 ring-1 ring-slate-200" },
-                  { label: "0 €", desc: "si pas vendu", tone: "bg-white text-slate-900 ring-1 ring-slate-200" },
-                  { label: "48 h", desc: "réponse garantie", tone: "bg-blue-600 text-white" },
-                ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className={`${stat.tone} rounded-2xl p-8 lg:p-10 flex flex-col justify-center aspect-square`}
-                  >
-                    <div className="text-4xl lg:text-5xl font-semibold tracking-tight">{stat.label}</div>
-                    <div className="mt-1 text-sm opacity-80">{stat.desc}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          COMMENT ÇA MARCHE
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="bg-slate-50 border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24">
-          <div className="max-w-2xl mb-14">
-            <div className="text-xs uppercase tracking-widest text-blue-600 font-bold mb-2">
-              Protocole
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 leading-tight">
-              Trois étapes,
-              <span className="text-slate-500"> zéro friction.</span>
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-5">
-            {STEPS.map((step, i) => (
-              <div
-                key={step.n}
-                className="relative bg-white rounded-2xl p-8 ring-1 ring-slate-200/70 hover:ring-slate-900/20 transition"
-              >
-                <div className="flex items-baseline gap-3 mb-5">
-                  <span className="text-4xl font-semibold text-slate-200 tracking-tight">{step.n}</span>
-                  <div className="h-px flex-1 bg-slate-100" />
-                  {i < 2 && (
-                    <ArrowRight size={16} className="text-slate-300 hidden md:block" />
-                  )}
-                </div>
-                <h3 className="font-semibold text-slate-900 text-lg mb-2 tracking-tight">{step.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          RESSOURCES PROS — blog
-          ═══════════════════════════════════════════════════════════ */}
-      {latestPosts.length > 0 && (
-        <section className="bg-white">
-          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-24">
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 mb-12">
-              <div className="max-w-xl">
-                <div className="text-xs uppercase tracking-widest text-blue-600 font-bold mb-2">
-                  Ressources
-                </div>
-                <h2 className="text-3xl lg:text-4xl font-semibold tracking-tight text-slate-900 leading-tight">
-                  Le journal des pros du transport
-                </h2>
-                <p className="mt-4 text-slate-500 text-lg">
-                  Fiscalité, financement, réglementation, prix du marché : l'essentiel
-                  pour acheter et vendre mieux.
-                </p>
-              </div>
-              <Link
-                href="/blog"
-                className="inline-flex items-center gap-2 text-slate-900 font-medium text-sm hover:text-blue-600 transition self-start md:self-end group"
-              >
-                Tous les articles
-                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+              <span className="text-blue-300">·</span>
+              <Link href="/transport-medical/recherche?q=Marseille&categorie=taxi-conventionne" className="text-white hover:underline">
+                Taxi conventionné Marseille
               </Link>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {latestPosts.map((post) => (
-                <ArticleCard key={post.slug} post={post} />
-              ))}
-            </div>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* ═══════════════════════════════════════════════════════════
-          CTA FINAL — band plein largeur, affirmé
-          ═══════════════════════════════════════════════════════════ */}
-      <section className="relative bg-[#0B1120] text-white overflow-hidden">
-        <div
-          className="absolute inset-0 opacity-[0.08] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.4) 1px, transparent 1px)",
-            backgroundSize: "72px 72px",
-            maskImage: "radial-gradient(ellipse 70% 50% at 50% 50%, black, transparent 70%)",
-          }}
-        />
-        <div
-          className="absolute -top-20 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-blue-500/20 blur-3xl pointer-events-none"
-        />
-
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28 text-center">
-          <h2 className="text-3xl lg:text-5xl font-semibold tracking-tight leading-[1.1] max-w-3xl mx-auto">
-            Votre prochain véhicule pro vous attend.
-            <span className="block text-blue-300/90 italic font-light mt-2">Ou votre prochain acheteur.</span>
-          </h2>
-          <p className="mt-6 text-slate-400 text-lg max-w-xl mx-auto">
-            Rejoignez la communauté des professionnels du transport et publiez
-            gratuitement votre première annonce dès aujourd'hui.
+      <section className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Quel type de transport vous faut-il ?</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            Chaque transport sanitaire correspond à un besoin précis. Cliquez sur la catégorie qui vous concerne.
           </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              href="/deposer-annonce"
-              className="inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-blue-50 px-7 py-4 rounded-xl font-semibold text-[15px] transition shadow-lg shadow-blue-900/30"
-            >
-              Déposer une annonce
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              href="/annonces"
-              className="inline-flex items-center justify-center gap-2 border border-white/20 bg-white/[0.04] hover:bg-white/[0.08] text-white px-7 py-4 rounded-xl font-semibold text-[15px] transition backdrop-blur-sm"
-            >
-              Parcourir le catalogue
+        </div>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <CategorieCard
+            href="/transport-medical/recherche?categorie=ambulance"
+            icon={<Cross className="w-6 h-6" />}
+            color="bg-rose-50 text-rose-600 border-rose-100"
+            title="Ambulance"
+            count={stats.ambulances}
+            description="Transport médicalisé, équipage diplômé, matériel à bord. Urgences et transports programmés."
+          />
+          <CategorieCard
+            href="/transport-medical/recherche?categorie=vsl"
+            icon={<Car className="w-6 h-6" />}
+            color="bg-blue-50 text-blue-600 border-blue-100"
+            title="VSL"
+            count={stats.vsl}
+            description="Véhicule Sanitaire Léger, transport assis sur prescription, remboursé par la Sécurité sociale."
+          />
+          <CategorieCard
+            href="/transport-medical/recherche?categorie=taxi-conventionne"
+            icon={<Users className="w-6 h-6" />}
+            color="bg-amber-50 text-amber-600 border-amber-100"
+            title="Taxi conventionné"
+            count={stats.taxis}
+            description="Taxi agréé par la CPAM, transport assis sur prescription, tiers payant Sécurité sociale."
+          />
+        </div>
+      </section>
+
+      <section className="bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Régions couvertes</h2>
+              <p className="text-gray-600">Explorez l'annuaire par région.</p>
+            </div>
+            <Link href="/transport-medical" className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] hover:underline">
+              Voir tout l'annuaire <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
-
-          <div className="mt-14 pt-10 border-t border-white/10 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-sm text-slate-400">
-            <span className="inline-flex items-center gap-2 hover:text-white transition">
-              <Phone size={15} className="text-blue-400" />
-              <PhoneLink telNumber="+33615472813" displayNumber="06 15 47 28 13" className="hover:text-white transition" />
-            </span>
-            <a href="mailto:contact@roullepro.com" className="inline-flex items-center gap-2 hover:text-white transition">
-              <Mail size={15} className="text-blue-400" />
-              contact@roullepro.com
-            </a>
-            <span className="inline-flex items-center gap-2">
-              <FileCheck2 size={15} className="text-blue-400" />
-              Entreprise française immatriculée
-            </span>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {regions.slice(0, 9).map((r) => (
+              <Link
+                key={r.region}
+                href={`/transport-medical/recherche?q=${encodeURIComponent(r.region)}`}
+                className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition"
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-[#0066CC]" />
+                  <div>
+                    <div className="font-semibold text-gray-900">{r.region}</div>
+                    <div className="text-xs text-gray-500">{r.count.toLocaleString("fr-FR")} professionnels</div>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              </Link>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════
-          FAQ — optimisee pour citations IA (schema FAQPage)
-          ═══════════════════════════════════════════════════════════ */}
-      <FAQSection
-        title="Questions frequentes sur RoullePro"
-        subtitle="Les reponses aux questions les plus posees par les professionnels du transport."
-        items={HOME_FAQ}
-      />
+      <section className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+        <div className="flex items-end justify-between mb-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Villes les plus recherchées</h2>
+            <p className="text-gray-600">Accédez directement aux professionnels de votre ville.</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {topVilles.map((v) => (
+            <Link
+              key={v.ville_slug}
+              href={`/transport-medical/recherche?q=${encodeURIComponent(v.ville)}`}
+              className="flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/30 transition"
+            >
+              <div className="min-w-0">
+                <div className="font-medium text-gray-900 truncate">{v.ville}</div>
+                <div className="text-xs text-gray-500">{v.count} pros · {v.departement}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Comment trouver un transport sanitaire ?</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Trois étapes simples pour contacter directement un professionnel agréé.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6">
+            <Step
+              n="01"
+              icon={<Search className="w-5 h-5" />}
+              title="Recherchez votre ville"
+              desc="Tapez le nom de votre ville ou code postal dans le moteur de recherche ci-dessus."
+            />
+            <Step
+              n="02"
+              icon={<MapPin className="w-5 h-5" />}
+              title="Choisissez un professionnel"
+              desc="Parcourez les ambulanciers, VSL et taxis conventionnés disponibles dans votre secteur."
+            />
+            <Step
+              n="03"
+              icon={<Phone className="w-5 h-5" />}
+              title="Appelez directement"
+              desc="Numéros de téléphone cliquables. Aucune inscription ni commission. 100 % gratuit pour les patients."
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+        <div className="grid md:grid-cols-3 gap-6">
+          <Trust
+            icon={<ShieldCheck className="w-5 h-5" />}
+            title="Professionnels vérifiés"
+            desc="Chaque pro est identifié par son SIRET et peut faire valider son agrément préfectoral pour obtenir le badge Pro vérifié."
+          />
+          <Trust
+            icon={<Heart className="w-5 h-5" />}
+            title="Gratuit pour les patients"
+            desc="Aucun frais, aucune commission. RoullePro est un annuaire indépendant financé par les professionnels eux-mêmes."
+          />
+          <Trust
+            icon={<Clock className="w-5 h-5" />}
+            title="Données à jour"
+            desc="L'annuaire est mis à jour en continu à partir des registres officiels et par les professionnels eux-mêmes."
+          />
+        </div>
+      </section>
+
+      <section className="border-t border-gray-200 bg-gradient-to-br from-[#0B1120] to-[#0f2048] text-white">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-14">
+          <div className="grid md:grid-cols-[2fr_1fr] gap-8 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-3 py-1 text-xs font-medium mb-4">
+                <Building2 className="w-3.5 h-3.5" />
+                Vous êtes un professionnel du transport sanitaire ?
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+                Réclamez votre fiche gratuitement
+              </h2>
+              <p className="text-blue-100 mb-6 max-w-xl">
+                Gérez votre fiche, répondez aux demandes des patients, mettez en avant votre activité. Réclamation gratuite, validation sous 48 h après vérification de votre agrément.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/pro"
+                  className="inline-flex items-center gap-2 bg-white text-[#0066CC] font-semibold px-5 py-3 rounded-xl hover:bg-blue-50 transition"
+                >
+                  Découvrir l'espace pro <ChevronRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/annonces"
+                  className="inline-flex items-center gap-2 border border-white/30 text-white font-medium px-5 py-3 rounded-xl hover:bg-white/10 transition"
+                >
+                  Marketplace véhicules pro
+                </Link>
+              </div>
+            </div>
+            <div className="hidden md:block bg-white/5 border border-white/10 rounded-2xl p-6">
+              <div className="text-xs uppercase tracking-wide text-blue-200 mb-2">Écosystème RoullePro</div>
+              <ul className="space-y-2 text-sm text-blue-100">
+                <li className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-blue-300" /> Annuaire sanitaire gratuit</li>
+                <li className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-blue-300" /> Marketplace véhicules pro</li>
+                <li className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-blue-300" /> Dépôt-vente avec garages</li>
+                <li className="flex items-center gap-2"><BadgeCheck className="w-4 h-4 text-blue-300" /> Vérification SIRET systématique</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function CategorieCard({
+  href,
+  icon,
+  color,
+  title,
+  count,
+  description,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  color: string;
+  title: string;
+  count: number;
+  description: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-300 hover:shadow-lg transition"
+    >
+      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 border ${color}`}>
+        {icon}
+      </div>
+      <div className="flex items-baseline gap-2 mb-1">
+        <h3 className="text-lg font-bold text-gray-900">{title}</h3>
+        <span className="text-xs text-gray-500">{count.toLocaleString("fr-FR")} pros</span>
+      </div>
+      <p className="text-sm text-gray-600 mb-3">{description}</p>
+      <div className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] group-hover:gap-2 transition-all">
+        Voir les professionnels <ChevronRight className="w-4 h-4" />
+      </div>
+    </Link>
+  );
+}
+
+function Step({ n, icon, title, desc }: { n: string; icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0066CC] flex items-center justify-center">{icon}</div>
+        <div className="text-xs font-semibold text-gray-400">ÉTAPE {n}</div>
+      </div>
+      <h3 className="text-lg font-bold text-gray-900 mb-2">{title}</h3>
+      <p className="text-sm text-gray-600">{desc}</p>
+    </div>
+  );
+}
+
+function Trust({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0066CC] flex items-center justify-center mb-3">{icon}</div>
+      <h3 className="text-base font-bold text-gray-900 mb-1">{title}</h3>
+      <p className="text-sm text-gray-600">{desc}</p>
     </div>
   );
 }

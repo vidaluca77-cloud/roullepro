@@ -23,12 +23,10 @@ export default function Navbar() {
 
   const navLinks = [
     { href: '/', label: 'Accueil' },
-    { href: '/annonces', label: 'Annonces' },
-    { href: '/transport-medical', label: 'Transport sanitaire' },
-    { href: '/pricing', label: 'Tarifs' },
+    { href: '/transport-medical', label: 'Annuaire' },
+    { href: '/pro', label: 'Espace pro' },
+    { href: '/annonces', label: 'Marketplace' },
     { href: '/blog', label: 'Blog' },
-    { href: '/depot-vente', label: 'Dépôt-vente' },
-    { href: '/deposer-annonce', label: 'Déposer une annonce' },
   ];
 
   useEffect(() => {
