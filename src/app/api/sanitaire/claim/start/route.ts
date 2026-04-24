@@ -12,10 +12,6 @@ const getAdminClient = () =>
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-function normalizeDomain(email: string): string {
-  return email.split("@")[1]?.toLowerCase() || "";
-}
-
 function generateCode(): string {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
@@ -45,17 +41,11 @@ export async function POST(req: Request) {
     if (pro.claimed) return NextResponse.json({ error: "Déjà réclamée" }, { status: 409 });
 
     // Validation du contact
+    // Toute adresse email valide est acceptée (y compris gmail/yahoo/orange) :
+    // la vérification finale se fait manuellement via le KBIS joint à l'étape suivante.
     if (method === "email_domaine") {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
         return NextResponse.json({ error: "Email invalide" }, { status: 400 });
-      }
-      const freeDomains = ["gmail.com", "yahoo.fr", "yahoo.com", "hotmail.com", "hotmail.fr", "outlook.com", "outlook.fr", "wanadoo.fr", "orange.fr", "free.fr", "laposte.net", "sfr.fr"];
-      const domain = normalizeDomain(contact);
-      if (freeDomains.includes(domain)) {
-        return NextResponse.json(
-          { error: "Merci d'utiliser un email du domaine de votre entreprise (pas gmail/yahoo/orange). Sinon choisissez la vérification par SMS." },
-          { status: 400 }
-        );
       }
     }
 

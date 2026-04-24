@@ -315,10 +315,10 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
           <div className="flex-1">
             <div className="flex items-center gap-2 font-semibold text-gray-900">
               <Mail className="w-4 h-4" />
-              Email professionnel
+              Vérification par email
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              Recevez un code à l'adresse email de votre entreprise.
+              Recevez un code à votre adresse email. Toutes les adresses sont acceptées (y compris Gmail, Yahoo, Orange, Outlook…). Votre KBIS sera demandé à l’étape suivante pour valider votre identité.
               {emailPublic && <span className="block mt-1 text-xs text-gray-500">Email enregistré : {emailPublic}</span>}
             </p>
           </div>
@@ -342,11 +342,11 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          {method === "email_domaine" ? "Votre email professionnel" : "Votre numéro de téléphone (avec indicatif)"}
+          {method === "email_domaine" ? "Votre adresse email" : "Votre numéro de téléphone (avec indicatif)"}
         </label>
         <input
           type={method === "email_domaine" ? "email" : "tel"}
-          placeholder={method === "email_domaine" ? "contact@votre-entreprise.fr" : "+33 6 12 34 56 78"}
+          placeholder={method === "email_domaine" ? "vous@exemple.fr" : "+33 6 12 34 56 78"}
           value={contact}
           onChange={(e) => setContact(e.target.value)}
           className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition"
