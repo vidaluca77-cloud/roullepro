@@ -379,6 +379,36 @@ export async function POST(req: Request) {
       .single();
 
     if (proError || !proData) {
+      // Cas duplicate SIRET non détecté par la pré-vérif (race condition, casse, etc.)
+      if (
+        proError &&
+        ((proError as { code?: string }).code === "23505" ||
+          /duplicate key|pros_sanitaire_siret_key/i.test(proError.message || ""))
+      ) {
+        // Rollback user auth
+        if (createdUserId) {
+          await supabaseAdmin.auth.admin.deleteUser(createdUserId).catch(() => undefined);
+          createdUserId = null;
+        }
+        await supabaseAdmin.from("sanitaire_inscription_logs").insert({
+          siret: data.siret || null,
+          email: data.email,
+          raison_sociale: data.raison_sociale,
+          ville: data.ville,
+          ip,
+          user_agent: req.headers.get("user-agent") || "",
+          status: "rejected_duplicate",
+          reason: "SIRET déjà référencé (détecté à l'INSERT)",
+        }).then(() => undefined, () => undefined);
+        return NextResponse.json(
+          {
+            error: data.siret
+              ? `Cette entreprise est déjà référencée. Revendiquez sa fiche ici : /transport-medical/pro/reclamer?siret=${data.siret}`
+              : "Cette entreprise est déjà référencée. Contactez-nous pour réclamer la fiche.",
+          },
+          { status: 409 }
+        );
+      }
       throw new Error(`Erreur insertion fiche : ${proError?.message}`);
     }
 
