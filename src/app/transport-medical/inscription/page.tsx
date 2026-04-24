@@ -4,14 +4,14 @@ import InscriptionForm from "@/components/sanitaire/InscriptionForm";
 export const metadata: Metadata = {
   title: "Inscrire mon entreprise de transport sanitaire — RoullePro",
   description:
-    "Ambulances, VSL, taxis conventionnés : créez votre fiche gratuitement en 3 minutes. 14 jours Pro offerts sans CB.",
+    "Ambulances, VSL, taxis conventionnés : créez votre fiche gratuitement en 3 minutes. Sans carte bancaire.",
   alternates: {
     canonical: "https://roullepro.com/transport-medical/inscription",
   },
   openGraph: {
     title: "Inscrire mon entreprise de transport sanitaire — RoullePro",
     description:
-      "Ambulances, VSL, taxis conventionnés : créez votre fiche gratuitement en 3 minutes. 14 jours Pro offerts sans CB.",
+      "Ambulances, VSL, taxis conventionnés : créez votre fiche gratuitement en 3 minutes. Sans carte bancaire.",
     type: "website",
     url: "https://roullepro.com/transport-medical/inscription",
   },
@@ -22,7 +22,7 @@ const jsonLd = {
   "@type": "Service",
   name: "Inscription pros transport sanitaire",
   description:
-    "Inscrivez gratuitement votre entreprise de transport sanitaire (ambulance, VSL, taxi conventionné) sur RoullePro. 14 jours Pro offerts.",
+    "Inscrivez gratuitement votre entreprise de transport sanitaire (ambulance, VSL, taxi conventionné) sur RoullePro.",
   url: "https://roullepro.com/transport-medical/inscription",
   provider: {
     "@type": "Organization",
@@ -48,7 +48,7 @@ export default function InscriptionPage() {
           {/* En-tête */}
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-[#0066CC] text-sm font-medium px-4 py-1.5 rounded-full mb-4">
-              🚑 14 jours Pro offerts · Sans CB
+              🚑 Inscription gratuite · Sans CB
             </div>
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
               Inscrivez votre entreprise

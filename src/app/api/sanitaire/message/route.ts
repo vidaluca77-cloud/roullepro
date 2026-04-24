@@ -92,7 +92,7 @@ ${sender_phone ? `<p style="margin:4px 0"><strong>Téléphone :</strong> <a href
 <p>Un patient vient de remplir un formulaire de demande sur votre fiche <strong>${pro.nom_commercial || pro.raison_sociale}</strong>.</p>
 <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:20px;margin:20px 0">
 <div style="font-weight:600;color:#92400e;margin-bottom:8px">⚠️ Message verrouillé</div>
-<p style="color:#78350f;margin:0;font-size:14px">Pour lire les messages patients et y répondre, activez l'abonnement <strong>Premium à 39€/mois</strong> (14 jours offerts).</p>
+<p style="color:#78350f;margin:0;font-size:14px">Pour lire les messages patients et y répondre, activez l'abonnement <strong>Premium à 39€/mois</strong>.</p>
 </div>
 <div style="text-align:center;margin:32px 0"><a href="${tarifsUrl}" style="background:#0066CC;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600">Débloquer la messagerie</a></div>
 <p style="color:#6b7280;font-size:12px">En Premium : messagerie illimitée, badge « Recommandé », mise en avant dans les résultats, statistiques.</p>

@@ -42,7 +42,7 @@ export default function CheckoutButton({
       className={`w-full inline-flex items-center justify-center gap-2 font-semibold px-4 py-2.5 rounded-xl transition ${popular ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-[#0066CC] hover:bg-[#0052a3] text-white"} disabled:opacity-60`}
     >
       {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-      Démarrer l'essai 14 jours
+      Activer l'abonnement
     </button>
   );
 }

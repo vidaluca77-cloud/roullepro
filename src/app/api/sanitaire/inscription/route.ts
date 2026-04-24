@@ -449,7 +449,7 @@ export async function POST(req: Request) {
     <li><strong>Validation par notre équipe</strong> — votre fiche sera validée manuellement sous 24 à 48 h.</li>
     <li><strong>Complétez votre fiche</strong> — après validation, ajoutez photos, horaires détaillés et description.</li>
   </ol>
-  <p>Une fois validée, votre fiche sera visible publiquement. Vous bénéficierez de <strong>14 jours Pro offerts</strong> sans carte bancaire.</p>
+  <p>Une fois validée, votre fiche sera visible publiquement dans notre annuaire Transport Médical.</p>
   <p style="font-size:13px;color:#6b7280">Questions ? <a href="mailto:contact@roullepro.com">contact@roullepro.com</a></p>
 </div>`,
     }).catch(() => undefined);

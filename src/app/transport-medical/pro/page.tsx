@@ -57,7 +57,7 @@ export default function EspacePro() {
       <section className="bg-gray-50 py-16">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">Nos abonnements pro</h2>
-          <p className="text-gray-600 text-center mb-10">Sans engagement, résiliable en 1 clic. Essai gratuit 14 jours.</p>
+          <p className="text-gray-600 text-center mb-10">Sans engagement, résiliable en 1 clic. Fiche de base gratuite.</p>
           <div className="grid md:grid-cols-3 gap-6">
             <PlanCard
               name="Fiche gratuite"

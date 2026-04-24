@@ -79,8 +79,8 @@ export default async function MerciPage({ searchParams }: Props) {
               <div className="font-medium text-gray-900 text-sm">3. Complétez votre fiche</div>
               <p className="text-gray-500 text-sm mt-0.5">
                 Une fois validée, connectez-vous pour ajouter photos, horaires détaillés et
-                description. Vous bénéficierez de <strong>14 jours Pro offerts</strong> sans
-                carte bancaire.
+                description. Votre fiche de base est <strong>gratuite</strong>, sans carte
+                bancaire.
               </p>
             </div>
           </div>

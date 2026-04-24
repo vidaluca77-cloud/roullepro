@@ -33,7 +33,7 @@ export default async function TarifsPage() {
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-medium mb-5">
             <Shield className="w-3.5 h-3.5" />
-            14 jours d'essai gratuit · Résiliable en 1 clic
+            Fiche de base gratuite · Résiliable en 1 clic
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4">Choisissez votre abonnement pro</h1>
           <p className="text-blue-100 text-lg">Sans engagement, sans frais cachés. Vous arrêtez quand vous voulez.</p>
@@ -105,8 +105,8 @@ export default async function TarifsPage() {
       <section className="max-w-4xl mx-auto px-4 pb-16">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Questions fréquentes</h2>
         <div className="space-y-4">
-          <Faq q="Comment fonctionne l'essai gratuit de 14 jours ?">
-            Aucune carte bancaire requise pour démarrer. Vous pouvez tester toutes les fonctionnalités Premium pendant 14 jours. À la fin, vous choisissez de continuer ou non — sans engagement.
+          <Faq q="Comment démarrer gratuitement ?">
+            La fiche de base est gratuite, sans carte bancaire. Vous choisissez ensuite d'activer un abonnement Premium si vous souhaitez débloquer la messagerie patients, le badge « Recommandé » et la mise en avant — sans engagement, résiliable en 1 clic.
           </Faq>
           <Faq q="Puis-je résilier à tout moment ?">
             Oui. La résiliation se fait en 1 clic depuis votre espace pro. Aucune pénalité, aucun frais. Votre fiche reste visible en gratuit.

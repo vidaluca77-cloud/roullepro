@@ -54,7 +54,7 @@ export default function WelcomeBanner({
             <h2 className="text-xl font-bold mb-1">Abonnement activé. Bienvenue en Premium.</h2>
             <p className="text-blue-100 text-sm">
               La messagerie patients est débloquée, votre fiche affiche le badge « Recommandé »
-              et remontera dans les résultats de recherche. Vos 14 jours d'essai ont commencé.
+              et remontera dans les résultats de recherche.
             </p>
           </div>
         </div>

@@ -90,7 +90,7 @@ export async function POST(req: Request) {
   <div style="text-align:center;margin:16px 0">
     <a href="${ficheUrl}" style="display:inline-block;background:#f0f6ff;color:#0066CC;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;border:1px solid #bfdbfe">${ficheUrl}</a>
   </div>
-  ${trialDateStr ? `<p>Vous bénéficiez de <strong>14 jours Pro gratuits</strong> jusqu\'au <strong>${trialDateStr}</strong>. Profitez-en pour enrichir votre fiche et recevoir vos premiers patients.</p>` : ""}
+  <p>Votre fiche de base est gratuite. Profitez-en pour l'enrichir et recevoir vos premiers patients.</p>
   <div style="text-align:center;margin:24px 0">
     <a href="${APP_URL}/transport-medical/pro/dashboard" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">Acc&eacute;der &agrave; mon espace pro</a>
   </div>

@@ -281,7 +281,7 @@ export default async function TransportMedicalHome() {
             Votre entreprise n'est pas listée ?
           </h2>
           <p className="text-blue-100 mb-6 leading-relaxed">
-            Inscrivez-la gratuitement &mdash; 14 jours Pro offerts, sans CB
+            Inscrivez-la gratuitement &mdash; sans carte bancaire
           </p>
           <Link
             href="/transport-medical/inscription"
