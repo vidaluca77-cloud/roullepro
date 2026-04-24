@@ -195,9 +195,9 @@ export async function POST(req: Request) {
   let createdUserId: string | null = null;
 
   try {
-    // 1. Rate limit
+    // 1. Rate limit (large pour la phase de lancement — à resserrer plus tard)
     const ip = getClientIp(req);
-    const { ok: rlOk } = checkRateLimit(`inscription:${ip}`, 3, 3_600_000);
+    const { ok: rlOk } = checkRateLimit(`inscription:${ip}`, 20, 3_600_000);
     if (!rlOk) {
       return NextResponse.json(
         { error: "Trop de tentatives. Réessayez dans 1 heure." },
