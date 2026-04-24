@@ -304,17 +304,19 @@ export async function POST(req: Request) {
     }
     createdUserId = authData.user.id;
 
-    // 7. INSERT profiles
-    const { error: profileError } = await supabaseAdmin.from("profiles").insert({
-      id: createdUserId,
-      email: data.email,
-      full_name: fullName,
-      phone: data.telephone,
-      company_name: data.raison_sociale,
-      siret: data.siret || null,
-      city: data.ville,
-      role: "pro",
-    });
+    // 7. UPDATE profiles (le trigger handle_new_user a déjà créé la ligne)
+    const { error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .update({
+        email: data.email,
+        full_name: fullName,
+        phone: data.telephone,
+        company_name: data.raison_sociale,
+        siret: data.siret || null,
+        city: data.ville,
+        role: "pro",
+      })
+      .eq("id", createdUserId);
     if (profileError) {
       throw new Error(`Erreur profil : ${profileError.message}`);
     }
