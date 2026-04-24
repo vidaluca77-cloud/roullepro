@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
-
-// Doit matcher generateSitemaps() dans src/app/sitemap.ts
-// id 0 : statiques, id 1 : villes/categories sanitaire, id 2..21 : fiches sanitaire
-const SITEMAP_IDS = Array.from({ length: 22 }, (_, i) => i);
+import { BASE_URL, SANITAIRE_FICHES_CHUNKS } from "@/lib/sitemap-builders";
 
 export const revalidate = 3600;
 
 export async function GET() {
+  const ids: number[] = [0, 1];
+  for (let i = 0; i < SANITAIRE_FICHES_CHUNKS; i += 1) ids.push(2 + i);
+
   const lastmod = new Date().toISOString();
-  const items = SITEMAP_IDS.map(
-    (id) => `  <sitemap>
-    <loc>${BASE_URL}/sitemap/${id}.xml</loc>
+  const items = ids
+    .map(
+      (id) => `  <sitemap>
+    <loc>${BASE_URL}/sitemaps/${id}.xml</loc>
     <lastmod>${lastmod}</lastmod>
   </sitemap>`
-  ).join("\n");
+    )
+    .join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
