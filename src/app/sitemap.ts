@@ -4,11 +4,11 @@ import { getAllPosts, CATEGORIES } from "@/lib/blog";
 import { CATEGORIES_SEO, VILLES_SEO } from "@/lib/seo-data";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
-const CHUNK_SIZE = 5000;
+// Supabase limite les reponses a 1000 lignes par defaut, on aligne la pagination dessus.
+const CHUNK_SIZE = 1000;
 
-// Nombre total de chunks pour les fiches sanitaires (estime 18 228 / 5000 = 4 chunks)
-// On declare 6 pour avoir de la marge, les vides seront ignores par Google
-const SANITAIRE_FICHES_CHUNKS = 6;
+// Nombre de chunks pour les fiches sanitaires : 18 228 / 1000 + marge = 20
+const SANITAIRE_FICHES_CHUNKS = 20;
 
 export const revalidate = 3600;
 
@@ -16,16 +16,14 @@ export const revalidate = 3600;
 //   /sitemap.xml (index, automatique quand on utilise generateSitemaps)
 //   /sitemap/0.xml, /sitemap/1.xml, etc.
 export async function generateSitemaps() {
-  return [
-    { id: 0 }, // pages statiques + annonces + blog + vehicules-pro
-    { id: 1 }, // villes sanitaire + categories ville sanitaire
-    { id: 2 }, // fiches sanitaire chunk 1
-    { id: 3 }, // fiches sanitaire chunk 2
-    { id: 4 }, // fiches sanitaire chunk 3
-    { id: 5 }, // fiches sanitaire chunk 4
-    { id: 6 }, // fiches sanitaire chunk 5
-    { id: 7 }, // fiches sanitaire chunk 6 (reserve)
-  ];
+  // id 0 : pages statiques + marketplace + blog + vehicules-pro
+  // id 1 : villes sanitaire + categories ville sanitaire
+  // id 2..(2 + N - 1) : fiches sanitaire paginees
+  const ids: { id: number }[] = [{ id: 0 }, { id: 1 }];
+  for (let i = 0; i < SANITAIRE_FICHES_CHUNKS; i += 1) {
+    ids.push({ id: 2 + i });
+  }
+  return ids;
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
