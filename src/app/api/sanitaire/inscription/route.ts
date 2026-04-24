@@ -351,8 +351,8 @@ export async function POST(req: Request) {
     const { data: proData, error: proError } = await supabaseAdmin
       .from("pros_sanitaire")
       .insert({
-        siret: data.siret || "",
-        siren: data.siret ? data.siret.substring(0, 9) : "",
+        siret: data.siret || null,
+        siren: data.siret ? data.siret.substring(0, 9) : null,
         raison_sociale: data.raison_sociale,
         nom_commercial: data.nom_commercial || null,
         slug,
