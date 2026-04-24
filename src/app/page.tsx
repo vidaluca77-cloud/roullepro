@@ -27,22 +27,23 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+// Optimisation perf : lit des vues matérialisées au lieu de scanner 22k lignes à chaque revalidation.
+// Les vues sont raffraîchies par un cron quotidien (REFRESH MATERIALIZED VIEW).
+
 async function getStats() {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const [total, ambulances, vsl, taxis] = await Promise.all([
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "ambulance"),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "vsl"),
-    supabase.from("pros_sanitaire").select("*", { count: "exact", head: true }).eq("actif", true).eq("categorie", "taxi_conventionne"),
-  ]);
+  const { data } = await supabase
+    .from("sanitaire_home_stats")
+    .select("total, ambulances, vsl, taxis")
+    .maybeSingle();
   return {
-    total: total.count ?? 0,
-    ambulances: ambulances.count ?? 0,
-    vsl: vsl.count ?? 0,
-    taxis: taxis.count ?? 0,
+    total: data?.total ?? 0,
+    ambulances: data?.ambulances ?? 0,
+    vsl: data?.vsl ?? 0,
+    taxis: data?.taxis ?? 0,
   };
 }
 
@@ -51,27 +52,11 @@ async function getTopVilles() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const rows: { ville: string; ville_slug: string; departement: string }[] = [];
-  let from = 0;
-  const size = 1000;
-  for (let i = 0; i < 22; i += 1) {
-    const { data } = await supabase
-      .from("pros_sanitaire")
-      .select("ville, ville_slug, departement")
-      .eq("actif", true)
-      .range(from, from + size - 1);
-    if (!data || data.length === 0) break;
-    rows.push(...data);
-    if (data.length < size) break;
-    from += size;
-  }
-  const map = new Map<string, { ville: string; ville_slug: string; departement: string; count: number }>();
-  rows.forEach((row) => {
-    const key = row.ville_slug;
-    if (!map.has(key)) map.set(key, { ...row, count: 0 });
-    map.get(key)!.count += 1;
-  });
-  return Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 12);
+  const { data } = await supabase
+    .from("sanitaire_top_villes")
+    .select("ville, ville_slug, departement, count")
+    .limit(12);
+  return (data ?? []) as { ville: string; ville_slug: string; departement: string; count: number }[];
 }
 
 async function getRegionsCount() {
@@ -79,28 +64,14 @@ async function getRegionsCount() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const rows: { region: string }[] = [];
-  let from = 0;
-  const size = 1000;
-  for (let i = 0; i < 22; i += 1) {
-    const { data } = await supabase
-      .from("pros_sanitaire")
-      .select("region")
-      .eq("actif", true)
-      .range(from, from + size - 1);
-    if (!data || data.length === 0) break;
-    rows.push(...(data as { region: string }[]));
-    if (data.length < size) break;
-    from += size;
-  }
-  const map = new Map<string, number>();
-  rows.forEach((row) => {
-    if (!row.region) return;
-    map.set(row.region, (map.get(row.region) || 0) + 1);
-  });
-  return Array.from(map.entries())
-    .map(([region, count]) => ({ region, count, slug: region.toLowerCase().replace(/\s+/g, "-").replace(/'/g, "-") }))
-    .sort((a, b) => b.count - a.count);
+  const { data } = await supabase
+    .from("sanitaire_regions")
+    .select("region, count");
+  return ((data ?? []) as { region: string; count: number }[]).map((r) => ({
+    region: r.region,
+    count: r.count,
+    slug: r.region.toLowerCase().replace(/\s+/g, "-").replace(/'/g, "-"),
+  }));
 }
 
 export default async function HomePage() {

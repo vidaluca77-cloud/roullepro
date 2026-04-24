@@ -23,6 +23,11 @@ type Props = {
   params: Promise<{ ville: string }>;
 };
 
+// Limite à 150 fiches max en SSR pour éviter le bloat HTML sur les grandes villes
+// (Paris, Strasbourg, etc.). Au-delà, l'utilisateur navigue par catégorie.
+const MAX_PROS_PER_VILLE_SSR = 150;
+const MAX_PROS_PER_CATEGORIE_SSR = 50;
+
 async function fetchProsForVille(villeSlug: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,9 +41,22 @@ async function fetchProsForVille(villeSlug: string) {
     .order("plan", { ascending: false })
     .order("claimed", { ascending: false })
     .order("raison_sociale")
-    .limit(200);
+    .limit(MAX_PROS_PER_VILLE_SSR);
   if (error) return [];
   return (data || []) as ProSanitaire[];
+}
+
+async function countProsForVille(villeSlug: string): Promise<number> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { count } = await supabase
+    .from("pros_sanitaire")
+    .select("*", { count: "exact", head: true })
+    .eq("actif", true)
+    .eq("ville_slug", villeSlug);
+  return count ?? 0;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -68,7 +86,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function VillePage({ params }: Props) {
   const { ville } = await params;
-  const pros = await fetchProsForVille(ville);
+  const [pros, totalCount] = await Promise.all([
+    fetchProsForVille(ville),
+    countProsForVille(ville),
+  ]);
 
   if (pros.length === 0) {
     const nomVille = deslugifyVille(ville);
@@ -101,10 +122,15 @@ export default async function VillePage({ params }: Props) {
   const departement = pros[0].departement;
   const region = pros[0].region;
 
-  const grouped = {
+  const groupedFull = {
     ambulance: pros.filter((p) => p.categorie === "ambulance"),
     vsl: pros.filter((p) => p.categorie === "vsl"),
     taxi_conventionne: pros.filter((p) => p.categorie === "taxi_conventionne"),
+  };
+  const grouped = {
+    ambulance: groupedFull.ambulance.slice(0, MAX_PROS_PER_CATEGORIE_SSR),
+    vsl: groupedFull.vsl.slice(0, MAX_PROS_PER_CATEGORIE_SSR),
+    taxi_conventionne: groupedFull.taxi_conventionne.slice(0, MAX_PROS_PER_CATEGORIE_SSR),
   };
 
   const jsonLd = {
@@ -179,7 +205,7 @@ export default async function VillePage({ params }: Props) {
             Transport sanitaire à {nomVille}
           </h1>
           <p className="text-blue-100">
-            {pros.length} professionnels référencés · Département {departement} · {region}
+            {totalCount} professionnels référencés · Département {departement} · {region}
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {CATEGORIES_SANITAIRE.map((cat) => {
@@ -220,7 +246,9 @@ export default async function VillePage({ params }: Props) {
         {(["ambulance", "vsl", "taxi_conventionne"] as const).map((key) => {
           const cat = getCategorieByKey(key);
           const list = grouped[key];
+          const totalInCat = groupedFull[key].length;
           if (!cat || list.length === 0) return null;
+          const hasMore = totalInCat > list.length;
           return (
             <section key={key} className="mb-12">
               <div className="flex items-center gap-3 mb-4">
@@ -235,7 +263,7 @@ export default async function VillePage({ params }: Props) {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">
-                    {cat.labelPluriel} à {nomVille} ({list.length})
+                    {cat.labelPluriel} à {nomVille} ({totalInCat})
                   </h2>
                   <p className="text-xs text-gray-500">{cat.description}</p>
                 </div>
@@ -245,6 +273,17 @@ export default async function VillePage({ params }: Props) {
                   <ProCard key={pro.id} pro={pro} villeSlug={ville} />
                 ))}
               </div>
+              {hasMore && (
+                <div className="mt-6 text-center">
+                  <Link
+                    href={`/transport-medical/${ville}/${cat.slug}`}
+                    className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-medium px-5 py-2.5 rounded-xl transition"
+                  >
+                    Voir les {totalInCat} {cat.labelPluriel.toLowerCase()} à {nomVille}
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              )}
             </section>
           );
         })}
