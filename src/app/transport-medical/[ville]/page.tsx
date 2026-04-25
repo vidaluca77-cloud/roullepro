@@ -179,7 +179,8 @@ export default async function VillePage({ params }: Props) {
         firstWithGeo.latitude,
         firstWithGeo.longitude,
         ville,
-        8
+        8,
+        firstWithGeo.departement
       )
     : [];
 

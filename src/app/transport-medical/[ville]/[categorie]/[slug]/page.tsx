@@ -82,7 +82,8 @@ export default async function FicheProPage({ params }: Props) {
     pro.latitude,
     pro.longitude,
     pro.ville_slug || ville,
-    6
+    6,
+    pro.departement
   );
 
   const proLd = buildProJsonLd(pro, ville, categorie, slug);

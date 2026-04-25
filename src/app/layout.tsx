@@ -11,10 +11,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
 export const metadata: Metadata = {
   title: {
-    default: 'RoullePro — Marketplace véhicules professionnels',
+    default: 'RoullePro — Marketplace véhicules pros & annuaire transport sanitaire',
     template: '%s | RoullePro',
   },
-  description: 'Achetez et vendez des véhicules professionnels : VTC, taxi, ambulance, TPMR, navette. La marketplace B2B du transport routier.',
+  description: "RoullePro : marketplace B2B de véhicules professionnels (taxi, VTC, ambulance, VSL, TPMR) et premier annuaire français des transports sanitaires (18 000+ ambulances, VSL, taxis conventionnés) issu de la base SIRENE.",
   metadataBase: new URL(APP_URL),
   openGraph: {
     siteName: 'RoullePro',
@@ -56,7 +56,17 @@ const organizationJsonLd = {
       logo: APP_URL + "/android-chrome-512x512.png",
       image: APP_URL + "/android-chrome-512x512.png",
       description:
-        "Premiere place de marche francaise dediee aux vehicules professionnels du transport routier : taxi, VTC, ambulance, VSL, TPMR, navette et utilitaires. Vendeurs verifies par SIRET, paiement sequestre Stripe, moderation manuelle 24h.",
+        "RoullePro exploite deux services en France : (1) une marketplace B2B de vehicules professionnels (taxi, VTC, ambulance, VSL, TPMR, navette, utilitaire) avec verification SIRET et paiement sequestre Stripe, et (2) le plus grand annuaire francais du transport sanitaire (ambulances, VSL, taxis conventionnes) construit a partir du registre SIRENE de l'INSEE, avec plus de 18 000 fiches actives.",
+      knowsAbout: [
+        "Transport sanitaire",
+        "Ambulances",
+        "VSL (Vehicule Sanitaire Leger)",
+        "Taxi conventionne",
+        "TPMR",
+        "Marketplace de vehicules professionnels",
+        "Agrement ARS",
+        "Conventionnement CPAM",
+      ],
       email: "contact@roullepro.com",
       telephone: "+33615472813",
       areaServed: { "@type": "Country", name: "France" },
@@ -76,7 +86,7 @@ const organizationJsonLd = {
       url: APP_URL,
       name: "RoullePro",
       description:
-        "Marketplace professionnelle des vehicules de transport : taxi, VTC, ambulance, VSL, TPMR, navette, utilitaire.",
+        "Marketplace de vehicules professionnels et annuaire national du transport sanitaire (ambulances, VSL, taxis conventionnes).",
       publisher: { "@id": APP_URL + "/#organization" },
       inLanguage: "fr-FR",
       potentialAction: {

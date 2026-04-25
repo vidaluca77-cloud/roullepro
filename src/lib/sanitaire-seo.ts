@@ -169,40 +169,56 @@ export function getVilleFaq(ville: string, nbPros: number): { question: string; 
 
 /**
  * Recupere les villes voisines avec au moins 1 pro actif, ordonnees par distance.
- * Utilise la latitude/longitude pour le calcul. Retourne max N villes.
+ * Filtre prealable par bounding box geographique (~25 km) pour eviter de charger
+ * 5000 fiches a chaque hit, et borne le perimetre au departement courant pour
+ * eviter les voisinages absurdes (ex: Paris -> Gisors).
  */
 export async function getVillesVoisines(
   supabase: SupabaseClient,
   lat: number | null,
   lng: number | null,
   villeActuelleSlug: string,
-  limit = 6
+  limit = 6,
+  departement?: string | null
 ): Promise<{ ville: string; ville_slug: string; nb: number }[]> {
   if (!lat || !lng) return [];
-  const { data } = await supabase
+
+  // Bounding box ~25 km autour de la ville (1 deg lat ~= 111 km, 1 deg lng ~= 73 km a 45 deg N)
+  const RAYON_KM = 25;
+  const dLat = RAYON_KM / 111;
+  const dLng = RAYON_KM / 73;
+
+  let query = supabase
     .from("pros_sanitaire")
     .select("ville, ville_slug, latitude, longitude")
     .eq("actif", true)
     .not("latitude", "is", null)
-    .limit(5000);
+    .gte("latitude", lat - dLat)
+    .lte("latitude", lat + dLat)
+    .gte("longitude", lng - dLng)
+    .lte("longitude", lng + dLng)
+    .limit(2000);
+
+  // Restreint au meme departement si dispo (evite les debordements regionaux pour les villes frontieres)
+  if (departement) {
+    query = query.eq("departement", departement);
+  }
+
+  const { data } = await query;
   const rows = (data || []) as { ville: string; ville_slug: string; latitude: number; longitude: number }[];
   const byVille = new Map<string, { ville: string; ville_slug: string; lat: number; lng: number; nb: number }>();
   for (const r of rows) {
     if (!r.ville_slug || r.ville_slug === villeActuelleSlug) continue;
-    const key = r.ville_slug;
-    const existing = byVille.get(key);
+    const existing = byVille.get(r.ville_slug);
     if (existing) {
       existing.nb += 1;
     } else {
-      byVille.set(key, { ville: r.ville, ville_slug: r.ville_slug, lat: r.latitude, lng: r.longitude, nb: 1 });
+      byVille.set(r.ville_slug, { ville: r.ville, ville_slug: r.ville_slug, lat: r.latitude, lng: r.longitude, nb: 1 });
     }
   }
   const withDist = Array.from(byVille.values())
-    .map((v) => ({
-      ...v,
-      distance: haversineKm(lat, lng, v.lat, v.lng),
-    }))
-    .filter((v) => v.distance > 0 && v.distance < 80)
+    .map((v) => ({ ...v, distance: haversineKm(lat, lng, v.lat, v.lng) }))
+    .filter((v) => v.distance > 0 && v.distance <= RAYON_KM)
     .sort((a, b) => a.distance - b.distance)
     .slice(0, limit);
   return withDist.map((v) => ({ ville: v.ville, ville_slug: v.ville_slug, nb: v.nb }));
