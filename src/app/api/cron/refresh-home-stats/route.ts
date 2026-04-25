@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -24,5 +25,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, refreshed_at: new Date().toISOString() });
+  // Invalide le cache ISR de la home et de l'annuaire
+  // pour propager immediatement les nouveaux compteurs.
+  try {
+    revalidatePath("/");
+    revalidatePath("/transport-medical");
+  } catch {
+    // ignore — refresh des vues a deja reussi
+  }
+
+  return NextResponse.json({
+    success: true,
+    refreshed_at: new Date().toISOString(),
+    revalidated: ["/", "/transport-medical"],
+  });
 }
