@@ -13,8 +13,8 @@ export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.co
 // Supabase limite les reponses a 1000 lignes par defaut.
 export const CHUNK_SIZE = 1000;
 
-// 18 228 fiches actives / 1000 + marge = 20 chunks
-export const SANITAIRE_FICHES_CHUNKS = 20;
+// 59 611 fiches actives / 1000 + grosse marge = 80 chunks (post Sprint 2.5 import SIRENE)
+export const SANITAIRE_FICHES_CHUNKS = 80;
 
 type SitemapEntry = {
   url: string;
