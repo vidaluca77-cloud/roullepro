@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 import { Cross, Car, MapPin, Search, Phone, Shield, Users, Clock, ChevronRight } from "lucide-react";
-import { CATEGORIES_SANITAIRE, REGIONS_MVP } from "@/lib/sanitaire-data";
+import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
+import { getDepartementByCode } from "@/lib/departements-fr";
 
 export const revalidate = 3600;
 
@@ -106,13 +107,108 @@ async function getRegionsCouvertes() {
     .sort((a, b) => b.count - a.count);
 }
 
+async function getDepartementsCouverts() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const rows: { departement: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 25; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("departement")
+      .eq("actif", true)
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < size) break;
+    from += size;
+  }
+  const counts = new Map<string, number>();
+  rows.forEach((r) => {
+    if (!r.departement) return;
+    counts.set(r.departement, (counts.get(r.departement) || 0) + 1);
+  });
+  return Array.from(counts.entries())
+    .map(([code, count]) => {
+      const info = getDepartementByCode(code);
+      return {
+        code,
+        nom: info?.nom || code,
+        region: info?.region || "",
+        count,
+      };
+    })
+    .sort((a, b) => a.code.localeCompare(b.code));
+}
+
+async function getAllVilles() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const rows: { ville: string; ville_slug: string }[] = [];
+  let from = 0;
+  const size = 1000;
+  for (let i = 0; i < 25; i += 1) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select("ville, ville_slug")
+      .eq("actif", true)
+      .range(from, from + size - 1);
+    if (!data || data.length === 0) break;
+    rows.push(...data);
+    if (data.length < size) break;
+    from += size;
+  }
+  const counts = new Map<string, { ville: string; ville_slug: string; count: number }>();
+  rows.forEach((r) => {
+    if (!r.ville_slug) return;
+    const cur = counts.get(r.ville_slug);
+    if (cur) cur.count += 1;
+    else counts.set(r.ville_slug, { ville: r.ville, ville_slug: r.ville_slug, count: 1 });
+  });
+  return Array.from(counts.values()).sort((a, b) => a.ville.localeCompare(b.ville, "fr"));
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
+
 export default async function TransportMedicalHome() {
   const stats = await getStats();
   const topVilles = await getTopVilles();
   const regionsCouvertes = await getRegionsCouvertes();
+  const departementsCouverts = await getDepartementsCouverts();
+  const allVilles = await getAllVilles();
+
+  // ItemList JSON-LD pour 100 villes top et regions
+  const itemListVillesLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Villes francaises avec transport sanitaire",
+    numberOfItems: allVilles.length,
+    itemListElement: allVilles.slice(0, 100).map((v, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: v.ville,
+      url: `${BASE_URL}/transport-medical/${v.ville_slug}`,
+    })),
+  };
+
+  // Group villes par premiere lettre pour navigation A-Z
+  const villesByLetter = new Map<string, typeof allVilles>();
+  for (const v of allVilles) {
+    const first = v.ville.charAt(0).toUpperCase();
+    const letter = /[A-Z]/.test(first) ? first : "#";
+    if (!villesByLetter.has(letter)) villesByLetter.set(letter, []);
+    villesByLetter.get(letter)!.push(v);
+  }
+  const sortedLetters = Array.from(villesByLetter.keys()).sort();
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/40 to-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListVillesLd) }} />
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden>
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white blur-3xl" />
@@ -227,6 +323,61 @@ export default async function TransportMedicalHome() {
               ))}
             </div>
           </div>
+
+          <div className="mt-10">
+            <h3 className="text-lg font-semibold text-gray-900 mb-1">Annuaire par département</h3>
+            <p className="text-sm text-gray-600 mb-4">Accédez à la liste complète des professionnels par département.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+              {departementsCouverts.map((d) => (
+                <Link
+                  key={d.code}
+                  href={`/transport-medical/departement/${d.code}`}
+                  className="bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-[#0066CC] hover:bg-blue-50 transition"
+                >
+                  <div className="text-xs font-mono text-gray-500">{d.code}</div>
+                  <div className="text-sm font-semibold text-gray-900 truncate">{d.nom}</div>
+                  <div className="text-xs text-gray-500">{d.count} pros</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-6xl mx-auto px-4 py-16">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Toutes les villes — annuaire complet</h2>
+        <p className="text-gray-600 mb-6">{allVilles.length.toLocaleString("fr-FR")} communes françaises avec au moins un professionnel du transport sanitaire référencé.</p>
+
+        <div className="flex flex-wrap gap-1.5 mb-6 sticky top-0 bg-white/95 backdrop-blur py-2 z-10">
+          {sortedLetters.map((l) => (
+            <a
+              key={l}
+              href={`#villes-${l}`}
+              className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-[#0066CC] hover:text-white hover:border-[#0066CC] transition"
+            >
+              {l}
+            </a>
+          ))}
+        </div>
+
+        <div className="space-y-6">
+          {sortedLetters.map((letter) => (
+            <div key={letter} id={`villes-${letter}`}>
+              <h3 className="text-lg font-bold text-[#0066CC] mb-3 border-b border-gray-200 pb-2">{letter}</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-1.5">
+                {villesByLetter.get(letter)!.map((v) => (
+                  <Link
+                    key={v.ville_slug}
+                    href={`/transport-medical/${v.ville_slug}`}
+                    className="text-sm text-gray-700 hover:text-[#0066CC] hover:underline truncate"
+                    title={v.ville}
+                  >
+                    {v.ville} <span className="text-xs text-gray-400">({v.count})</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

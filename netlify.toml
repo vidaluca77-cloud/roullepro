@@ -11,6 +11,10 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Scheduled function : rafraichit les sitemaps une fois par jour a 03:00 UTC
+[functions."refresh-sitemaps"]
+  schedule = "0 3 * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]

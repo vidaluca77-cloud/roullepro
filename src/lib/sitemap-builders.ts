@@ -6,6 +6,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getAllPosts, CATEGORIES } from "./blog";
 import { CATEGORIES_SEO, VILLES_SEO } from "./seo-data";
+import { getAllDepartementCodes } from "./departements-fr";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -160,6 +161,13 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/transport-medical/inscription`, changefreq: "monthly", priority: 0.7 },
   ];
 
+  // Pages departement (101 entrees : metropole + outre-mer)
+  const sanitaireDepartements: SitemapEntry[] = getAllDepartementCodes().map((code) => ({
+    url: `${BASE_URL}/transport-medical/departement/${code}`,
+    changefreq: "weekly",
+    priority: 0.75,
+  }));
+
   return [
     ...staticPages,
     ...depotVillePages,
@@ -171,6 +179,7 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     ...vehiculesProCatPages,
     ...vehiculesProCatVillePages,
     ...sanitaireStatic,
+    ...sanitaireDepartements,
   ];
 }
 

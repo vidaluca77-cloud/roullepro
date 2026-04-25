@@ -22,6 +22,7 @@ import {
   buildProJsonLd,
   buildFaqJsonLd,
   buildBreadcrumbJsonLd,
+  buildFicheSeoText,
   getFicheFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
@@ -50,16 +51,34 @@ async function fetchPro(slug: string) {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug, ville } = await params;
+  const { slug, ville, categorie } = await params;
   const pro = await fetchPro(slug);
   if (!pro) return { title: "Fiche introuvable" };
   const nom = pro.nom_commercial || pro.raison_sociale;
+  const cat = getCategorieBySlug(categorie);
+  const catLabel = cat?.label || "Transport sanitaire";
+  const seo = buildFicheSeoText(pro);
+  // Description meta : 2 premieres phrases du texte SEO, tronquees a 158 chars
+  const metaDesc = (
+    pro.description?.slice(0, 158) ||
+    seo.paragraphes[0]?.slice(0, 158) ||
+    `${catLabel} ${nom} à ${pro.ville}. Téléphone, adresse, horaires.`
+  );
   return {
-    title: `${nom} — ${pro.ville}`,
-    description: pro.description
-      ? pro.description.slice(0, 160)
-      : `Transport sanitaire ${nom} à ${pro.ville}. Téléphone, adresse, horaires.`,
-    alternates: { canonical: `/transport-medical/${ville}/${(await params).categorie}/${slug}` },
+    title: `${nom} — ${catLabel} à ${pro.ville}`,
+    description: metaDesc,
+    alternates: { canonical: `/transport-medical/${ville}/${categorie}/${slug}` },
+    openGraph: {
+      title: `${nom} — ${catLabel} à ${pro.ville}`,
+      description: metaDesc,
+      type: "website",
+      locale: "fr_FR",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${nom} — ${pro.ville}`,
+      description: metaDesc,
+    },
   };
 }
 
@@ -86,7 +105,8 @@ export default async function FicheProPage({ params }: Props) {
     pro.departement
   );
 
-  const proLd = buildProJsonLd(pro, ville, categorie, slug);
+  const seoText = buildFicheSeoText(pro, villesVoisines);
+  const proLd = buildProJsonLd(pro, ville, categorie, slug, seoText.paragraphes.join(" "));
   const faqQuestions = getFicheFaq(pro);
   const faqLd = buildFaqJsonLd(faqQuestions);
   const breadLd = buildBreadcrumbJsonLd([
@@ -162,9 +182,18 @@ export default async function FicheProPage({ params }: Props) {
 
       <section className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          <article className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
+            <div className="space-y-3">
+              {seoText.paragraphes.map((p, i) => (
+                <p key={i} className="text-gray-700 leading-relaxed">{p}</p>
+              ))}
+            </div>
+          </article>
+
           {pro.description && isPremium && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">À propos</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">Présentation par le professionnel</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">{pro.description}</p>
             </div>
           )}
