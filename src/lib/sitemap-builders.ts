@@ -192,7 +192,7 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   const size = 1000;
   for (let i = 0; i < 25; i += 1) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("ville_slug")
       .eq("actif", true)
       .range(from, from + size - 1);
@@ -232,7 +232,7 @@ export async function buildSanitaireFichesEntries(chunkIndex: number): Promise<S
   const offset = chunkIndex * CHUNK_SIZE;
 
   const { data } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("slug, ville_slug, categorie")
     .eq("actif", true)
     .order("id", { ascending: true })

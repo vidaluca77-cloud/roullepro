@@ -26,21 +26,21 @@ async function getStats() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { count: total } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
     .eq("actif", true);
   const { count: ambulances } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
     .eq("actif", true)
     .eq("categorie", "ambulance");
   const { count: vsl } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
     .eq("actif", true)
     .eq("categorie", "vsl");
   const { count: taxis } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
     .eq("actif", true)
     .eq("categorie", "taxi_conventionne");
@@ -58,7 +58,7 @@ async function getTopVilles() {
   const size = 1000;
   for (let i = 0; i < 10; i += 1) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("ville, ville_slug, departement")
       .eq("actif", true)
       .range(from, from + size - 1);
@@ -88,7 +88,7 @@ async function getRegionsCouvertes() {
   const size = 1000;
   for (let i = 0; i < 25; i += 1) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("region")
       .eq("actif", true)
       .range(from, from + size - 1);
@@ -117,7 +117,7 @@ async function getDepartementsCouverts() {
   const size = 1000;
   for (let i = 0; i < 25; i += 1) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("departement")
       .eq("actif", true)
       .range(from, from + size - 1);
@@ -154,7 +154,7 @@ async function getAllVilles() {
   const size = 1000;
   for (let i = 0; i < 25; i += 1) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("ville, ville_slug")
       .eq("actif", true)
       .range(from, from + size - 1);

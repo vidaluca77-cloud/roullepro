@@ -21,13 +21,13 @@ export async function GET(req: Request) {
 
   const { data } = isCodePostal
     ? await supabase
-        .from("pros_sanitaire")
+        .from("pros_sanitaire_public")
         .select("ville, ville_slug, code_postal, departement")
         .eq("actif", true)
         .ilike("code_postal", `${q}%`)
         .limit(200)
     : await supabase
-        .from("pros_sanitaire")
+        .from("pros_sanitaire_public")
         .select("ville, ville_slug, code_postal, departement")
         .eq("actif", true)
         .ilike("ville", `${q}%`)

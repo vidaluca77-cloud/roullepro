@@ -42,7 +42,7 @@ async function fetchDepartementData(code: string): Promise<{
 
   // Recupere toutes les fiches actives du departement
   const { data: pros, error } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("ville, ville_slug, categorie")
     .eq("actif", true)
     .eq("departement", code)

@@ -18,7 +18,7 @@ async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string) 
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { data } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*")
     .eq("actif", true)
     .eq("ville_slug", villeSlug)

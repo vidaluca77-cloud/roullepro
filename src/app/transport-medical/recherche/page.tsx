@@ -23,7 +23,7 @@ export default async function RecherchePage({ searchParams }: Props) {
   let pros: ProSanitaire[] = [];
   if (queryVille) {
     let query = supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("*")
       .eq("actif", true)
       .or(`ville_slug.eq.${villeSlug},ville.ilike.%${queryVille}%,code_postal.eq.${queryVille}`)
@@ -35,7 +35,7 @@ export default async function RecherchePage({ searchParams }: Props) {
     pros = (data || []) as ProSanitaire[];
   } else if (cat) {
     const { data } = await supabase
-      .from("pros_sanitaire")
+      .from("pros_sanitaire_public")
       .select("*")
       .eq("actif", true)
       .eq("categorie", cat.key)

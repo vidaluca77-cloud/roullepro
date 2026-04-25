@@ -15,7 +15,7 @@ export async function GET(req: Request) {
   // Recherche par SIRET exact ou par raison sociale
   const isSiret = /^\d{14}$/.test(q.replace(/\s/g, ""));
   const query = supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("id, siret, raison_sociale, nom_commercial, ville, code_postal, categorie, claimed")
     .eq("actif", true)
     .limit(12);

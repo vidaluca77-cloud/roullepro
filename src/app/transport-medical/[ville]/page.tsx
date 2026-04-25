@@ -34,7 +34,7 @@ async function fetchProsForVille(villeSlug: string) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { data, error } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*")
     .eq("actif", true)
     .eq("ville_slug", villeSlug)
@@ -52,7 +52,7 @@ async function countProsForVille(villeSlug: string): Promise<number> {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { count } = await supabase
-    .from("pros_sanitaire")
+    .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
     .eq("actif", true)
     .eq("ville_slug", villeSlug);

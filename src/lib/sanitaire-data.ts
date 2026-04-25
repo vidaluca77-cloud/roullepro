@@ -146,6 +146,19 @@ export function planDisplay(plan: string | null | undefined): { label: string; c
   }
 }
 
+/**
+ * Filtre PostgREST pour ne montrer publiquement que :
+ *  - les ambulances et VSL (toutes)
+ *  - les taxis VERIFIES (verified=true) ou RECLAMES par un pro (claimed=true)
+ *  - PAS les taxis importés SIRENE non-vérifiés (faux positifs : taxis non conventionnés).
+ *
+ * S'applique à toute requête qui liste les pros pour le grand public
+ * (annuaire, recherche, autocomplete, sitemaps, compteurs, pages dept/ville).
+ * NE PAS appliquer aux pages /pro et au dashboard pro.
+ */
+export const PUBLIC_TAXI_FILTER =
+  "categorie.neq.taxi_conventionne,verified.eq.true,claimed.eq.true";
+
 export function slugifyVille(s: string): string {
   return s
     .toLowerCase()
