@@ -21,6 +21,8 @@ import {
   FileText,
   Upload,
   X,
+  Sparkles,
+  ExternalLink,
 } from "lucide-react";
 import { isValidSiretFormat } from "@/lib/siren";
 
@@ -132,6 +134,14 @@ export default function InscriptionForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<{
+    message: string;
+    claimUrl: string | null;
+    ficheUrl: string | null;
+    alreadyClaimed: boolean;
+    raisonSociale?: string;
+    ville?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [siretLoading, setSiretLoading] = useState(false);
   const [siretStatus, setSiretStatus] = useState<"idle" | "found" | "not_found" | "invalid">("idle");
@@ -331,6 +341,7 @@ export default function InscriptionForm() {
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
     setApiError(null);
+    setDuplicateInfo(null);
 
     // Tenter d'exécuter hCaptcha si pas encore token (non-bloquant)
     let token = captchaToken;
@@ -388,9 +399,32 @@ export default function InscriptionForm() {
           rgpd_accepted: values.rgpd_accepted,
         }),
       });
-      const json = await res.json() as { ok?: boolean; redirect?: string; error?: string };
+      const json = await res.json() as {
+        ok?: boolean;
+        redirect?: string;
+        error?: string;
+        duplicate?: boolean;
+        already_claimed?: boolean;
+        claim_url?: string | null;
+        fiche_url?: string | null;
+        existing?: { raison_sociale?: string; nom_commercial?: string; ville?: string; claim_status?: string };
+      };
       if (!res.ok) {
-        setApiError(json.error || "Une erreur est survenue.");
+        if (json.duplicate && json.claim_url) {
+          setDuplicateInfo({
+            message: json.error || "Cette entreprise est déjà sur RoullePro.",
+            claimUrl: json.claim_url,
+            ficheUrl: json.fiche_url || null,
+            alreadyClaimed: json.already_claimed === true,
+            raisonSociale: json.existing?.nom_commercial || json.existing?.raison_sociale,
+            ville: json.existing?.ville,
+          });
+          if (typeof window !== "undefined") {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        } else {
+          setApiError(json.error || "Une erreur est survenue.");
+        }
         setLoading(false);
         return;
       }
@@ -1016,6 +1050,79 @@ export default function InscriptionForm() {
         >
           <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
           <p>{apiError}</p>
+        </div>
+      )}
+
+      {duplicateInfo && (
+        <div
+          className={`mb-6 rounded-2xl p-5 border ${
+            duplicateInfo.alreadyClaimed
+              ? "bg-amber-50 border-amber-200"
+              : "bg-gradient-to-br from-blue-50 to-emerald-50 border-blue-200"
+          }`}
+          role="status"
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                duplicateInfo.alreadyClaimed ? "bg-amber-100" : "bg-blue-100"
+              }`}
+            >
+              {duplicateInfo.alreadyClaimed ? (
+                <AlertCircle className="w-5 h-5 text-amber-700" />
+              ) : (
+                <Sparkles className="w-5 h-5 text-[#0066CC]" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3
+                className={`font-bold text-base mb-1 ${
+                  duplicateInfo.alreadyClaimed ? "text-amber-900" : "text-gray-900"
+                }`}
+              >
+                {duplicateInfo.alreadyClaimed
+                  ? "Cette fiche est déjà réclamée"
+                  : "Votre entreprise est déjà sur RoullePro"}
+              </h3>
+              <p className="text-sm text-gray-700 mb-3">{duplicateInfo.message}</p>
+              {duplicateInfo.raisonSociale && (
+                <div className="bg-white/70 rounded-lg px-3 py-2 mb-3 text-sm text-gray-700">
+                  <span className="text-gray-500">Fiche :</span>{" "}
+                  <span className="font-semibold">{duplicateInfo.raisonSociale}</span>
+                  {duplicateInfo.ville && (
+                    <span className="text-gray-500"> — {duplicateInfo.ville}</span>
+                  )}
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {!duplicateInfo.alreadyClaimed && duplicateInfo.claimUrl && (
+                  <Link
+                    href={duplicateInfo.claimUrl}
+                    className="inline-flex items-center gap-1.5 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-4 py-2 rounded-xl text-sm transition"
+                  >
+                    Réclamer ma fiche <ChevronRight className="w-4 h-4" />
+                  </Link>
+                )}
+                {duplicateInfo.ficheUrl && (
+                  <Link
+                    href={duplicateInfo.ficheUrl}
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-medium px-4 py-2 rounded-xl text-sm transition"
+                  >
+                    Voir la fiche <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                )}
+                {duplicateInfo.alreadyClaimed && (
+                  <a
+                    href="mailto:contact@roullepro.com"
+                    className="inline-flex items-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-xl text-sm transition"
+                  >
+                    Contacter le support
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -248,7 +248,7 @@ export async function POST(req: Request) {
     if (data.siret) {
       const { data: existingPro } = await supabaseAdmin
         .from("pros_sanitaire")
-        .select("id")
+        .select("id, slug, ville_slug, categorie, raison_sociale, nom_commercial, ville, claim_status, claimed")
         .eq("siret", data.siret)
         .limit(1)
         .maybeSingle();
@@ -264,9 +264,27 @@ export async function POST(req: Request) {
           reason: "SIRET déjà référencé",
           pro_id: existingPro.id,
         });
+        const claimUrl = `/transport-medical/pro/reclamer?siret=${data.siret}`;
+        const ficheUrl =
+          existingPro.ville_slug && existingPro.categorie && existingPro.slug
+            ? `/transport-medical/${existingPro.ville_slug}/${existingPro.categorie === "taxi_conventionne" ? "taxi-conventionne" : existingPro.categorie}/${existingPro.slug}`
+            : null;
+        const alreadyClaimed = existingPro.claimed === true || existingPro.claim_status === "verified" || existingPro.claim_status === "en_attente_validation";
         return NextResponse.json(
           {
-            error: `Cette entreprise est déjà référencée. Revendiquez sa fiche ici : /transport-medical/pro/reclamer?siret=${data.siret}`,
+            duplicate: true,
+            already_claimed: alreadyClaimed,
+            claim_url: claimUrl,
+            fiche_url: ficheUrl,
+            existing: {
+              raison_sociale: existingPro.raison_sociale,
+              nom_commercial: existingPro.nom_commercial,
+              ville: existingPro.ville,
+              claim_status: existingPro.claim_status,
+            },
+            error: alreadyClaimed
+              ? `Cette entreprise est déjà référencée et revendiquée par son gérant. Si c'est vous, contactez contact@roullepro.com.`
+              : `Bonne nouvelle — votre entreprise est déjà sur RoullePro. Vous pouvez réclamer sa fiche en quelques clics.`,
           },
           { status: 409 }
         );
@@ -408,8 +426,10 @@ export async function POST(req: Request) {
         }).then(() => undefined, () => undefined);
         return NextResponse.json(
           {
+            duplicate: true,
+            claim_url: data.siret ? `/transport-medical/pro/reclamer?siret=${data.siret}` : null,
             error: data.siret
-              ? `Cette entreprise est déjà référencée. Revendiquez sa fiche ici : /transport-medical/pro/reclamer?siret=${data.siret}`
+              ? `Bonne nouvelle — votre entreprise est déjà sur RoullePro. Vous pouvez réclamer sa fiche en quelques clics.`
               : "Cette entreprise est déjà référencée. Contactez-nous pour réclamer la fiche.",
           },
           { status: 409 }
