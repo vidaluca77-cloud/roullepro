@@ -73,6 +73,15 @@ export async function POST(req: Request) {
         .eq("id", pro_id);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+      // Promouvoir le claimer en rôle 'pro' (sans rétrograder un admin)
+      if (pro.claimed_by) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ role: "pro", is_verified: true })
+          .eq("id", pro.claimed_by)
+          .neq("role", "admin");
+      }
+
       if (proEmail) {
         const freeTrialEnd = (pro as typeof pro & { free_trial_ends_at: string | null }).free_trial_ends_at;
         const trialDateStr = freeTrialEnd
