@@ -11,12 +11,13 @@ import {
   MessageCircle,
   Building2,
 } from "lucide-react";
+import CheckoutButton from "@/components/sanitaire/CheckoutButton";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Tarifs — RoullePro Transport Médical",
   description:
-    "Tout est gratuit pour les professionnels du transport sanitaire en 2026. Pas de commission, pas d'algorithme, pas d'engagement. Plus tard, des options simples et transparentes pour ceux qui le souhaitent.",
+    "Une seule offre simple et honnête : Plan Pro à 19,90€/mois pour activer la messagerie patients et la visibilité. Pas de commission, pas d'algorithme, sans engagement.",
   alternates: { canonical: "/transport-medical/tarifs" },
 };
 
@@ -28,14 +29,18 @@ export default async function TarifsPage() {
     data: { user },
   } = await supabase.auth.getUser();
   let ficheId: string | null = null;
+  let currentPlan: string | null = null;
   if (user) {
     const { data } = await supabase
       .from("pros_sanitaire")
-      .select("id")
+      .select("id, plan")
       .eq("claimed_by", user.id)
       .maybeSingle();
     ficheId = data?.id ?? null;
+    currentPlan = data?.plan ?? null;
   }
+  const isPro =
+    currentPlan === "essential" || currentPlan === "premium" || currentPlan === "pro_plus";
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-blue-50/40">
@@ -44,71 +49,157 @@ export default async function TarifsPage() {
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-300/30 text-xs font-semibold mb-5">
             <Sparkles className="w-3.5 h-3.5" />
-            Gratuit pour tous les pros en 2026
+            Une offre, simple et transparente
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold mb-4 leading-tight">
-            Un annuaire honnête,
+            Une fiche gratuite à vie,
             <br />
-            sans commission ni algorithme
+            une option Pro à 19,90€
           </h1>
           <p className="text-blue-100 text-lg max-w-2xl mx-auto">
             RoullePro n&apos;est pas une plateforme VTC. Vos patients restent vos patients, vos coordonnées sont
             visibles à vie, et vous gardez la main sur votre activité.
           </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
+        </div>
+      </section>
+
+      {/* Les deux plans */}
+      <section className="max-w-5xl mx-auto px-4 py-14">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Plan gratuit */}
+          <div className="bg-white border border-gray-200 rounded-3xl p-7 flex flex-col">
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="w-5 h-5 text-emerald-600" />
+              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+                Pour tous les pros
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">Fiche Gratuite</div>
+            <div className="flex items-baseline gap-1 mb-5">
+              <div className="text-4xl font-bold text-gray-900">0 €</div>
+              <div className="text-sm text-gray-500">à vie</div>
+            </div>
+            <ul className="space-y-2.5 mb-6 flex-1">
+              {[
+                "Fiche complète et illimitée",
+                "Site web et email visibles publiquement",
+                "Description, photos et horaires détaillés",
+                "Bouton WhatsApp et appel direct",
+                "Badge « Pro vérifié » après contrôle SIRET",
+                "Réception des appels téléphoniques directs",
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
             <Link
-              href="/transport-medical/pro/reclamer"
-              className="inline-flex items-center gap-2 bg-white text-[#0066CC] hover:bg-blue-50 font-semibold px-5 py-3 rounded-xl transition"
+              href={ficheId ? "/transport-medical/pro/dashboard" : "/transport-medical/pro/reclamer"}
+              className="block text-center bg-gray-900 hover:bg-gray-800 text-white font-semibold px-5 py-3 rounded-xl transition"
             >
-              Réclamer ma fiche gratuitement
-              <ArrowRight className="w-4 h-4" />
+              {ficheId ? "Aller à mon espace pro" : "Réclamer ma fiche gratuitement"}
             </Link>
-            <Link
-              href="/transport-medical/notre-engagement"
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold px-5 py-3 rounded-xl transition"
-            >
-              Notre engagement
-            </Link>
+          </div>
+
+          {/* Plan Pro 19,90€ */}
+          <div className="bg-white border-2 border-emerald-400 rounded-3xl p-7 shadow-lg relative flex flex-col">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 text-xs font-semibold bg-emerald-600 text-white px-3 py-1 rounded-full">
+              <Sparkles className="w-3 h-3" />
+              Recommandé
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <MessageCircle className="w-5 h-5 text-[#0066CC]" />
+              <div className="text-xs font-semibold uppercase tracking-wide text-[#0066CC]">
+                Pour aller plus loin
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">Plan Pro</div>
+            <div className="flex items-baseline gap-1 mb-5">
+              <div className="text-4xl font-bold text-[#0066CC]">19,90 €</div>
+              <div className="text-sm text-gray-500">/mois HT, sans engagement</div>
+            </div>
+            <ul className="space-y-2.5 mb-6 flex-1">
+              {[
+                "Tout ce qui est inclus dans la fiche gratuite",
+                "Messagerie patients activée",
+                "Lecture et réponse aux demandes structurées",
+                "Meilleure visibilité dans votre ville",
+                "Statistiques détaillées (vues, appels, messages)",
+                "Notifications email à chaque demande",
+                "Résiliation en un clic, sans frais",
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            {isPro ? (
+              <div className="block text-center bg-emerald-50 text-emerald-700 font-semibold px-5 py-3 rounded-xl border border-emerald-200">
+                Votre plan actuel
+              </div>
+            ) : user && ficheId ? (
+              <CheckoutButton planKey="essential" ficheId={ficheId} popular />
+            ) : (
+              <Link
+                href={
+                  user ? "/transport-medical/pro" : "/auth/login?next=/transport-medical/tarifs"
+                }
+                className="block text-center bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
+              >
+                {user ? "Réclamer ma fiche d'abord" : "Se connecter pour activer"}
+              </Link>
+            )}
           </div>
         </div>
       </section>
 
-      {/* Promesse 2026 */}
-      <section className="max-w-5xl mx-auto px-4 py-14">
-        <div className="bg-white border-2 border-emerald-200 rounded-3xl p-8 sm:p-10 shadow-sm">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Heart className="w-5 h-5 text-emerald-600" />
+      {/* Plan établissements à venir */}
+      <section className="max-w-5xl mx-auto px-4 pb-14">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+          <div className="absolute top-6 right-6 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-white text-[#0066CC] px-3 py-1 rounded-full border border-blue-200 shadow-sm">
+            À venir
+          </div>
+          <div className="flex items-start gap-4 max-w-3xl">
+            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 border border-blue-100">
+              <Building2 className="w-6 h-6 text-[#0066CC]" />
             </div>
             <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
-                Notre promesse
+              <div className="text-xs font-semibold uppercase tracking-wide text-[#0066CC] mb-1">
+                Plan Établissements
               </div>
-              <div className="text-xl font-bold text-gray-900">
-                Tout est gratuit pour les professionnels en 2026
+              <div className="text-2xl font-bold text-gray-900 mb-2">~49 € /mois HT</div>
+              <p className="text-gray-700 leading-relaxed mb-5">
+                Pour les sociétés qui travaillent avec EHPAD, cabinets et hôpitaux : recevoir les demandes
+                récurrentes de prescripteurs B2B, gestion multi-utilisateurs pour la flotte, et un canal direct
+                avec les établissements partenaires.
+              </p>
+              <div className="grid sm:grid-cols-2 gap-2 mb-5">
+                {[
+                  "Demandes des prescripteurs (EHPAD, dialyse, hôpitaux)",
+                  "Multi-utilisateurs pour gérer la flotte",
+                  "Canal direct avec les établissements",
+                  "Support dédié par téléphone",
+                ].map((f) => (
+                  <div key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                    <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <div className="bg-white/80 border border-blue-100 rounded-xl p-3 text-xs text-gray-600">
+                <Shield className="w-3.5 h-3.5 inline mr-1 text-[#0066CC]" />
+                Lancement prévu courant 2026. Vous êtes EHPAD, cabinet ou hôpital ?{" "}
+                <Link
+                  href="mailto:contact@roullepro.com?subject=Phase%20pilote%20%C3%A9tablissement"
+                  className="text-[#0066CC] font-semibold hover:underline"
+                >
+                  Rejoignez la phase pilote gratuite
+                </Link>
+                .
               </div>
             </div>
-          </div>
-          <p className="text-gray-700 leading-relaxed mb-6">
-            Pendant la phase de lancement, l&apos;ensemble des fonctionnalités est offert sans condition aux
-            ambulanciers, sociétés de VSL et taxis conventionnés. Pas de carte bancaire à fournir, pas de période
-            d&apos;essai déguisée, pas de relance commerciale agressive. Vous nous aidez à construire un annuaire
-            utile, on vous aide à exister en ligne sans intermédiaire.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {[
-              "Fiche complète et illimitée",
-              "Site web et email visibles publiquement",
-              "Description, photos et horaires détaillés",
-              "Bouton WhatsApp et appel direct",
-              "Demandes de transport reçues par email",
-              "Badge « Pro vérifié » après contrôle SIRET",
-            ].map((f) => (
-              <div key={f} className="flex items-start gap-2 text-sm text-gray-700">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                {f}
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -145,7 +236,7 @@ export default async function TarifsPage() {
             },
             {
               t: "Pas d'engagement caché",
-              d: "Si un jour vous prenez une option payante, elle sera mensuelle, sans engagement, résiliable en un clic.",
+              d: "Le plan Pro est mensuel, sans engagement, résiliable en un clic depuis votre espace pro.",
             },
           ].map((item) => (
             <div key={item.t} className="bg-white border border-gray-200 rounded-2xl p-5">
@@ -161,128 +252,17 @@ export default async function TarifsPage() {
         </div>
       </section>
 
-      {/* Plus tard - options envisagées */}
-      <section className="max-w-5xl mx-auto px-4 pb-14">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-8 sm:p-10">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border border-blue-100">
-              <Wallet className="w-5 h-5 text-[#0066CC]" />
-            </div>
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-[#0066CC]">
-                Plus tard, à titre indicatif
-              </div>
-              <div className="text-xl font-bold text-gray-900">
-                Des options simples pour ceux qui veulent aller plus loin
-              </div>
-            </div>
-          </div>
-          <p className="text-gray-700 mb-6 leading-relaxed">
-            Quand l&apos;annuaire aura prouvé son utilité, deux options resteront strictement facultatives. Aucune
-            n&apos;est nécessaire pour être visible, vérifié et joignable. Les tarifs ci-dessous sont indicatifs et
-            seront annoncés au moins 60 jours avant toute mise en place.
-          </p>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                Option Visibilité (envisagée)
-              </div>
-              <div className="flex items-baseline gap-1 mb-4">
-                <div className="text-3xl font-bold text-gray-900">~19 €</div>
-                <div className="text-sm text-gray-500">/mois HT, sans engagement</div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Un coup de pouce ponctuel pour apparaître mieux dans votre ville, avec des statistiques détaillées
-                de votre fiche. Pas de Top 1, pas d&apos;enchère : juste un bonus de visibilité raisonnable.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Mise en avant locale modérée
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Statistiques de vues et de demandes
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Galerie photos étendue
-                </li>
-              </ul>
-            </div>
-            <div className="bg-white rounded-2xl p-6 border border-gray-200">
-              <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                Option Établissements (envisagée)
-              </div>
-              <div className="flex items-baseline gap-1 mb-4">
-                <div className="text-3xl font-bold text-gray-900">~49 €</div>
-                <div className="text-sm text-gray-500">/mois HT, sans engagement</div>
-              </div>
-              <p className="text-sm text-gray-600 mb-4">
-                Pour les sociétés qui travaillent avec EHPAD, cabinets et hôpitaux : recevoir les demandes
-                récurrentes de prescripteurs B2B et un canal direct avec les établissements partenaires.
-              </p>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Demandes des prescripteurs (EHPAD, dialyse...)
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Multi-utilisateurs pour la flotte
-                </li>
-                <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                  Support dédié par téléphone
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-6 text-xs text-gray-600 bg-white/60 border border-blue-100 rounded-xl p-3">
-            <Shield className="w-3.5 h-3.5 inline mr-1 text-[#0066CC]" />
-            Tant que rien n&apos;est annoncé officiellement, ces options ne sont pas commercialisées. Aucun pro
-            inscrit aujourd&apos;hui ne sera basculé automatiquement vers une offre payante.
-          </div>
-        </div>
-      </section>
-
-      {/* Pour les établissements */}
-      <section className="max-w-5xl mx-auto px-4 pb-14">
-        <div className="bg-white border border-gray-200 rounded-3xl p-8 sm:p-10">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <Building2 className="w-5 h-5 text-[#0066CC]" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
-                Vous êtes un EHPAD, un cabinet médical ou un hôpital ?
-              </h2>
-              <p className="text-gray-700 leading-relaxed mb-4">
-                Nous construisons un module dédié aux prescripteurs réguliers : annuaire de partenaires de
-                confiance, demandes de transport en quelques clics, suivi des trajets sans complexité. Si vous
-                travaillez dans un établissement, écrivez-nous pour rejoindre la phase pilote (gratuite).
-              </p>
-              <Link
-                href="mailto:contact@roullepro.com?subject=Phase%20pilote%20%C3%A9tablissement"
-                className="inline-flex items-center gap-2 text-[#0066CC] hover:text-[#0052a3] font-semibold"
-              >
-                contact@roullepro.com
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="max-w-3xl mx-auto px-4 pb-14 text-center">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-          {ficheId ? "Votre fiche est déjà active" : "Prêt à reprendre la main sur votre fiche ?"}
+          {ficheId
+            ? "Votre fiche est déjà active"
+            : "Prêt à reprendre la main sur votre fiche ?"}
         </h2>
         <p className="text-gray-600 mb-6">
           {ficheId
-            ? "Vous pouvez à tout moment l'enrichir depuis votre espace pro."
-            : "Cinq minutes suffisent. Aucun engagement, aucun paiement, aucune relance commerciale."}
+            ? "Vous pouvez à tout moment l'enrichir ou activer le plan Pro depuis votre espace."
+            : "Cinq minutes suffisent. La fiche est gratuite à vie. Le plan Pro est optionnel et résiliable en un clic."}
         </p>
         <Link
           href={ficheId ? "/transport-medical/pro/dashboard" : "/transport-medical/pro/reclamer"}
@@ -300,26 +280,34 @@ export default async function TarifsPage() {
           Questions fréquentes
         </h2>
         <div className="space-y-3">
-          <Faq q="Pourquoi tout est-il gratuit en 2026 ?">
-            Parce qu&apos;un annuaire ne vaut rien sans les pros qui le font vivre. Tant que la base ne couvre pas
-            l&apos;ensemble du territoire avec des fiches enrichies par leurs propriétaires, faire payer
-            n&apos;aurait aucun sens. Quand le service prouvera son utilité, des options payantes pourront
-            apparaître, mais le socle restera toujours gratuit.
+          <Faq q="Que comprend exactement la fiche gratuite ?">
+            Tout ce dont un pro a besoin pour exister en ligne : nom, adresse, téléphone, email, site web,
+            description, photos, horaires, badge vérifié. Les patients peuvent vous appeler directement, vous
+            écrire par email ou via WhatsApp. Cette fiche reste gratuite à vie, sans condition.
+          </Faq>
+          <Faq q="Pourquoi 19,90€ pour le plan Pro ?">
+            Parce que la messagerie structurée (demandes datées, lieux, type de transport) et la mise en avant
+            locale ont un coût technique réel. 19,90€/mois c&apos;est ce qu&apos;il faut pour faire vivre le
+            service correctement, sans pub ni revente de données. C&apos;est aussi un prix juste comparé aux
+            plateformes de courses qui prennent 20% à 30% par trajet.
+          </Faq>
+          <Faq q="Puis-je résilier à tout moment ?">
+            Oui, en un clic depuis votre espace pro. Aucune pénalité, aucun frais. Votre fiche reste visible en
+            gratuit, vous gardez vos données.
           </Faq>
           <Faq q="Pourquoi pas de notation publique ?">
             Parce que le transport sanitaire ne fonctionne pas comme une course Uber. Un patient stressé, une
             famille dépassée, un délai serré : le contexte rend les avis injustes. Nous préférons un système de
             confiance basé sur la vérification SIRET, l&apos;ancienneté et l&apos;échange direct.
           </Faq>
-          <Faq q="Comment vous rémunérerez-vous plus tard ?">
-            Avec des options strictement facultatives pour les pros qui veulent davantage de visibilité ou un
-            canal B2B avec les établissements. Jamais de commission sur les courses, jamais de revente de
-            données, jamais d&apos;enchère. Le socle public restera gratuit.
+          <Faq q="Le plan Établissements, c'est pour quand ?">
+            Courant 2026. Si vous travaillez dans un EHPAD, un cabinet médical ou un hôpital et souhaitez
+            participer à la phase pilote (gratuite), écrivez-nous à contact@roullepro.com. Vos retours nous
+            aideront à construire l&apos;outil dont vous avez vraiment besoin.
           </Faq>
           <Faq q="Ma fiche est déjà en ligne, dois-je faire quelque chose ?">
             Oui : la réclamer. Cela ne coûte rien et vous donne le contrôle (modification, photos, horaires,
-            site web, demandes de transport). Sans réclamation, votre fiche reste basée sur les données SIRENE
-            publiques.
+            site web). Sans réclamation, votre fiche reste basée uniquement sur les données SIRENE publiques.
           </Faq>
           <Faq q="Je suis ambulancier, VSL ou taxi conventionné, est-ce pour moi ?">
             Oui. Tous les professionnels du transport sanitaire inscrits au registre INSEE (NAF 86.90A, 49.32Z,

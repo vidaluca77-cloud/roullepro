@@ -12,8 +12,10 @@ import {
   Lock,
   BarChart3,
   Pencil,
+  Building2,
+  Sparkles,
 } from "lucide-react";
-import { planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
+import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 
@@ -28,7 +30,9 @@ export default async function ProDashboard({
   const showWelcome = params.welcome === "1";
   const showUpgraded = params.upgraded === "1";
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) {
     redirect("/auth/login?next=/transport-medical/pro/dashboard&claimed=1");
   }
@@ -45,7 +49,9 @@ export default async function ProDashboard({
       <main className="min-h-screen bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-3">Aucune fiche associée</h1>
-          <p className="text-gray-600 mb-6">Vous n'avez pas encore réclamé de fiche. Commencez par trouver votre entreprise.</p>
+          <p className="text-gray-600 mb-6">
+            Vous n&apos;avez pas encore réclamé de fiche. Commencez par trouver votre entreprise.
+          </p>
           <Link
             href="/transport-medical/pro"
             className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
@@ -58,8 +64,9 @@ export default async function ProDashboard({
   }
 
   const fiche = fiches[0];
-  const plan = planDisplay(fiche.plan);
-  const isPremium = fiche.plan === "premium" || fiche.plan === "pro_plus";
+  // Plan unique « Pro » (19,90 €/mois) — toute valeur autre que 'gratuit' débloque la messagerie
+  const isPro =
+    fiche.plan === "essential" || fiche.plan === "premium" || fiche.plan === "pro_plus";
 
   // Stats 30 derniers jours
   const { count: messagesCount } = await supabase
@@ -90,19 +97,22 @@ export default async function ProDashboard({
                     <CheckCircle2 className="w-3 h-3" /> Pro vérifié
                   </span>
                 )}
-                {isPremium && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">
-                    <Star className="w-3 h-3" /> {plan.label}
+                {isPro ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full">
+                    <Star className="w-3 h-3" /> Plan Pro
                   </span>
-                )}
-                {!isPremium && (
+                ) : (
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-white/10 border border-white/20 px-2 py-0.5 rounded-full">
                     Plan gratuit
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-1">{fiche.nom_commercial || fiche.raison_sociale}</h1>
-              <p className="text-blue-100 text-sm">{fiche.code_postal} {fiche.ville}</p>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-1">
+                {fiche.nom_commercial || fiche.raison_sociale}
+              </h1>
+              <p className="text-blue-100 text-sm">
+                {fiche.code_postal} {fiche.ville}
+              </p>
             </div>
             <div className="flex gap-2">
               <Link
@@ -111,12 +121,12 @@ export default async function ProDashboard({
               >
                 <Eye className="w-4 h-4" /> Voir ma fiche publique
               </Link>
-              {!isPremium && (
+              {!isPro && (
                 <Link
                   href="/transport-medical/tarifs"
-                  className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-950 font-semibold px-4 py-2 rounded-xl transition text-sm"
+                  className="inline-flex items-center gap-2 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-semibold px-4 py-2 rounded-xl transition text-sm"
                 >
-                  Passer Premium
+                  <Sparkles className="w-3.5 h-3.5" /> Activer le plan Pro
                 </Link>
               )}
             </div>
@@ -133,8 +143,14 @@ export default async function ProDashboard({
               </svg>
             </div>
             <div className="flex-1">
-              <div className="font-semibold text-amber-900 mb-1">Votre réclamation est en attente de validation</div>
-              <p className="text-sm text-amber-800">Notre équipe vérifie votre justificatif (sous 24h ouvrées). Votre fiche affichera le badge <strong>« Pro vérifié »</strong> dès validation. En attendant, vous pouvez déjà compléter vos informations.</p>
+              <div className="font-semibold text-amber-900 mb-1">
+                Votre réclamation est en attente de validation
+              </div>
+              <p className="text-sm text-amber-800">
+                Notre équipe vérifie votre justificatif (sous 24h ouvrées). Votre fiche affichera le badge{" "}
+                <strong>« Pro vérifié »</strong> dès validation. En attendant, vous pouvez déjà compléter vos
+                informations.
+              </p>
             </div>
           </div>
         )}
@@ -142,7 +158,9 @@ export default async function ProDashboard({
           <div className="bg-red-50 border border-red-200 rounded-2xl p-5 mb-6">
             <div className="font-semibold text-red-900 mb-2">Réclamation refusée</div>
             <p className="text-sm text-red-800 mb-2">Motif : {fiche.rejection_reason}</p>
-            <p className="text-xs text-red-700">Vous pouvez soumettre une nouvelle réclamation avec un justificatif conforme.</p>
+            <p className="text-xs text-red-700">
+              Vous pouvez soumettre une nouvelle réclamation avec un justificatif conforme.
+            </p>
           </div>
         )}
         {(showWelcome || showUpgraded) && (
@@ -164,8 +182,8 @@ export default async function ProDashboard({
           <StatBox
             icon={<MessageCircle className="w-5 h-5" />}
             label="Messages (30 j.)"
-            value={isPremium ? messagesCount ?? 0 : `${messagesCount ?? 0} 🔒`}
-            accent={isPremium ? undefined : "amber"}
+            value={isPro ? messagesCount ?? 0 : `${messagesCount ?? 0} 🔒`}
+            accent={isPro ? undefined : "amber"}
           />
           <StatBox
             icon={<BarChart3 className="w-5 h-5" />}
@@ -174,21 +192,23 @@ export default async function ProDashboard({
           />
         </div>
 
-        {!isPremium && (messagesCount ?? 0) > 0 && (
-          <div className="bg-gradient-to-r from-amber-50 to-amber-100 border border-amber-200 rounded-2xl p-5 mb-8 flex items-start gap-4">
-            <Lock className="w-6 h-6 text-amber-600 flex-shrink-0 mt-1" />
+        {!isPro && (messagesCount ?? 0) > 0 && (
+          <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-5 mb-8 flex items-start gap-4">
+            <Lock className="w-6 h-6 text-emerald-700 flex-shrink-0 mt-1" />
             <div className="flex-1">
-              <div className="font-semibold text-amber-900 mb-1">
-                {messagesCount} {messagesCount === 1 ? "patient a tenté" : "patients ont tenté"} de vous contacter
+              <div className="font-semibold text-emerald-900 mb-1">
+                {messagesCount} {messagesCount === 1 ? "patient a tenté" : "patients ont tenté"} de vous
+                contacter
               </div>
-              <p className="text-sm text-amber-800 mb-3">
-                Passez en Premium pour lire leurs messages et leur répondre directement. 39 €/mois, sans engagement.
+              <p className="text-sm text-emerald-900/80 mb-3">
+                Activez le plan Pro à 19,90 €/mois pour lire leurs messages, leur répondre directement et
+                bénéficier d&apos;une meilleure visibilité dans votre ville. Sans engagement, résiliable en un clic.
               </p>
               <Link
                 href="/transport-medical/tarifs"
-                className="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold px-4 py-2 rounded-xl transition text-sm"
+                className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-xl transition text-sm"
               >
-                Débloquer les messages
+                Activer le plan Pro
               </Link>
             </div>
           </div>
@@ -204,16 +224,19 @@ export default async function ProDashboard({
           </div>
 
           <aside className="space-y-4">
+            {/* Messagerie */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <h3 className="font-semibold text-gray-900 mb-3">Messagerie</h3>
-              {isPremium ? (
+              {isPro ? (
                 <Link
                   href="/transport-medical/pro/messages"
                   className="flex items-center justify-between bg-blue-50 hover:bg-blue-100 rounded-xl p-3 transition"
                 >
                   <div>
                     <div className="text-sm font-semibold text-gray-900">
-                      {unreadCount && unreadCount > 0 ? `${unreadCount} non lu${unreadCount > 1 ? "s" : ""}` : "Tous les messages"}
+                      {unreadCount && unreadCount > 0
+                        ? `${unreadCount} non lu${unreadCount > 1 ? "s" : ""}`
+                        : "Tous les messages"}
                     </div>
                     <div className="text-xs text-gray-500">Voir la boîte de réception</div>
                   </div>
@@ -222,26 +245,92 @@ export default async function ProDashboard({
               ) : (
                 <div className="bg-gray-50 rounded-xl p-4 text-center">
                   <Lock className="w-5 h-5 text-gray-400 mx-auto mb-2" />
-                  <p className="text-xs text-gray-600 mb-3">Messagerie réservée au plan Premium</p>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Messagerie incluse dans le plan Pro
+                  </p>
                   <Link
                     href="/transport-medical/tarifs"
                     className="inline-block bg-[#0066CC] hover:bg-[#0052a3] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition"
                   >
-                    Débloquer
+                    Activer
                   </Link>
                 </div>
               )}
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <h3 className="font-semibold text-gray-900 mb-2">Abonnement</h3>
-              <div className="text-sm text-gray-600 mb-3">Plan actuel : <strong className="text-gray-900">{plan.label}</strong></div>
-              <Link
-                href="/transport-medical/tarifs"
-                className="block text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold px-4 py-2 rounded-xl transition"
-              >
-                {isPremium ? "Gérer mon abonnement" : "Voir les plans"}
-              </Link>
+            {/* Plan Pro disponible */}
+            {!isPro && (
+              <div className="bg-white border-2 border-emerald-200 rounded-2xl p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-emerald-600" />
+                  <h3 className="font-semibold text-gray-900">Plan Pro</h3>
+                </div>
+                <div className="flex items-baseline gap-1 mb-3">
+                  <div className="text-2xl font-bold text-gray-900">19,90 €</div>
+                  <div className="text-xs text-gray-500">/mois HT</div>
+                </div>
+                <ul className="space-y-1.5 text-xs text-gray-700 mb-4">
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Messagerie patients activée
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Meilleure visibilité dans votre ville
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Statistiques détaillées
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Sans engagement, résiliable en 1 clic
+                  </li>
+                </ul>
+                <Link
+                  href="/transport-medical/tarifs"
+                  className="block text-center bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+                >
+                  Activer le plan Pro
+                </Link>
+              </div>
+            )}
+
+            {isPro && (
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <h3 className="font-semibold text-gray-900 mb-2">Mon abonnement</h3>
+                <div className="text-sm text-gray-600 mb-3">
+                  Plan actuel : <strong className="text-gray-900">Pro — 19,90 €/mois</strong>
+                </div>
+                <Link
+                  href="/transport-medical/tarifs"
+                  className="block text-center text-sm bg-gray-100 hover:bg-gray-200 text-gray-900 font-semibold px-4 py-2 rounded-xl transition"
+                >
+                  Gérer mon abonnement
+                </Link>
+              </div>
+            )}
+
+            {/* Plan Établissements à venir */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-4 h-4 text-[#0066CC]" />
+                <h3 className="font-semibold text-gray-900">Plan Établissements</h3>
+                <span className="ml-auto text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-[#0066CC] px-2 py-0.5 rounded-full">
+                  À venir
+                </span>
+              </div>
+              <div className="flex items-baseline gap-1 mb-3">
+                <div className="text-xl font-bold text-gray-900">~49 €</div>
+                <div className="text-xs text-gray-500">/mois HT</div>
+              </div>
+              <p className="text-xs text-gray-600 mb-3 leading-relaxed">
+                Pour recevoir les demandes de transport des EHPAD, cabinets médicaux et hôpitaux partenaires.
+                Multi-utilisateurs flotte, support dédié.
+              </p>
+              <div className="text-xs text-gray-500 italic">
+                Lancement prévu en 2026. Aucune action requise pour le moment.
+              </div>
             </div>
           </aside>
         </div>
@@ -262,8 +351,12 @@ function StatBox({
   accent?: "amber";
 }) {
   return (
-    <div className={`bg-white border rounded-2xl p-4 ${accent === "amber" ? "border-amber-200" : "border-gray-200"}`}>
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${accent === "amber" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-[#0066CC]"}`}>
+    <div
+      className={`bg-white border rounded-2xl p-4 ${accent === "amber" ? "border-amber-200" : "border-gray-200"}`}
+    >
+      <div
+        className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${accent === "amber" ? "bg-amber-50 text-amber-600" : "bg-blue-50 text-[#0066CC]"}`}
+      >
         {icon}
       </div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
