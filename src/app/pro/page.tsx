@@ -143,52 +143,61 @@ export default async function ProPage() {
 
       <section className="max-w-6xl mx-auto px-4 py-14 sm:py-16">
         <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Passez au niveau supérieur</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">Une offre simple et transparente</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            La fiche gratuite couvre l'essentiel. Les abonnements Essential, Premium et Pro+ débloquent plus de visibilité et d'outils.
+            La fiche est gratuite à vie. Une seule option payante pour activer la messagerie patients et la visibilité. Pas de commission, pas d&apos;algorithme, sans engagement.
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
           <PlanCard
-            nom="Essential"
-            prix="19,90 €"
-            couleur="border-blue-200"
-            accent="bg-blue-50 text-[#0066CC]"
+            nom="Fiche Gratuite"
+            prix="0 €"
+            sousTitre="à vie"
+            couleur="border-gray-200"
+            accent="bg-gray-100 text-gray-800"
             avantages={[
-              "Badge Pro vérifié",
-              "Mise en avant locale",
-              "Statistiques basiques",
-              "Support email",
+              "Fiche complète et illimitée",
+              "Site web et email visibles",
+              "Description, photos, horaires",
+              "Bouton WhatsApp et appel direct",
+              "Badge Pro vérifié après contrôle SIRET",
             ]}
           />
           <PlanCard
-            nom="Premium"
-            prix="39 €"
-            couleur="border-indigo-300 ring-2 ring-indigo-100"
-            accent="bg-indigo-50 text-indigo-700"
+            nom="Plan Pro"
+            prix="19,90 €"
+            sousTitre="/mois HT, sans engagement"
+            couleur="border-emerald-300 ring-2 ring-emerald-100"
+            accent="bg-emerald-50 text-emerald-700"
             populaire
             avantages={[
-              "Tout Essential",
-              "Photos illimitées",
-              "Badge Recommandé",
-              "Priorité dans les résultats",
-              "Statistiques avancées",
-            ]}
-          />
-          <PlanCard
-            nom="Pro+"
-            prix="79 €"
-            couleur="border-amber-200"
-            accent="bg-amber-50 text-amber-700"
-            avantages={[
-              "Tout Premium",
-              "Page entreprise enrichie",
-              "Multi-fiches (flotte)",
-              "Leads qualifiés",
-              "Support prioritaire",
+              "Tout ce qui est inclus dans la fiche gratuite",
+              "Messagerie patients activée",
+              "Meilleure visibilité dans votre ville",
+              "Statistiques détaillées",
+              "Notifications email à chaque demande",
+              "Résiliation en un clic",
             ]}
           />
         </div>
+
+        <div className="mt-8 max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 sm:p-6 flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-blue-100">
+            <Building2 className="w-5 h-5 text-[#0066CC]" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <span className="font-bold text-gray-900">Plan Établissements — ~49 €/mois</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-[#0066CC] px-2 py-0.5 rounded-full">
+                À venir
+              </span>
+            </div>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              Pour recevoir les demandes des EHPAD, cabinets médicaux et hôpitaux. Multi-utilisateurs flotte, support dédié. Lancement prévu courant 2026.
+            </p>
+          </div>
+        </div>
+
         <div className="text-center mt-8">
           <Link
             href="/transport-medical/tarifs"
@@ -269,6 +278,7 @@ function Benefit({ icon, title, desc }: { icon: React.ReactNode; title: string; 
 function PlanCard({
   nom,
   prix,
+  sousTitre,
   couleur,
   accent,
   avantages,
@@ -276,6 +286,7 @@ function PlanCard({
 }: {
   nom: string;
   prix: string;
+  sousTitre: string;
   couleur: string;
   accent: string;
   avantages: string[];
@@ -284,14 +295,14 @@ function PlanCard({
   return (
     <div className={`relative bg-white rounded-2xl border ${couleur} p-6`}>
       {populaire && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-          Le plus populaire
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+          Recommandé
         </div>
       )}
       <div className={`inline-flex px-2.5 py-0.5 rounded text-xs font-medium ${accent} mb-3`}>{nom}</div>
       <div className="flex items-baseline gap-1 mb-4">
         <span className="text-3xl font-bold text-gray-900">{prix}</span>
-        <span className="text-sm text-gray-500">/mois</span>
+        <span className="text-sm text-gray-500">{sousTitre}</span>
       </div>
       <ul className="space-y-2 mb-5">
         {avantages.map((a) => (
@@ -305,7 +316,7 @@ function PlanCard({
         href="/transport-medical/tarifs"
         className="block text-center text-sm font-semibold text-[#0066CC] hover:underline"
       >
-        Choisir ce plan
+        {populaire ? "Activer ce plan" : "En savoir plus"}
       </Link>
     </div>
   );

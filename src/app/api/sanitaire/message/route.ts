@@ -41,7 +41,8 @@ export async function POST(req: Request) {
 
     if (proErr || !pro) return NextResponse.json({ error: "Pro introuvable" }, { status: 404 });
 
-    const isPremium = pro.plan === "premium" || pro.plan === "pro_plus";
+    // Plan unique « Pro » (19,90 €/mois) : tout pro avec un plan payant débloque la messagerie
+    const isPremium = pro.plan === "essential" || pro.plan === "premium" || pro.plan === "pro_plus";
     const ipHash = crypto.createHash("sha256").update(ip).digest("hex").slice(0, 16);
 
     // On enregistre TOUJOURS le message (même si pro gratuit), pour compter les tentatives
@@ -79,11 +80,11 @@ ${sender_phone ? `<p style="margin:4px 0"><strong>Téléphone :</strong> <a href
 </div>
 <div style="border-left:4px solid #0066CC;padding:12px 16px;background:#f9fafb;color:#374151">${content.replace(/\n/g, "<br>")}</div>
 <div style="text-align:center;margin:32px 0"><a href="${messagesUrl}" style="background:#0066CC;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600">Répondre dans mon espace</a></div>
-<p style="color:#6b7280;font-size:12px;margin-top:24px">Vous recevez cet email car votre fiche Premium est active sur l'annuaire RoullePro.</p>
+<p style="color:#6b7280;font-size:12px;margin-top:24px">Vous recevez cet email car votre plan Pro est actif sur l'annuaire RoullePro.</p>
 </div>`,
         }).catch(() => undefined);
       } else {
-        // Pro gratuit/Essential : teaser (pas de contenu)
+        // Pro en plan gratuit : teaser (pas de contenu)
         await sendEmail({
           to: pro.email_public,
           subject: `Un patient essaie de vous joindre sur RoullePro`,
@@ -92,10 +93,10 @@ ${sender_phone ? `<p style="margin:4px 0"><strong>Téléphone :</strong> <a href
 <p>Un patient vient de remplir un formulaire de demande sur votre fiche <strong>${pro.nom_commercial || pro.raison_sociale}</strong>.</p>
 <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:20px;margin:20px 0">
 <div style="font-weight:600;color:#92400e;margin-bottom:8px">⚠️ Message verrouillé</div>
-<p style="color:#78350f;margin:0;font-size:14px">Pour lire les messages patients et y répondre, activez l'abonnement <strong>Premium à 39€/mois</strong>.</p>
+<p style="color:#78350f;margin:0;font-size:14px">Pour lire les messages patients et y répondre, activez le <strong>plan Pro à 19,90€/mois</strong>, sans engagement.</p>
 </div>
 <div style="text-align:center;margin:32px 0"><a href="${tarifsUrl}" style="background:#0066CC;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600">Débloquer la messagerie</a></div>
-<p style="color:#6b7280;font-size:12px">En Premium : messagerie illimitée, badge « Recommandé », mise en avant dans les résultats, statistiques.</p>
+<p style="color:#6b7280;font-size:12px">Le plan Pro inclut : messagerie illimitée, meilleure visibilité dans votre ville, statistiques détaillées. Résiliable en un clic.</p>
 <p style="color:#9ca3af;font-size:11px;margin-top:24px">Si vous ne souhaitez plus recevoir ces notifications, <a href="${dashboardUrl}" style="color:#6b7280">gérez vos préférences</a>.</p>
 </div>`,
         }).catch(() => undefined);

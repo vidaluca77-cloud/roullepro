@@ -228,7 +228,7 @@ export async function POST(req: Request) {
   <ol style="line-height:1.8">
     <li><strong>Complétez votre fiche</strong> — photos, horaires, description (5 minutes)</li>
     <li><strong>Vérifiez vos coordonnées</strong> — téléphone public, email professionnel</li>
-    <li><strong>Passez Premium (39€/mois)</strong> pour lire les messages patients et apparaître en tête de liste</li>
+    <li><strong>Activez le plan Pro (19,90€/mois)</strong> pour lire les messages patients et bénéficier d'une meilleure visibilité dans votre ville</li>
   </ol>
 
   <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:16px;margin:24px 0">
