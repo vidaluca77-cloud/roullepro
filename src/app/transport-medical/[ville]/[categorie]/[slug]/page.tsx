@@ -270,27 +270,38 @@ export default async function FicheProPage({ params }: Props) {
                   </div>
                 </div>
               )}
-              {pro.site_web && isPremium && (
+              {pro.site_web && (
                 <a
                   href={pro.site_web.startsWith("http") ? pro.site_web : `https://${pro.site_web}`}
                   target="_blank"
                   rel="noopener noreferrer nofollow"
-                  className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
+                  className="group flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition border border-blue-100"
                 >
-                  <Globe className="w-5 h-5 text-gray-500" />
-                  <div>
+                  <Globe className="w-5 h-5 text-[#0066CC]" />
+                  <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-500">Site web</div>
-                    <div className="text-sm text-[#0066CC] truncate">{pro.site_web.replace(/^https?:\/\//, "")}</div>
+                    <div className="text-sm font-semibold text-[#0066CC] truncate">
+                      Visiter le site
+                    </div>
                   </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className="w-4 h-4 text-[#0066CC] flex-shrink-0 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                  >
+                    <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
                 </a>
               )}
-              {pro.email_public && isPremium && (
+              {pro.email_public && (
                 <a
                   href={`mailto:${pro.email_public}`}
                   className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition"
                 >
                   <Mail className="w-5 h-5 text-gray-500" />
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="text-xs text-gray-500">Email</div>
                     <div className="text-sm text-gray-900 truncate">{pro.email_public}</div>
                   </div>
