@@ -16,6 +16,7 @@ import {
   Users,
   Lock,
   MessageCircle,
+  Clock,
 } from "lucide-react";
 import { getCategorieBySlug, planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
 import {
@@ -155,7 +156,10 @@ export default async function FicheProPage({ params }: Props) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-2">
                 {pro.verified && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-white text-[#0066CC] px-2 py-0.5 rounded-full">
+                  <span
+                    className="inline-flex items-center gap-1 text-xs font-medium bg-white text-[#0066CC] px-2 py-0.5 rounded-full cursor-help"
+                    title="Identité et SIRET vérifiés par RoullePro"
+                  >
                     <BadgeCheck className="w-3 h-3" />
                     Pro vérifié
                   </span>
@@ -191,14 +195,14 @@ export default async function FicheProPage({ params }: Props) {
             </div>
           </article>
 
-          {pro.description && isPremium && (
+          {pro.description && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-2">Présentation par le professionnel</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">{pro.description}</p>
             </div>
           )}
 
-          {pro.photos && pro.photos.length > 0 && isPremium && (
+          {pro.photos && pro.photos.length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">Photos</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -207,6 +211,37 @@ export default async function FicheProPage({ params }: Props) {
                     <img src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {pro.horaires && Object.keys(pro.horaires).length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-[#0066CC]" />
+                Horaires d&apos;ouverture
+              </h2>
+              <div className="divide-y divide-gray-100">
+                {[
+                  { key: "lundi", label: "Lundi" },
+                  { key: "mardi", label: "Mardi" },
+                  { key: "mercredi", label: "Mercredi" },
+                  { key: "jeudi", label: "Jeudi" },
+                  { key: "vendredi", label: "Vendredi" },
+                  { key: "samedi", label: "Samedi" },
+                  { key: "dimanche", label: "Dimanche" },
+                ].map((jour) => {
+                  const valeur = (pro.horaires as Record<string, string> | null)?.[jour.key];
+                  const ferme = !valeur || valeur.toLowerCase() === "fermé" || valeur.toLowerCase() === "ferme";
+                  return (
+                    <div key={jour.key} className="flex items-center justify-between py-2 text-sm">
+                      <span className="font-medium text-gray-700">{jour.label}</span>
+                      <span className={ferme ? "text-gray-400 italic" : "text-gray-900"}>
+                        {ferme ? "Fermé" : valeur}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -258,6 +293,29 @@ export default async function FicheProPage({ params }: Props) {
                   </div>
                 </a>
               )}
+              {pro.telephone_public && (() => {
+                const numFr = pro.telephone_public.replace(/[^\d]/g, "");
+                const numIntl = numFr.startsWith("0") ? "33" + numFr.slice(1) : numFr;
+                const msg = encodeURIComponent(
+                  `Bonjour, j'ai trouvé votre fiche sur RoullePro. Je vous contacte pour un transport.`
+                );
+                return (
+                  <a
+                    href={`https://wa.me/${numIntl}?text=${msg}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-green-50 hover:bg-green-100 transition border border-green-100"
+                  >
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" aria-hidden="true">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                    </svg>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-gray-500">WhatsApp</div>
+                      <div className="text-sm font-semibold text-green-700 truncate">Envoyer un message</div>
+                    </div>
+                  </a>
+                );
+              })()}
               {pro.adresse && (
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50">
                   <MapPin className="w-5 h-5 text-gray-500 mt-0.5" />
@@ -314,21 +372,24 @@ export default async function FicheProPage({ params }: Props) {
           </div>
 
           {!pro.claimed && (
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5">
-              <div className="flex items-start gap-3 mb-3">
-                <Lock className="w-5 h-5 text-[#0066CC] flex-shrink-0 mt-0.5" />
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-[#0066CC] flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-5 h-5 text-white" />
+                </div>
                 <div>
-                  <div className="font-semibold text-gray-900 mb-1">Vous êtes le gérant ?</div>
-                  <p className="text-xs text-gray-600">Cette fiche n'a pas encore été réclamée. Récupérez-la pour ajouter photos, horaires et description.</p>
+                  <div className="font-bold text-gray-900 text-base mb-1">Cette fiche est à vous&nbsp;?</div>
+                  <p className="text-sm text-gray-700 leading-relaxed">Récupérez-la gratuitement pour ajouter vos photos, horaires, site web et recevoir des messages.</p>
                 </div>
               </div>
               <Link
                 href={`/transport-medical/pro/reclamer?pro=${pro.id}`}
-                className="block text-center bg-[#0066CC] hover:bg-[#0052a3] text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition"
+                className="flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white text-base font-bold px-4 py-3.5 rounded-xl transition shadow-sm"
               >
-                Réclamer ma fiche
+                Réclamer ma fiche gratuitement
+                <ChevronRight className="w-4 h-4" />
               </Link>
-              <p className="text-center mt-2">
+              <p className="text-center mt-3">
                 <Link
                   href="/transport-medical/inscription"
                   className="text-xs text-[#0066CC] hover:underline"
