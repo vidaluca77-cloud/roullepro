@@ -26,6 +26,8 @@ import {
   buildFicheSeoText,
   getFicheFaq,
   getVillesVoisines,
+  getAutresProsMemeVille,
+  getCategoriesByVille,
 } from "@/lib/sanitaire-seo";
 import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
@@ -97,14 +99,24 @@ export default async function FicheProPage({ params }: Props) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const villesVoisines = await getVillesVoisines(
-    supabase,
-    pro.latitude,
-    pro.longitude,
-    pro.ville_slug || ville,
-    6,
-    pro.departement
-  );
+  const [villesVoisines, autresPros, categoriesVille] = await Promise.all([
+    getVillesVoisines(
+      supabase,
+      pro.latitude,
+      pro.longitude,
+      pro.ville_slug || ville,
+      6,
+      pro.departement
+    ),
+    getAutresProsMemeVille(
+      supabase,
+      pro.ville_slug || ville,
+      pro.categorie,
+      pro.id,
+      8
+    ),
+    getCategoriesByVille(supabase, pro.ville_slug || ville),
+  ]);
 
   const seoText = buildFicheSeoText(pro, villesVoisines);
   const proLd = buildProJsonLd(pro, ville, categorie, slug, seoText.paragraphes.join(" "));
@@ -415,6 +427,90 @@ export default async function FicheProPage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {autresPros.length > 0 && (
+        <section className="max-w-5xl mx-auto px-4 pb-10">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-1">
+              Autres {cat?.labelPluriel?.toLowerCase() || "professionnels"} à {pro.ville}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Découvrez d'autres {cat?.labelPluriel?.toLowerCase() || "transporteurs sanitaires"} référencés à {pro.ville}.
+            </p>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {autresPros.map((p) => (
+                <li key={p.id}>
+                  <Link
+                    href={`/transport-medical/${pro.ville_slug || ville}/${categorie}/${p.slug}`}
+                    className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-gray-50 hover:bg-blue-50 hover:text-[#0066CC] text-sm text-gray-800 transition"
+                  >
+                    <span className="truncate">{p.nom}</span>
+                    {p.claimed && (
+                      <BadgeCheck className="w-4 h-4 text-[#0066CC] flex-shrink-0" />
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 pt-4 border-t border-gray-100">
+              <Link
+                href={`/transport-medical/${pro.ville_slug || ville}/${categorie}`}
+                className="inline-flex items-center gap-1 text-sm text-[#0066CC] font-semibold hover:underline"
+              >
+                Voir tous les {cat?.labelPluriel?.toLowerCase() || "professionnels"} à {pro.ville}
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {categoriesVille.length > 1 && (
+        <section className="max-w-5xl mx-auto px-4 pb-10">
+          <div className="bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">
+              Transport sanitaire à {pro.ville}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {categoriesVille.map((c) => {
+                const slug = c.categorie === "taxi_conventionne" ? "taxi-conventionne" : c.categorie;
+                const label =
+                  c.categorie === "ambulance"
+                    ? "Ambulances"
+                    : c.categorie === "vsl"
+                    ? "VSL"
+                    : "Taxis conventionnés";
+                return (
+                  <Link
+                    key={c.categorie}
+                    href={`/transport-medical/${pro.ville_slug || ville}/${slug}`}
+                    className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-gray-200 hover:border-[#0066CC] hover:bg-blue-50 transition"
+                  >
+                    <span className="font-semibold text-gray-900">{label}</span>
+                    <span className="text-sm text-gray-500">{c.nb}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-3 text-sm">
+              <Link
+                href={`/transport-medical/${pro.ville_slug || ville}`}
+                className="text-[#0066CC] hover:underline font-medium"
+              >
+                Tous les pros à {pro.ville}
+              </Link>
+              {pro.departement && (
+                <Link
+                  href={`/transport-medical/departement/${pro.departement}`}
+                  className="text-[#0066CC] hover:underline font-medium"
+                >
+                  Transport sanitaire dans le département {pro.departement}
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {villesVoisines.length > 0 && (
         <section className="max-w-5xl mx-auto px-4 pb-12">

@@ -425,3 +425,64 @@ function cleanUndefined(obj: Record<string, unknown>): Record<string, unknown> {
   }
   return cleaned;
 }
+
+/**
+ * Recupere d'autres pros de la meme categorie + meme ville (concurrents directs).
+ * Sert a creer du maillage interne fort et permettre a Google de decouvrir les fiches voisines.
+ */
+export async function getAutresProsMemeVille(
+  supabase: SupabaseClient,
+  villeSlug: string,
+  categorie: string,
+  excludeProId: string,
+  limit = 8
+): Promise<{ id: string; nom: string; slug: string; categorie: string; claimed: boolean }[]> {
+  if (!villeSlug) return [];
+  const { data } = await supabase
+    .from("pros_sanitaire")
+    .select("id, raison_sociale, nom_commercial, slug, categorie, claimed")
+    .eq("actif", true)
+    .eq("ville_slug", villeSlug)
+    .eq("categorie", categorie)
+    .neq("id", excludeProId)
+    .order("claimed", { ascending: false })
+    .limit(limit);
+  return ((data ?? []) as Array<{
+    id: string;
+    raison_sociale: string;
+    nom_commercial: string | null;
+    slug: string;
+    categorie: string;
+    claimed: boolean;
+  }>).map((p) => ({
+    id: p.id,
+    nom: p.nom_commercial || p.raison_sociale,
+    slug: p.slug,
+    categorie: p.categorie,
+    claimed: p.claimed === true,
+  }));
+}
+
+/**
+ * Compte le nombre de pros par categorie pour une ville. Sert a alimenter
+ * un bloc "toutes les categories a [Ville]" dans la fiche pro.
+ */
+export async function getCategoriesByVille(
+  supabase: SupabaseClient,
+  villeSlug: string
+): Promise<{ categorie: string; nb: number }[]> {
+  if (!villeSlug) return [];
+  const { data } = await supabase
+    .from("pros_sanitaire")
+    .select("categorie")
+    .eq("actif", true)
+    .eq("ville_slug", villeSlug);
+  if (!data) return [];
+  const counts: Record<string, number> = {};
+  for (const row of data as Array<{ categorie: string }>) {
+    counts[row.categorie] = (counts[row.categorie] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .map(([categorie, nb]) => ({ categorie, nb }))
+    .sort((a, b) => b.nb - a.nb);
+}

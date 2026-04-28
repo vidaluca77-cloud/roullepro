@@ -321,6 +321,17 @@ export default async function VillePage({ params }: Props) {
                 </Link>
               ))}
             </div>
+            {departement && (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <Link
+                  href={`/transport-medical/departement/${departement}`}
+                  className="inline-flex items-center gap-1 text-sm text-[#0066CC] font-semibold hover:underline"
+                >
+                  Voir tout le transport sanitaire dans le département {departement}
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
           </div>
         </section>
       )}

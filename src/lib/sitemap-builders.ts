@@ -226,27 +226,40 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   return [...villePages, ...villeCatPages];
 }
 
-/** id 2..21 : fiches pros sanitaire paginees */
+/** id 2..81 : fiches pros sanitaire paginees */
 export async function buildSanitaireFichesEntries(chunkIndex: number): Promise<SitemapEntry[]> {
   const supabase = getSupabase();
   const offset = chunkIndex * CHUNK_SIZE;
 
   const { data } = await supabase
     .from("pros_sanitaire_public")
-    .select("slug, ville_slug, categorie")
+    .select("slug, ville_slug, categorie, claimed, verified, updated_at")
     .eq("actif", true)
     .order("id", { ascending: true })
     .range(offset, offset + CHUNK_SIZE - 1);
 
   if (!data || data.length === 0) return [];
-  const rows = data as { slug: string; ville_slug: string; categorie: string }[];
+  const rows = data as {
+    slug: string;
+    ville_slug: string;
+    categorie: string;
+    claimed?: boolean | null;
+    verified?: boolean | null;
+    updated_at?: string | null;
+  }[];
   return rows
     .filter((p) => p.slug && p.ville_slug && p.categorie)
-    .map((p) => ({
-      url: `${BASE_URL}/transport-medical/${p.ville_slug}/${
-        p.categorie === "taxi_conventionne" ? "taxi-conventionne" : p.categorie
-      }/${p.slug}`,
-      changefreq: "weekly" as const,
-      priority: 0.5,
-    }));
+    .map((p) => {
+      // Fiches claimed/verified = vraies entreprises actives → priority haute, changefreq weekly
+      // Fiches inactives → priority basse + changefreq monthly (signal honnête à Google)
+      const isActive = p.claimed === true || p.verified === true;
+      return {
+        url: `${BASE_URL}/transport-medical/${p.ville_slug}/${
+          p.categorie === "taxi_conventionne" ? "taxi-conventionne" : p.categorie
+        }/${p.slug}`,
+        lastmod: p.updated_at || undefined,
+        changefreq: isActive ? ("weekly" as const) : ("monthly" as const),
+        priority: isActive ? 0.8 : 0.5,
+      };
+    });
 }
