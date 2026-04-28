@@ -13,7 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 const HOST = "roullepro.com";
-const KEY = "026769bd8fac2e77700515eb271d8e28";
+const KEY = "9569b8627b1543759478b373636ff7b8";
 const KEY_LOCATION = `${BASE_URL}/${KEY}.txt`;
 const INDEXNOW_ENDPOINT = "https://api.indexnow.org/indexnow";
 
