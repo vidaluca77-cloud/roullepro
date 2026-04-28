@@ -56,6 +56,11 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    other: {
+      'msvalidate.01': '04B7518070BB4F3A74451EC51C01C8B7',
+    },
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
