@@ -78,6 +78,20 @@ export function buildProJsonLd(
         closes: "23:59",
       },
     ],
+    knowsLanguage: ["fr", "fr-FR"],
+    knowsAbout: [
+      "Transport sanitaire",
+      "Transport conventionne CPAM",
+      "Tiers payant Securite sociale",
+      categorieKey === "ambulance" ? "Transport medicalise allonge" :
+      categorieKey === "vsl" ? "Vehicule sanitaire leger" :
+      "Taxi conventionne CPAM",
+    ],
+    isAcceptingNewPatients: true,
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".fiche-resume", "section[data-fiche-faq] dt"],
+    },
   };
 
   // Supprime les undefined pour JSON propre

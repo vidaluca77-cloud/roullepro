@@ -63,6 +63,9 @@ export default function BlogPostPage({
   const headings = extractHeadings(post.content);
   const related = getRelatedPosts(post, 3);
 
+  const wordCount = post.content.split(/\s+/).length;
+  const readingMinutes = Math.max(1, Math.round(wordCount / 200));
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -70,7 +73,10 @@ export default function BlogPostPage({
     description: post.excerpt,
     datePublished: post.date,
     dateModified: post.date,
-    author: { "@type": "Organization", name: "RoullePro" },
+    inLanguage: "fr-FR",
+    wordCount,
+    timeRequired: `PT${readingMinutes}M`,
+    author: { "@type": "Organization", name: "RoullePro", url: "https://roullepro.com" },
     publisher: {
       "@type": "Organization",
       name: "RoullePro",
@@ -80,9 +86,17 @@ export default function BlogPostPage({
         url: "https://roullepro.com/logo.png",
       },
     },
-    mainEntityOfPage: `https://roullepro.com/blog/${post.slug}`,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://roullepro.com/blog/${post.slug}`,
+    },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".article-excerpt", "article p:first-of-type"],
+    },
     keywords: post.keywords.join(", "),
     articleSection: post.category,
+    isAccessibleForFree: true,
   };
 
   const breadcrumbLd = {
@@ -109,7 +123,6 @@ export default function BlogPostPage({
     ],
   };
 
-  const contentWords = post.content.split(/\s+/).length;
   // Séparation à ~45% pour insérer la newsletter au milieu
   const splitPoint = Math.floor(post.content.length * 0.45);
   const breakIndex = post.content.indexOf("\n## ", splitPoint);
@@ -251,7 +264,7 @@ export default function BlogPostPage({
                     À propos
                   </div>
                   <p className="text-xs text-gray-600 leading-relaxed">
-                    Article de {Math.round(contentWords / 200)} min rédigé
+                    Article de {readingMinutes} min rédigé
                     par l&apos;équipe RoullePro, marketplace B2B du
                     transport routier.
                   </p>

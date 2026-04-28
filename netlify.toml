@@ -15,6 +15,11 @@
 [functions."refresh-sitemaps"]
   schedule = "0 3 * * *"
 
+# Scheduled function : pousse 500 URLs/jour a IndexNow (Bing/Yandex) a 02:00 UTC
+# Couvre les 26 000+ fiches en ~50 jours en priorisant les recentes mises a jour
+[functions."indexnow-daily"]
+  schedule = "0 2 * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
