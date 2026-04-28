@@ -11,18 +11,46 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
 export const metadata: Metadata = {
   title: {
-    default: 'RoullePro — Marketplace véhicules pros & annuaire transport sanitaire',
-    template: '%s | RoullePro',
+    default: "RoullePro — Annuaire des ambulances, VSL et taxis conventionnés en France",
+    template: "%s | RoullePro",
   },
-  description: "RoullePro : marketplace B2B de véhicules professionnels (taxi, VTC, ambulance, VSL, TPMR) et premier annuaire français des transports sanitaires (18 000+ ambulances, VSL, taxis conventionnés) issu de la base SIRENE.",
+  description: "Annuaire gratuit du transport sanitaire en France : trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous. Plus de 26 000 fiches avec téléphone direct, adresse et horaires. Remboursé par la Sécurité sociale.",
+  keywords: [
+    "ambulance",
+    "VSL",
+    "taxi conventionné",
+    "transport sanitaire",
+    "annuaire ambulance",
+    "taxi CPAM",
+    "transport médical",
+    "ambulancier",
+    "transport remboursé sécurité sociale",
+  ],
   metadataBase: new URL(APP_URL),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     siteName: 'RoullePro',
     locale: 'fr_FR',
     type: 'website',
+    url: APP_URL,
+    title: "RoullePro — Annuaire des ambulances, VSL et taxis conventionnés en France",
+    description: "Annuaire gratuit du transport sanitaire : 26 000+ fiches d'ambulances, VSL et taxis conventionnés avec téléphone direct.",
+    images: [
+      {
+        url: '/android-chrome-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'RoullePro — Annuaire transport sanitaire',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
+    title: "RoullePro — Annuaire ambulances, VSL et taxis conventionnés",
+    description: "26 000+ fiches d'ambulances, VSL et taxis conventionnés en France. Téléphone direct, gratuit.",
+    images: ['/android-chrome-512x512.png'],
   },
   robots: {
     index: true,
@@ -52,20 +80,23 @@ const organizationJsonLd = {
       "@type": "Organization",
       "@id": APP_URL + "/#organization",
       name: "RoullePro",
+      alternateName: ["Roulle Pro", "Annuaire RoullePro"],
       url: APP_URL,
       logo: APP_URL + "/android-chrome-512x512.png",
       image: APP_URL + "/android-chrome-512x512.png",
       description:
-        "RoullePro exploite deux services en France : (1) une marketplace B2B de vehicules professionnels (taxi, VTC, ambulance, VSL, TPMR, navette, utilitaire) avec verification SIRET et paiement sequestre Stripe, et (2) le plus grand annuaire francais du transport sanitaire (ambulances, VSL, taxis conventionnes) construit a partir du registre SIRENE de l'INSEE, avec plus de 18 000 fiches actives.",
+        "RoullePro est le premier annuaire francais gratuit du transport sanitaire : ambulances, VSL et taxis conventionnes. Plus de 26 000 fiches issues du registre SIRENE de l'INSEE, avec telephone direct, adresse et horaires. Service complementaire : marketplace B2B de vehicules professionnels.",
       knowsAbout: [
         "Transport sanitaire",
         "Ambulances",
         "VSL (Vehicule Sanitaire Leger)",
         "Taxi conventionne",
+        "Taxi CPAM",
+        "Transport medical",
         "TPMR",
-        "Marketplace de vehicules professionnels",
         "Agrement ARS",
         "Conventionnement CPAM",
+        "Remboursement Securite sociale",
       ],
       email: "contact@roullepro.com",
       telephone: "+33615472813",
@@ -86,14 +117,14 @@ const organizationJsonLd = {
       url: APP_URL,
       name: "RoullePro",
       description:
-        "Marketplace de vehicules professionnels et annuaire national du transport sanitaire (ambulances, VSL, taxis conventionnes).",
+        "Annuaire national gratuit du transport sanitaire (ambulances, VSL, taxis conventionnes) avec plus de 26 000 fiches.",
       publisher: { "@id": APP_URL + "/#organization" },
       inLanguage: "fr-FR",
       potentialAction: {
         "@type": "SearchAction",
         target: {
           "@type": "EntryPoint",
-          urlTemplate: APP_URL + "/annonces?q={search_term_string}",
+          urlTemplate: APP_URL + "/transport-medical/recherche?q={search_term_string}",
         },
         "query-input": "required name=search_term_string",
       },
