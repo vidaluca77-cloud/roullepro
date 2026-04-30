@@ -15,6 +15,7 @@ import {
   Wrench,
 } from "lucide-react";
 import ReclamerRechercheForm from "@/components/sanitaire/ReclamerRechercheForm";
+import PromoBanner from "@/components/sanitaire/PromoBanner";
 
 export const revalidate = 3600;
 
@@ -142,6 +143,9 @@ export default async function ProPage() {
           <p className="text-gray-600 max-w-2xl mx-auto">
             La fiche est gratuite à vie. Une seule option payante pour activer la messagerie patients et la visibilité. Pas de commission, pas d&apos;algorithme, sans engagement.
           </p>
+        </div>
+        <div className="max-w-3xl mx-auto mb-10">
+          <PromoBanner variant="hero" />
         </div>
         <div className="grid md:grid-cols-2 gap-5 max-w-4xl mx-auto">
           <PlanCard

@@ -18,6 +18,7 @@ import {
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
+import PromoBanner from "@/components/sanitaire/PromoBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -269,6 +270,7 @@ export default async function ProDashboard({
                   <div className="text-2xl font-bold text-gray-900">19,90 €</div>
                   <div className="text-xs text-gray-500">/mois HT</div>
                 </div>
+                <PromoBanner variant="inline" />
                 <ul className="space-y-1.5 text-xs text-gray-700 mb-4">
                   <li className="flex items-start gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />

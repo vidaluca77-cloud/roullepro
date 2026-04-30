@@ -12,6 +12,7 @@ import {
   Building2,
 } from "lucide-react";
 import CheckoutButton from "@/components/sanitaire/CheckoutButton";
+import PromoBanner from "@/components/sanitaire/PromoBanner";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -62,6 +63,13 @@ export default async function TarifsPage() {
           </p>
         </div>
       </section>
+
+      {/* Bandeau promo de lancement */}
+      {!isPro && (
+        <section className="max-w-5xl mx-auto px-4 pt-10">
+          <PromoBanner variant="hero" />
+        </section>
+      )}
 
       {/* Les deux plans */}
       <section className="max-w-5xl mx-auto px-4 py-14">
@@ -119,6 +127,7 @@ export default async function TarifsPage() {
               <div className="text-4xl font-bold text-[#0066CC]">19,90 €</div>
               <div className="text-sm text-gray-500">/mois HT, sans engagement</div>
             </div>
+            {!isPro && <PromoBanner variant="inline" />}
             <ul className="space-y-2.5 mb-6 flex-1">
               {[
                 "Tout ce qui est inclus dans la fiche gratuite",
