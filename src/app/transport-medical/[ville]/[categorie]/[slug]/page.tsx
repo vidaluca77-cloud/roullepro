@@ -33,7 +33,9 @@ import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
 import OwnerBanner from "@/components/sanitaire/OwnerBanner";
 
-export const revalidate = 1800;
+// Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
+// rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
+export const revalidate = 60;
 
 type Props = {
   params: Promise<{ ville: string; categorie: string; slug: string }>;
