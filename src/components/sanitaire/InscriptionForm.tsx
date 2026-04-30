@@ -147,12 +147,6 @@ export default function InscriptionForm() {
   const [siretStatus, setSiretStatus] = useState<"idle" | "found" | "not_found" | "invalid">("idle");
   const [showPassword, setShowPassword] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string>("");
-  // Kbis upload
-  const [kbisPath, setKbisPath] = useState<string>("");
-  const [kbisFileName, setKbisFileName] = useState<string>("");
-  const [kbisUploading, setKbisUploading] = useState(false);
-  const [kbisError, setKbisError] = useState<string | null>(null);
-  const kbisInputRef = useRef<HTMLInputElement>(null);
   const hcaptchaRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
@@ -194,61 +188,9 @@ export default function InscriptionForm() {
   const categorie = watch("categorie");
   const pwStrength = passwordStrength(password || "");
 
-  // ─── Upload Kbis ───────────────────────────────────────────────────────
-  const handleKbisChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setKbisError(null);
-
-    const MAX = 5 * 1024 * 1024;
-    if (file.size > MAX) {
-      setKbisError("Fichier trop volumineux (max 5 Mo).");
-      if (kbisInputRef.current) kbisInputRef.current.value = "";
-      return;
-    }
-    const allowed = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
-    if (!allowed.includes(file.type)) {
-      setKbisError("Format non autorisé (PDF, JPG ou PNG).");
-      if (kbisInputRef.current) kbisInputRef.current.value = "";
-      return;
-    }
-
-    setKbisUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch("/api/sanitaire/upload-kbis", {
-        method: "POST",
-        body: formData,
-      });
-      const json = (await res.json()) as { path?: string; error?: string };
-      if (!res.ok || !json.path) {
-        setKbisError(json.error || "Erreur lors de l'upload.");
-        setKbisPath("");
-        setKbisFileName("");
-      } else {
-        setKbisPath(json.path);
-        setKbisFileName(file.name);
-      }
-    } catch {
-      setKbisError("Erreur réseau. Réessayez.");
-      setKbisPath("");
-      setKbisFileName("");
-    } finally {
-      setKbisUploading(false);
-    }
-  };
-
-  const removeKbis = () => {
-    setKbisPath("");
-    setKbisFileName("");
-    setKbisError(null);
-    if (kbisInputRef.current) kbisInputRef.current.value = "";
-  };
-
   // ─── hCaptcha init ───────────────────────────────────────────────────────
   useEffect(() => {
-    if (step !== 4) return;
+    if (step !== 3) return;
     const sitekey =
       process.env.NEXT_PUBLIC_HCAPTCHA_SITEKEY || "10000000-ffff-ffff-ffff-000000000001";
 
@@ -320,14 +262,6 @@ export default function InscriptionForm() {
       valid = await trigger(["raison_sociale", "categorie"]);
     } else if (step === 2) {
       valid = await trigger(["adresse", "code_postal", "ville", "telephone", "email"]);
-    } else if (step === 3) {
-      // Étape Kbis : valider upload
-      if (!kbisPath) {
-        setKbisError("Merci de téléverser votre justificatif Kbis.");
-        valid = false;
-      } else {
-        valid = true;
-      }
     }
     if (valid) setStep((s) => s + 1);
   };
@@ -395,7 +329,6 @@ export default function InscriptionForm() {
           prenom: values.prenom,
           password: values.password,
           captcha_token: token,
-          kbis_path: kbisPath,
           rgpd_accepted: values.rgpd_accepted,
         }),
       });
@@ -458,7 +391,7 @@ export default function InscriptionForm() {
   // ─── Barre de progression ─────────────────────────────────────────────────
   const StepBar = () => (
     <div className="flex items-center gap-2 mb-8">
-      {[1, 2, 3, 4].map((n) => (
+      {[1, 2, 3].map((n) => (
         <div key={n} className="flex items-center gap-2 flex-1">
           <div
             className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-colors ${
@@ -471,7 +404,7 @@ export default function InscriptionForm() {
           >
             {step > n ? <CheckCircle2 className="w-4 h-4" /> : n}
           </div>
-          {n < 4 && (
+          {n < 3 && (
             <div
               className={`h-0.5 flex-1 transition-colors ${
                 step > n ? "bg-[#0066CC]" : "bg-gray-200"
@@ -793,99 +726,6 @@ export default function InscriptionForm() {
   );
 
   // ─── ÉTAPE 3 ──────────────────────────────────────────────────────────────
-  const renderStepKbis = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Justificatif d&apos;activité</h2>
-        <p className="text-sm text-gray-600">
-          Téléversez votre extrait Kbis (moins de 3 mois) pour vérifier votre entreprise.
-          Ce document ne sera pas visible publiquement et sert uniquement à la validation de votre fiche par notre équipe.
-        </p>
-      </div>
-
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-gray-700">
-        <p className="font-semibold text-[#0066CC] mb-1">Pourquoi un Kbis ?</p>
-        <p>
-          Pour protéger les patients et les professionnels, nous vérifions manuellement chaque inscription.
-          Le Kbis nous permet de confirmer l&apos;existence légale de votre entreprise et votre droit d&apos;exercer.
-        </p>
-      </div>
-
-      {!kbisPath ? (
-        <label
-          htmlFor="kbis-upload"
-          className={`flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-xl p-8 cursor-pointer transition ${
-            kbisError
-              ? "border-red-300 bg-red-50/40"
-              : "border-gray-300 hover:border-[#0066CC] hover:bg-blue-50/30"
-          }`}
-        >
-          <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-            {kbisUploading ? (
-              <Loader2 className="w-6 h-6 text-[#0066CC] animate-spin" />
-            ) : (
-              <Upload className="w-6 h-6 text-[#0066CC]" />
-            )}
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-gray-900">
-              {kbisUploading ? "Téléversement en cours…" : "Cliquez pour sélectionner votre Kbis"}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">PDF, JPG ou PNG &middot; 5 Mo max</p>
-          </div>
-          <input
-            ref={kbisInputRef}
-            id="kbis-upload"
-            type="file"
-            accept="application/pdf,image/jpeg,image/png,image/jpg"
-            className="hidden"
-            onChange={handleKbisChange}
-            disabled={kbisUploading}
-          />
-        </label>
-      ) : (
-        <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl p-4">
-          <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-            <FileText className="w-5 h-5 text-green-700" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">{kbisFileName}</p>
-            <p className="text-xs text-green-700 flex items-center gap-1 mt-0.5">
-              <CheckCircle2 className="w-3.5 h-3.5" /> Document téléversé avec succès
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={removeKbis}
-            className="text-gray-400 hover:text-red-600 transition p-1"
-            aria-label="Supprimer le document"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
-
-      {kbisError && (
-        <p className="text-sm text-red-600 flex items-center gap-1.5" role="alert">
-          <AlertCircle className="w-4 h-4" /> {kbisError}
-        </p>
-      )}
-
-      <p className="text-xs text-gray-500">
-        Pas de Kbis sous la main ? Vous pouvez le télécharger gratuitement sur{" "}
-        <a
-          href="https://www.infogreffe.fr/documents-officiels/commander-kbis.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#0066CC] hover:underline"
-        >
-          infogreffe.fr
-        </a>
-        .
-      </p>
-    </div>
-  );
-
   const renderStep3 = () => {
     const values = getValues();
     const nomAffiche = values.nom_commercial || values.raison_sociale;
@@ -1128,8 +968,7 @@ export default function InscriptionForm() {
 
       {step === 1 && renderStep1()}
       {step === 2 && renderStep2()}
-      {step === 3 && renderStepKbis()}
-      {step === 4 && renderStep3()}
+      {step === 3 && renderStep3()}
 
       {/* Navigation */}
       <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
@@ -1145,7 +984,7 @@ export default function InscriptionForm() {
           <div />
         )}
 
-        {step < 4 ? (
+        {step < 3 ? (
           <button
             type="button"
             onClick={goNext}

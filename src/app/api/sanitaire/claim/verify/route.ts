@@ -30,7 +30,6 @@ export async function POST(req: Request) {
 
     const { claim_id, code, justificatif_url } = await req.json();
     if (!claim_id || !code) return NextResponse.json({ error: "Paramètres manquants" }, { status: 400 });
-    if (!justificatif_url) return NextResponse.json({ error: "Justificatif manquant (KBIS ou agrément préfectoral requis)" }, { status: 400 });
 
     const supabaseAdmin = getAdminClient();
     const { data: claim } = await supabaseAdmin
@@ -150,7 +149,7 @@ export async function POST(req: Request) {
       claimed_at: new Date().toISOString(),
       verified: false,
       claim_status: "en_attente_validation",
-      justificatif_url,
+      ...(justificatif_url ? { justificatif_url } : {}),
       rejection_reason: null,
     };
     if (claim.method === "email_domaine") {
@@ -264,7 +263,7 @@ export async function POST(req: Request) {
     <div><strong>Email réclamant :</strong> ${accountEmail}</div>
     <div><strong>Méthode :</strong> ${claim.method}</div>
   </div>
-  <p>Un justificatif a été uploadé (KBIS ou agrément préfectoral). Vérifiez qu'il correspond à l'entreprise et au réclamant avant d'approuver.</p>
+  <p>Réclamation à valider manuellement — vérifiez la cohérence SIRET / email réclamant / nom de l'entreprise avant d'approuver.</p>
   <div style="text-align:center;margin:24px 0">
     <a href="${adminUrl}" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">
       Ouvrir la file d'attente
