@@ -8,13 +8,14 @@ type Completude = {
   email: boolean;
   description: boolean;
   horaires: boolean;
-  photos: boolean;
+  /** Optionnel : pas inclus dans la jauge pour les pros gratuits (photos = plan Pro) */
+  photos?: boolean;
 };
 
 const LABELS: Record<keyof Completude, string> = {
   telephone: "Numéro de téléphone public",
   email: "Email professionnel",
-  description: "Description (50 caractères minimum)",
+  description: "À propos / présentation (50 caractères min.)",
   horaires: "Horaires d'ouverture",
   photos: "Au moins une photo",
 };
@@ -31,7 +32,12 @@ export default function WelcomeBanner({
   const [closed, setClosed] = useState(false);
   if (closed) return null;
 
-  const items = Object.entries(completude) as [keyof Completude, boolean][];
+  const items = (
+    Object.entries(completude).filter(([, v]) => v !== undefined) as [
+      keyof Completude,
+      boolean,
+    ][]
+  );
   const done = items.filter(([, v]) => v).length;
   const total = items.length;
   const pct = Math.round((done / total) * 100);

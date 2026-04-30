@@ -164,19 +164,36 @@ export default async function ProDashboard({
             </p>
           </div>
         )}
-        {(showWelcome || showUpgraded) && (
-          <WelcomeBanner
-            upgraded={showUpgraded}
-            nomAffiche={fiche.nom_commercial || fiche.raison_sociale}
-            completude={{
-              telephone: !!fiche.telephone_public,
-              email: !!fiche.email_public,
-              description: !!fiche.description && fiche.description.length > 50,
-              horaires: !!fiche.horaires && Object.keys(fiche.horaires || {}).length > 0,
-              photos: !!fiche.photos && fiche.photos.length > 0,
-            }}
-          />
-        )}
+        {(() => {
+          // Pour les pros gratuits, les photos ne sont pas à leur portée — on ne les inclut
+          // dans la jauge que si l'utilisateur est sur le plan Pro.
+          const completude: {
+            telephone: boolean;
+            email: boolean;
+            description: boolean;
+            horaires: boolean;
+            photos?: boolean;
+          } = {
+            telephone: !!fiche.telephone_public,
+            email: !!fiche.email_public,
+            description: !!fiche.description && fiche.description.length > 50,
+            horaires:
+              !!fiche.horaires && Object.keys(fiche.horaires || {}).length > 0,
+          };
+          if (isPro) {
+            completude.photos = !!fiche.photos && fiche.photos.length > 0;
+          }
+          const allDone = Object.values(completude).every(Boolean);
+          // Afficher si: welcome/upgraded explicite, OU profil incomplet (rappel permanent jusqu'à 100 %).
+          if (!showWelcome && !showUpgraded && allDone) return null;
+          return (
+            <WelcomeBanner
+              upgraded={showUpgraded}
+              nomAffiche={fiche.nom_commercial || fiche.raison_sociale}
+              completude={completude}
+            />
+          );
+        })()}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <StatBox icon={<Eye className="w-5 h-5" />} label="Vues (30 j.)" value={vuesRecentes ?? 0} />
           <StatBox icon={<Phone className="w-5 h-5" />} label="Appels cliqués" value={fiche.appels_cliques} />

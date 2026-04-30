@@ -41,7 +41,11 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
   const [horaires, setHoraires] = useState<HorairesState>(() => {
     const initial: HorairesState = {};
     const src = (fiche.horaires || {}) as Record<string, string>;
-    for (const j of JOURS) initial[j.key] = src[j.key] || "";
+    // Compat legacy : si la fiche stocke { general: "24/7" } (ancien format inscription),
+    // on applique cette valeur sur tous les jours pour que l'édition fonctionne.
+    const legacyGeneral =
+      src.general && !JOURS.some((j) => src[j.key]) ? src.general : null;
+    for (const j of JOURS) initial[j.key] = src[j.key] || legacyGeneral || "";
     return initial;
   });
   const [photos, setPhotos] = useState<string[]>(

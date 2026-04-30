@@ -198,19 +198,41 @@ export default async function FicheProPage({ params }: Props) {
 
       <section className="max-w-5xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <article className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
-            <div className="space-y-3">
-              {seoText.paragraphes.map((p, i) => (
-                <p key={i} className="text-gray-700 leading-relaxed">{p}</p>
-              ))}
-            </div>
-          </article>
+          {/* Si le professionnel a rédigé sa propre présentation, elle devient le bloc principal
+              « À propos ». Le texte SEO factuel reste présent en dessous comme complément
+              informatif (utile référencement et patients). */}
+          {pro.description ? (
+            <article className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                {pro.description}
+              </p>
+            </article>
+          ) : (
+            <article className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
+              <div className="space-y-3">
+                {seoText.paragraphes.map((p, i) => (
+                  <p key={i} className="text-gray-700 leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              </div>
+            </article>
+          )}
 
           {pro.description && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-2">Présentation par le professionnel</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{pro.description}</p>
+              <h2 className="text-lg font-bold text-gray-900 mb-3">
+                Informations sur cette activité
+              </h2>
+              <div className="space-y-3">
+                {seoText.paragraphes.map((p, i) => (
+                  <p key={i} className="text-gray-700 leading-relaxed">
+                    {p}
+                  </p>
+                ))}
+              </div>
             </div>
           )}
 
@@ -243,7 +265,10 @@ export default async function FicheProPage({ params }: Props) {
                   { key: "samedi", label: "Samedi" },
                   { key: "dimanche", label: "Dimanche" },
                 ].map((jour) => {
-                  const valeur = (pro.horaires as Record<string, string> | null)?.[jour.key];
+                  const horairesObj = (pro.horaires as Record<string, string> | null) || null;
+                  // Compat legacy : ancien format { general: "24/7" } → même valeur tous les jours
+                  const legacy = horairesObj?.general && !horairesObj?.lundi ? horairesObj.general : null;
+                  const valeur = horairesObj?.[jour.key] || legacy || undefined;
                   const ferme = !valeur || valeur.toLowerCase() === "fermé" || valeur.toLowerCase() === "ferme";
                   return (
                     <div key={jour.key} className="flex items-center justify-between py-2 text-sm">

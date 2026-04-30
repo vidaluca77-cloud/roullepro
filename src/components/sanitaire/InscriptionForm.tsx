@@ -304,8 +304,33 @@ export default function InscriptionForm() {
       }
     }
 
-    const horairesValue =
-      values.horaires === "Autre" ? null : { general: values.horaires || "24/7" };
+    // Convertit la sélection en Record<jour, valeur> pour rester cohérent avec l'éditeur
+    // détaillé du dashboard et l'affichage public (qui boucle sur lundi/mardi/...).
+    const horairesValue = (() => {
+      if (values.horaires === "Autre" || !values.horaires) return null;
+      const v = values.horaires;
+      if (v === "Lundi-Vendredi 8h-19h") {
+        return {
+          lundi: "08:00–19:00",
+          mardi: "08:00–19:00",
+          mercredi: "08:00–19:00",
+          jeudi: "08:00–19:00",
+          vendredi: "08:00–19:00",
+          samedi: "Fermé",
+          dimanche: "Fermé",
+        };
+      }
+      // 24/7, Sur rendez-vous → même valeur sur tous les jours
+      return {
+        lundi: v,
+        mardi: v,
+        mercredi: v,
+        jeudi: v,
+        vendredi: v,
+        samedi: v,
+        dimanche: v,
+      };
+    })();
 
     try {
       const res = await fetch("/api/sanitaire/inscription", {
