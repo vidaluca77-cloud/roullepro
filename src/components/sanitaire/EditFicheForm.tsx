@@ -12,6 +12,7 @@ import {
   X,
   Lock,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import type { ProSanitaire } from "@/lib/sanitaire-data";
 
@@ -76,6 +77,28 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
       return next;
     });
   };
+
+  // Presets rapides pour aider les pros à remplir leurs horaires en un clic
+  const appliquerPreset = (preset: "24/7" | "semaine" | "semaine_samedi") => {
+    const next: HorairesState = {};
+    if (preset === "24/7") {
+      for (const j of JOURS) next[j.key] = "24h/24";
+    } else if (preset === "semaine") {
+      for (const j of JOURS) {
+        next[j.key] =
+          j.key === "samedi" || j.key === "dimanche" ? "Fermé" : "08:00\u201312:00, 14:00\u201319:00";
+      }
+    } else if (preset === "semaine_samedi") {
+      for (const j of JOURS) {
+        if (j.key === "dimanche") next[j.key] = "Fermé";
+        else if (j.key === "samedi") next[j.key] = "08:00\u201312:00";
+        else next[j.key] = "08:00\u201312:00, 14:00\u201319:00";
+      }
+    }
+    setHoraires(next);
+  };
+
+  const horairesVides = JOURS.every((j) => !(horaires[j.key] || "").trim());
 
   const onPhotoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -370,6 +393,43 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
           Format libre, ex : « 08:00–12:00, 14:00–19:00 ». Laissez vide pour ne pas afficher
           le jour, ou cliquez sur « Fermé ».
         </p>
+
+        {horairesVides && (
+          <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 mb-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+            <p className="text-xs text-amber-800 leading-relaxed">
+              <strong>Vos horaires sont vides.</strong> Ajoutez-les pour rassurer les patients
+              et apparaitre plus haut dans les résultats. Un raccourci ci-dessous remplit les 7
+              jours en un clic.
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-2 mb-3">
+          <span className="text-xs font-semibold text-gray-600 self-center mr-1">Raccourcis :</span>
+          <button
+            type="button"
+            onClick={() => appliquerPreset("24/7")}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:border-[#0066CC] hover:text-[#0066CC] transition"
+          >
+            24h/24, 7j/7
+          </button>
+          <button
+            type="button"
+            onClick={() => appliquerPreset("semaine_samedi")}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:border-[#0066CC] hover:text-[#0066CC] transition"
+          >
+            Lun-Ven 8h-19h + Sam matin
+          </button>
+          <button
+            type="button"
+            onClick={() => appliquerPreset("semaine")}
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 hover:border-[#0066CC] hover:text-[#0066CC] transition"
+          >
+            Lun-Ven 8h-19h
+          </button>
+        </div>
+
         <div className="space-y-2">
           {JOURS.map((jour) => {
             const v = horaires[jour.key] || "";
