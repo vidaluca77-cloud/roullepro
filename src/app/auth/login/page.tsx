@@ -8,7 +8,7 @@ import { Truck, AlertCircle, CheckCircle2 } from "lucide-react";
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") || "/dashboard";
+  const explicitNext = searchParams.get("next");
   const prefillEmail = searchParams.get("email") || "";
   const justClaimed = searchParams.get("claimed") === "1";
   const supabase = createClient();
@@ -26,8 +26,26 @@ function LoginContent() {
     setError("");
     setLoading(true);
     const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-    if (err) setError(err.message);
-    else router.push(nextPath);
+    if (err) {
+      setError(err.message);
+      setLoading(false);
+      return;
+    }
+    // Si une cible explicite est fournie (ex. ?next=/transport-medical/pro/dashboard
+    // après réclamation de fiche), on la respecte. Sinon on demande au serveur la
+    // destination idéale : pros sanitaire → leur dashboard fiches, autres → /dashboard.
+    let target = explicitNext;
+    if (!target) {
+      try {
+        const res = await fetch("/api/auth/post-login-redirect", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.target && typeof data.target === "string") target = data.target;
+        }
+      } catch {}
+      if (!target) target = "/dashboard";
+    }
+    router.push(target);
     setLoading(false);
   };
 

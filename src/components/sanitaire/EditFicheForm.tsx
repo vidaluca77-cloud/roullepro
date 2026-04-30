@@ -2,8 +2,20 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Save, Loader2 } from "lucide-react";
+import { Save, Loader2, Clock } from "lucide-react";
 import type { ProSanitaire } from "@/lib/sanitaire-data";
+
+const JOURS = [
+  { key: "lundi", label: "Lundi" },
+  { key: "mardi", label: "Mardi" },
+  { key: "mercredi", label: "Mercredi" },
+  { key: "jeudi", label: "Jeudi" },
+  { key: "vendredi", label: "Vendredi" },
+  { key: "samedi", label: "Samedi" },
+  { key: "dimanche", label: "Dimanche" },
+] as const;
+
+type HorairesState = Record<string, string>;
 
 export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
   const router = useRouter();
@@ -14,9 +26,32 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
   const [adresse, setAdresse] = useState(fiche.adresse || "");
   const [description, setDescription] = useState(fiche.description || "");
   const [services, setServices] = useState((fiche.services || []).join(", "));
+  const [horaires, setHoraires] = useState<HorairesState>(() => {
+    const initial: HorairesState = {};
+    const src = (fiche.horaires || {}) as Record<string, string>;
+    for (const j of JOURS) initial[j.key] = src[j.key] || "";
+    return initial;
+  });
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const isPremium = fiche.plan === "premium" || fiche.plan === "pro_plus";
+
+  const setHoraire = (jour: string, value: string) =>
+    setHoraires((h) => ({ ...h, [jour]: value }));
+  const toggleFerme = (jour: string) =>
+    setHoraires((h) => ({
+      ...h,
+      [jour]: h[jour]?.toLowerCase() === "fermé" ? "" : "Fermé",
+    }));
+  const appliquerATous = () => {
+    const ref = horaires.lundi?.trim();
+    if (!ref) return;
+    setHoraires((h) => {
+      const next = { ...h };
+      for (const j of JOURS) next[j.key] = ref;
+      return next;
+    });
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +73,14 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          horaires: (() => {
+            const out: Record<string, string> = {};
+            for (const j of JOURS) {
+              const v = (horaires[j.key] || "").trim();
+              if (v) out[j.key] = v;
+            }
+            return Object.keys(out).length > 0 ? out : null;
+          })(),
         }),
       });
       if (!res.ok) {
@@ -124,6 +167,64 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
           className={inputCls}
         />
       </Field>
+
+      <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/50">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[#0066CC]" />
+            <span className="text-sm font-semibold text-gray-800">
+              Horaires d&apos;ouverture
+            </span>
+            <span className="text-[10px] uppercase tracking-wide bg-emerald-100 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
+              Inclus dans le plan gratuit
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={appliquerATous}
+            disabled={!horaires.lundi?.trim()}
+            className="text-xs font-medium text-[#0066CC] hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+          >
+            Appliquer lundi à tous les jours
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          Format libre, ex : « 08:00–12:00, 14:00–19:00 ». Laissez vide pour ne pas afficher
+          le jour, ou cliquez sur « Fermé ».
+        </p>
+        <div className="space-y-2">
+          {JOURS.map((jour) => {
+            const v = horaires[jour.key] || "";
+            const ferme = v.toLowerCase() === "fermé" || v.toLowerCase() === "ferme";
+            return (
+              <div key={jour.key} className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                <span className="text-sm font-medium text-gray-700 w-20 shrink-0">
+                  {jour.label}
+                </span>
+                <input
+                  type="text"
+                  value={ferme ? "" : v}
+                  onChange={(e) => setHoraire(jour.key, e.target.value)}
+                  disabled={ferme}
+                  placeholder="08:00–12:00, 14:00–19:00"
+                  className={`flex-1 min-w-0 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition disabled:bg-gray-100 disabled:text-gray-400`}
+                />
+                <button
+                  type="button"
+                  onClick={() => toggleFerme(jour.key)}
+                  className={`text-xs font-semibold px-3 py-2 rounded-lg transition shrink-0 ${
+                    ferme
+                      ? "bg-gray-700 text-white hover:bg-gray-800"
+                      : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-100"
+                  }`}
+                >
+                  {ferme ? "Fermé" : "Marquer fermé"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {msg && (
         <div className={`text-sm rounded-lg px-3 py-2 ${msg.startsWith("Erreur") ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"}`}>
