@@ -52,6 +52,14 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
   const [photos, setPhotos] = useState<string[]>(
     Array.isArray(fiche.photos) ? fiche.photos : []
   );
+
+  // ADS : champs visibles uniquement pour les taxis conventionnes (art. L.3121-1 Code des transports)
+  const isTaxi = fiche.categorie === "taxi_conventionne";
+  const [numeroAds, setNumeroAds] = useState(fiche.numero_ads || "");
+  const [communeAds, setCommuneAds] = useState(fiche.commune_ads || "");
+  const [zupcInput, setZupcInput] = useState(
+    Array.isArray(fiche.zupc_communes) ? fiche.zupc_communes.join(", ") : ""
+  );
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoMsg, setPhotoMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -180,6 +188,19 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
             }
             return Object.keys(out).length > 0 ? out : null;
           })(),
+          // Champs ADS : envoyes uniquement pour les taxis conventionnes,
+          // sinon le serveur les ignorerait de toute facon (cf. route.ts)
+          ...(isTaxi
+            ? {
+                numero_ads: numeroAds.trim() || null,
+                commune_ads: communeAds.trim() || null,
+                zupc_communes: zupcInput
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .slice(0, 30) || null,
+              }
+            : {}),
         }),
       });
       if (!res.ok) {
@@ -368,6 +389,60 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
           </>
         )}
       </div>
+
+      {isTaxi && (
+        <div className="border border-amber-200 rounded-2xl p-4 bg-amber-50/40">
+          <div className="flex items-center gap-2 mb-3">
+            <span aria-hidden className="inline-flex w-7 h-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 font-bold text-sm">A</span>
+            <span className="text-sm font-semibold text-gray-900">Zone d&apos;Autorisation de Stationnement (ADS)</span>
+            <span className="text-[10px] uppercase tracking-wide bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">Obligatoire taxis</span>
+          </div>
+          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+            Le numéro et la commune de votre ADS sont les informations officielles délivrées par votre mairie ou préfecture
+            (article L.3121-1 du Code des transports). Elles définissent où vous êtes autorisé à marauder.
+            Hors de cette zone, vous pouvez intervenir uniquement sur réservation préalable.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Numéro ADS</label>
+              <input
+                type="text"
+                value={numeroAds}
+                onChange={(e) => setNumeroAds(e.target.value)}
+                placeholder="ex : 1428"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition"
+                maxLength={50}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Commune de rattachement ADS</label>
+              <input
+                type="text"
+                value={communeAds}
+                onChange={(e) => setCommuneAds(e.target.value)}
+                placeholder="ex : Paris, Lyon, Fourmies"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition"
+                maxLength={120}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 mb-1">
+              Communes ZUPC supplémentaires <span className="font-normal text-gray-500">(optionnel, séparer par des virgules)</span>
+            </label>
+            <input
+              type="text"
+              value={zupcInput}
+              onChange={(e) => setZupcInput(e.target.value)}
+              placeholder="Si votre ADS couvre plusieurs communes : Paris, Boulogne-Billancourt, Issy-les-Moulineaux"
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition"
+            />
+            <p className="text-[11px] text-gray-500 mt-1">
+              La Zone Unique de Prise en Charge (ZUPC, art. L.3121-11) regroupe les communes où vous pouvez prendre des clients sans réservation.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/50">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">

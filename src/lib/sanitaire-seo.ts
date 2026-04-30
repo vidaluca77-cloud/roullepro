@@ -266,10 +266,25 @@ export function buildFicheSeoText(
   };
 
   // ---- 5. Zone d'intervention ----
-  let zone = `${nom} intervient principalement a ${villePretty}${dep ? " et dans le departement " + dep : ""}${region ? " en region " + region : ""}.`;
-  if (villesVoisines && villesVoisines.length > 0) {
-    const noms = villesVoisines.slice(0, 6).map((v) => titleCaseVille(v.ville)).join(", ");
-    zone += ` Les communes proches couvertes par les professionnels du secteur incluent ${noms}.`;
+  let zone: string;
+  if (cat === "taxi_conventionne") {
+    // Taxis : zone d'intervention strictement encadree par l'ADS (art. L.3121-1 et L.3121-11 du Code des transports).
+    // On n'evoque PAS de "communes proches couvertes" qui suggererait une activite hors commune de rattachement.
+    const numeroAds = (pro as ProSanitaire & { numero_ads?: string | null }).numero_ads;
+    const communeAdsRaw = (pro as ProSanitaire & { commune_ads?: string | null }).commune_ads;
+    const communeAdsPretty = communeAdsRaw ? titleCaseVille(communeAdsRaw) : null;
+    const communeRattachement = communeAdsPretty || villePretty;
+    if (numeroAds && communeAdsPretty) {
+      zone = `${nom} est titulaire de l'autorisation de stationnement (ADS) numero ${numeroAds} delivree par la commune de ${communeAdsPretty}. Conformement aux articles L.3121-1 et L.3121-11 du Code des transports, l'activite de taxi est rattachee a cette commune : prise en charge des clients sur la voie publique uniquement dans la commune de rattachement (ou la zone unique de prise en charge en cas de ZUPC), et retour obligatoire apres chaque course hors zone.`;
+    } else {
+      zone = `${nom} exerce son activite de taxi conventionne au depart de ${communeRattachement}${dep ? " (" + dep + ")" : ""}. Conformement aux articles L.3121-1 et L.3121-11 du Code des transports, le taxi est rattache a une commune (ou ZUPC) qui delimite sa zone de prise en charge sur la voie publique. Les courses reservees a l'avance peuvent etre realisees au depart de tout point.`;
+    }
+  } else {
+    zone = `${nom} intervient principalement a ${villePretty}${dep ? " et dans le departement " + dep : ""}${region ? " en region " + region : ""}.`;
+    if (villesVoisines && villesVoisines.length > 0) {
+      const noms = villesVoisines.slice(0, 6).map((v) => titleCaseVille(v.ville)).join(", ");
+      zone += ` Les communes proches couvertes par les professionnels du secteur incluent ${noms}.`;
+    }
   }
 
   // ---- 6. CTA / pratique ----

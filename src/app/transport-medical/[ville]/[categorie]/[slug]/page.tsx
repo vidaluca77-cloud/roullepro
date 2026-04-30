@@ -492,6 +492,59 @@ export default async function FicheProPage({ params }: Props) {
         </section>
       )}
 
+      {pro.categorie === "taxi_conventionne" && (
+        <section className="max-w-5xl mx-auto px-4 pb-10">
+          <div className="bg-amber-50/40 border border-amber-200 rounded-2xl p-6">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <h2 className="text-lg font-bold text-gray-900">Zone ADS officielle</h2>
+              <span className="text-[10px] uppercase tracking-wide bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full">
+                Autorisation de stationnement
+              </span>
+            </div>
+            {pro.numero_ads || pro.commune_ads ? (
+              <div className="space-y-2 text-sm text-gray-800">
+                {pro.numero_ads && (
+                  <div>
+                    <span className="font-semibold">Numéro ADS :</span>{" "}
+                    <span className="font-mono">{pro.numero_ads}</span>
+                  </div>
+                )}
+                {pro.commune_ads && (
+                  <div>
+                    <span className="font-semibold">Commune de rattachement :</span> {pro.commune_ads}
+                  </div>
+                )}
+                {Array.isArray(pro.zupc_communes) && pro.zupc_communes.length > 0 && (
+                  <div>
+                    <div className="font-semibold mb-1">Communes ZUPC supplémentaires :</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {pro.zupc_communes.map((c, i) => (
+                        <span
+                          key={`${c}-${i}`}
+                          className="inline-flex items-center bg-white border border-amber-200 text-gray-700 text-xs px-2.5 py-1 rounded-full"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-700">
+                L&apos;autorisation de stationnement n&apos;a pas encore été renseignée par ce professionnel.
+              </p>
+            )}
+            <p className="mt-4 pt-3 border-t border-amber-200 text-xs text-gray-700 leading-relaxed">
+              <strong>Mention légale :</strong> Ce taxi peut effectuer des courses en dehors de sa zone ADS
+              uniquement sur réservation préalable (art. L.3121-1 du Code des transports). La maraude, c&apos;est-à-dire
+              la prise en charge directe sans réservation, est réservée à la zone d&apos;autorisation de stationnement
+              (art. L.3121-11). Pour les courses hors zone, une majoration tarifaire légale peut s&apos;appliquer.
+            </p>
+          </div>
+        </section>
+      )}
+
       {categoriesVille.length > 1 && (
         <section className="max-w-5xl mx-auto px-4 pb-10">
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
@@ -542,8 +595,16 @@ export default async function FicheProPage({ params }: Props) {
       {villesVoisines.length > 0 && (
         <section className="max-w-5xl mx-auto px-4 pb-12">
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-1">Transport sanitaire près de {pro.ville}</h2>
-            <p className="text-sm text-gray-600 mb-4">Villes voisines avec des professionnels référencés.</p>
+            <h2 className="text-lg font-bold text-gray-900 mb-1">
+              {pro.categorie === "taxi_conventionne"
+                ? `Autres taxis conventionnés près de ${pro.ville}`
+                : `Transport sanitaire près de ${pro.ville}`}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {pro.categorie === "taxi_conventionne"
+                ? "Suggestion d'annuaire basée sur la proximité géographique. Chaque taxi n'intervient en maraude que dans sa propre zone ADS."
+                : "Villes voisines avec des professionnels référencés."}
+            </p>
             <div className="flex flex-wrap gap-2">
               {villesVoisines.map((v) => (
                 <Link

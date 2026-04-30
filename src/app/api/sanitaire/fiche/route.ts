@@ -45,9 +45,33 @@ export async function PATCH(req: Request) {
       "photos",
       "logo_url",
       "video_url",
+      // Champs ADS (taxis conventionnes uniquement, art. L.3121-1 Code des transports)
+      "numero_ads",
+      "commune_ads",
+      "commune_ads_slug",
+      "zupc_communes",
     ];
     for (const k of allowedKeys) {
       if (k in fields) allowed[k] = fields[k];
+    }
+
+    // Reserve les champs ADS aux taxis conventionnes : un ambulancier/VSL ne peut pas saisir d ADS.
+    if (pro.categorie !== "taxi_conventionne") {
+      delete allowed.numero_ads;
+      delete allowed.commune_ads;
+      delete allowed.commune_ads_slug;
+      delete allowed.zupc_communes;
+    }
+
+    // Auto-derive le slug commune ADS si la commune est saisie sans slug explicite
+    if (typeof allowed.commune_ads === "string" && !("commune_ads_slug" in allowed)) {
+      const v = allowed.commune_ads as string;
+      allowed.commune_ads_slug = v
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || null;
     }
 
     const { error } = await supabaseAdmin.from("pros_sanitaire").update(allowed).eq("id", pro_id);

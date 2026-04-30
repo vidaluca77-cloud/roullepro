@@ -198,6 +198,11 @@ export type ProSanitaire = {
   description: string | null;
   services: string[] | null;
   photos: string[] | null;
+  // Champs ADS (taxis conventionnes uniquement, art. L.3121-1 Code des transports)
+  numero_ads: string | null;
+  commune_ads: string | null;
+  commune_ads_slug: string | null;
+  zupc_communes: string[] | null;
   logo_url: string | null;
   video_url: string | null;
   claimed: boolean;
