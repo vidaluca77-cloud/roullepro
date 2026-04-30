@@ -20,8 +20,50 @@ export default async function RecherchePage({ searchParams }: Props) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
+  // Liste des regions FR (avec accents, format DB)
+  const REGIONS_FR = new Set([
+    "Auvergne-Rhône-Alpes",
+    "Bourgogne-Franche-Comté",
+    "Bretagne",
+    "Centre-Val de Loire",
+    "Corse",
+    "Grand Est",
+    "Hauts-de-France",
+    "Ile-de-France",
+    "Île-de-France",
+    "Normandie",
+    "Nouvelle-Aquitaine",
+    "Occitanie",
+    "Pays de la Loire",
+    "Provence-Alpes-Côte d'Azur",
+    "Guadeloupe",
+    "Martinique",
+    "Guyane",
+    "La Réunion",
+    "Mayotte",
+  ]);
+  // Detection robuste : compare en lowercase + sans accents pour tolerer les variations de saisie
+  const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const queryNorm = norm(queryVille);
+  const matchedRegion = queryVille
+    ? Array.from(REGIONS_FR).find((r) => norm(r) === queryNorm)
+    : null;
+
   let pros: ProSanitaire[] = [];
-  if (queryVille) {
+  if (matchedRegion) {
+    // Recherche par region (clic depuis la page d'accueil ou saisie d'un nom de region)
+    let query = supabase
+      .from("pros_sanitaire_public")
+      .select("*")
+      .eq("actif", true).eq("suspendu", false)
+      .eq("region", matchedRegion)
+      .order("plan", { ascending: false })
+      .order("claimed", { ascending: false })
+      .limit(100);
+    if (cat) query = query.eq("categorie", cat.key);
+    const { data } = await query;
+    pros = (data || []) as ProSanitaire[];
+  } else if (queryVille) {
     let query = supabase
       .from("pros_sanitaire_public")
       .select("*")
