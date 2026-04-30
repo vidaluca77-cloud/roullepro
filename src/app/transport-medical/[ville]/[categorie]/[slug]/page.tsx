@@ -32,6 +32,7 @@ import {
 import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
 import OwnerBanner from "@/components/sanitaire/OwnerBanner";
+import SignalerFicheButton from "@/components/sanitaire/SignalerFicheButton";
 
 // Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
 // rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
@@ -50,6 +51,7 @@ async function fetchPro(slug: string) {
     .from("pros_sanitaire")
     .select("*")
     .eq("actif", true)
+    .eq("suspendu", false)
     .eq("slug", slug)
     .maybeSingle();
   return data as ProSanitaire | null;
@@ -620,6 +622,16 @@ export default async function FicheProPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      <section className="max-w-5xl mx-auto px-4 pb-10">
+        <div className="flex justify-end">
+          <SignalerFicheButton
+            ficheId={pro.id}
+            ficheNom={pro.nom_commercial || pro.raison_sociale}
+            categorie={pro.categorie as "taxi_conventionne" | "ambulance" | "vsl"}
+          />
+        </div>
+      </section>
     </main>
   );
 }

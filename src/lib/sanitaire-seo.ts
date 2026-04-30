@@ -395,7 +395,7 @@ export async function getVillesVoisines(
   let query = supabase
     .from("pros_sanitaire")
     .select("ville, ville_slug, latitude, longitude")
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .not("latitude", "is", null)
     .gte("latitude", lat - dLat)
     .lte("latitude", lat + dLat)
@@ -470,7 +470,7 @@ export async function getAutresProsMemeVille(
   const { data } = await supabase
     .from("pros_sanitaire")
     .select("id, raison_sociale, nom_commercial, slug, categorie, claimed")
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .eq("ville_slug", villeSlug)
     .eq("categorie", categorie)
     .neq("id", excludeProId)
@@ -504,7 +504,7 @@ export async function getCategoriesByVille(
   const { data } = await supabase
     .from("pros_sanitaire")
     .select("categorie")
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .eq("ville_slug", villeSlug);
   if (!data) return [];
   const counts: Record<string, number> = {};

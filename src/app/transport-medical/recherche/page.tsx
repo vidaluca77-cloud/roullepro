@@ -25,7 +25,7 @@ export default async function RecherchePage({ searchParams }: Props) {
     let query = supabase
       .from("pros_sanitaire_public")
       .select("*")
-      .eq("actif", true)
+      .eq("actif", true).eq("suspendu", false)
       .or(`ville_slug.eq.${villeSlug},ville.ilike.%${queryVille}%,code_postal.eq.${queryVille}`)
       .order("plan", { ascending: false })
       .order("claimed", { ascending: false })
@@ -37,7 +37,7 @@ export default async function RecherchePage({ searchParams }: Props) {
     const { data } = await supabase
       .from("pros_sanitaire_public")
       .select("*")
-      .eq("actif", true)
+      .eq("actif", true).eq("suspendu", false)
       .eq("categorie", cat.key)
       .order("plan", { ascending: false })
       .limit(100);

@@ -20,6 +20,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('pending');
+  const [signalementsCount, setSignalementsCount] = useState(0);
 
   useEffect(() => { init(); }, []);
 
@@ -41,6 +42,15 @@ export default function AdminPage() {
       const r = await fetch('/api/admin/stats');
       if (r.ok) setStats(await r.json());
     } catch (e) { console.error('stats load', e); }
+
+    // Compteur signalements en attente
+    try {
+      const r = await fetch('/api/admin/signalements?statut=en_attente');
+      if (r.ok) {
+        const j = await r.json();
+        setSignalementsCount((j.signalements || []).length);
+      }
+    } catch (e) { console.error('signalements load', e); }
 
     setLoading(false);
   };
@@ -221,6 +231,18 @@ export default function AdminPage() {
             className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600"
           >
             Dépôts-vente
+          </Link>
+          <Link
+            href="/admin/signalements"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-red-50 hover:text-red-600 flex items-center gap-2"
+          >
+            <AlertCircle size={16} />
+            Signalements
+            {signalementsCount > 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                {signalementsCount}
+              </span>
+            )}
           </Link>
         </div>
 

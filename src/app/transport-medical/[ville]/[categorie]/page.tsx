@@ -20,7 +20,7 @@ async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string) 
   const { data } = await supabase
     .from("pros_sanitaire_public")
     .select("*")
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .eq("ville_slug", villeSlug)
     .eq("categorie", categorieKey)
     .order("plan", { ascending: false })

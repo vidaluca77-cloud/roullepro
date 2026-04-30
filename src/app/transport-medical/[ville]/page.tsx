@@ -36,7 +36,7 @@ async function fetchProsForVille(villeSlug: string) {
   const { data, error } = await supabase
     .from("pros_sanitaire_public")
     .select("*")
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .eq("ville_slug", villeSlug)
     .order("plan", { ascending: false })
     .order("claimed", { ascending: false })
@@ -54,7 +54,7 @@ async function countProsForVille(villeSlug: string): Promise<number> {
   const { count } = await supabase
     .from("pros_sanitaire_public")
     .select("*", { count: "exact", head: true })
-    .eq("actif", true)
+    .eq("actif", true).eq("suspendu", false)
     .eq("ville_slug", villeSlug);
   return count ?? 0;
 }

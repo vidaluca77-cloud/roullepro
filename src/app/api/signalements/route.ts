@@ -12,51 +12,91 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Trop de signalements. Veuillez réessayer plus tard.' }, { status: 429 });
     }
 
-    // Créer un client Supabase avec le service role key pour bypass RLS
+    // Client admin (bypass RLS)
     const supabaseAdmin = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
-      }
+      { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Créer un client normal pour vérifier l'authentification
+    // Client serveur pour identifier l'utilisateur si connecté
     const { createClient: createServerClient } = await import('@/lib/supabase/server');
     const supabase = await createServerClient();
-
-    // Vérifier l'authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Vous devez être connecté pour signaler une annonce' },
-        { status: 401 }
-      );
-    }
+    const { data: { user } } = await supabase.auth.getUser();
 
     const body = await request.json();
-    const { annonce_id, raison } = body;
+    const {
+      annonce_id,
+      fiche_id,
+      target_type: rawTargetType,
+      raison,
+      commentaire,
+      reporter_email,
+    } = body;
 
-    // Validation
-    if (!annonce_id || !raison) {
-      return NextResponse.json(
-        { error: 'Données manquantes' },
-        { status: 400 }
-      );
+    // Détection auto du target_type si non fourni
+    const target_type = rawTargetType || (fiche_id ? 'fiche_sanitaire' : 'annonce');
+
+    if (!['annonce', 'fiche_sanitaire'].includes(target_type)) {
+      return NextResponse.json({ error: 'target_type invalide' }, { status: 400 });
     }
 
-    // Insérer le signalement avec le client admin (bypass RLS)
+    if (!raison || typeof raison !== 'string' || raison.trim().length < 3) {
+      return NextResponse.json({ error: 'Raison manquante' }, { status: 400 });
+    }
+
+    // Annonce marketplace : auth obligatoire (comportement historique)
+    if (target_type === 'annonce') {
+      if (!user) {
+        return NextResponse.json(
+          { error: 'Vous devez être connecté pour signaler une annonce' },
+          { status: 401 }
+        );
+      }
+      if (!annonce_id) {
+        return NextResponse.json({ error: 'annonce_id manquant' }, { status: 400 });
+      }
+    }
+
+    // Fiche sanitaire : auth optionnelle (signalement public possible)
+    if (target_type === 'fiche_sanitaire') {
+      if (!fiche_id) {
+        return NextResponse.json({ error: 'fiche_id manquant' }, { status: 400 });
+      }
+      // Verifier que la fiche existe
+      const { data: fiche, error: ficheErr } = await supabaseAdmin
+        .from('pros_sanitaire')
+        .select('id')
+        .eq('id', fiche_id)
+        .maybeSingle();
+      if (ficheErr || !fiche) {
+        return NextResponse.json({ error: 'Fiche introuvable' }, { status: 404 });
+      }
+    }
+
+    const insertPayload: Record<string, unknown> = {
+      target_type,
+      raison: raison.trim().slice(0, 200),
+      commentaire: commentaire ? String(commentaire).trim().slice(0, 1000) : null,
+      user_id: user?.id ?? null,
+      reporter_ip: ip,
+      statut: 'en_attente',
+    };
+    if (target_type === 'annonce') {
+      insertPayload.annonce_id = annonce_id;
+    } else {
+      insertPayload.fiche_id = fiche_id;
+      if (!user && reporter_email && typeof reporter_email === 'string') {
+        // Validation simple email
+        if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(reporter_email)) {
+          insertPayload.reporter_email = reporter_email.trim().toLowerCase().slice(0, 200);
+        }
+      }
+    }
+
     const { data, error } = await supabaseAdmin
       .from('signalements')
-      .insert({
-        annonce_id,
-        user_id: user.id,
-        raison,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
@@ -74,9 +114,6 @@ export async function POST(request: Request) {
     );
   } catch (err: unknown) {
     console.error('[api/signalements] unexpected error:', err);
-    return NextResponse.json(
-      { error: 'Erreur serveur' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
