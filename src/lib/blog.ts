@@ -203,7 +203,18 @@ const SEO_POSTS: BlogPost[] = (() => {
   }
 })();
 
-const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS, ...SEO_POSTS];
+// Cluster transport sanitaire (15 articles SEO medical)
+const MEDICAL_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-medical-posts");
+    return Array.isArray(mod?.MEDICAL_POSTS) ? (mod.MEDICAL_POSTS as BlogPost[]) : [];
+  } catch {
+    return [];
+  }
+})();
+
+const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS, ...SEO_POSTS, ...MEDICAL_POSTS];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */
 
@@ -215,6 +226,13 @@ export interface BlogCategory {
 }
 
 export const CATEGORIES: BlogCategory[] = [
+  {
+    slug: "transport-sanitaire",
+    label: "Transport sanitaire",
+    description:
+      "Ambulance, VSL, taxi conventionne : guide complet du transport medical en France, prescription, remboursement et demarches.",
+    color: "from-sky-500 to-cyan-600",
+  },
   {
     slug: "guide-vendeur",
     label: "Guide vendeur",
