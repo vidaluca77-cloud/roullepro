@@ -109,22 +109,17 @@ export default async function ProPage() {
               {
                 n: "01",
                 title: "Trouvez votre fiche",
-                desc: "Recherchez par nom d'entreprise ou SIRET. Si elle n'existe pas encore, contactez-nous pour la créer.",
+                desc: "Recherchez par nom d'entreprise ou SIRET. Si elle n'existe pas encore, créez-la en moins de 2 minutes.",
               },
               {
                 n: "02",
                 title: "Recevez un code par email",
-                desc: "Un code à 6 chiffres est envoyé à votre email professionnel pour confirmer que vous êtes bien le gestionnaire.",
+                desc: "Un code à 6 chiffres est envoyé à votre email professionnel pour confirmer que vous êtes bien le gestionnaire. Aucun document à téléverser.",
               },
               {
                 n: "03",
-                title: "Transmettez votre justificatif",
-                desc: "KBIS ou agrément préfectoral (PDF/JPG/PNG, max 10 Mo). Validation par notre équipe sous 48 h ouvrées.",
-              },
-              {
-                n: "04",
                 title: "Gérez votre fiche",
-                desc: "Modifiez horaires, coordonnées, description, photos. Répondez aux demandes des patients.",
+                desc: "Accès immédiat à votre espace pro : horaires, coordonnées, description, photos. Répondez aux demandes patients dès validation par notre équipe (sous 24 h ouvrées).",
               },
             ].map((step) => (
               <li key={step.n} className="flex gap-5 bg-white border border-gray-200 rounded-2xl p-5">
