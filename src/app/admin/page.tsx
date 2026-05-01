@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('pending');
   const [signalementsCount, setSignalementsCount] = useState(0);
+  const [preInscriptionsCount, setPreInscriptionsCount] = useState(0);
 
   useEffect(() => { init(); }, []);
 
@@ -51,6 +52,15 @@ export default function AdminPage() {
         setSignalementsCount((j.signalements || []).length);
       }
     } catch (e) { console.error('signalements load', e); }
+
+    // Compteur pre-inscriptions pro en attente
+    try {
+      const r = await fetch('/api/admin/pre-inscriptions?statut=en_attente');
+      if (r.ok) {
+        const j = await r.json();
+        setPreInscriptionsCount((j.items || []).length);
+      }
+    } catch (e) { console.error('pre-inscriptions load', e); }
 
     setLoading(false);
   };
@@ -241,6 +251,17 @@ export default function AdminPage() {
             {signalementsCount > 0 && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
                 {signalementsCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/admin/pre-inscriptions"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2"
+          >
+            Pré-inscriptions Pro
+            {preInscriptionsCount > 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                {preInscriptionsCount}
               </span>
             )}
           </Link>
