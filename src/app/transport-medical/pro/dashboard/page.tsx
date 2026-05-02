@@ -14,6 +14,8 @@ import {
   Pencil,
   Building2,
   Sparkles,
+  PhoneCall,
+  Clock,
 } from "lucide-react";
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
@@ -85,6 +87,40 @@ export default async function ProDashboard({
     .select("*", { count: "exact", head: true })
     .eq("pro_id", fiche.id)
     .gte("created_at", new Date(Date.now() - 30 * 86400_000).toISOString());
+
+  // Phone reveals (intentions d'appel) — 7j et 30j
+  const since7d = new Date(Date.now() - 7 * 86400_000).toISOString();
+  const since30d = new Date(Date.now() - 30 * 86400_000).toISOString();
+  const { count: reveals7d } = await supabase
+    .from("phone_reveals")
+    .select("*", { count: "exact", head: true })
+    .eq("pro_id", fiche.id)
+    .gte("created_at", since7d);
+  const { count: reveals30d } = await supabase
+    .from("phone_reveals")
+    .select("*", { count: "exact", head: true })
+    .eq("pro_id", fiche.id)
+    .gte("created_at", since30d);
+
+  // Vues 7j en plus
+  const { count: vues7d } = await supabase
+    .from("sanitaire_vues")
+    .select("*", { count: "exact", head: true })
+    .eq("pro_id", fiche.id)
+    .gte("created_at", since7d);
+
+  // Demandes de rappel récentes (10 dernières)
+  const { data: callbacks } = await supabase
+    .from("callback_requests")
+    .select("id, visitor_name, visitor_phone, visitor_message, preferred_slot, status, created_at")
+    .eq("pro_id", fiche.id)
+    .order("created_at", { ascending: false })
+    .limit(10);
+  const { count: callbacksNouveaux } = await supabase
+    .from("callback_requests")
+    .select("*", { count: "exact", head: true })
+    .eq("pro_id", fiche.id)
+    .eq("status", "nouveau");
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -194,19 +230,53 @@ export default async function ProDashboard({
             />
           );
         })()}
+        {/* Bandeau preuve de valeur RoullePro */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 mb-6">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0066CC] text-white flex items-center justify-center flex-shrink-0">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <div className="font-semibold text-gray-900 mb-1">
+                Ce que RoullePro vous a apporté
+              </div>
+              <p className="text-sm text-gray-700">
+                <strong>{(reveals30d ?? 0) + (callbacksNouveaux ?? 0) + (messagesCount ?? 0)}</strong>{" "}
+                intentions de contact ces 30 derniers jours
+                {(reveals7d ?? 0) > 0 && (
+                  <> dont <strong>{reveals7d}</strong> sur les 7 derniers</>
+                )}
+                .
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <StatBox icon={<Eye className="w-5 h-5" />} label="Vues (30 j.)" value={vuesRecentes ?? 0} />
-          <StatBox icon={<Phone className="w-5 h-5" />} label="Appels cliqués" value={fiche.appels_cliques} />
+          <StatBox
+            icon={<Eye className="w-5 h-5" />}
+            label="Vues (30 j.)"
+            value={vuesRecentes ?? 0}
+            sub={vues7d != null ? `${vues7d} sur 7 j.` : undefined}
+          />
+          <StatBox
+            icon={<Phone className="w-5 h-5" />}
+            label="Numéro dévoilé (30 j.)"
+            value={reveals30d ?? 0}
+            sub={reveals7d != null ? `${reveals7d} sur 7 j.` : undefined}
+          />
+          <StatBox
+            icon={<PhoneCall className="w-5 h-5" />}
+            label="Demandes de rappel"
+            value={callbacksNouveaux ?? 0}
+            sub={(callbacksNouveaux ?? 0) > 0 ? "à rappeler" : "aucune en attente"}
+            accent={(callbacksNouveaux ?? 0) > 0 ? "amber" : undefined}
+          />
           <StatBox
             icon={<MessageCircle className="w-5 h-5" />}
             label="Messages (30 j.)"
             value={isPro ? messagesCount ?? 0 : `${messagesCount ?? 0} 🔒`}
             accent={isPro ? undefined : "amber"}
-          />
-          <StatBox
-            icon={<BarChart3 className="w-5 h-5" />}
-            label="Vues totales"
-            value={fiche.vues_totales}
           />
         </div>
 
@@ -242,6 +312,77 @@ export default async function ProDashboard({
           </div>
 
           <aside className="space-y-4">
+            {/* Demandes de rappel */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <PhoneCall className="w-4 h-4 text-[#0066CC]" />
+                  Demandes de rappel
+                </h3>
+                {(callbacksNouveaux ?? 0) > 0 && (
+                  <span className="text-[11px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                    {callbacksNouveaux} nouvelle{(callbacksNouveaux ?? 0) > 1 ? "s" : ""}
+                  </span>
+                )}
+              </div>
+              {!callbacks || callbacks.length === 0 ? (
+                <p className="text-xs text-gray-500">
+                  Aucune demande pour le moment. Les visiteurs peuvent vous demander un rappel
+                  directement depuis votre fiche.
+                </p>
+              ) : (
+                <ul className="space-y-3">
+                  {callbacks.slice(0, 5).map((c) => {
+                    const SLOT_LABELS: Record<string, string> = {
+                      asap: "Dès que possible",
+                      matin: "Matin",
+                      "apres-midi": "Après-midi",
+                      soir: "Soir",
+                    };
+                    const isNew = c.status === "nouveau";
+                    return (
+                      <li
+                        key={c.id}
+                        className={`p-3 rounded-xl border ${isNew ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-200"}`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="font-semibold text-sm text-gray-900">{c.visitor_name}</div>
+                          {isNew && (
+                            <span className="text-[10px] font-bold uppercase bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded">
+                              Nouveau
+                            </span>
+                          )}
+                        </div>
+                        <a
+                          href={`tel:${c.visitor_phone.replace(/\s/g, "")}`}
+                          className="inline-flex items-center gap-1 text-sm font-semibold text-[#0066CC] hover:underline"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          {c.visitor_phone}
+                        </a>
+                        <div className="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
+                          <Clock className="w-3 h-3" />
+                          {SLOT_LABELS[c.preferred_slot || "asap"] || c.preferred_slot}
+                          {" · "}
+                          {new Date(c.created_at).toLocaleDateString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
+                        {c.visitor_message && (
+                          <p className="text-xs text-gray-700 mt-2 whitespace-pre-line">
+                            {c.visitor_message}
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+
             {/* Messagerie */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <h3 className="font-semibold text-gray-900 mb-3">Messagerie</h3>
@@ -363,11 +504,13 @@ function StatBox({
   label,
   value,
   accent,
+  sub,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
   accent?: "amber";
+  sub?: string;
 }) {
   return (
     <div
@@ -380,6 +523,7 @@ function StatBox({
       </div>
       <div className="text-2xl font-bold text-gray-900">{value}</div>
       <div className="text-xs text-gray-500 mt-0.5">{label}</div>
+      {sub && <div className="text-[11px] text-gray-400 mt-0.5">{sub}</div>}
     </div>
   );
 }

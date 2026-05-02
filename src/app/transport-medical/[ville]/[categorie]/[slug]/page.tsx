@@ -33,6 +33,8 @@ import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
 import OwnerBanner from "@/components/sanitaire/OwnerBanner";
 import SignalerFicheButton from "@/components/sanitaire/SignalerFicheButton";
+import PhoneReveal from "@/components/sanitaire/PhoneReveal";
+import CallbackButton from "@/components/sanitaire/CallbackButton";
 
 // Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
 // rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
@@ -302,17 +304,23 @@ export default async function FicheProPage({ params }: Props) {
             <h2 className="text-lg font-bold text-gray-900 mb-1">Contacter cette entreprise</h2>
             {!isPremium && pro.telephone_public && (
               <p className="text-sm text-gray-600 mb-4">
-                Pour une réponse immédiate, appelez directement. Vous pouvez aussi laisser un message ci-dessous.
+                Pour une réponse immédiate, appelez directement. Vous pouvez aussi demander à être rappelé ou laisser un message.
               </p>
             )}
             {!isPremium && pro.telephone_public && (
-              <a
-                href={`tel:${pro.telephone_public.replace(/\s/g, "")}`}
-                className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition w-full justify-center mb-5"
-              >
-                <Phone className="w-4 h-4" />
-                Appeler le {pro.telephone_public}
-              </a>
+              <PhoneReveal
+                proId={pro.id}
+                telephone={pro.telephone_public}
+                categorie={pro.categorie}
+                ville={pro.ville}
+                variant="primary"
+              />
+            )}
+            {!isPremium && pro.telephone_public && (
+              <CallbackButton
+                proId={pro.id}
+                proNom={pro.nom_commercial || pro.raison_sociale}
+              />
             )}
             <ContactProForm proId={pro.id} proNom={pro.nom_commercial || pro.raison_sociale} />
           </div>
@@ -323,16 +331,13 @@ export default async function FicheProPage({ params }: Props) {
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Coordonnées</h2>
             <div className="space-y-3">
               {pro.telephone_public && (
-                <a
-                  href={`tel:${pro.telephone_public.replace(/\s/g, "")}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 transition"
-                >
-                  <Phone className="w-5 h-5 text-[#0066CC]" />
-                  <div>
-                    <div className="text-xs text-gray-500">Téléphone</div>
-                    <div className="font-semibold text-gray-900">{pro.telephone_public}</div>
-                  </div>
-                </a>
+                <PhoneReveal
+                  proId={pro.id}
+                  telephone={pro.telephone_public}
+                  categorie={pro.categorie}
+                  ville={pro.ville}
+                  variant="card"
+                />
               )}
               {pro.telephone_public && (() => {
                 const numFr = pro.telephone_public.replace(/[^\d]/g, "");
