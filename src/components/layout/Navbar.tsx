@@ -25,7 +25,6 @@ export default function Navbar() {
     { href: '/', label: 'Accueil' },
     { href: '/transport-medical', label: 'Annuaire' },
     { href: '/pro', label: 'Espace pro' },
-    { href: '/annonces', label: 'Marketplace' },
     { href: '/blog', label: 'Blog' },
   ];
 
@@ -158,9 +157,24 @@ export default function Navbar() {
                 </button>
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-10">
+                    {hasSanitaire && (
+                      <Link
+                        href="/transport-medical/pro/dashboard"
+                        className="flex items-center px-4 py-2 text-sm text-[#0066CC] hover:bg-blue-50 font-semibold"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <Cross className="h-4 w-4 mr-2" />
+                        Espace transport sanitaire
+                        {sanitaireUnread > 0 && (
+                          <span className="ml-auto bg-[#0066CC] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                            {sanitaireUnread > 9 ? '9+' : sanitaireUnread}
+                          </span>
+                        )}
+                      </Link>
+                    )}
                     <Link
                       href="/dashboard"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className={`flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 ${hasSanitaire ? 'border-t border-slate-100' : ''}`}
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <LayoutDashboard className="h-4 w-4 mr-2" />
@@ -182,21 +196,6 @@ export default function Navbar() {
                         {garageDemandes > 0 && (
                           <span className="ml-auto bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                             {garageDemandes > 9 ? '9+' : garageDemandes}
-                          </span>
-                        )}
-                      </Link>
-                    )}
-                    {hasSanitaire && (
-                      <Link
-                        href="/transport-medical/pro/dashboard"
-                        className="flex items-center px-4 py-2 text-sm text-[#0066CC] hover:bg-blue-50 font-semibold border-t border-slate-100"
-                        onClick={() => setUserMenuOpen(false)}
-                      >
-                        <Cross className="h-4 w-4 mr-2" />
-                        Espace transport sanitaire
-                        {sanitaireUnread > 0 && (
-                          <span className="ml-auto bg-[#0066CC] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                            {sanitaireUnread > 9 ? '9+' : sanitaireUnread}
                           </span>
                         )}
                       </Link>
@@ -288,6 +287,16 @@ export default function Navbar() {
             ))}
             {user ? (
               <div className="border-t pt-2 space-y-2">
+                {hasSanitaire && (
+                  <Link href="/transport-medical/pro/dashboard" className="flex items-center text-sm text-[#0066CC] hover:text-blue-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                    Espace transport sanitaire
+                    {sanitaireUnread > 0 && (
+                      <span className="ml-1.5 bg-[#0066CC] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {sanitaireUnread > 9 ? '9+' : sanitaireUnread}
+                      </span>
+                    )}
+                  </Link>
+                )}
                 <Link href="/dashboard" className="flex items-center text-sm text-gray-600 hover:text-blue-600 py-1" onClick={() => setIsOpen(false)}>
                   Mon espace vendeur
                   {unreadCount > 0 && (
@@ -302,16 +311,6 @@ export default function Navbar() {
                     {garageDemandes > 0 && (
                       <span className="ml-1.5 bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                         {garageDemandes > 9 ? '9+' : garageDemandes}
-                      </span>
-                    )}
-                  </Link>
-                )}
-                {hasSanitaire && (
-                  <Link href="/transport-medical/pro/dashboard" className="flex items-center text-sm text-[#0066CC] hover:text-blue-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
-                    Espace transport sanitaire
-                    {sanitaireUnread > 0 && (
-                      <span className="ml-1.5 bg-[#0066CC] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                        {sanitaireUnread > 9 ? '9+' : sanitaireUnread}
                       </span>
                     )}
                   </Link>

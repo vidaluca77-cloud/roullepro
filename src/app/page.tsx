@@ -101,7 +101,7 @@ export default async function HomePage() {
               Trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous
             </h1>
             <p className="text-base sm:text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
-              Numéros directs, horaires, tarifs. 100 % gratuit pour les patients. Transport médical dans toute la France.
+              Annuaire opérationnel du transport sanitaire en France. Numéros directs, contacts visibles à vie. Pas d&apos;algorithme, pas de notation. 100 % gratuit pour les patients.
             </p>
 
             <SearchHero variant="hero" />
