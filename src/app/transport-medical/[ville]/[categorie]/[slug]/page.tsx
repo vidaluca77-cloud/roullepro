@@ -35,6 +35,7 @@ import OwnerBanner from "@/components/sanitaire/OwnerBanner";
 import SignalerFicheButton from "@/components/sanitaire/SignalerFicheButton";
 import PhoneReveal from "@/components/sanitaire/PhoneReveal";
 import CallbackButton from "@/components/sanitaire/CallbackButton";
+import FicheStatusBadge from "@/components/sanitaire/FicheStatusBadge";
 
 // Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
 // rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
@@ -173,25 +174,17 @@ export default async function FicheProPage({ params }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                {pro.verified && (
-                  <span
-                    className="inline-flex items-center gap-1 text-xs font-medium bg-white text-[#0066CC] px-2 py-0.5 rounded-full cursor-help"
-                    title="Identité et SIRET vérifiés par RoullePro"
-                  >
-                    <BadgeCheck className="w-3 h-3" />
-                    Pro vérifié
-                  </span>
-                )}
+                <FicheStatusBadge
+                  verified={pro.verified}
+                  claimed={pro.claimed}
+                  updatedAt={pro.updated_at}
+                  variant="dark"
+                  showDate
+                />
                 {isPremium && (
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">
                     <Star className="w-3 h-3" />
                     Recommandé
-                  </span>
-                )}
-                {!pro.claimed && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-white/10 border border-white/20 text-white px-2 py-0.5 rounded-full">
-                    <Shield className="w-3 h-3" />
-                    Non vérifié
                   </span>
                 )}
               </div>

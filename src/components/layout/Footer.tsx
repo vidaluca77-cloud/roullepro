@@ -143,8 +143,10 @@ export default function Footer() {
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} RoullePro. Tous droits réservés.
           </p>
-          <div className="flex space-x-4 text-sm text-gray-500">
+          <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
             <Link href="/contact" className="hover:text-white transition">Contact</Link>
+            <Link href="/signaler" className="hover:text-white transition">Signaler une fiche</Link>
+            <Link href="/rgpd" className="hover:text-white transition">RGPD</Link>
             <Link href="/mentions-legales" className="hover:text-white transition">Mentions légales</Link>
             <Link href="/cgu" className="hover:text-white transition">CGU</Link>
           </div>

@@ -46,6 +46,21 @@ export default function ContactForm() {
         }).toString(),
       });
       if (res.ok) {
+        // Auto-réponse 72h + liens signaler/réclamer (fire-and-forget)
+        try {
+          fetch('/api/contact-autoreply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: (formData.get('email') as string) || '',
+              full_name: (formData.get('full_name') as string) || '',
+              subject: (formData.get('subject') as string) || '',
+            }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch {
+          // ignore
+        }
         setSuccess(true);
       } else {
         setError(true);
@@ -67,7 +82,8 @@ export default function ContactForm() {
         </div>
         <p className="text-green-800 font-semibold text-lg mb-1">Message envoye !</p>
         <p className="text-green-700 text-sm">
-          Votre message a ete envoye. Nous vous repondrons sous 24h.
+          Votre message a bien été envoyé. Vous allez recevoir une confirmation par email.
+          Nous vous répondrons sous 72 heures ouvrées.
         </p>
       </div>
     );
