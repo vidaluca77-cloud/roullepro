@@ -74,6 +74,8 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/depot-vente/estimer`, changefreq: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/depot-vente/faq`, changefreq: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/pro`, changefreq: "weekly", priority: 0.85 },
+    { url: `${BASE_URL}/prescripteurs`, changefreq: "monthly", priority: 0.85 },
+    { url: `${BASE_URL}/partenaires`, changefreq: "monthly", priority: 0.5 },
     { url: `${BASE_URL}/garage/inscription`, changefreq: "monthly", priority: 0.8 },
     { url: `${BASE_URL}/cgu`, changefreq: "yearly", priority: 0.3 },
     { url: `${BASE_URL}/mentions-legales`, changefreq: "yearly", priority: 0.3 },

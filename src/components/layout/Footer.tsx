@@ -92,6 +92,7 @@ export default function Footer() {
               <li><Link href="/transport-medical/pro" className="hover:text-white transition">Espace professionnel</Link></li>
               <li><Link href="/transport-medical/inscription" className="hover:text-white transition">Inscrire mon entreprise</Link></li>
               <li><Link href="/transport-medical/tarifs" className="hover:text-white transition">Abonnements pro</Link></li>
+              <li><Link href="/prescripteurs" className="hover:text-white transition">Espace prescripteurs (médecins, EHPAD)</Link></li>
               <li><Link href="/blog" className="hover:text-white transition">Blog & actualités</Link></li>
             </ul>
           </div>
@@ -146,6 +147,7 @@ export default function Footer() {
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
             <Link href="/contact" className="hover:text-white transition">Contact</Link>
             <Link href="/signaler" className="hover:text-white transition">Signaler une fiche</Link>
+            <Link href="/partenaires" className="hover:text-white transition">Partenaires</Link>
             <Link href="/rgpd" className="hover:text-white transition">RGPD</Link>
             <Link href="/mentions-legales" className="hover:text-white transition">Mentions légales</Link>
             <Link href="/cgu" className="hover:text-white transition">CGU</Link>

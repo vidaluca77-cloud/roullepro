@@ -266,6 +266,38 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Bande prescripteurs */}
+      <section className="border-t border-gray-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-10 sm:py-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-gradient-to-r from-blue-50 to-white border border-blue-100 rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-[#0066CC]/10 flex items-center justify-center">
+                <Heart className="w-6 h-6 text-[#0066CC]" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-[#0066CC] uppercase tracking-wide mb-1">
+                  Médecins, EHPAD, hôpitaux, centres de dialyse
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                  Vous prescrivez du transport sanitaire ?
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 max-w-xl">
+                  Accédez gratuitement à l’annuaire opérationnel pendant 3 mois. Sans engagement.
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <Link
+                href="/prescripteurs"
+                className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
+              >
+                Demander un accès pilote <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-gray-200 bg-gradient-to-br from-[#0B1120] to-[#0f2048] text-white">
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-14">
           <div className="grid md:grid-cols-[2fr_1fr] gap-8 items-center">
