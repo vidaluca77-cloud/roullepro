@@ -15,9 +15,9 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 const ADMIN_EMAIL = "contact@roullepro.com";
 
 const PROOF_TYPE_LABELS: Record<string, string> = {
-  attestation_ameli: "Attestation Ameli",
-  contrat_conventionnement: "Contrat de conventionnement",
-  capture_compte_ameli: "Capture compte ameli.fr",
+  attestation_cpam: "Attestation CPAM",
+  convention_signee: "Convention signée",
+  numero_am: "Numéro AM",
   autre: "Autre",
 };
 
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "SIRET invalide" }, { status: 400 });
     }
     if (
-      !["attestation_ameli", "contrat_conventionnement", "capture_compte_ameli", "autre"].includes(
+      !["attestation_cpam", "convention_signee", "numero_am", "autre"].includes(
         proof_type
       )
     ) {

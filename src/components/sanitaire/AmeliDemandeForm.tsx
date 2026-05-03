@@ -5,9 +5,9 @@ import { createClient } from '@/lib/supabase/client';
 import { Loader2, Upload, AlertCircle, CheckCircle2 } from 'lucide-react';
 
 type ProofType =
-  | 'attestation_ameli'
-  | 'contrat_conventionnement'
-  | 'capture_compte_ameli'
+  | 'attestation_cpam'
+  | 'convention_signee'
+  | 'numero_am'
   | 'autre';
 
 interface Props {
@@ -26,7 +26,7 @@ export default function AmeliDemandeForm({ proId, defaultSiret, existingRequestI
   const [siret, setSiret] = useState(defaultSiret);
   const [numeroAm, setNumeroAm] = useState('');
   const [dateConvention, setDateConvention] = useState('');
-  const [proofType, setProofType] = useState<ProofType>('attestation_ameli');
+  const [proofType, setProofType] = useState<ProofType>('attestation_cpam');
   const [file, setFile] = useState<File | null>(null);
   const [declarationOk, setDeclarationOk] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -206,9 +206,9 @@ export default function AmeliDemandeForm({ proId, defaultSiret, existingRequestI
           required
           className="w-full border border-gray-300 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
         >
-          <option value="attestation_ameli">Attestation Ameli</option>
-          <option value="contrat_conventionnement">Contrat de conventionnement</option>
-          <option value="capture_compte_ameli">Capture du compte ameli.fr</option>
+          <option value="attestation_cpam">Attestation CPAM (ou capture du compte ameli.fr)</option>
+          <option value="convention_signee">Convention signée</option>
+          <option value="numero_am">Numéro AM (Assurance Maladie)</option>
           <option value="autre">Autre justificatif</option>
         </select>
       </div>

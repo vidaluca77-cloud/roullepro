@@ -20,7 +20,7 @@ interface AmeliRequest {
   siret: string | null;
   numero_am: string | null;
   date_convention: string | null;
-  proof_type: 'attestation_ameli' | 'contrat_conventionnement' | 'capture_compte_ameli' | 'autre';
+  proof_type: 'attestation_cpam' | 'convention_signee' | 'numero_am' | 'autre';
   proof_file_url: string;
   proof_file_size_bytes: number | null;
   proof_mime: string | null;
@@ -56,9 +56,9 @@ interface RequestRow {
 }
 
 const PROOF_TYPE_LABELS: Record<string, string> = {
-  attestation_ameli: 'Attestation Ameli',
-  contrat_conventionnement: 'Contrat de conventionnement',
-  capture_compte_ameli: 'Capture compte ameli.fr',
+  attestation_cpam: 'Attestation CPAM',
+  convention_signee: 'Convention signée',
+  numero_am: 'Numéro AM',
   autre: 'Autre',
 };
 
