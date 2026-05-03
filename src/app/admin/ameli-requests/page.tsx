@@ -183,12 +183,12 @@ export default function AdminAmeliRequestsPage() {
 
     const confirmMsg =
       action === 'approve'
-        ? 'Approuver cette demande et accorder le badge Ameli ?'
+        ? `✅ APPROUVER cette demande ?\n\nLe badge Ameli sera ACTIVÉ sur la fiche publique et un email d'approbation sera envoyé au pro.`
         : action === 'reject'
-        ? 'Refuser cette demande ?'
+        ? `❌ REFUSER cette demande ?\n\nLe badge Ameli ne sera PAS activé.\nLa fiche reste en l'état. Un email de refus sera envoyé au pro avec le motif :\n\n« ${reason} »`
         : action === 'need_info'
-        ? 'Demander un complément d\'information ?'
-        : 'Marquer cette demande comme spam (sans email) ?';
+        ? `⚠️ Demander un COMPLÉMENT d'information ?\n\nLe pro recevra un email avec le motif :\n\n« ${reason} »`
+        : '🗑 Marquer cette demande comme SPAM ?\n\nAucun email ne sera envoyé au pro.';
 
     if (!confirm(confirmMsg)) return;
 
