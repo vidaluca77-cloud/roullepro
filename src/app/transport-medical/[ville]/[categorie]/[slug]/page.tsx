@@ -36,6 +36,7 @@ import SignalerFicheButton from "@/components/sanitaire/SignalerFicheButton";
 import PhoneReveal from "@/components/sanitaire/PhoneReveal";
 import CallbackButton from "@/components/sanitaire/CallbackButton";
 import FicheStatusBadge from "@/components/sanitaire/FicheStatusBadge";
+import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 
 // Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
 // rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
@@ -180,6 +181,12 @@ export default async function FicheProPage({ params }: Props) {
                   updatedAt={pro.updated_at}
                   variant="dark"
                   showDate
+                />
+                <AmeliBadge
+                  conventionne={pro.ameli_conventionne}
+                  lastSeen={pro.ameli_last_seen}
+                  variant="md"
+                  tone="dark"
                 />
                 {isPremium && (
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">

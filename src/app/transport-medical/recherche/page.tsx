@@ -2,18 +2,21 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES_SANITAIRE, getCategorieBySlug, slugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
+import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string; categorie?: string }>;
+  searchParams: Promise<{ q?: string; categorie?: string; ameli?: string }>;
 };
 
 export default async function RecherchePage({ searchParams }: Props) {
-  const { q, categorie } = await searchParams;
+  const { q, categorie, ameli } = await searchParams;
   const queryVille = (q || "").trim();
   const cat = categorie ? getCategorieBySlug(categorie) : null;
   const villeSlug = slugifyVille(queryVille);
+  // Filtre conventionne Ameli : OFF par defaut (inclusivite). Active via ?ameli=1
+  const ameliOnly = ameli === "1";
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,6 +64,7 @@ export default async function RecherchePage({ searchParams }: Props) {
       .order("claimed", { ascending: false })
       .limit(100);
     if (cat) query = query.eq("categorie", cat.key);
+    if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
     const { data } = await query;
     pros = (data || []) as ProSanitaire[];
   } else if (queryVille) {
@@ -73,16 +77,19 @@ export default async function RecherchePage({ searchParams }: Props) {
       .order("claimed", { ascending: false })
       .limit(100);
     if (cat) query = query.eq("categorie", cat.key);
+    if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
     const { data } = await query;
     pros = (data || []) as ProSanitaire[];
   } else if (cat) {
-    const { data } = await supabase
+    let query = supabase
       .from("pros_sanitaire_public")
       .select("*")
       .eq("actif", true).eq("suspendu", false)
       .eq("categorie", cat.key)
       .order("plan", { ascending: false })
       .limit(100);
+    if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
+    const { data } = await query;
     pros = (data || []) as ProSanitaire[];
   }
 
@@ -118,7 +125,29 @@ export default async function RecherchePage({ searchParams }: Props) {
               <Search className="w-4 h-4" />
               Rechercher
             </button>
+            {/* Le filtre Ameli est passe en query string (?ameli=1) lorsque la case est cochee.
+                Si elle est decochee, l'input n'est pas soumis et le filtre se desactive. */}
+            <label className="hidden sm:flex items-center gap-2 px-3 cursor-pointer" title="Afficher uniquement les societes referencees dans l'annuaire sante de l'Assurance Maladie">
+              <input
+                type="checkbox"
+                name="ameli"
+                value="1"
+                defaultChecked={ameliOnly}
+                className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="text-xs text-gray-700 font-medium whitespace-nowrap">Conventionne Ameli uniquement</span>
+            </label>
           </form>
+          <label className="sm:hidden mt-3 flex items-center gap-2 cursor-pointer text-white">
+            <input
+              type="checkbox"
+              form=""
+              checked={ameliOnly}
+              readOnly
+              className="w-4 h-4 rounded border-white/30 text-emerald-500 bg-white/10"
+            />
+            <span className="text-sm">Conventionne Ameli uniquement</span>
+          </label>
         </div>
       </section>
 
@@ -179,12 +208,19 @@ export default async function RecherchePage({ searchParams }: Props) {
                       </span>
                     ) : null}
                   </div>
-                  {pro.telephone_public && (
-                    <div className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[#0066CC]">
-                      <Phone className="w-3.5 h-3.5" />
-                      {pro.telephone_public}
-                    </div>
-                  )}
+                  <div className="mt-3 flex items-center gap-2 flex-wrap">
+                    {pro.telephone_public && (
+                      <div className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC]">
+                        <Phone className="w-3.5 h-3.5" />
+                        {pro.telephone_public}
+                      </div>
+                    )}
+                    <AmeliBadge
+                      conventionne={pro.ameli_conventionne}
+                      lastSeen={pro.ameli_last_seen}
+                      variant="sm"
+                    />
+                  </div>
                 </Link>
               );
             })}

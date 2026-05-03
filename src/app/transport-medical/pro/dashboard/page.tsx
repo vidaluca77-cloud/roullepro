@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
+import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 import PromoBanner from "@/components/sanitaire/PromoBanner";
 
@@ -134,6 +135,12 @@ export default async function ProDashboard({
                     <CheckCircle2 className="w-3 h-3" /> Pro vérifié
                   </span>
                 )}
+                <AmeliBadge
+                  conventionne={fiche.ameli_conventionne}
+                  lastSeen={fiche.ameli_last_seen}
+                  variant="md"
+                  tone="dark"
+                />
                 {isPro ? (
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full">
                     <Star className="w-3 h-3" /> Plan Pro

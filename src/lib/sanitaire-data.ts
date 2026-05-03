@@ -218,6 +218,9 @@ export type ProSanitaire = {
   rejection_reason: string | null;
   validated_at: string | null;
   validated_by: string | null;
+  // Convention Ameli (annuaire CNAM) — informatif, mis a jour mensuellement par cron
+  ameli_conventionne: boolean | null;
+  ameli_last_seen: string | null;
   created_at: string;
   updated_at: string;
 };
