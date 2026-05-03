@@ -16,8 +16,7 @@ interface Props {
   existingRequestId: string | null;
 }
 
-const MAX_SIZE = 5 * 1024 * 1024; // 5 Mo
-const ALLOWED_MIMES = ['application/pdf', 'image/jpeg', 'image/png'];
+const MAX_SIZE = 20 * 1024 * 1024; // 20 Mo
 
 export default function AmeliDemandeForm({ proId, defaultSiret, existingRequestId }: Props) {
   const router = useRouter();
@@ -41,13 +40,7 @@ export default function AmeliDemandeForm({ proId, defaultSiret, existingRequestI
       return;
     }
     if (f.size > MAX_SIZE) {
-      setError('Le fichier dépasse 5 Mo. Merci de le compresser.');
-      setFile(null);
-      e.target.value = '';
-      return;
-    }
-    if (!ALLOWED_MIMES.includes(f.type)) {
-      setError('Format non accepté. Utilisez PDF, JPG ou PNG.');
+      setError('Le fichier dépasse 20 Mo. Merci de le compresser.');
       setFile(null);
       e.target.value = '';
       return;
@@ -215,11 +208,10 @@ export default function AmeliDemandeForm({ proId, defaultSiret, existingRequestI
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Justificatif (PDF, JPG ou PNG, 5 Mo max) <span className="text-red-500">*</span>
+          Justificatif (tout format, 20 Mo max) <span className="text-red-500">*</span>
         </label>
         <input
           type="file"
-          accept="application/pdf,image/jpeg,image/png"
           onChange={onFileChange}
           required
           className="w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[#0066CC] hover:file:bg-blue-100"
