@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Check, X, Eye, Clock, AlertCircle, Download, Trash2, Pause, Play } from 'lucide-react';
+import { Shield, Check, X, Eye, Clock, AlertCircle, Download, Trash2, Pause, Play, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -22,6 +22,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState('pending');
   const [signalementsCount, setSignalementsCount] = useState(0);
   const [preInscriptionsCount, setPreInscriptionsCount] = useState(0);
+  const [ameliRequestsCount, setAmeliRequestsCount] = useState(0);
 
   useEffect(() => { init(); }, []);
 
@@ -61,6 +62,15 @@ export default function AdminPage() {
         setPreInscriptionsCount((j.items || []).length);
       }
     } catch (e) { console.error('pre-inscriptions load', e); }
+
+    // Compteur demandes badge Ameli en attente (pending + need_info)
+    try {
+      const { count } = await supabase
+        .from('ameli_badge_requests')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['pending', 'need_info']);
+      setAmeliRequestsCount(count || 0);
+    } catch (e) { console.error('ameli requests load', e); }
 
     setLoading(false);
   };
@@ -262,6 +272,18 @@ export default function AdminPage() {
             {preInscriptionsCount > 0 && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
                 {preInscriptionsCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/admin/ameli-requests"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2"
+          >
+            <ShieldCheck size={16} />
+            Demandes Ameli
+            {ameliRequestsCount > 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                {ameliRequestsCount}
               </span>
             )}
           </Link>
