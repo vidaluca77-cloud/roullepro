@@ -20,6 +20,7 @@ import {
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
+import AmeliStatusSection from "@/components/sanitaire/AmeliStatusSection";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 import PromoBanner from "@/components/sanitaire/PromoBanner";
 
@@ -122,6 +123,16 @@ export default async function ProDashboard({
     .select("*", { count: "exact", head: true })
     .eq("pro_id", fiche.id)
     .eq("status", "nouveau");
+
+  // Derniere demande de badge Ameli (workflow C5b) - on prend la plus recente
+  // pour afficher le bon etat dans AmeliStatusSection (pending / need_info / rejected / aucune)
+  const { data: dernAmeliRequest } = await supabase
+    .from("ameli_badge_requests")
+    .select("status, created_at, rejection_reason")
+    .eq("pro_id", fiche.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -319,6 +330,23 @@ export default async function ProDashboard({
           </div>
 
           <aside className="space-y-4">
+            {/* Statut Ameli (C5b) : badge verifie ou bouton de demande */}
+            <AmeliStatusSection
+              conventionne={fiche.ameli_conventionne}
+              lastSeen={fiche.ameli_last_seen}
+              source={(fiche as { ameli_source?: "cnam_annuaire" | "manual_verified" | null }).ameli_source ?? null}
+              pendingRequest={
+                dernAmeliRequest
+                  ? {
+                      status: dernAmeliRequest.status as "pending" | "approved" | "rejected" | "need_info" | "spam",
+                      createdAt: dernAmeliRequest.created_at,
+                      rejectionReason: dernAmeliRequest.rejection_reason,
+                    }
+                  : null
+              }
+              proId={fiche.id}
+            />
+
             {/* Demandes de rappel */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
