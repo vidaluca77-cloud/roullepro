@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect, RedirectType } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import {
   MapPin,
@@ -109,9 +109,8 @@ export default async function FicheProPage({ params }: Props) {
     villeCanonique &&
     (ville !== villeCanonique || categorie !== categorieCanonique)
   ) {
-    redirect(
-      `/transport-medical/${villeCanonique}/${categorieCanonique}/${slug}`,
-      RedirectType.permanent
+    permanentRedirect(
+      `/transport-medical/${villeCanonique}/${categorieCanonique}/${slug}`
     );
   }
 
