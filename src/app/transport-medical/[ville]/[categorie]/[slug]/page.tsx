@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect, RedirectType } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import {
   MapPin,
@@ -18,7 +18,7 @@ import {
   MessageCircle,
   Clock,
 } from "lucide-react";
-import { getCategorieBySlug, planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
+import { getCategorieBySlug, getCategorieByKey, planDisplay, type ProSanitaire } from "@/lib/sanitaire-data";
 import {
   buildProJsonLd,
   buildFaqJsonLd,
@@ -97,6 +97,23 @@ export default async function FicheProPage({ params }: Props) {
   const { ville, categorie, slug } = await params;
   const pro = await fetchPro(slug);
   if (!pro) notFound();
+
+  // Redirection 301 (308 permanente) si l'URL ne correspond pas a la fiche canonique.
+  // Cas couvert : ancien classement Lyon -> ville reelle (Venissieux, etc.) sur les fiches dept 69 reclassees,
+  // et plus generalement toute URL ou ville_slug ou categorie ne matche pas la fiche cible.
+  // Evite le contenu duplique : 1 fiche = 1 URL canonique.
+  const categorieCanonique = getCategorieByKey(pro.categorie)?.slug;
+  const villeCanonique = pro.ville_slug;
+  if (
+    categorieCanonique &&
+    villeCanonique &&
+    (ville !== villeCanonique || categorie !== categorieCanonique)
+  ) {
+    redirect(
+      `/transport-medical/${villeCanonique}/${categorieCanonique}/${slug}`,
+      RedirectType.permanent
+    );
+  }
 
   const cat = getCategorieBySlug(categorie);
   const isPremium = pro.plan === "premium" || pro.plan === "pro_plus";
