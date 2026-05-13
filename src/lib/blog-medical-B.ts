@@ -172,7 +172,7 @@ Oui. Vous avez le libre choix du transporteur parmi les societes agreees CPAM de
 
 ### Combien coute une ambulance avec prescription ?
 
-Avec une prescription valide et un transporteur agree CPAM, le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en ALD (affection de longue duree), en maternite, ou apres un accident du travail. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration. Le tiers payant est applique : vous n'avancez pas les frais.
+Avec une prescription valide et un transporteur agree CPAM, le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en ALD (affection de longue duree), en maternite a partir du 1er jour du 6e mois, pour les nouveau-nes de moins de 30 jours, ou apres un accident du travail / maladie professionnelle. La franchise medicale de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique sauf cas d'exoneration. Le tiers payant est applique : vous n'avancez pas les frais.
 
 ### Quelle difference entre ambulance et SAMU ?
 
@@ -217,7 +217,7 @@ Avant tout transport medical rembourse par la Securite sociale — qu'il s'agiss
 
 ### Definition de la prescription medicale de transport
 
-Le bon de transport medical, aussi appele prescription medicale de transport, est un formulaire officiel que le medecin remplit pour autoriser la prise en charge de votre deplacement vers un lieu de soin par l'Assurance Maladie. Son numero de formulaire officiel est le **CERFA 11574** (actuellement en version *05). Il est encadre par le code de la Securite sociale et les conditions generales du transport sanitaire definies par [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement).
+Le bon de transport medical, aussi appele prescription medicale de transport, est un formulaire officiel que le medecin remplit pour autoriser la prise en charge de votre deplacement vers un lieu de soin par l'Assurance Maladie. Son numero de formulaire officiel est le **CERFA 11574*07** (reference S3138g), en vigueur depuis le 3 octobre 2025. Il est encadre par le code de la Securite sociale et les conditions generales du transport sanitaire definies par [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement).
 
 Ce formulaire permet a l'Assurance Maladie de savoir :
 - Que votre transport est medicalement justifie
@@ -476,7 +476,7 @@ Le jour du transport, preparez les documents suivants avant l'arrivee du vehicul
 - Votre **carte de mutuelle** si vous beneficiez d'une complementaire sante
 - Une **piece d'identite** (demandee parfois pour les premiers transports)
 
-Le transporteur declenche le tiers payant avec votre carte Vitale : vous ne devez rien payer sauf eventuellement la franchise medicale (2 euros par trajet, sauf exoneration). Si le transporteur vous demande de payer la totalite du trajet et de vous faire rembourser ensuite, c'est anormal sauf dans des cas tres specifiques : interrogez votre CPAM si cela arrive.
+Le transporteur declenche le tiers payant avec votre carte Vitale : vous ne devez rien payer sauf eventuellement la franchise medicale (4 euros par trajet, sauf exoneration). Si le transporteur vous demande de payer la totalite du trajet et de vous faire rembourser ensuite, c'est anormal sauf dans des cas tres specifiques : interrogez votre CPAM si cela arrive.
 
 ## Les informations a avoir lors de la reservation
 

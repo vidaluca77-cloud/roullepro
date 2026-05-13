@@ -53,7 +53,7 @@ Le medecin prescrit une ambulance lorsque le patient ne peut pas se tenir assis 
 
 ### Prix et remboursement d'une ambulance
 
-Le tarif d'une ambulance est fixe par convention nationale CPAM : il combine un forfait de prise en charge (autour de 60 a 70 euros) et un tarif kilometrique (environ 2,30 euros/km en agglomeration). Le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en affection de longue duree (ALD), maternite, accident du travail ou hospitalisation. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration.
+Le tarif d'une ambulance est fixe par l'Avenant 11 a la convention nationale des transporteurs sanitaires (revalorisation 2025) : il combine un forfait departemental (57,39 euros) ou d'agglomeration (64,08 euros), une prise en charge (71,72 euros) et un tarif kilometrique (2,44 euros/km). Le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en ALD, maternite a partir du 1er jour du 6e mois, AT/MP, nouveau-nes de moins de 30 jours ou CSS/AME ; l'hospitalisation seule n'ouvre les 100 % que si elle est liee a une de ces situations. La franchise medicale de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique sauf cas d'exoneration.
 
 ## C'est quoi un VSL (Vehicule Sanitaire Leger) ?
 
@@ -116,7 +116,7 @@ Beaucoup de patients pensent pouvoir "demander" un type de transport precis. C'e
 
 ### Le role de la prescription medicale de transport
 
-Le formulaire CERFA 11574*05 ([disponible sur Service-public.fr](https://www.service-public.fr/particuliers/vosdroits/R45050)) coche obligatoirement l'un des trois modes : ambulance, VSL ou taxi conventionne. Le medecin justifie son choix par le motif medical et la situation du patient (etat allonge, deambulation, autonomie). Cette prescription est la condition prealable a tout remboursement.
+Le formulaire CERFA 11574*07 (reference S3138g, [disponible sur Service-public.fr](https://entreprendre.service-public.fr/vosdroits/R15649)) coche obligatoirement l'un des trois modes : ambulance, VSL ou taxi conventionne. Le medecin justifie son choix par le motif medical et la situation du patient (etat allonge, deambulation, autonomie). Cette prescription est la condition prealable a tout remboursement.
 
 ### Que faire si vous n'etes pas d'accord avec la prescription ?
 
@@ -160,7 +160,7 @@ Le medecin doit justifier le mode prescrit par l'etat du patient. Il ne peut pas
 
 ### Combien coute un transport en ambulance sans prescription ?
 
-Sans prescription, l'integralite des frais est a votre charge : le forfait de prise en charge (60-70 euros) plus le kilometrage (2-2,50 euros/km). Pour un trajet de 30 km en agglomeration, comptez environ 130 a 150 euros, sans aucun remboursement possible par la CPAM.
+Sans prescription, l'integralite des frais est a votre charge : forfait departemental (57,39 euros) ou d'agglomeration (64,08 euros) plus prise en charge (71,72 euros) et kilometrage (2,44 euros/km). Pour un trajet de 30 km en agglomeration, comptez environ 200 a 210 euros, sans aucun remboursement possible par la CPAM.
 
 ---
 

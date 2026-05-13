@@ -57,14 +57,16 @@ Le taux de remboursement ne depend pas uniquement du mode de transport choisi (a
 
 | Situation | Taux CPAM | Franchise applicable |
 |---|---|---|
-| Affection de longue duree (ALD) | 100 % | Non |
-| Maternite (grossesse) | 100 % | Non |
-| Accident du travail | 100 % | Non |
-| Invalidite | 100 % | Non |
-| Hospitalisation | 55 % | Oui (2 euros/trajet) |
-| Soins courants | 55 % | Oui (2 euros/trajet) |
+| Affection de longue duree (ALD) | 100 % | Oui (4 euros/trajet) |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % | Non |
+| Accident du travail / maladie professionnelle | 100 % | Oui (4 euros/trajet) |
+| Nouveau-ne de moins de 30 jours | 100 % | Non |
+| CSS (ex-CMU-C) / AME | 100 % | Non |
+| Hospitalisation (cas general) | 55 % | Oui (4 euros/trajet) |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % | Selon situation |
+| Soins courants | 55 % | Oui (4 euros/trajet) |
 
-En regime general (55 %), c'est votre mutuelle (complement sante) qui peut prendre en charge tout ou partie des 35 % restants, selon les garanties de votre contrat. Certaines mutuelles remboursent l'integralite du ticket moderateur, d'autres seulement une partie.
+En regime general (55 %), c'est votre mutuelle (complement sante) qui peut prendre en charge tout ou partie des 45 % restants, selon les garanties de votre contrat. Certaines mutuelles remboursent l'integralite du ticket moderateur, d'autres seulement une partie.
 
 Pour comprendre quel mode de transport correspond a votre situation medicale (ambulance, VSL ou taxi conventionne), consultez notre guide [Ambulance, VSL ou taxi conventionne : quelles differences ?](https://roullepro.com/blog/difference-ambulance-vsl-taxi-conventionne).
 
@@ -74,18 +76,20 @@ La franchise medicale est une participation financiere restant a la charge de l'
 
 ### Combien coute la franchise ?
 
-Depuis sa creation, la franchise medicale sur les transports s'eleve a **2 euros par trajet** (et non par deplacement aller-retour : chaque trajet — aller ET retour — donne lieu a une deduction de 2 euros). Ce montant est directement deduit du remboursement verse par la CPAM : vous ne la payez pas directement au transporteur.
+Depuis l'arrete du 16 fevrier 2024, la franchise medicale sur les transports s'eleve a **4 euros par trajet** (et non par deplacement aller-retour : chaque trajet — aller ET retour — donne lieu a une deduction de 4 euros), avec un plafond de **8 euros par jour** et de **50 euros par an**. Ce montant est directement deduit du remboursement verse par la CPAM : vous ne la payez pas directement au transporteur.
 
 ### Qui est exonere de la franchise ?
 
-Sont exoneres de la franchise medicale sur les transports :
+Sont exoneres de la franchise medicale sur les transports (liste officielle service-public.fr F165) :
 
-- Les patients en **ALD** pour les transports lies a leur affection de longue duree
-- Les femmes enceintes a partir du **6e mois de grossesse**
-- Les **victimes d'accidents du travail** pour les transports lies a leur AT
-- Les **enfants de moins de 18 ans**
-- Les beneficiaires de la **CSS (complementaire sante solidaire)** ou de l'AME
-- Les invalides de guerre et assimiles
+- Les **enfants et jeunes de moins de 18 ans**
+- Les femmes enceintes a partir du **1er jour du 6e mois de grossesse jusqu'au 12e jour apres l'accouchement**
+- Les beneficiaires de la **Complementaire Sante Solidaire (CSS)** ou de l'**AME**
+- Les victimes du terrorisme pour les frais en rapport avec l'evenement
+- Les invalides de guerre (article L115 du code des pensions)
+- Les mineures dans le cadre de la contraception (notamment d'urgence)
+
+A noter : les patients en **ALD** beneficient du taux 100 % mais **restent soumis a la franchise medicale de 4 euros par trajet**. Elle reste egalement applicable en cas d'hospitalisation hors situations specifiques ci-dessus.
 
 ### Plafond annuel de franchise
 
@@ -125,7 +129,7 @@ Le remboursement est generalement effectue sous 10 a 15 jours ouvrables. Pour la
 
 ## Transport medical et mutuelle : ce qu'elle rembourse en plus
 
-La mutuelle (ou complementaire sante) peut prendre en charge une partie ou la totalite du **ticket moderateur** (les 35 % non rembourses par la CPAM en regime general), ainsi que la franchise medicale, selon votre contrat.
+La mutuelle (ou complementaire sante) peut prendre en charge une partie ou la totalite du **ticket moderateur** (les 45 % non rembourses par la CPAM en regime general), ainsi que la franchise medicale, selon votre contrat.
 
 Les contrats "responsables" (la grande majorite des contrats collectifs et individuels) ne peuvent pas rembourser la franchise medicale : c'est une regle imposee par la loi pour preserver la responsabilisation des assures. En revanche, ils couvrent generalement le ticket moderateur sur les transports sanitaires agrees.
 
@@ -177,11 +181,11 @@ Pour aller plus loin, consultez notre guide [Ambulance, VSL ou taxi conventionne
 
 ### Quel est le taux de remboursement d'une ambulance par la Secu ?
 
-La CPAM rembourse 55 % du tarif conventionne d'une ambulance en regime general, avec une franchise de 2 euros par trajet. Le taux passe a 100 % (sans franchise) pour les patients en ALD, en maternite, en invalidite ou victimes d'un accident du travail. La mutuelle peut couvrir le ticket moderateur de 35 % restant selon votre contrat.
+La CPAM rembourse 55 % du tarif conventionne d'une ambulance en regime general, avec une franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an). Le taux passe a 100 % pour les patients en ALD, en maternite (a partir du 1er jour du 6e mois), pour les nouveau-nes de moins de 30 jours, ou victimes d'un accident du travail / maladie professionnelle. A noter : seules certaines categories (mineurs, CSS, AME, maternite, victimes du terrorisme, invalides de guerre) sont exonerees de la franchise ; les patients en ALD y restent soumis. La mutuelle peut couvrir le ticket moderateur de 45 % restant selon votre contrat.
 
 ### La mutuelle rembourse-t-elle le transport medical ?
 
-Oui, la plupart des mutuelles prennent en charge le ticket moderateur (35 %) sur les transports sanitaires agrees par la CPAM. En revanche, les contrats "responsables" ne peuvent pas rembourser la franchise medicale de 2 euros par trajet, conformement a la reglementation. Verifiez le detail du poste "transports" dans votre tableau de garanties.
+Oui, la plupart des mutuelles prennent en charge le ticket moderateur (45 %) sur les transports sanitaires agrees par la CPAM. En revanche, les contrats "responsables" ne peuvent pas rembourser la franchise medicale de 4 euros par trajet, conformement a la reglementation. Verifiez le detail du poste "transports" dans votre tableau de garanties.
 
 ### Peut-on se faire rembourser un transport medical sans prescription ?
 
@@ -189,7 +193,7 @@ Non. La prescription medicale prealable (formulaire CERFA 11574) est une conditi
 
 ### Qu'est-ce que la franchise medicale sur les transports ?
 
-La franchise medicale est une participation de 2 euros par trajet sanitaire qui reste a la charge de l'assure. Elle est automatiquement deduite du remboursement CPAM. Elle est plafonnee a 50 euros par an tous actes confondus. Certaines personnes en sont exonerees : enfants de moins de 18 ans, patients en ALD, femmes enceintes a partir du 6e mois, beneficiaires de la CSS.
+La franchise medicale est une participation de 4 euros par trajet sanitaire qui reste a la charge de l'assure. Elle est automatiquement deduite du remboursement CPAM, dans la limite de 8 euros par jour et 50 euros par an tous actes confondus. Sont exoneres : enfants de moins de 18 ans, femmes enceintes a partir du 1er jour du 6e mois jusqu'au 12e jour apres l'accouchement, beneficiaires de la CSS ou de l'AME, victimes du terrorisme, invalides de guerre. Les patients en ALD ne sont pas exoneres de la franchise (mais beneficient du taux 100 %).
 
 ### Comment declarer un transport medical a la CPAM ?
 
@@ -298,7 +302,7 @@ Les personnes reconnues en situation de handicap par la **MDPH** (Maison departe
 
 ## Les soins qui donnent droit au transport rembourse a 55 %
 
-Hors situations d'exoneration totale, le transport medical est rembourse a **55 % du tarif conventionne** pour les situations suivantes, avec application de la franchise medicale de 2 euros par trajet.
+Hors situations d'exoneration totale, le transport medical est rembourse a **55 % du tarif conventionne** pour les situations suivantes, avec application de la franchise medicale de 4 euros par trajet.
 
 ### Hospitalisation
 
@@ -348,7 +352,7 @@ Un taxi sans convention CPAM ne peut pas etre rembourse, meme si vous avez une p
 
 Les enfants de moins de 18 ans beneficient de **deux avantages specifiques** par rapport aux adultes :
 
-1. **Exoneration de la franchise medicale** : aucune franchise de 2 euros par trajet n'est appliquee sur les transports medicaux prescrits pour les mineurs.
+1. **Exoneration de la franchise medicale** : aucune franchise de 4 euros par trajet n'est appliquee sur les transports medicaux prescrits pour les mineurs.
 
 2. **Remboursement selon la situation parentale** : le transport est rembourse aux memes taux que pour les adultes (55 % ou 100 % selon la situation), en fonction de la pathologie de l'enfant. Un enfant atteint d'une affection grave reconnue peut beneficier du 100 % via le dispositif des soins particulierement couteux.
 
@@ -405,7 +409,7 @@ Pas completement automatiquement. Vous etes rembourse a 100 % pour les transport
 
 ### Peut-on cumuler remboursement CPAM et mutuelle ?
 
-Oui, sous conditions. La CPAM rembourse sa part (55 % ou 100 % selon votre situation), et votre mutuelle peut prendre en charge tout ou partie des 35 % restants (ticket moderateur) si votre contrat le prevoit. En revanche, les contrats "responsables" (la majorite des mutuelles) ne remboursent pas la franchise medicale de 2 euros par trajet. Le cumul CPAM + mutuelle ne peut pas depasser le tarif conventionne : vous ne pouvez pas etre rembourse au-dela du montant reel des frais engages.
+Oui, sous conditions. La CPAM rembourse sa part (55 % ou 100 % selon votre situation), et votre mutuelle peut prendre en charge tout ou partie des 45 % restants (ticket moderateur) si votre contrat le prevoit. En revanche, les contrats "responsables" (la majorite des mutuelles) ne remboursent pas la franchise medicale de 4 euros par trajet. Le cumul CPAM + mutuelle ne peut pas depasser le tarif conventionne : vous ne pouvez pas etre rembourse au-dela du montant reel des frais engages.
 
 ### Le transport pour urgences est-il pris en charge differemment ?
 

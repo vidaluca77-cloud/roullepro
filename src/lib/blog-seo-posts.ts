@@ -918,7 +918,7 @@ L'epreuve theorique dure 1 heure. Elle comporte un questionnaire a choix multipl
 - La gestion et le droit des entreprises : 15 questions
 - La relation client et les competences transversales : 15 questions
 
-Le seuil de reussite est de 50 bonnes reponses sur 100 (50 %). En 2026, le taux de reussite a la theorie est d'environ 65 % pour les candidats ayant suivi une formation complete.
+Le seuil de reussite est de 50 bonnes reponses sur 100 (50 %). Le taux de reussite varie selon les sessions et les centres d'examen, ainsi qu'en fonction de la preparation suivie par les candidats.
 
 ### Epreuve pratique
 
@@ -1025,7 +1025,7 @@ L'auto-entrepreneuriat reste le statut le plus repandu pour les VTC independants
 Oui. Contrairement aux taxis, les VTC n'ont pas besoin d'autorisation de stationnement (ADS). La carte VTC + l'autorisation d'exploiter + le registre national suffisent. Il n'y a pas de numerus clausus pour les VTC au niveau national.
 
 **L'examen VTC est-il difficile ?**
-Le taux de reussite global est d'environ 55 a 65 % selon les sessions. Les candidats non prepares (sans formation) ont un taux de reussite inferieur a 30 %. La preparation serieuse pendant 10 a 14 jours est la cle de la reussite.
+Le taux de reussite varie selon les sessions et les centres d'examen, et depend fortement de la preparation suivie. Les candidats non prepares ont un taux de reussite tres inferieur a celui des candidats ayant suivi une formation complete. Une preparation serieuse pendant 10 a 14 jours est la cle de la reussite.
 
 **Peut-on passer l'examen VTC dans n'importe quelle CCI en France ?**
 Oui. Le candidat peut s'inscrire a une CCI de son choix, independamment de son lieu de residence. Certaines CCI sont plus connues pour leur frequence de sessions (Paris, Lyon, Marseille). Attention : la carte VTC est delivree par la prefecture du domicile, pas de la CCI.

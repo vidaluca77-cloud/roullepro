@@ -103,7 +103,7 @@ Pour ces situations, la prescription peut couvrir plusieurs trajets a la fois (j
 Certains patients ALD doivent se rendre dans des centres hospitaliers specialises eloignes de leur domicile — centres de transplantation, services d'oncologie de reference, centres specialises en maladies rares. La CPAM peut prendre en charge ces trajets longue distance, mais sous conditions :
 
 - Le centre de soin doit etre le plus proche de votre domicile competent pour votre pathologie.
-- Une **entente prealable** (accord ecrit de la CPAM avant le trajet) est obligatoire pour les distances superieures a 150 km ou pour les transports dont le cout total depasse 70 euros.
+- Une **entente prealable** (accord ecrit de la CPAM avant le trajet) est obligatoire pour les transports de plus de 150 km a l'aller, ou pour une serie d'au moins 4 trajets de plus de 50 km sur une periode de 2 mois pour un meme traitement.
 - L'entente prealable doit etre demandee par votre medecin, pas directement par le patient.
 
 ## Comment obtenir son transport medical en tant que patient ALD ?
@@ -140,7 +140,7 @@ Meme en ALD, un transport sans bon de transport n'est pas remboursable. La presc
 L'exoneration a 100 % ne s'applique qu'aux transports "en rapport avec l'ALD". Un transport pour une pathologie non liee sera rembourse au taux normal de 55 %.
 
 **Erreur n°4 : Negliger l'entente prealable pour les longues distances**
-Pour les trajets longs (au-dela de 150 km ou au-dela de 70 euros de frais), l'entente prealable doit etre obtenue avant le transport. Un oubli peut entrainer un refus de remboursement total.
+Pour les trajets longs (plus de 150 km a l'aller) ou pour une serie d'au moins 4 transports de plus de 50 km sur 2 mois, l'entente prealable doit etre obtenue avant le transport. Un oubli peut entrainer un refus de remboursement total.
 
 **Erreur n°5 : Ne pas signaler le statut ALD au transporteur**
 Le conducteur doit connaitre votre statut ALD pour facturer correctement a la CPAM et appliquer le bon taux. Presentez toujours votre carte Vitale avec la mention ALD activee.

@@ -333,9 +333,9 @@ Le **tiers payant** est le mecanisme central du systeme. En pratique :
 2. Vous effectuez le trajet
 3. Vous remplissez la feuille de soin ou utilisez votre logiciel de facturation pour transmettre la demande a la CPAM
 4. La CPAM vous vire directement le montant rembourse (55 % ou 100 % selon la situation du patient)
-5. Si le patient est a 55 %, il vous doit la part restante (35 % + franchise) — mais dans la pratique, beaucoup de patients sont en ALD et donc rembourses a 100 %
+5. Si le patient est a 55 %, il vous doit la part restante (45 % + franchise) — mais dans la pratique, beaucoup de patients sont en ALD et donc rembourses a 100 %
 
-La franchise medicale (2 euros par trajet, plafonnee a 50 euros par an) est a la charge du patient, sauf exonerations specifiques. Elle ne vous concerne pas directement : vous touchez votre remboursement integral.
+La franchise medicale (4 euros par trajet, plafonnee a 8 euros/jour et 50 euros/an) est a la charge du patient, sauf exonerations specifiques (mineurs, CSS, AME, maternite, terrorisme, invalides de guerre — les ALD ne sont pas exonerees). Elle ne vous concerne pas directement : vous touchez votre remboursement integral.
 
 ### Declaration des transports a la CPAM
 

@@ -52,7 +52,7 @@ Pour une reservation urgent en dehors des heures habituelles, contactez directem
 
 ### Trouver un taxi conventionne a Paris
 
-Un taxi conventionne parisien est un chauffeur de taxi titulaire d'une licence T3P (taxi) qui a conclu une convention specifique avec la CPAM Paris. Il peut vous transporter sur prescription medicale avec dispense d'avance de frais, sous reserve que votre medecin ait coche la case "taxi conventionne" sur le bon de transport (formulaire S3140).
+Un taxi conventionne parisien est un chauffeur de taxi titulaire d'une licence T3P (taxi) qui a conclu une convention specifique avec la CPAM Paris. Il peut vous transporter sur prescription medicale avec dispense d'avance de frais, sous reserve que votre medecin ait coche la case "taxi conventionne" sur le bon de transport (formulaire CERFA 11574*07).
 
 A Paris, les taxis conventionnes sont particulierement utiles pour les patients ambulatoires qui peuvent s'asseoir normalement et dont l'etat ne necessite pas de materiel medical embarque. C'est souvent le mode le plus rapide a reserver, notamment pour des rendez-vous a l'hopital Necker (rue de Sevres, 15e) ou a l'HEGP (rue Leblanc, 15e).
 
@@ -74,11 +74,12 @@ Le remboursement d'un transport medical est identique sur tout le territoire nat
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (grossesse > 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail / maladie professionnelle | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise medicale de 2 euros par trajet s'applique dans les cas non exoneres, avec un plafond annuel de 50 euros.
+La franchise medicale de 4 euros par trajet s'applique dans les cas non exoneres, avec un plafond de 8 euros par jour et 50 euros par an.
 
 ### Contacts CPAM Paris (departement 75)
 
@@ -107,7 +108,7 @@ Consultez l'[annuaire RoullePro Paris](https://roullepro.com/transport-medical/p
 
 ### Quel est le cout d'un transport medical a Paris ?
 
-Si vous beneficiez d'une prescription medicale valide et d'un transporteur agree CPAM, votre reste a charge est nul (100 % en ALD, maternite, hospitalisation) ou limite a 35 % du tarif conventionne en regime general, apres deduction de la franchise de 2 euros par trajet. Le tiers payant evite toute avance de frais.
+Si vous beneficiez d'une prescription medicale valide et d'un transporteur agree CPAM, votre reste a charge est nul (100 % en ALD, en maternite a partir du 6e mois, en AT/MP ou hospitalisation liee a l'une de ces situations) ou limite a 45 % du tarif conventionne en regime general, apres deduction de la franchise de 4 euros par trajet. Le tiers payant evite toute avance de frais.
 
 ### Les transports medicaux a Paris fonctionnent-ils la nuit ?
 
@@ -163,7 +164,7 @@ Le choix d'une ambulance agreee CPAM n'est pas optionnel des lors qu'une prescri
 
 1. **Remboursement conditionnel** : seule une ambulance agreee peut pretendre au remboursement par l'Assurance Maladie. Si vous utilisez un transporteur non agree, la totalite des frais reste a votre charge, quand bien meme votre medecin vous aurait prescrit le transport.
 2. **Securite garantie** : les vehicules agrees sont soumis a des controles techniques et sanitaires reguliers. Le personnel est qualifie et forme aux gestes de premiers secours avances.
-3. **Tiers payant** : avec un agrement valide, la societe d'ambulances facture directement la CPAM Paris. Vous n'avancez aucune somme (hors franchise de 2 euros non exoneree).
+3. **Tiers payant** : avec un agrement valide, la societe d'ambulances facture directement la CPAM Paris. Vous n'avancez aucune somme (hors franchise de 4 euros par trajet, plafonnee a 8 euros/jour et 50 euros/an, sauf exoneration).
 
 Retrouvez l'ensemble des regles de remboursement dans notre [guide sur le remboursement du transport medical](https://roullepro.com/blog/remboursement-transport-medical).
 
@@ -314,9 +315,10 @@ Les taux de remboursement sont identiques sur tout le territoire selon [Ameli.fr
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
 ### Contacts CPAM du Rhone (departement 69)
 
@@ -347,7 +349,7 @@ Pour les transports depuis le domicile vers les hopitaux, [RoullePro Lyon](https
 
 ### Documents indispensables pour votre transport a Lyon
 
-- Bon de transport (formulaire S3140) prescrit et signe par votre medecin
+- Bon de transport (formulaire CERFA 11574*07) prescrit et signe par votre medecin
 - Carte Vitale valide et carte de mutuelle si applicable
 - Justificatif de votre statut ALD si vous beneficiez du 100 %
 - Nom et service hospitalier de destination avec, si possible, le numero de batiment
@@ -361,7 +363,7 @@ Consultez [RoullePro Lyon](https://roullepro.com/transport-medical/lyon) pour un
 
 ### Quel est le cout d'un transport medical a Lyon ?
 
-Pour les patients avec une prescription valide et un transporteur agree CPAM du Rhone, le reste a charge est nul (ALD, hospitalisation) ou de 35 % du tarif conventionne en regime general, apres la franchise de 2 euros. Le tiers payant integral est systematiquement applique.
+Pour les patients avec une prescription valide et un transporteur agree CPAM du Rhone, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % du tarif conventionne en regime general, apres la franchise de 4 euros par trajet. Le tiers payant integral est systematiquement applique.
 
 ### Les transports medicaux a Lyon fonctionnent-ils la nuit ?
 
@@ -584,11 +586,12 @@ Le VSL est souvent prescrit pour les retours apres hospitalisation de courte dur
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise medicale de 2 euros par trajet s'applique hors cas d'exoneration, avec un plafond de 50 euros par annee civile.
+La franchise medicale de 4 euros par trajet s'applique hors cas d'exoneration, avec un plafond de 8 euros par jour et 50 euros par annee civile.
 
 ### Contacts CPAM des Bouches-du-Rhone (departement 13)
 
@@ -618,7 +621,7 @@ La metropole Aix-Marseille-Provence etend son bassin de vie bien au-dela de la c
 ### Documents et preparation du transport
 
 Pour votre transport medical a Marseille :
-- Bon de transport S3140 signe par votre medecin
+- Bon de transport CERFA 11574*07 signe par votre medecin
 - Carte Vitale valide et carte de mutuelle
 - Justificatif ALD si applicable
 - Adresse de prise en charge preciseen incluant le digicode si necessaire
@@ -635,7 +638,7 @@ Consultez [RoullePro Marseille](https://roullepro.com/transport-medical/marseill
 
 ### Quel est le cout d'un transport medical a Marseille ?
 
-Avec une prescription valide et un transporteur agree, votre reste a charge est nul (ALD, hospitalisation) ou de 35 % du tarif conventionne en regime general, apres franchise de 2 euros. Le tiers payant evite toute avance de frais.
+Avec une prescription valide et un transporteur agree, votre reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % du tarif conventionne en regime general, apres franchise de 4 euros par trajet. Le tiers payant evite toute avance de frais.
 
 ### Les transports medicaux a Marseille fonctionnent-ils la nuit ?
 
@@ -826,7 +829,7 @@ Toulouse est une agglomeration en forte croissance, avec des axes saturaux aux h
 
 La **CPAM de la Haute-Garonne** est joignable au **3646**. Elle referance les ambulanciers agrees du departement 31. Un agrement valide signifie que la societe dispose d'une autorisation prefectorale, de vehicules conformes et de personnel qualifie. Consulter [RoullePro Toulouse](https://roullepro.com/transport-medical/toulouse) vous permet d'identifier directement ces professionnels sans avoir a contacter la CPAM pour chaque verification.
 
-Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale de transport (formulaire S3140) est obligatoire pour tout transport pris en charge. Elle doit etre etablie avant le transport, sauf urgence.
+Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale de transport (formulaire CERFA 11574*07) est obligatoire pour tout transport pris en charge. Elle doit etre etablie avant le transport, sauf urgence.
 
 ### Reserver a l'avance pour un transport programme
 
@@ -850,11 +853,12 @@ Le VSL est frequemment utilise pour les retours apres des consultations ambulato
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet (plafond 50 euros/an) s'applique sauf exoneration.
+La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique sauf exoneration.
 
 ### Contacts CPAM Haute-Garonne (departement 31)
 
@@ -882,7 +886,7 @@ Outre les sites du CHU, Toulouse compte de nombreuses cliniques privees de quali
 
 ### Documents necessaires
 
-- Bon de transport S3140 signe par le medecin prescripteur
+- Bon de transport CERFA 11574*07 signe par le medecin prescripteur
 - Carte Vitale a jour et carte de mutuelle
 - Justificatif ALD pour le tiers payant integral
 - Nom et adresse precis de l'etablissement de destination
@@ -898,7 +902,7 @@ Consultez [RoullePro Toulouse](https://roullepro.com/transport-medical/toulouse)
 
 ### Quel est le cout d'un transport medical a Toulouse ?
 
-Avec une prescription valide et un transporteur agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres la franchise de 2 euros. Le tiers payant evite toute avance de frais.
+Avec une prescription valide et un transporteur agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres la franchise de 4 euros par trajet. Le tiers payant evite toute avance de frais.
 
 ### Les transports medicaux a Toulouse fonctionnent-ils la nuit ?
 
@@ -1016,7 +1020,7 @@ Si vous rencontrez des difficultes pour organiser votre transport medical a Toul
 ### Documents a preparer
 
 Pour un transport medical rembourse a Toulouse :
-- Bon de transport S3140 prescrit par votre medecin
+- Bon de transport CERFA 11574*07 prescrit par votre medecin
 - Carte Vitale valide
 - Carte de mutuelle si applicable
 - Confirmation de votre statut ALD si vous beneficiez du 100 %
@@ -1093,7 +1097,7 @@ La **CPAM de la Gironde** est joignable au **3646**. Elle referance les societes
 
 Plutot que de contacter la CPAM individuellement pour chaque prestataire, consultez [RoullePro Bordeaux](https://roullepro.com/transport-medical/bordeaux) : tous les professionnels y sont agrees. Vous pouvez filtrer par type de transport et par zone geographique.
 
-Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), votre medecin doit etablir la prescription avant le transport (sauf urgence). Le formulaire S3140 precise le mode de transport prescrit.
+Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), votre medecin doit etablir la prescription avant le transport (sauf urgence). Le formulaire CERFA 11574*07 precise le mode de transport prescrit.
 
 ### Reserver a l'avance pour un transport programme
 
@@ -1117,11 +1121,12 @@ Le VSL est particulierement adapte aux patients ambulatoires avec une mobilite r
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet (plafond 50 euros/an) s'applique hors cas d'exoneration.
+La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique hors cas d'exoneration.
 
 ### Contacts CPAM Gironde (departement 33)
 
@@ -1149,7 +1154,7 @@ Pour les hospitalisations programmees dans les hopitaux bordelais depuis des com
 
 ### Documents necessaires
 
-- Bon de transport S3140 prescrit par votre medecin
+- Bon de transport CERFA 11574*07 prescrit par votre medecin
 - Carte Vitale valide
 - Carte de mutuelle si applicable
 - Justificatif ALD pour le tiers payant integral
@@ -1183,7 +1188,7 @@ Consultez [RoullePro Bordeaux](https://roullepro.com/transport-medical/bordeaux)
 
 ### Quel est le cout d'un transport medical a Bordeaux ?
 
-Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres la franchise de 2 euros. Le tiers payant est systeme.
+Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres la franchise de 4 euros par trajet. Le tiers payant est systematique.
 
 ### Les transports medicaux a Bordeaux fonctionnent-ils la nuit ?
 
@@ -1300,7 +1305,7 @@ Renseignez-vous aupres de votre service medical (oncologie a l'Institut Bergonie
 
 ### Documents necessaires pour le transport
 
-- Bon de transport (formulaire S3140) signe par le medecin prescripteur
+- Bon de transport (formulaire CERFA 11574*07) signe par le medecin prescripteur
 - Carte Vitale a jour
 - Carte de mutuelle si applicable
 - Justificatif ALD si vous beneficiez du tiers payant integral
@@ -1423,11 +1428,12 @@ Le VSL est souvent prescrit pour les patients sortant d'une hospitalisation cour
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet s'applique hors exoneration, avec un plafond annuel de 50 euros.
+La franchise de 4 euros par trajet s'applique hors exoneration, avec un plafond de 8 euros par jour et 50 euros par an.
 
 ### Contacts CPAM Nord (departement 59)
 
@@ -1459,7 +1465,7 @@ Ces etablissements sont egalement desservis par des transporteurs agrees referen
 
 ### Documents necessaires pour votre transport
 
-- Bon de transport S3140 signe par votre medecin
+- Bon de transport CERFA 11574*07 signe par votre medecin
 - Carte Vitale valide et carte de mutuelle
 - Justificatif ALD pour le tiers payant integral
 - Nom et service de destination au CHU (Huriez, Salengro, Calmette, Oscar Lambret)
@@ -1492,7 +1498,7 @@ Consultez [RoullePro Lille](https://roullepro.com/transport-medical/lille) pour 
 
 ### Quel est le cout d'un transport medical a Lille ?
 
-Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres la franchise de 2 euros.
+Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres la franchise de 4 euros par trajet.
 
 ### Les transports medicaux a Lille fonctionnent-ils la nuit ?
 
@@ -1611,7 +1617,7 @@ Votre service hospitalier (notamment au CHU de Lille et au Centre Oscar Lambret)
 ### Documents necessaires
 
 Pour tout transport medical a Lille :
-- Bon de transport S3140 signe par le medecin
+- Bon de transport CERFA 11574*07 signe par le medecin
 - Carte Vitale valide
 - Carte de mutuelle si applicable
 - Attestation ALD pour le tiers payant integral
@@ -1704,7 +1710,7 @@ L'ouverture progressive du nouveau site hospitalier Nord Laennec a Saint-Herblai
 
 La **CPAM de la Loire-Atlantique** est joignable au **3646**. Elle convention les ambulanciers, VSL et taxis conventionnes du departement 44. Un agrement valide signifie vehicule conforme, personnel diplome et tiers payant.
 
-L'annuaire [RoullePro Nantes](https://roullepro.com/transport-medical/nantes) centralise les professionnels agrees de l'agglomeration. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), votre medecin doit vous remettre un formulaire de prescription (S3140) avant le transport.
+L'annuaire [RoullePro Nantes](https://roullepro.com/transport-medical/nantes) centralise les professionnels agrees de l'agglomeration. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), votre medecin doit vous remettre un formulaire de prescription (CERFA 11574*07) avant le transport.
 
 ### Reserver a l'avance pour un transport programme
 
@@ -1728,11 +1734,12 @@ Le VSL est frequemment utilise pour les retours depuis l'Hotel-Dieu (1 place Ale
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet s'applique hors exoneration, dans la limite de 50 euros par an.
+La franchise de 4 euros par trajet s'applique hors exoneration, dans la limite de 8 euros par jour et 50 euros par an.
 
 ### Contacts CPAM Loire-Atlantique (departement 44)
 
@@ -1759,7 +1766,7 @@ Nantes compte egalement de nombreux etablissements de sante prives references : 
 
 ### Documents necessaires
 
-- Bon de transport S3140 prescrit par votre medecin
+- Bon de transport CERFA 11574*07 prescrit par votre medecin
 - Carte Vitale valide et carte de mutuelle
 - Justificatif ALD pour le tiers payant integral
 - Adresse precise de destination (nom du service et batiment, car le CHU Laennec est en cours d'installation a Saint-Herblain)
@@ -1791,7 +1798,7 @@ Consultez [RoullePro Nantes](https://roullepro.com/transport-medical/nantes) pou
 
 ### Quel est le cout d'un transport medical a Nantes ?
 
-Avec une prescription valide et un transporteur agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres la franchise de 2 euros. Le tiers payant evite toute avance.
+Avec une prescription valide et un transporteur agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres la franchise de 4 euros par trajet. Le tiers payant evite toute avance.
 
 ### Les transports medicaux a Nantes fonctionnent-ils la nuit ?
 
@@ -1896,7 +1903,7 @@ A Nantes, comme dans toutes les grandes metropoles, certaines periodes concentre
 ### Preparer sa prise en charge
 
 Pour que votre transport se deroule sans incident, preparez les documents indispensables :
-- Le bon de transport (formulaire S3140) rempli et signe par votre medecin
+- Le bon de transport (formulaire CERFA 11574*07) rempli et signe par votre medecin
 - Votre carte Vitale a jour
 - Votre carte de mutuelle si vous etes couvert
 - Une piece d'identite
@@ -2007,7 +2014,7 @@ Nice est une ville en partie collinaire, avec des quartiers comme Cimiez ou les 
 
 La **CPAM des Alpes-Maritimes** est joignable au **3646**. Elle referance les ambulanciers, VSL et taxis conventionnes agrees dans le departement 06. Pour beneficier du tiers payant et du remboursement, le transporteur doit obligatoirement avoir signe une convention avec cette caisse.
 
-Consultez [RoullePro Nice](https://roullepro.com/transport-medical/nice) pour identifier directement des professionnels agrees sans verifications supplementaires. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale de transport (formulaire S3140) est obligatoire avant le trajet, sauf urgence.
+Consultez [RoullePro Nice](https://roullepro.com/transport-medical/nice) pour identifier directement des professionnels agrees sans verifications supplementaires. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale de transport (formulaire CERFA 11574*07) est obligatoire avant le trajet, sauf urgence.
 
 ### Reserver a l'avance pour un transport programme
 
@@ -2031,11 +2038,12 @@ Le VSL est prescrit pour les patients qui ne peuvent pas utiliser les transports
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet (plafond 50 euros/an) s'applique hors exoneration.
+La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique hors exoneration.
 
 ### Contacts CPAM Alpes-Maritimes (departement 06)
 
@@ -2069,7 +2077,7 @@ Les transporteurs agrees CPAM des Alpes-Maritimes sur [RoullePro Nice](https://r
 
 ### Documents necessaires
 
-- Bon de transport S3140 signe par votre medecin
+- Bon de transport CERFA 11574*07 signe par votre medecin
 - Carte Vitale valide et carte de mutuelle
 - Justificatif ALD pour le tiers payant integral
 - Adresse precise et instructions d'acces si vous habitez dans un quartier en altitude ou hors route principale
@@ -2101,7 +2109,7 @@ Consultez [RoullePro Nice](https://roullepro.com/transport-medical/nice) pour le
 
 ### Quel est le cout d'un transport medical a Nice ?
 
-Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres franchise. Le tiers payant evite toute avance.
+Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres franchise (4 euros par trajet). Le tiers payant evite toute avance.
 
 ### Les transports medicaux a Nice fonctionnent-ils la nuit ?
 
@@ -2213,7 +2221,7 @@ Nice et la Cote d'Azur presentent plusieurs particularites qui influencent la di
 ### Preparer sa prise en charge
 
 Les documents indispensables pour un transport medical rembourse a Nice :
-- Bon de transport (S3140) signe par votre medecin prescripteur
+- Bon de transport (CERFA 11574*07) signe par votre medecin prescripteur
 - Carte Vitale valide
 - Carte de mutuelle complementaire si applicable
 - Nom et adresse exacts du service hospitalier de destination
@@ -2337,11 +2345,12 @@ Le VSL est frequemment prescrit pour les retours apres une consultation speciali
 |---|---|---|
 | Regime general | 55 % du tarif conventionne | + complement local possible |
 | ALD | 100 % | 100 % |
-| Maternite (> 5 mois) | 100 % | 100 % |
-| Accident du travail | 100 % | 100 % |
-| Hospitalisation | 100 % | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % | 100 % |
+| Accident du travail / maladie professionnelle | 100 % | 100 % |
+| Hospitalisation (cas general) | 55 % | + complement local possible |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % | 100 % |
 
-Renseignez-vous aupres de la CPAM du Bas-Rhin pour votre taux precis. La franchise de 2 euros par trajet s'applique hors cas d'exoneration.
+Renseignez-vous aupres de la CPAM du Bas-Rhin pour votre taux precis. La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique hors cas d'exoneration.
 
 ### Contacts CPAM Bas-Rhin (departement 67)
 
@@ -2369,7 +2378,7 @@ Dans le cadre du regime local alsacien, les patients du Bas-Rhin peuvent benefic
 
 ### Documents necessaires
 
-- Bon de transport S3140 prescrit par votre medecin
+- Bon de transport CERFA 11574*07 prescrit par votre medecin
 - Carte Vitale valide
 - Carte de mutuelle et justificatif d'affiliation au regime local alsacien
 - Justificatif ALD pour le tiers payant integral
@@ -2406,7 +2415,7 @@ Consultez [RoullePro Strasbourg](https://roullepro.com/transport-medical/strasbo
 
 ### Quel est le cout d'un transport medical a Strasbourg ?
 
-Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, hospitalisation) ou limite au regime general. Le regime local alsacien peut ameliorer votre prise en charge. Renseignez-vous aupres de la CPAM du Bas-Rhin (3646).
+Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou limite au regime general. Le regime local alsacien peut ameliorer votre prise en charge. Renseignez-vous aupres de la CPAM du Bas-Rhin (3646).
 
 ### Les transports medicaux a Strasbourg fonctionnent-ils la nuit ?
 
@@ -2507,7 +2516,7 @@ Signalez tout prestataire frauduleux a la CPAM du Bas-Rhin (3646) et a l'ARS Gra
 
 ### Le regime local alsacien et vos droits
 
-Le regime local d'Assurance Maladie d'Alsace-Moselle offre une couverture complementaire par rapport au regime general. Concretement, pour les transports medicaux, cela signifie que le reste a charge du regime general (35 %) peut etre partiellement ou totalement pris en charge par le regime local, selon votre situation et votre cotisation.
+Le regime local d'Assurance Maladie d'Alsace-Moselle offre une couverture complementaire par rapport au regime general. Concretement, pour les transports medicaux, cela signifie que le reste a charge du regime general (45 %) peut etre partiellement ou totalement pris en charge par le regime local, selon votre situation et votre cotisation.
 
 Pour beneficier de cette couverture complementaire sur vos transports :
 1. Assurez-vous d'etre bien enregistre aupres du regime local (information disponible aupres de la CPAM du Bas-Rhin au 3646)
@@ -2528,9 +2537,9 @@ Pour les patients residant en France et travaillant en Allemagne (frontaliers), 
 
 Les tarifs des ambulances agreees CPAM sont fixes par la **convention nationale de transport sanitaire**, negociee periodiquement entre l'Assurance Maladie et les organisations professionnelles d'ambulanciers. Ces tarifs comprennent :
 
-- Un **forfait de prise en charge** fixe (autour de 60-70 euros selon le type de vehicule)
-- Un **tarif kilometrique** (environ 2,20 a 2,50 euros/km selon la zone et l'heure)
-- Des **majorations** pour les transports de nuit (20h-8h), le dimanche et les jours feries
+- Pour une **ambulance** (Avenant 11, tarifs au 01/01/2025) : forfait departemental 57,39 euros (ou forfait agglomeration 64,08 euros), prise en charge 71,72 euros, tarif kilometrique 2,44 euros/km
+- Pour un **VSL** (Avenant 11, tarifs au 01/01/2025) : forfait departemental unifie 15,75 euros, prise en charge 16,80 euros, tarif kilometrique 1,10 euros/km
+- Des **majorations** pour les transports de nuit (20h-8h), le dimanche et les jours feries (les montants exacts en euros ne sont pas publies dans les pages officielles consultees pour les transports programmes)
 - Un **forfait special** pour certains types de transport (transport grand brule, transport de nouveau-ne...)
 
 Ces tarifs sont identiques pour toutes les ambulances agreees CPAM, qu'elles soient a Strasbourg ou dans n'importe quelle autre ville de France. Le regime local alsacien peut prendre en charge une partie du reste a charge laisse par le regime general.
@@ -2616,7 +2625,7 @@ La forte croissance de Montpellier se traduit par de nouveaux quartiers et de no
 
 La **CPAM de l'Herault** est joignable au **3646**. Elle convention les ambulanciers, VSL et taxis conventionnes du departement 34. Un agrement valide garantit la conformite du vehicule, la qualification du personnel et l'acces au tiers payant.
 
-Consultez [RoullePro Montpellier](https://roullepro.com/transport-medical/montpellier) pour identifier des professionnels agrees sans demarches supplementaires. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale (S3140) est obligatoire avant tout transport, sauf urgence.
+Consultez [RoullePro Montpellier](https://roullepro.com/transport-medical/montpellier) pour identifier des professionnels agrees sans demarches supplementaires. Selon [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), la prescription medicale (CERFA 11574*07) est obligatoire avant tout transport, sauf urgence.
 
 ### Reserver a l'avance pour un transport programme
 
@@ -2640,11 +2649,12 @@ Le VSL est souvent prescrit pour les retours depuis l'hopital **Saint-Eloi** (80
 |---|---|
 | Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
-| Maternite (> 5 mois) | 100 % |
+| Maternite (a partir du 1er jour du 6e mois) | 100 % |
 | Accident du travail | 100 % |
-| Hospitalisation | 100 % |
+| Hospitalisation (cas general) | 55 % |
+| Hospitalisation liee a une ALD, AT/MP ou maternite | 100 % |
 
-La franchise de 2 euros par trajet (plafond 50 euros/an) s'applique hors exoneration.
+La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique hors exoneration.
 
 ### Contacts CPAM Herault (departement 34)
 
@@ -2672,7 +2682,7 @@ Montpellier compte egalement des cliniques privees importantes : Clinique Saint-
 
 ### Documents necessaires
 
-- Bon de transport S3140 prescrit par votre medecin
+- Bon de transport CERFA 11574*07 prescrit par votre medecin
 - Carte Vitale valide et carte de mutuelle
 - Justificatif ALD pour le tiers payant integral
 - Nom et adresse precis de l'etablissement (les sites du CHRU sont disperses sur le campus de Montpellier)
@@ -2708,7 +2718,7 @@ Consultez [RoullePro Montpellier](https://roullepro.com/transport-medical/montpe
 
 ### Quel est le cout d'un transport medical a Montpellier ?
 
-Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, hospitalisation) ou de 35 % en regime general apres la franchise de 2 euros. Le tiers payant evite toute avance.
+Avec une prescription valide et un prestataire agree, le reste a charge est nul (ALD, AT/MP, maternite a partir du 6e mois, hospitalisation liee a l'une de ces situations) ou de 45 % en regime general apres la franchise de 4 euros par trajet. Le tiers payant evite toute avance.
 
 ### Les transports medicaux a Montpellier fonctionnent-ils la nuit ?
 
@@ -2820,7 +2830,7 @@ Votre coordinateur de soins a l'ICM peut vous orienter vers des prestataires agr
 
 ### Documents necessaires
 
-- Bon de transport S3140 signe par le medecin prescripteur
+- Bon de transport CERFA 11574*07 signe par le medecin prescripteur
 - Carte Vitale valide
 - Carte de mutuelle si applicable
 - Justificatif ALD pour le tiers payant integral
