@@ -23,7 +23,7 @@ export const ARTICLES: BlogPost[] = [
     content: `
 Mis a jour le 29 avril 2026
 
-Le **remboursement transport medical** par la Securite sociale concerne trois modes de transport : l'ambulance, le VSL (vehicule sanitaire leger) et le taxi conventionne. Ces transports sont pris en charge uniquement sur prescription medicale, aupres d'un transporteur agree CPAM. Le taux de remboursement varie selon votre situation : 65 % pour les soins courants, 100 % pour certaines affections ou situations specifiques. Dans ce guide complet, nous detaillons les conditions, les taux applicables, la franchise medicale et les quatre etapes pour obtenir votre remboursement en 2026.
+Le **remboursement transport medical** par la Securite sociale concerne trois modes de transport : l'ambulance, le VSL (vehicule sanitaire leger) et le taxi conventionne. Ces transports sont pris en charge uniquement sur prescription medicale, aupres d'un transporteur agree CPAM. Le taux de remboursement varie selon votre situation : 55 % pour les soins courants, 100 % pour certaines affections ou situations specifiques. Dans ce guide complet, nous detaillons les conditions, les taux applicables, la franchise medicale et les quatre etapes pour obtenir votre remboursement en 2026.
 
 ## Qui peut beneficier d'un transport medical rembourse ?
 
@@ -61,10 +61,10 @@ Le taux de remboursement ne depend pas uniquement du mode de transport choisi (a
 | Maternite (grossesse) | 100 % | Non |
 | Accident du travail | 100 % | Non |
 | Invalidite | 100 % | Non |
-| Hospitalisation | 65 % | Oui (2 euros/trajet) |
-| Soins courants | 65 % | Oui (2 euros/trajet) |
+| Hospitalisation | 55 % | Oui (2 euros/trajet) |
+| Soins courants | 55 % | Oui (2 euros/trajet) |
 
-En regime general (65 %), c'est votre mutuelle (complement sante) qui peut prendre en charge tout ou partie des 35 % restants, selon les garanties de votre contrat. Certaines mutuelles remboursent l'integralite du ticket moderateur, d'autres seulement une partie.
+En regime general (55 %), c'est votre mutuelle (complement sante) qui peut prendre en charge tout ou partie des 35 % restants, selon les garanties de votre contrat. Certaines mutuelles remboursent l'integralite du ticket moderateur, d'autres seulement une partie.
 
 Pour comprendre quel mode de transport correspond a votre situation medicale (ambulance, VSL ou taxi conventionne), consultez notre guide [Ambulance, VSL ou taxi conventionne : quelles differences ?](https://roullepro.com/blog/difference-ambulance-vsl-taxi-conventionne).
 
@@ -142,7 +142,7 @@ Pour les patients en ALD, la prise en charge est integrale par la CPAM et il n'y
 
 Les transports sur une longue distance (au-dela de **150 km aller simple**) font l'objet d'un regime particulier. La CPAM peut exiger une **entente prealable** : le medecin ou l'etablissement doit soumettre une demande d'accord avant le trajet, et la CPAM dispose d'un delai pour repondre.
 
-Si l'accord prealable est obtenu, le remboursement s'effectue dans les conditions habituelles selon votre situation (65 % ou 100 %). Si vous effectuez un trajet longue distance sans accord prealable, le remboursement peut etre limite ou refuse.
+Si l'accord prealable est obtenu, le remboursement s'effectue dans les conditions habituelles selon votre situation (55 % ou 100 %). Si vous effectuez un trajet longue distance sans accord prealable, le remboursement peut etre limite ou refuse.
 
 Pour les transports inter-etablissements (transfert entre deux hopitaux, par exemple), c'est generalement l'etablissement d'envoi qui prend en charge les demarches administratives d'accord prealable.
 
@@ -177,7 +177,7 @@ Pour aller plus loin, consultez notre guide [Ambulance, VSL ou taxi conventionne
 
 ### Quel est le taux de remboursement d'une ambulance par la Secu ?
 
-La CPAM rembourse 65 % du tarif conventionne d'une ambulance en regime general, avec une franchise de 2 euros par trajet. Le taux passe a 100 % (sans franchise) pour les patients en ALD, en maternite, en invalidite ou victimes d'un accident du travail. La mutuelle peut couvrir le ticket moderateur de 35 % restant selon votre contrat.
+La CPAM rembourse 55 % du tarif conventionne d'une ambulance en regime general, avec une franchise de 2 euros par trajet. Le taux passe a 100 % (sans franchise) pour les patients en ALD, en maternite, en invalidite ou victimes d'un accident du travail. La mutuelle peut couvrir le ticket moderateur de 35 % restant selon votre contrat.
 
 ### La mutuelle rembourse-t-elle le transport medical ?
 
@@ -269,7 +269,7 @@ Dans plusieurs situations, la CPAM prend en charge le transport a **100 % du tar
 
 Les patients atteints d'une affection inscrite sur la **liste des 30 maladies chroniques reconnues** (ALD 30) beneficient d'une prise en charge integrale des transports lies a leur ALD. Parmi ces affections : cancer, diabete de type 1 ou 2 traite par insuline, insuffisance cardiaque grave, insuffisance renale chronique, BPCO severe, sclerose en plaques, maladie de Parkinson, epilepsie grave, maladies psychiatriques de longue duree, etc.
 
-Pour beneficier du 100 %, le transport doit etre en lien direct avec l'ALD reconnue (consultations de suivi, seances de traitement, examens biologiques ou d'imagerie prescrits dans le cadre de l'ALD). Si vous consultez pour un autre motif sans lien avec votre ALD, le taux general de 65 % s'applique.
+Pour beneficier du 100 %, le transport doit etre en lien direct avec l'ALD reconnue (consultations de suivi, seances de traitement, examens biologiques ou d'imagerie prescrits dans le cadre de l'ALD). Si vous consultez pour un autre motif sans lien avec votre ALD, le taux general de 55 % s'applique.
 
 Notre guide [Transport medical en ALD : vos droits et demarches](https://roullepro.com/blog/transport-medical-ald-droits) detaille l'ensemble des droits specifiques aux patients en ALD.
 
@@ -296,30 +296,30 @@ Les assures reconnus en **invalidite de categories 1, 2 ou 3** par la CPAM, ains
 
 Les personnes reconnues en situation de handicap par la **MDPH** (Maison departementale des personnes handicapees) peuvent egalement beneficier de prises en charge complementaires, notamment via la Prestation de compensation du handicap (PCH) pour les frais de transport non couverts par la CPAM. Cette prise en charge est distincte du remboursement Assurance maladie et necessite une demande specifique aupres de la MDPH.
 
-## Les soins qui donnent droit au transport rembourse a 65 %
+## Les soins qui donnent droit au transport rembourse a 55 %
 
-Hors situations d'exoneration totale, le transport medical est rembourse a **65 % du tarif conventionne** pour les situations suivantes, avec application de la franchise medicale de 2 euros par trajet.
+Hors situations d'exoneration totale, le transport medical est rembourse a **55 % du tarif conventionne** pour les situations suivantes, avec application de la franchise medicale de 2 euros par trajet.
 
 ### Hospitalisation
 
-Tout transport vers ou depuis un etablissement de soin dans le cadre d'une **hospitalisation** (entree, sortie, transfert inter-etablissements) ouvre droit au remboursement a 65 %. Ce taux s'applique quelle que soit la duree de l'hospitalisation et le type d'etablissement (CHU, clinique privee conventionnee, SSR, USLD).
+Tout transport vers ou depuis un etablissement de soin dans le cadre d'une **hospitalisation** (entree, sortie, transfert inter-etablissements) ouvre droit au remboursement a 55 %. Ce taux s'applique quelle que soit la duree de l'hospitalisation et le type d'etablissement (CHU, clinique privee conventionnee, SSR, USLD).
 
 La prescription doit etre etablie par le medecin en charge de votre hospitalisation ou par votre medecin traitant si l'hospitalisation est programmee.
 
 ### Chimiotherapie, dialyse, radiotherapie
 
-Les patients qui suivent des soins **intensifs repetitifs** ouvrant droit au transport rembourse a 65 % (quand ils ne sont pas en ALD) comprennent :
+Les patients qui suivent des soins **intensifs repetitifs** ouvrant droit au transport rembourse a 55 % (quand ils ne sont pas en ALD) comprennent :
 
 - Les seances de **chimiotherapie** en ambulatoire
 - Les seances de **dialyse renale** (hemodialyse ou dialyse peritoneale)
 - Les seances de **radiotherapie**
 - Les seances de **plasmapherese** ou d'autres traitements intensifs specifiques
 
-En pratique, une grande partie de ces patients sont en ALD et beneficient donc du taux a 100 %. Mais si votre ALD n'a pas encore ete reconnue ou si vous etes en cours de constitution du dossier, le taux de 65 % s'applique provisoirement.
+En pratique, une grande partie de ces patients sont en ALD et beneficient donc du taux a 100 %. Mais si votre ALD n'a pas encore ete reconnue ou si vous etes en cours de constitution du dossier, le taux de 55 % s'applique provisoirement.
 
 ### Soins necessitant un appareillage lourd
 
-Certains soins ou examens necessitent le transport d'un patient avec un **appareillage medical lourd** (oxygene portable, fauteuil roulant, appareillages d'assistance respiratoire), ce qui rend impossible l'utilisation d'un moyen de transport ordinaire. Dans ces cas, la CPAM rembourse a 65 % (ou 100 % selon la situation medicale globale) un transport adapte (ambulance ou VSL equipe).
+Certains soins ou examens necessitent le transport d'un patient avec un **appareillage medical lourd** (oxygene portable, fauteuil roulant, appareillages d'assistance respiratoire), ce qui rend impossible l'utilisation d'un moyen de transport ordinaire. Dans ces cas, la CPAM rembourse a 55 % (ou 100 % selon la situation medicale globale) un transport adapte (ambulance ou VSL equipe).
 
 ## Ce qui n'est PAS rembourse (liste claire)
 
@@ -350,7 +350,7 @@ Les enfants de moins de 18 ans beneficient de **deux avantages specifiques** par
 
 1. **Exoneration de la franchise medicale** : aucune franchise de 2 euros par trajet n'est appliquee sur les transports medicaux prescrits pour les mineurs.
 
-2. **Remboursement selon la situation parentale** : le transport est rembourse aux memes taux que pour les adultes (65 % ou 100 % selon la situation), en fonction de la pathologie de l'enfant. Un enfant atteint d'une affection grave reconnue peut beneficier du 100 % via le dispositif des soins particulierement couteux.
+2. **Remboursement selon la situation parentale** : le transport est rembourse aux memes taux que pour les adultes (55 % ou 100 % selon la situation), en fonction de la pathologie de l'enfant. Un enfant atteint d'une affection grave reconnue peut beneficier du 100 % via le dispositif des soins particulierement couteux.
 
 Pour les **enfants hospitalises ou suivis dans des etablissements specialises** (SESSAD, IME, ITEP), des dispositifs specifiques de prise en charge du transport existent, parfois finances par l'Education nationale ou le Conseil departemental plutot que par la CPAM. Renseignez-vous aupres de l'etablissement.
 
@@ -401,11 +401,11 @@ Oui. Le medecin est le seul juge de la pertinence d'une prescription de transpor
 
 ### Je suis en ALD, suis-je automatiquement rembourse a 100 % ?
 
-Pas completement automatiquement. Vous etes rembourse a 100 % pour les transports lies directement a votre ALD, ce que le medecin doit indiquer explicitement sur la prescription. Si vous vous deplacez pour un soin sans lien avec votre ALD (un autre specialiste, une consultation de medecine generale pour un autre motif), le taux de 65 % s'applique et la franchise est due. Votre statut ALD doit par ailleurs etre a jour dans votre dossier CPAM : verifiez sur Ameli.fr que votre exoneration est bien enregistree.
+Pas completement automatiquement. Vous etes rembourse a 100 % pour les transports lies directement a votre ALD, ce que le medecin doit indiquer explicitement sur la prescription. Si vous vous deplacez pour un soin sans lien avec votre ALD (un autre specialiste, une consultation de medecine generale pour un autre motif), le taux de 55 % s'applique et la franchise est due. Votre statut ALD doit par ailleurs etre a jour dans votre dossier CPAM : verifiez sur Ameli.fr que votre exoneration est bien enregistree.
 
 ### Peut-on cumuler remboursement CPAM et mutuelle ?
 
-Oui, sous conditions. La CPAM rembourse sa part (65 % ou 100 % selon votre situation), et votre mutuelle peut prendre en charge tout ou partie des 35 % restants (ticket moderateur) si votre contrat le prevoit. En revanche, les contrats "responsables" (la majorite des mutuelles) ne remboursent pas la franchise medicale de 2 euros par trajet. Le cumul CPAM + mutuelle ne peut pas depasser le tarif conventionne : vous ne pouvez pas etre rembourse au-dela du montant reel des frais engages.
+Oui, sous conditions. La CPAM rembourse sa part (55 % ou 100 % selon votre situation), et votre mutuelle peut prendre en charge tout ou partie des 35 % restants (ticket moderateur) si votre contrat le prevoit. En revanche, les contrats "responsables" (la majorite des mutuelles) ne remboursent pas la franchise medicale de 2 euros par trajet. Le cumul CPAM + mutuelle ne peut pas depasser le tarif conventionne : vous ne pouvez pas etre rembourse au-dela du montant reel des frais engages.
 
 ### Le transport pour urgences est-il pris en charge differemment ?
 

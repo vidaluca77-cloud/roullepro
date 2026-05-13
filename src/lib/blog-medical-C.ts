@@ -74,7 +74,7 @@ Concretement, pour un transport medical en rapport avec votre ALD :
 
 ### Les soins couverts a 100% dont le transport
 
-L'exoneration ALD couvre tous les soins "en rapport" avec la pathologie reconnue : consultations, hospitalisations, medicaments inscrits sur la liste, examens biologiques, et — point crucial — **les transports sanitaires prescrits en relation avec l'ALD**. Si vous etes en ALD pour un cancer du rein et que vous devez vous rendre en dialyse, vos transports sont couverts a 100 %. En revanche, si vous avez besoin d'un transport pour une autre cause medicale (par exemple, un transport apres une chute sans lien avec votre ALD), le taux normal de 65 % s'applique.
+L'exoneration ALD couvre tous les soins "en rapport" avec la pathologie reconnue : consultations, hospitalisations, medicaments inscrits sur la liste, examens biologiques, et — point crucial — **les transports sanitaires prescrits en relation avec l'ALD**. Si vous etes en ALD pour un cancer du rein et que vous devez vous rendre en dialyse, vos transports sont couverts a 100 %. En revanche, si vous avez besoin d'un transport pour une autre cause medicale (par exemple, un transport apres une chute sans lien avec votre ALD), le taux normal de 55 % s'applique.
 
 ## Quels transports sont pris en charge pour les patients ALD ?
 
@@ -137,7 +137,7 @@ Si vous appelez n'importe quel taxi ou ambulancier sans verifier qu'il est agree
 Meme en ALD, un transport sans bon de transport n'est pas remboursable. La prescription est le document de base obligatoire pour tout transport programme.
 
 **Erreur n°3 : Croire que l'ALD couvre tous les transports**
-L'exoneration a 100 % ne s'applique qu'aux transports "en rapport avec l'ALD". Un transport pour une pathologie non liee sera rembourse au taux normal de 65 %.
+L'exoneration a 100 % ne s'applique qu'aux transports "en rapport avec l'ALD". Un transport pour une pathologie non liee sera rembourse au taux normal de 55 %.
 
 **Erreur n°4 : Negliger l'entente prealable pour les longues distances**
 Pour les trajets longs (au-dela de 150 km ou au-dela de 70 euros de frais), l'entente prealable doit etre obtenue avant le transport. Un oubli peut entrainer un refus de remboursement total.
@@ -173,7 +173,7 @@ Oui, absolument. Le statut ALD ne dispense pas de la prescription medicale de tr
 
 ### Mon ALD couvre-t-elle tous mes transports medicaux ?
 
-Non. L'exoneration a 100 % ne couvre que les transports "en rapport avec votre ALD". Si vous devez vous rendre chez un medecin pour une pathologie differente de celle reconnue en ALD, le taux de remboursement normal (65 % en regime general) s'applique. En cas de doute, votre medecin precise sur la prescription si le transport est en lien avec l'ALD.
+Non. L'exoneration a 100 % ne couvre que les transports "en rapport avec votre ALD". Si vous devez vous rendre chez un medecin pour une pathologie differente de celle reconnue en ALD, le taux de remboursement normal (55 % en regime general) s'applique. En cas de doute, votre medecin precise sur la prescription si le transport est en lien avec l'ALD.
 
 ### Le transport est-il gratuit pour les patients ALD ?
 
@@ -449,7 +449,7 @@ Pour les patients en ALD dont les soins reguliers sont directement lies a leur a
 - Chimiotherapie pour cancer : les patients en ALD n°30 → 100 %
 - Radiotherapie pour cancer : meme dispositif → 100 %
 
-Pour les patients non ALD qui ont besoin de transports reguliers (par exemple, seances de reeducation lourde apres accident), le taux general de 65 % s'applique. La mutuelle peut complementer ce remboursement selon votre contrat.
+Pour les patients non ALD qui ont besoin de transports reguliers (par exemple, seances de reeducation lourde apres accident), le taux general de 55 % s'applique. La mutuelle peut complementer ce remboursement selon votre contrat.
 
 Dans tous les cas, la **franchise medicale de 4 euros par trajet** s'applique (sauf exemption), avec un plafond de 50 euros par an et 8 euros par jour. Pour tout savoir sur la franchise, consultez notre article [Franchise medicale sur le transport sanitaire](https://roullepro.com/blog/franchise-medicale-transport-sanitaire).
 

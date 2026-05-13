@@ -123,14 +123,14 @@ function buildSeoContent(categorie: string, ville: string, count: number): strin
     return [
       `Vous cherchez une ambulance à ${ville} ? Notre annuaire recense ${count} entreprises d'ambulance locales. Ces professionnels interviennent pour le transport médicalisé d'urgence ou programmé, avec un équipage composé d'un diplômé d'État ambulancier (DEA) et d'un auxiliaire ambulancier.`,
       `Les ambulances de ${ville} sont équipées du matériel médical nécessaire (oxygène, défibrillateur, brancard, matelas coquille). Elles assurent les transports allongés, les sorties d'hôpital, les transferts inter-établissements et les interventions régulées par le SAMU.`,
-      `Sur prescription médicale, le transport en ambulance est pris en charge par la Sécurité sociale à hauteur de 65 %, le reste pouvant être couvert par votre complémentaire santé. Pensez à demander une prescription de transport à votre médecin avant le déplacement.`,
+      `Sur prescription médicale, le transport en ambulance est pris en charge par la Sécurité sociale à hauteur de 55 %, le reste pouvant être couvert par votre complémentaire santé. Pensez à demander une prescription de transport à votre médecin avant le déplacement.`,
     ];
   }
   if (categorie === "vsl") {
     return [
       `Le VSL (Véhicule Sanitaire Léger) est destiné au transport assis de patients en situation stable, ne nécessitant pas d'assistance médicalisée. ${count} professionnels du VSL exercent à ${ville}, prêts à vous accompagner pour vos rendez-vous médicaux, dialyses, séances de chimiothérapie ou consultations spécialisées.`,
       `Contrairement à l'ambulance, le VSL se réserve sur prescription médicale et ne dispose pas de matériel de réanimation. Le chauffeur, titulaire du diplôme d'auxiliaire ambulancier, assure néanmoins votre sécurité et votre confort pendant le trajet.`,
-      `Le remboursement par la Sécurité sociale est de 65 % sur la base du tarif conventionné, avec tiers payant chez la plupart des VSL de ${ville}. Vous n'avancez rien si vous disposez d'une prescription et d'une mutuelle complémentaire.`,
+      `Le remboursement par la Sécurité sociale est de 55 % sur la base du tarif conventionné, avec tiers payant chez la plupart des VSL de ${ville}. Vous n'avancez rien si vous disposez d'une prescription et d'une mutuelle complémentaire.`,
     ];
   }
   return [

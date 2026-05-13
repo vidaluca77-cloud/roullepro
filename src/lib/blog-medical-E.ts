@@ -72,7 +72,7 @@ Le remboursement d'un transport medical est identique sur tout le territoire nat
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (grossesse > 5 mois) | 100 % |
 | Accident du travail / maladie professionnelle | 100 % |
@@ -312,7 +312,7 @@ Les taux de remboursement sont identiques sur tout le territoire selon [Ameli.fr
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -582,7 +582,7 @@ Le VSL est souvent prescrit pour les retours apres hospitalisation de courte dur
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -848,7 +848,7 @@ Le VSL est frequemment utilise pour les retours apres des consultations ambulato
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -952,7 +952,7 @@ L'autorisation prefectorale garantit la conformite du vehicule aux normes europe
 
 Choisir une ambulance agreee CPAM Haute-Garonne est indispensable des lors qu'une prescription medicale de transport est etablie et qu'un remboursement est attendu. Un agrement actif signifie :
 
-- **Remboursement effectif** : la CPAM prend en charge 65 % a 100 % selon votre situation.
+- **Remboursement effectif** : la CPAM prend en charge 55 % a 100 % selon votre situation.
 - **Tiers payant** : vous n'avancez pas les frais (sauf franchise).
 - **Securite certifiee** : vehicule et personnel regulierement controles par l'ARS Occitanie.
 
@@ -1115,7 +1115,7 @@ Le VSL est particulierement adapte aux patients ambulatoires avec une mobilite r
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -1421,7 +1421,7 @@ Le VSL est souvent prescrit pour les patients sortant d'une hospitalisation cour
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -1726,7 +1726,7 @@ Le VSL est frequemment utilise pour les retours depuis l'Hotel-Dieu (1 place Ale
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -2029,7 +2029,7 @@ Le VSL est prescrit pour les patients qui ne peuvent pas utiliser les transports
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |
@@ -2335,7 +2335,7 @@ Le VSL est frequemment prescrit pour les retours apres une consultation speciali
 
 | Situation du patient | Regime general | Regime local (Alsace-Moselle) |
 |---|---|---|
-| Regime general | 65 % du tarif conventionne | + complement local possible |
+| Regime general | 55 % du tarif conventionne | + complement local possible |
 | ALD | 100 % | 100 % |
 | Maternite (> 5 mois) | 100 % | 100 % |
 | Accident du travail | 100 % | 100 % |
@@ -2539,7 +2539,7 @@ Ces tarifs sont identiques pour toutes les ambulances agreees CPAM, qu'elles soi
 
 | Critere | Ambulance agreee CPAM | Ambulance non agreee |
 |---|---|---|
-| Remboursement CPAM | Oui (65% a 100%) | Non |
+| Remboursement CPAM | Oui (55% a 100%) | Non |
 | Regime local alsacien | Applicable | Non applicable |
 | Tiers payant | Oui (sans avance) | Non |
 | Tarif | Tarif conventionne fixe | Tarif libre (souvent plus eleve) |
@@ -2638,7 +2638,7 @@ Le VSL est souvent prescrit pour les retours depuis l'hopital **Saint-Eloi** (80
 
 | Situation du patient | Taux de remboursement |
 |---|---|
-| Regime general | 65 % du tarif conventionne |
+| Regime general | 55 % du tarif conventionne |
 | ALD (affection longue duree) | 100 % |
 | Maternite (> 5 mois) | 100 % |
 | Accident du travail | 100 % |

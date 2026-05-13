@@ -172,7 +172,7 @@ Oui. Vous avez le libre choix du transporteur parmi les societes agreees CPAM de
 
 ### Combien coute une ambulance avec prescription ?
 
-Avec une prescription valide et un transporteur agree CPAM, le remboursement est de 65 % du tarif conventionne en regime general, et de 100 % pour les patients en ALD (affection de longue duree), en maternite, ou apres un accident du travail. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration. Le tiers payant est applique : vous n'avancez pas les frais.
+Avec une prescription valide et un transporteur agree CPAM, le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en ALD (affection de longue duree), en maternite, ou apres un accident du travail. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration. Le tiers payant est applique : vous n'avancez pas les frais.
 
 ### Quelle difference entre ambulance et SAMU ?
 

@@ -120,7 +120,7 @@ export default async function DepartementPage({ params }: Props) {
     },
     {
       question: `Le transport est-il rembourse dans le ${dep.nom} ?`,
-      answer: `Oui. Le transport sanitaire (ambulance, VSL, taxi conventionne) prescrit par un medecin est rembourse par la Securite sociale a 65 % du tarif conventionne, ou 100 % en cas d'ALD, maternite ou hospitalisation. La CPAM ${dep.code} applique le tiers payant aux transports conventionnes.`,
+      answer: `Oui. Le transport sanitaire (ambulance, VSL, taxi conventionne) prescrit par un medecin est rembourse par la Securite sociale a 55 % du tarif conventionne, ou 100 % en cas d'ALD, maternite ou hospitalisation. La CPAM ${dep.code} applique le tiers payant aux transports conventionnes.`,
     },
     {
       question: `Quelle est la prefecture du ${dep.nom} ?`,
@@ -188,7 +188,7 @@ export default async function DepartementPage({ params }: Props) {
               du Code de la sante publique.
             </p>
             <p>
-              Le transport sanitaire prescrit par un medecin est pris en charge par l'Assurance maladie a 65 % du tarif conventionne, et a 100 %
+              Le transport sanitaire prescrit par un medecin est pris en charge par l'Assurance maladie a 55 % du tarif conventionne, et a 100 %
               en cas d'Affection Longue Duree (ALD), de maternite, d'accident du travail ou de soins lies a une hospitalisation.
               Le tiers payant est applique : le patient n'avance pas les frais. Une franchise medicale de 4 euros par trajet (plafonnee a 8 euros par jour
               et 50 euros par an) reste a la charge du patient.

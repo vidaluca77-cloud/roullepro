@@ -221,7 +221,7 @@ Les differences pratiques sont significatives :
 | Critere | Taxi classique | Taxi conventionne |
 |---|---|---|
 | Prescription medicale | Non acceptee | Acceptee et obligatoire |
-| Remboursement CPAM | Aucun | 65 % a 100 % selon situation |
+| Remboursement CPAM | Aucun | 55 % a 100 % selon situation |
 | Tiers payant | Impossible | Applique systematiquement |
 | Tarif de la course | Libre (compteur) | Plafonne par convention departementale |
 | Formation premiers secours | Non requise | Obligatoire (PSC1 minimum) |
@@ -332,8 +332,8 @@ Le **tiers payant** est le mecanisme central du systeme. En pratique :
 1. Le patient vous remet son bon de transport CERFA (signe par son medecin) et sa carte Vitale
 2. Vous effectuez le trajet
 3. Vous remplissez la feuille de soin ou utilisez votre logiciel de facturation pour transmettre la demande a la CPAM
-4. La CPAM vous vire directement le montant rembourse (65 % ou 100 % selon la situation du patient)
-5. Si le patient est a 65 %, il vous doit la part restante (35 % + franchise) — mais dans la pratique, beaucoup de patients sont en ALD et donc rembourses a 100 %
+4. La CPAM vous vire directement le montant rembourse (55 % ou 100 % selon la situation du patient)
+5. Si le patient est a 55 %, il vous doit la part restante (35 % + franchise) — mais dans la pratique, beaucoup de patients sont en ALD et donc rembourses a 100 %
 
 La franchise medicale (2 euros par trajet, plafonnee a 50 euros par an) est a la charge du patient, sauf exonerations specifiques. Elle ne vous concerne pas directement : vous touchez votre remboursement integral.
 

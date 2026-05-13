@@ -53,7 +53,7 @@ Le medecin prescrit une ambulance lorsque le patient ne peut pas se tenir assis 
 
 ### Prix et remboursement d'une ambulance
 
-Le tarif d'une ambulance est fixe par convention nationale CPAM : il combine un forfait de prise en charge (autour de 60 a 70 euros) et un tarif kilometrique (environ 2,30 euros/km en agglomeration). Le remboursement est de 65 % du tarif conventionne en regime general, et de 100 % pour les patients en affection de longue duree (ALD), maternite, accident du travail ou hospitalisation. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration.
+Le tarif d'une ambulance est fixe par convention nationale CPAM : il combine un forfait de prise en charge (autour de 60 a 70 euros) et un tarif kilometrique (environ 2,30 euros/km en agglomeration). Le remboursement est de 55 % du tarif conventionne en regime general, et de 100 % pour les patients en affection de longue duree (ALD), maternite, accident du travail ou hospitalisation. La franchise medicale de 2 euros par trajet s'applique sauf cas d'exoneration.
 
 ## C'est quoi un VSL (Vehicule Sanitaire Leger) ?
 
@@ -69,7 +69,7 @@ Le VSL est prescrit lorsque le patient a besoin d'une **aide pour entrer ou sort
 
 ### Comment fonctionne le remboursement du VSL ?
 
-Le VSL est rembourse aux memes taux que l'ambulance (65 % regime general, 100 % en ALD). Le tiers payant integral est applique systematiquement : vous n'avancez pas les frais. Le transporteur facture directement la CPAM avec votre carte Vitale et le bon de transport.
+Le VSL est rembourse aux memes taux que l'ambulance (55 % regime general, 100 % en ALD). Le tiers payant integral est applique systematiquement : vous n'avancez pas les frais. Le transporteur facture directement la CPAM avec votre carte Vitale et le bon de transport.
 
 ## C'est quoi un taxi conventionne ?
 
@@ -91,7 +91,7 @@ Le taxi conventionne est prescrit aux patients qui **n'ont pas besoin d'aide par
 
 ### Remboursement taxi conventionne par la CPAM
 
-Le remboursement suit les memes regles : 65 % en regime general, 100 % en ALD ou exoneration. Le **tiers payant** est obligatoire : vous presentez votre carte Vitale, votre bon de transport (CERFA 11574), et vous ne payez rien sauf eventuellement la franchise et le ticket moderateur.
+Le remboursement suit les memes regles : 55 % en regime general, 100 % en ALD ou exoneration. Le **tiers payant** est obligatoire : vous presentez votre carte Vitale, votre bon de transport (CERFA 11574), et vous ne payez rien sauf eventuellement la franchise et le ticket moderateur.
 
 ## Comment choisir entre ambulance, VSL et taxi conventionne ?
 
@@ -102,7 +102,7 @@ C'est votre **medecin** qui tranche, en fonction de votre etat. Voici un tableau
 | Etat du patient | Allonge obligatoire | Assis avec aide | Assis autonome |
 | Personnel | 2 ambulanciers diplomes | 1 auxiliaire ambulancier | Chauffeur conventionne |
 | Materiel medical | Oxygene, brancard, defibrillateur | Basique (premiers secours) | Aucun |
-| Remboursement CPAM | 65 % / 100 % ALD | 65 % / 100 % ALD | 65 % / 100 % ALD |
+| Remboursement CPAM | 55 % / 100 % ALD | 55 % / 100 % ALD | 55 % / 100 % ALD |
 | Prescription requise | Oui (CERFA 11574) | Oui (CERFA 11574) | Oui (CERFA 11574) |
 | Disponibilite | 24h/24 | Horaires variables | Variable (selon chauffeur) |
 | Transport partage | Non | Oui possible | Oui possible |
@@ -148,7 +148,7 @@ Un VSL transporte un patient assis avec une legere assistance, sans materiel med
 
 ### Un taxi conventionne est-il rembourse par la Secu ?
 
-Oui, a condition d'avoir une prescription medicale (bon CERFA 11574) et de choisir un taxi qui a signe la convention CPAM. Le remboursement est de 65 % du tarif conventionne (100 % en ALD), avec tiers payant : vous ne faites pas l'avance.
+Oui, a condition d'avoir une prescription medicale (bon CERFA 11574) et de choisir un taxi qui a signe la convention CPAM. Le remboursement est de 55 % du tarif conventionne (100 % en ALD), avec tiers payant : vous ne faites pas l'avance.
 
 ### Puis-je choisir mon type de transport medical ?
 
