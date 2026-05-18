@@ -8,7 +8,7 @@ export async function GET() {
   for (let i = 0; i < SANITAIRE_FICHES_CHUNKS; i += 1) ids.push(2 + i);
 
   const lastmod = new Date().toISOString();
-  const items = ids
+  const numericItems = ids
     .map(
       (id) => `  <sitemap>
     <loc>${BASE_URL}/sitemaps/${id}.xml</loc>
@@ -17,9 +17,17 @@ export async function GET() {
     )
     .join("\n");
 
+  const namedItems = [
+    `  <sitemap>
+    <loc>${BASE_URL}/sitemaps/reg-alerts.xml</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
+  ].join("\n");
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${items}
+${numericItems}
+${namedItems}
 </sitemapindex>
 `;
 

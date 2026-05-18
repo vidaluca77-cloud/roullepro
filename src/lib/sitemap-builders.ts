@@ -185,6 +185,38 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
   ];
 }
 
+/** Veille reglementaire : page liste + une entree par alerte publiee */
+export async function buildRegAlertsSitemap(): Promise<SitemapEntry[]> {
+  const supabase = getSupabase();
+
+  const entries: SitemapEntry[] = [
+    {
+      url: `${BASE_URL}/veille-reglementaire`,
+      changefreq: "daily",
+      priority: 0.8,
+    },
+  ];
+
+  const { data } = await supabase
+    .from("reg_alerts")
+    .select("slug, updated_at")
+    .eq("status", "published");
+
+  if (data) {
+    for (const row of data as { slug: string; updated_at: string | null }[]) {
+      if (!row.slug) continue;
+      entries.push({
+        url: `${BASE_URL}/veille-reglementaire/${row.slug}`,
+        lastmod: row.updated_at || undefined,
+        changefreq: "weekly",
+        priority: 0.7,
+      });
+    }
+  }
+
+  return entries;
+}
+
 /** id 1 : villes sanitaire + pages categorie/ville */
 export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   const supabase = getSupabase();
