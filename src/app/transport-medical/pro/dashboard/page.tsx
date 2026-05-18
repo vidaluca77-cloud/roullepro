@@ -23,6 +23,12 @@ import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliStatusSection from "@/components/sanitaire/AmeliStatusSection";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 import PromoBanner from "@/components/sanitaire/PromoBanner";
+import {
+  fetchMatchedAlerts,
+  isPaidPlan as isPaidComplPlan,
+  type ComplianceProfile,
+} from "@/lib/compliance";
+import { ShieldCheck, ArrowRight, Crown, FileWarning } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -72,6 +78,36 @@ export default async function ProDashboard({
   // Plan unique « Pro » (19,90 €/mois) — toute valeur autre que 'gratuit' débloque la messagerie
   const isPro =
     fiche.plan === "essential" || fiche.plan === "premium" || fiche.plan === "pro_plus";
+
+  // Conformité (Phase 3) : 1 profil possible par fiche.
+  const ficheIds = fiches.map((f) => f.id);
+  const { data: complianceRows } = await supabase
+    .from("pro_compliance_profiles")
+    .select("*")
+    .in("pro_id", ficheIds);
+  const profilesByFiche = new Map<string, ComplianceProfile>();
+  for (const row of (complianceRows || []) as ComplianceProfile[]) {
+    profilesByFiche.set(row.pro_id, row);
+  }
+  const complianceCards = await Promise.all(
+    fiches.map(async (f) => {
+      const profile = profilesByFiche.get(f.id) || null;
+      let matchedCount = 0;
+      if (profile && isPaidComplPlan(f.plan)) {
+        const matched = await fetchMatchedAlerts(supabase, profile);
+        matchedCount = matched.length;
+      }
+      return {
+        ficheId: f.id,
+        ficheName:
+          f.nom_commercial || f.raison_sociale || "Mon entreprise",
+        categorie: f.categorie,
+        isPaid: isPaidComplPlan(f.plan),
+        hasProfile: !!profile,
+        matchedCount,
+      };
+    })
+  );
 
   // Stats 30 derniers jours
   const { count: messagesCount } = await supabase
@@ -528,6 +564,92 @@ export default async function ProDashboard({
               </div>
             </div>
           </aside>
+        </div>
+
+        {/* Conformité réglementaire — Phase 3 */}
+        <div className="mt-12">
+          <div className="flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-blue-700" />
+            <h2 className="text-xl font-bold text-gray-900">Conformité réglementaire</h2>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            Configurez un profil par fiche pour recevoir uniquement les alertes qui concernent votre activité.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {complianceCards.map((c) => (
+              <div
+                key={c.ficheId}
+                className="bg-white border border-gray-200 rounded-2xl p-5"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{c.ficheName}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5 capitalize">
+                      {c.categorie?.replace("_", " ")}
+                    </p>
+                  </div>
+                  {!c.isPaid && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase tracking-wide">
+                      <Crown className="w-3 h-3" />
+                      Pro
+                    </span>
+                  )}
+                </div>
+
+                {!c.isPaid ? (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Réservé aux abonnés Pro. Recevez uniquement les alertes réglementaires qui concernent vraiment votre entreprise.
+                    </p>
+                    <Link
+                      href="/transport-medical/tarifs"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-xl transition"
+                    >
+                      Découvrir Pro à 19,90 €/mois
+                    </Link>
+                  </div>
+                ) : c.hasProfile ? (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3 text-sm text-gray-700">
+                      <FileWarning className="w-4 h-4 text-blue-700" />
+                      <span>
+                        <strong>{c.matchedCount}</strong>{" "}
+                        {c.matchedCount > 1 ? "alertes pertinentes" : "alerte pertinente"}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}/alertes`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Voir mes alertes
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                      <Link
+                        href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium rounded-lg transition"
+                      >
+                        Modifier le profil
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Renseignez votre profil pour recevoir des alertes ciblées par métier, activité et région.
+                    </p>
+                    <Link
+                      href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-xl transition"
+                    >
+                      Renseigner mon profil
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </main>
