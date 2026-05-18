@@ -56,7 +56,9 @@ export async function POST(req: Request) {
     // Récupère infos pro
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, ville, categorie, email_public")
+      .select(
+        "id, raison_sociale, nom_commercial, ville, ville_slug, slug, categorie, email_public"
+      )
       .eq("id", claim.pro_id)
       .maybeSingle();
     if (!pro) return NextResponse.json({ error: "Pro introuvable" }, { status: 404 });
@@ -188,6 +190,22 @@ export async function POST(req: Request) {
           err instanceof Error ? err.message : err
         );
       }
+    }
+
+    // Ping IndexNow immediat (fire-and-forget, prod uniquement)
+    try {
+      const { pingIndexNow, buildFicheUrl } = await import("@/lib/indexnow");
+      const ficheUrl = buildFicheUrl({
+        ville_slug: (pro as { ville_slug?: string | null }).ville_slug,
+        categorie: (pro as { categorie?: string | null }).categorie,
+        slug: (pro as { slug?: string | null }).slug,
+      });
+      if (ficheUrl) void pingIndexNow([ficheUrl]);
+    } catch (err) {
+      console.warn(
+        "[claim/verify] indexnow error:",
+        err instanceof Error ? err.message : err
+      );
     }
 
     // Octroi essai Pro 2 mois (best-effort, non bloquant)

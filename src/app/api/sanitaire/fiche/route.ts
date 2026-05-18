@@ -86,6 +86,22 @@ export async function PATCH(req: Request) {
       revalidatePath("/transport-medical");
     } catch {}
 
+    // Ping IndexNow immediat (fire-and-forget, prod uniquement)
+    try {
+      const { pingIndexNow, buildFicheUrl } = await import("@/lib/indexnow");
+      const ficheUrl = buildFicheUrl({
+        ville_slug: pro.ville_slug,
+        categorie: pro.categorie,
+        slug: pro.slug,
+      });
+      if (ficheUrl) void pingIndexNow([ficheUrl]);
+    } catch (err) {
+      console.warn(
+        "[fiche update] indexnow error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     return NextResponse.json({ ok: true });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });

@@ -464,6 +464,25 @@ export async function POST(req: Request) {
       }
     }
 
+    // 11bis-quater. Ping IndexNow immediat (fire-and-forget, prod uniquement)
+    try {
+      const { pingIndexNow, buildFicheUrl, buildVilleUrl } = await import(
+        "@/lib/indexnow"
+      );
+      const ficheUrl = buildFicheUrl({
+        ville_slug,
+        categorie: data.categorie,
+        slug,
+      });
+      const villeUrl = buildVilleUrl(ville_slug);
+      void pingIndexNow([ficheUrl, villeUrl].filter(Boolean));
+    } catch (err) {
+      console.warn(
+        "[inscription] indexnow error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     // 11ter. Octroi essai Pro 2 mois (best-effort, non bloquant)
     try {
       const { grantAutoTrial } = await import("@/lib/sanitaire-auto-trial");

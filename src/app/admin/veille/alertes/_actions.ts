@@ -84,7 +84,26 @@ export async function publishAlert(formData: FormData): Promise<ActionResult> {
 
   const { error } = await sb.from("reg_alerts").update(update).eq("id", id);
   if (error) return { ok: false, error: error.message };
-  revalidateAll((current as { slug?: string } | null)?.slug);
+  const slug = (current as { slug?: string } | null)?.slug;
+  revalidateAll(slug);
+
+  // Ping IndexNow immediat (fire-and-forget, prod uniquement) sur la fiche
+  // alerte publique + la liste /veille-reglementaire.
+  if (slug) {
+    try {
+      const { pingIndexNow, INDEXNOW_BASE_URL } = await import("@/lib/indexnow");
+      void pingIndexNow([
+        `${INDEXNOW_BASE_URL}/veille-reglementaire/${slug}`,
+        `${INDEXNOW_BASE_URL}/veille-reglementaire`,
+      ]);
+    } catch (err) {
+      console.warn(
+        "[publishAlert] indexnow error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
+
   return { ok: true };
 }
 

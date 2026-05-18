@@ -275,14 +275,32 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   return [...villePages, ...villeCatPages];
 }
 
-/** id 2..81 : fiches pros sanitaire paginees */
+/**
+ * id 2..81 : fiches pros sanitaire paginees.
+ *
+ * Filtre qualite (applique en JS apres le SELECT pour ne pas toucher la vue
+ * partagee `pros_sanitaire_public`) : on ne garde dans le sitemap QUE les
+ * fiches qui valent le coup d'etre indexees, pour eviter de noyer Google
+ * dans des fiches SIRENE brutes sans donnees enrichies.
+ *
+ * On garde la fiche si AU MOINS UN de ces criteres est vrai :
+ *   - claimed = true (revendiquee par un pro)
+ *   - verified = true (verifiee par RoullePro)
+ *   - plan != 'gratuit' (vraie entreprise active sur la plateforme)
+ *   - telephone_public renseigne et non vide
+ *   - description renseignee, > 50 caracteres
+ *
+ * Sinon : EXCLUE du sitemap (fiche SIRENE brute non enrichie).
+ */
 export async function buildSanitaireFichesEntries(chunkIndex: number): Promise<SitemapEntry[]> {
   const supabase = getSupabase();
   const offset = chunkIndex * CHUNK_SIZE;
 
   const { data } = await supabase
     .from("pros_sanitaire_public")
-    .select("slug, ville_slug, categorie, claimed, verified, updated_at")
+    .select(
+      "slug, ville_slug, categorie, claimed, verified, updated_at, telephone_public, description, plan"
+    )
     .eq("actif", true)
     .order("id", { ascending: true })
     .range(offset, offset + CHUNK_SIZE - 1);
@@ -295,9 +313,22 @@ export async function buildSanitaireFichesEntries(chunkIndex: number): Promise<S
     claimed?: boolean | null;
     verified?: boolean | null;
     updated_at?: string | null;
+    telephone_public?: string | null;
+    description?: string | null;
+    plan?: string | null;
   }[];
   return rows
     .filter((p) => p.slug && p.ville_slug && p.categorie)
+    .filter((p) => {
+      const claimed = p.claimed === true;
+      const verified = p.verified === true;
+      const paid = !!p.plan && p.plan !== "gratuit";
+      const hasPhone =
+        typeof p.telephone_public === "string" && p.telephone_public.trim().length > 0;
+      const hasDescription =
+        typeof p.description === "string" && p.description.trim().length > 50;
+      return claimed || verified || paid || hasPhone || hasDescription;
+    })
     .map((p) => {
       // Fiches claimed/verified = vraies entreprises actives → priority haute, changefreq weekly
       // Fiches inactives → priority basse + changefreq monthly (signal honnête à Google)
