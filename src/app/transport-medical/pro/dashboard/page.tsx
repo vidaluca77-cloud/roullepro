@@ -25,10 +25,20 @@ import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 import PromoBanner from "@/components/sanitaire/PromoBanner";
 import {
   fetchMatchedAlerts,
+  getProgressByAlert,
+  computeComplianceScore,
+  scoreBand,
   isPaidPlan as isPaidComplPlan,
   type ComplianceProfile,
 } from "@/lib/compliance";
-import { ShieldCheck, ArrowRight, Crown, FileWarning } from "lucide-react";
+import {
+  ShieldCheck,
+  ArrowRight,
+  Crown,
+  FileWarning,
+  CalendarDays,
+  Download,
+} from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -93,9 +103,25 @@ export default async function ProDashboard({
     fiches.map(async (f) => {
       const profile = profilesByFiche.get(f.id) || null;
       let matchedCount = 0;
+      let score: number | null = null;
+      let checkedTotal = 0;
+      let itemsTotal = 0;
       if (profile && isPaidComplPlan(f.plan)) {
         const matched = await fetchMatchedAlerts(supabase, profile);
         matchedCount = matched.length;
+        const progress = await getProgressByAlert(supabase, f.id);
+        for (const a of matched) {
+          const p = progress.get(a.id);
+          if (p) {
+            checkedTotal += p.checked;
+            itemsTotal += p.total;
+          }
+        }
+        score = computeComplianceScore(
+          profile,
+          matched.map((a) => ({ id: a.id, urgency: a.urgency })),
+          progress
+        );
       }
       return {
         ficheId: f.id,
@@ -105,6 +131,9 @@ export default async function ProDashboard({
         isPaid: isPaidComplPlan(f.plan),
         hasProfile: !!profile,
         matchedCount,
+        score,
+        checkedTotal,
+        itemsTotal,
       };
     })
   );
@@ -610,13 +639,33 @@ export default async function ProDashboard({
                   </div>
                 ) : c.hasProfile ? (
                   <div>
-                    <div className="flex items-center gap-2 mb-3 text-sm text-gray-700">
-                      <FileWarning className="w-4 h-4 text-blue-700" />
-                      <span>
-                        <strong>{c.matchedCount}</strong>{" "}
-                        {c.matchedCount > 1 ? "alertes pertinentes" : "alerte pertinente"}
-                      </span>
-                    </div>
+                    {c.score !== null && (() => {
+                      const band = scoreBand(c.score);
+                      return (
+                        <div className="flex items-center gap-3 mb-3">
+                          <div
+                            className={`inline-flex flex-col items-center justify-center w-16 h-16 rounded-full border-2 ${band.bg} ${band.fg} ${band.border}`}
+                          >
+                            <span className="text-2xl font-bold leading-none">{c.score}</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-wide mt-0.5">/100</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold ${band.fg}`}>
+                              {band.label}
+                            </p>
+                            <p className="text-xs text-gray-600 mt-0.5">
+                              <strong>{c.matchedCount}</strong>{" "}
+                              {c.matchedCount > 1 ? "alertes pertinentes" : "alerte pertinente"}
+                            </p>
+                            {c.itemsTotal > 0 && (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {c.checkedTotal} / {c.itemsTotal} items cochés
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
                     <div className="flex flex-wrap gap-2">
                       <Link
                         href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}/alertes`}
@@ -626,11 +675,25 @@ export default async function ProDashboard({
                         <ArrowRight className="w-3.5 h-3.5" />
                       </Link>
                       <Link
+                        href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}/calendrier`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium rounded-lg transition"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5" />
+                        Calendrier
+                      </Link>
+                      <Link
                         href={`/transport-medical/pro/dashboard/conformite/${c.ficheId}`}
                         className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium rounded-lg transition"
                       >
-                        Modifier le profil
+                        Profil
                       </Link>
+                      <a
+                        href={`/api/conformite/${c.ficheId}/export`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium rounded-lg transition"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        PDF
+                      </a>
                     </div>
                   </div>
                 ) : (

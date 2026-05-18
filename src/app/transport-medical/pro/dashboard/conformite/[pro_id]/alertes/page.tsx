@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import {
   fetchMatchedAlerts,
+  getProgressByAlert,
   isPaidPlan,
   metierLabel,
   activiteLabel,
@@ -117,6 +118,7 @@ export default async function ConformiteAlertesPage({
   }
 
   const matched = await fetchMatchedAlerts(supabase, profile);
+  const progressByAlert = await getProgressByAlert(supabase, proId);
 
   return (
     <main className="bg-slate-50 min-h-screen">
@@ -193,7 +195,11 @@ export default async function ConformiteAlertesPage({
           <ul className="space-y-4">
             {matched.map((a) => (
               <li key={a.id}>
-                <AlertCard alert={a} />
+                <AlertCard
+                  alert={a}
+                  proId={proId}
+                  progress={progressByAlert.get(a.id)}
+                />
               </li>
             ))}
           </ul>

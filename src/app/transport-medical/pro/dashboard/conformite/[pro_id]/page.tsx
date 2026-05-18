@@ -7,6 +7,7 @@ import {
   METIERS_OPTIONS,
   REGIONS_FR,
   isPaidPlan,
+  recomputeAndPersistScore,
   type ComplianceProfile,
 } from "@/lib/compliance";
 import ComplianceForm from "../_components/ComplianceForm";
@@ -111,6 +112,9 @@ async function saveProfile(
     console.error("[compliance] upsert error:", error.message);
     return { ok: false, error: "Enregistrement impossible. Réessayez." };
   }
+
+  // Recalcul score (best-effort, non bloquant).
+  await recomputeAndPersistScore(supabase, proId);
 
   return { ok: true };
 }
@@ -243,13 +247,21 @@ export default async function ConformiteFichePage({
             Retour au dashboard
           </Link>
           {profile && (
-            <Link
-              href={`/transport-medical/pro/dashboard/conformite/${proId}/alertes`}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition"
-            >
-              <ListChecks className="h-4 w-4" />
-              Voir mes alertes ciblées
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/transport-medical/pro/dashboard/conformite/${proId}/alertes`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold hover:bg-slate-800 transition"
+              >
+                <ListChecks className="h-4 w-4" />
+                Mes alertes ciblées
+              </Link>
+              <Link
+                href={`/transport-medical/pro/dashboard/conformite/${proId}/calendrier`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg font-semibold hover:border-slate-300 transition"
+              >
+                Calendrier
+              </Link>
+            </div>
           )}
         </div>
       </div>
