@@ -1,19 +1,30 @@
 /**
- * Source DILA JORF : flux RSS quotidien du Journal officiel via Legifrance.
- * URL primaire : https://www.legifrance.gouv.fr/rss/jo.xml
- * URL fallback : https://www.dila.premier-ministre.gouv.fr/repertoire/JO_RSS.xml
+ * Source DILA JORF : flux RSS quotidien du Journal officiel.
  *
- * Pas d'auth, mais l'agent doit s'identifier via User-Agent.
+ * Historique :
+ *  - URL DILA officielle (www.dila.premier-ministre.gouv.fr/repertoire/JO_RSS.xml)
+ *    retournait 404 (HTTP) au 18 mai 2026, l'ancien repertoire DILA est ferme.
+ *  - URL Legifrance officielle (legifrance.gouv.fr/rss/jo.xml) reste tentee en
+ *    primaire mais peut etre instable selon la heure d'archivage.
+ *  - URL relais fiable retenue le 18/05/2026 : droit.org (RSS 2.0 standard,
+ *    ~90 KB, balises <item> avec title/link/description/pubDate). Verifie HTTP
+ *    200 et structure compatible avec le parser existant.
+ *  - Backup secondaire envisage : legifrss.org (Atom, ~5 MB). Commente pour
+ *    l'instant car charge plus lourde et structure differente.
+ *
+ * Pas d'auth, mais on s'identifie via User-Agent.
  */
 
 import { XMLParser } from "fast-xml-parser";
 import type { IngestionSource, RawCandidate } from "./types";
 
+// Primaire : Legifrance officiel. Fallback : droit.org (relais fiable).
 const PRIMARY_URL = "https://www.legifrance.gouv.fr/rss/jo.xml";
-const FALLBACK_URL =
-  "https://www.dila.premier-ministre.gouv.fr/repertoire/JO_RSS.xml";
+const FALLBACK_URL = "https://droit.org/flux/jorf.rss";
+// Backup secondaire envisage (Atom, plus lourd) si jamais droit.org tombe :
+// const FALLBACK_URL_2 = "https://legifrss.org/latest";
 
-const USER_AGENT = "RoullePro-VeilleBot/1.0 (+https://roullepro.com)";
+const USER_AGENT = "RoullePro-Veille/1.0 (+https://roullepro.com)";
 const TIMEOUT_MS = 15_000;
 
 async function fetchWithTimeout(url: string): Promise<string> {
