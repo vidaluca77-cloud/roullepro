@@ -24,6 +24,10 @@
 [functions."veille-weekly"]
   schedule = "0 6 * * 2"
 
+# Scheduled function : ingestion auto DILA JORF, jeudi 07:00 UTC (9h Paris ete)
+[functions."veille-ingest"]
+  schedule = "0 7 * * 4"
+
 [[headers]]
   for = "/*"
   [headers.values]

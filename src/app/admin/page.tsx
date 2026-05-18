@@ -287,6 +287,13 @@ export default function AdminPage() {
               </span>
             )}
           </Link>
+          <Link
+            href="/admin/veille/candidats"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+          >
+            <ShieldCheck size={16} />
+            Veille — candidats
+          </Link>
         </div>
 
         {/* Onglet Modération */}
