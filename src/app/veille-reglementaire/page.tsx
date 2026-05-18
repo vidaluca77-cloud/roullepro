@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlertTriangle, ArrowRight, Bell, Calendar, Mail, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowRight, Bell, Calendar, ShieldCheck } from "lucide-react";
+import NewsletterForm from "./_components/NewsletterForm";
 import {
   listPublishedAlerts,
   METIER_OPTIONS,
@@ -202,34 +203,9 @@ export default async function VeilleReglementairePage({ searchParams }: PageProp
           </ul>
         )}
 
-        {/* Newsletter placeholder */}
-        <div className="mt-12 bg-white border border-slate-200 rounded-xl p-6">
-          <div className="flex items-start gap-3 mb-4">
-            <div className="bg-blue-100 text-blue-700 p-2 rounded-lg">
-              <Mail className="h-5 w-5" />
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Recevez la veille par e-mail</h3>
-              <p className="text-sm text-slate-600">
-                La newsletter hebdomadaire arrive bientôt — segmentée par métier (ambulance, VSL, taxi conventionné).
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="email"
-              placeholder="votre@email.fr"
-              disabled
-              className="flex-1 px-4 py-2 border border-slate-200 rounded-lg bg-slate-50 text-slate-400 cursor-not-allowed"
-            />
-            <button
-              type="button"
-              disabled
-              className="px-5 py-2 bg-slate-300 text-white rounded-lg font-medium cursor-not-allowed"
-            >
-              Bientôt disponible
-            </button>
-          </div>
+        {/* Newsletter inscription */}
+        <div className="mt-12">
+          <NewsletterForm />
         </div>
 
         {/* Disclaimer */}
