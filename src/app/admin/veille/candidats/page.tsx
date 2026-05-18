@@ -398,9 +398,18 @@ export default async function CandidatsPage({
           <span>›</span> Veille — Candidats à valider
         </nav>
 
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
-          Candidats veille réglementaire
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
+            Candidats veille réglementaire
+          </h1>
+          <Link
+            href="/admin/veille/alertes"
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-semibold rounded-lg transition"
+          >
+            Gérer les alertes
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
         <p className="text-slate-600 mb-6">
           Pipeline d&apos;ingestion automatique DILA JORF. Validez ou ignorez les candidats détectés.
         </p>

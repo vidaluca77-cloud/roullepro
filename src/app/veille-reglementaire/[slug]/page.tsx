@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   getAlertBySlug,
+  getAlertBySlugForAdmin,
   listAllPublishedSlugs,
   metierLabel,
   formatFrDate,
@@ -23,6 +24,28 @@ import {
   URGENCY_CLASSES,
   URGENCY_LABEL,
 } from "@/lib/reg-alerts";
+import { createClient as createServerClient } from "@/lib/supabase/server";
+
+const ADMIN_EMAIL = "lucas.horville@lvlia.net";
+
+async function isAdminViewer(): Promise<boolean> {
+  try {
+    const sb = await createServerClient();
+    const {
+      data: { user },
+    } = await sb.auth.getUser();
+    if (!user) return false;
+    if (user.email === ADMIN_EMAIL) return true;
+    const { data: profile } = await sb
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    return !!profile && (profile as { role?: string }).role === "admin";
+  } catch {
+    return false;
+  }
+}
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -36,11 +59,17 @@ export async function generateStaticParams(): Promise<RouteParams[]> {
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: Promise<RouteParams>;
+  searchParams?: Promise<{ preview?: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const alert = await getAlertBySlug(slug);
+  const sp = (await searchParams) ?? {};
+  let alert = await getAlertBySlug(slug);
+  if (!alert && sp.preview && (await isAdminViewer())) {
+    alert = await getAlertBySlugForAdmin(slug);
+  }
   if (!alert) {
     return {
       title: "Alerte introuvable — Veille RoullePro",
@@ -48,10 +77,12 @@ export async function generateMetadata({
     };
   }
   const canonical = `/veille-reglementaire/${alert.slug}`;
+  const isPreview = !!sp.preview;
   return {
-    title: `${alert.title_short} — Veille RoullePro`,
+    title: `${alert.title_short} — Veille RoullePro${isPreview ? " (prévisualisation)" : ""}`,
     description: alert.summary_oneliner,
     alternates: { canonical },
+    robots: isPreview ? { index: false, follow: false } : undefined,
     openGraph: {
       title: alert.title_short,
       description: alert.summary_oneliner,
@@ -66,11 +97,25 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
 export default async function VeilleDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<RouteParams>;
+  searchParams?: Promise<{ preview?: string }>;
 }) {
   const { slug } = await params;
-  const alert = await getAlertBySlug(slug);
+  const sp = (await searchParams) ?? {};
+  const previewRequested = !!sp.preview;
+
+  let alert = await getAlertBySlug(slug);
+  let isPreview = false;
+  if (!alert && previewRequested && (await isAdminViewer())) {
+    alert = await getAlertBySlugForAdmin(slug);
+    isPreview = !!alert;
+  } else if (alert && previewRequested && (await isAdminViewer())) {
+    // L'alerte est publiee mais on est en preview admin : on garde le bandeau
+    // si le status n'est pas published (cas peu probable mais defensive).
+    isPreview = alert.status !== "published";
+  }
   if (!alert) notFound();
 
   const canonicalUrl = `${BASE_URL}/veille-reglementaire/${alert.slug}`;
@@ -139,6 +184,23 @@ export default async function VeilleDetailPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+
+      {isPreview && (
+        <div className="bg-amber-100 border-b border-amber-300 text-amber-900">
+          <div className="max-w-3xl mx-auto px-4 py-3 flex items-start gap-3 text-sm">
+            <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold uppercase tracking-wide text-xs mb-0.5">
+                Mode prévisualisation
+              </p>
+              <p>
+                Cette alerte n&apos;est pas encore publiée. Elle est visible uniquement pour vous en tant qu&apos;administrateur.
+                Statut actuel : <strong>{alert.status}</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-3xl mx-auto px-4 py-8">
         {/* Breadcrumb */}

@@ -156,6 +156,27 @@ export async function getAlertBySlug(slug: string): Promise<RegAlert | null> {
   return normalizeAlert(data as Record<string, unknown>);
 }
 
+/**
+ * Lecture admin : recupere une alerte par slug SANS filtre status.
+ * A n'utiliser qu'apres verification admin cote serveur. Utilise un client
+ * service_role pour contourner la RLS (qui filtre status=published).
+ */
+export async function getAlertBySlugForAdmin(slug: string): Promise<RegAlert | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return null;
+  const admin = createClient(url, serviceKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+  const { data, error } = await admin
+    .from("reg_alerts")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (error || !data) return null;
+  return normalizeAlert(data as Record<string, unknown>);
+}
+
 export async function listAllPublishedSlugs(): Promise<{ slug: string; updated_at: string | null }[]> {
   const supabase = getSupabase();
   if (!supabase) return [];
