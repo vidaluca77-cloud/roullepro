@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Lock, MessageCircle, Mail, Phone } from "lucide-react";
+import { isPaidPlan } from "@/lib/sanitaire-plans";
 
 export const dynamic = "force-dynamic";
 
@@ -27,15 +28,15 @@ export default async function MessagesPage() {
     );
   }
 
-  const isPremium = pro.plan === "premium" || pro.plan === "pro_plus";
+  const isPaid = isPaidPlan(pro.plan);
 
-  if (!isPremium) {
+  if (!isPaid) {
     return (
       <main className="min-h-screen bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 py-16 text-center">
           <Lock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Messagerie réservée au plan Premium</h1>
-          <p className="text-gray-600 mb-6">Passez en Premium pour lire et répondre aux messages des patients.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Messagerie réservée au plan Pro</h1>
+          <p className="text-gray-600 mb-6">Activez le plan Pro à 19,90 €/mois pour lire et répondre aux messages des patients.</p>
           <Link
             href="/transport-medical/tarifs"
             className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"

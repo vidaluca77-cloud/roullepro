@@ -63,6 +63,7 @@ const Step3Schema = z.object({
   rgpd_accepted: z.boolean().refine((v) => v === true, {
     message: "Vous devez accepter les CGU",
   }),
+  newsletter_optin: z.boolean().optional().default(true),
 });
 
 const FullSchema = Step1Schema.merge(Step2Schema)
@@ -178,6 +179,7 @@ export default function InscriptionForm() {
       password: "",
       confirm_password: "",
       rgpd_accepted: false,
+      newsletter_optin: true,
     },
     mode: "onTouched",
   });
@@ -355,6 +357,7 @@ export default function InscriptionForm() {
           password: values.password,
           captcha_token: token,
           rgpd_accepted: values.rgpd_accepted,
+          newsletter_optin: values.newsletter_optin !== false,
         }),
       });
       const json = await res.json() as {
@@ -896,6 +899,24 @@ export default function InscriptionForm() {
             {String(errors.rgpd_accepted.message)}
           </p>
         )}
+
+        {/* Newsletter veille reglementaire */}
+        <div className="flex items-start gap-3 bg-blue-50/40 border border-blue-100 rounded-lg p-3">
+          <input
+            id="newsletter_optin"
+            type="checkbox"
+            {...register("newsletter_optin")}
+            className="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#0066CC] focus:ring-[#0066CC]"
+            defaultChecked
+          />
+          <label htmlFor="newsletter_optin" className="text-sm text-gray-700 leading-relaxed">
+            Recevoir gratuitement la <strong>veille réglementaire hebdomadaire</strong> (1 email/semaine, désabonnement en 1 clic).
+            <br />
+            <span className="text-xs text-gray-500">
+              Vos données sont utilisées pour vous envoyer la veille réglementaire. Vous pouvez vous désabonner à tout moment via le lien présent dans chaque email.
+            </span>
+          </label>
+        </div>
 
         {/* hCaptcha invisible */}
         <div ref={hcaptchaRef} />

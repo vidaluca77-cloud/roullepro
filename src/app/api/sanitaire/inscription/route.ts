@@ -177,6 +177,7 @@ const InscriptionSchema = z.object({
     .default("")
     .refine((v) => !v || v.startsWith("kbis/"), { message: "Chemin de justificatif invalide" }),
   rgpd_accepted: z.literal(true, { errorMap: () => ({ message: "Vous devez accepter les CGU" }) }),
+  newsletter_optin: z.boolean().optional().default(true),
 });
 
 async function verifyCaptcha(token: string): Promise<boolean> {
@@ -438,6 +439,29 @@ export async function POST(req: Request) {
         );
       }
       throw new Error(`Erreur insertion fiche : ${proError?.message}`);
+    }
+
+    // 11bis. Auto-inscription newsletter veille reglementaire (Phase 2a, opt-in)
+    if (data.newsletter_optin !== false) {
+      try {
+        const { autoSubscribePro } = await import("@/lib/veille-auto-subscribe");
+        const result = await autoSubscribePro({
+          email: data.email,
+          categorie: data.categorie,
+          supabase: supabaseAdmin,
+        });
+        console.log("[inscription] auto-subscribe veille:", {
+          email: data.email,
+          status: result.status,
+          sent: result.sent_confirmation,
+          reason: result.reason,
+        });
+      } catch (err) {
+        console.warn(
+          "[inscription] auto-subscribe veille error:",
+          err instanceof Error ? err.message : err
+        );
+      }
     }
 
     // 12. INSERT log

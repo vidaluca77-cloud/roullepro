@@ -56,7 +56,7 @@ export async function POST(req: Request) {
     // Récupère infos pro
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, ville, categorie")
+      .select("id, raison_sociale, nom_commercial, ville, categorie, email_public")
       .eq("id", claim.pro_id)
       .maybeSingle();
     if (!pro) return NextResponse.json({ error: "Pro introuvable" }, { status: 404 });
@@ -165,6 +165,30 @@ export async function POST(req: Request) {
       .from("sanitaire_claims")
       .update({ status: "verified", verified_at: new Date().toISOString(), user_id: userId })
       .eq("id", claim_id);
+
+    // Auto-inscription newsletter veille reglementaire (best-effort, non bloquant)
+    const newsletterEmail = accountEmail || pro.email_public || null;
+    if (newsletterEmail && pro.categorie) {
+      try {
+        const { autoSubscribePro } = await import("@/lib/veille-auto-subscribe");
+        const result = await autoSubscribePro({
+          email: newsletterEmail,
+          categorie: pro.categorie as string,
+          supabase: supabaseAdmin,
+        });
+        console.log("[claim/verify] auto-subscribe veille:", {
+          email: newsletterEmail,
+          status: result.status,
+          sent: result.sent_confirmation,
+          reason: result.reason,
+        });
+      } catch (err) {
+        console.warn(
+          "[claim/verify] auto-subscribe veille error:",
+          err instanceof Error ? err.message : err
+        );
+      }
+    }
 
     // Génère un magic link de connexion
     let magicLink: string | null = null;

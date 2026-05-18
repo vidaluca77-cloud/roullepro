@@ -298,6 +298,37 @@ async function handleSanitaireSubscription(sub: Stripe.Subscription, session: St
     .eq("id", proId);
 
   if (error) console.error("[sanitaire webhook] update error", error.message);
+
+  // Auto-inscription newsletter veille reglementaire a l'activation d'un plan payant.
+  if (active && planToSet !== "gratuit") {
+    try {
+      const { data: pro } = await db
+        .from("pros_sanitaire")
+        .select("email_public, categorie")
+        .eq("id", proId)
+        .maybeSingle();
+      const email = (pro as { email_public?: string } | null)?.email_public;
+      const categorie = (pro as { categorie?: string } | null)?.categorie;
+      if (email && categorie) {
+        const { autoSubscribePro } = await import("@/lib/veille-auto-subscribe");
+        const result = await autoSubscribePro({
+          email,
+          categorie,
+          supabase: db,
+        });
+        console.log("[sanitaire webhook] auto-subscribe veille:", {
+          pro_id: proId,
+          status: result.status,
+          sent: result.sent_confirmation,
+        });
+      }
+    } catch (err) {
+      console.warn(
+        "[sanitaire webhook] auto-subscribe veille error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+  }
 }
 
 export async function POST(request: Request) {
