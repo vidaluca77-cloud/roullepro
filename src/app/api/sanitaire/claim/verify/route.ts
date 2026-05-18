@@ -190,6 +190,18 @@ export async function POST(req: Request) {
       }
     }
 
+    // Octroi essai Pro 2 mois (best-effort, non bloquant)
+    try {
+      const { grantAutoTrial } = await import("@/lib/sanitaire-auto-trial");
+      const trial = await grantAutoTrial(claim.pro_id);
+      console.log("[claim/verify] auto-trial:", { pro_id: claim.pro_id, result: trial });
+    } catch (err) {
+      console.warn(
+        "[claim/verify] auto-trial error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     // Génère un magic link de connexion
     let magicLink: string | null = null;
     if (accountEmail) {

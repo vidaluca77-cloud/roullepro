@@ -442,6 +442,52 @@ export default function MentionsLegalesPage() {
           </div>
         </div>
 
+        {/* 8. Liens d'affiliation */}
+        <div className="bg-white rounded-xl shadow-sm p-8">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">
+            8. Liens d&apos;affiliation
+          </h2>
+          <div className="space-y-3 text-gray-700">
+            <p>
+              RoullePro peut inclure des liens d&apos;affiliation vers des partenaires
+              commerciaux. C&apos;est notamment le cas pour le partenariat avec Giva,
+              courtier en assurance professionnelle, dont le lien partenaire est{" "}
+              <a
+                href="https://go.giva.fr/?src=LucasH"
+                target="_blank"
+                rel="noopener sponsored"
+                className="text-blue-600 hover:underline font-medium"
+              >
+                https://go.giva.fr/?src=LucasH
+              </a>
+              .
+            </p>
+            <p>
+              RoullePro est susceptible de percevoir une commission si vous
+              souscrivez à un contrat via ces liens. <strong>Cette rémunération ne
+              modifie ni le prix payé ni les conditions du contrat</strong>
+              négociés directement entre vous et le partenaire concerné.
+            </p>
+            <p>
+              Conformément à la réglementation applicable (notamment l&apos;article
+              L. 121-1 du Code de la consommation et les obligations de
+              transparence sur les pratiques commerciales), cette mention est
+              rendue visible sur chaque page contenant un lien d&apos;affiliation.
+            </p>
+            <p className="text-sm text-gray-500">
+              Pour toute question relative à un partenariat ou pour signaler un
+              dysfonctionnement, contactez-nous à{" "}
+              <a
+                href="mailto:contact@roullepro.com"
+                className="text-blue-600 hover:underline font-medium"
+              >
+                contact@roullepro.com
+              </a>
+              .
+            </p>
+          </div>
+        </div>
+
         {/* Pied de page */}
         <div className="bg-white rounded-xl shadow-sm p-6 text-center text-sm text-gray-500">
           <p>

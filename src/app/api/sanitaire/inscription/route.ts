@@ -464,6 +464,18 @@ export async function POST(req: Request) {
       }
     }
 
+    // 11ter. Octroi essai Pro 2 mois (best-effort, non bloquant)
+    try {
+      const { grantAutoTrial } = await import("@/lib/sanitaire-auto-trial");
+      const trial = await grantAutoTrial(proData.id);
+      console.log("[inscription] auto-trial:", { pro_id: proData.id, result: trial });
+    } catch (err) {
+      console.warn(
+        "[inscription] auto-trial error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     // 12. INSERT log
     await supabaseAdmin.from("sanitaire_inscription_logs").insert({
       siret: data.siret || null,
