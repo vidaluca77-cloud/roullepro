@@ -94,6 +94,7 @@ export default function Footer() {
               <li><Link href="/transport-medical/tarifs" className="hover:text-white transition">Abonnements pro</Link></li>
               <li><Link href="/prescripteurs" className="hover:text-white transition">Espace prescripteurs (médecins, EHPAD)</Link></li>
               <li><Link href="/veille-reglementaire" className="hover:text-white transition">Veille réglementaire</Link></li>
+              <li><Link href="/guides/transport-sanitaire-conformite-2026-2027" className="hover:text-white transition">Guides conformité 2026-2027</Link></li>
               <li><Link href="/blog" className="hover:text-white transition">Blog & actualités</Link></li>
             </ul>
           </div>

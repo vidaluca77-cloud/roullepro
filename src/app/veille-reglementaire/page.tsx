@@ -78,6 +78,53 @@ export default async function VeilleReglementairePage({ searchParams }: PageProp
       </section>
 
       <section className="max-w-5xl mx-auto px-4 py-8">
+        {/* Encart guides */}
+        <div className="mb-8 bg-white border border-slate-200 rounded-2xl p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-1">
+                Comprendre la réglementation : nos guides complets
+              </h2>
+              <p className="text-sm text-slate-600">
+                Synthèses pédagogiques 2025-2027 par métier, avec calendrier consolidé et actions concrètes.
+              </p>
+            </div>
+            <Link
+              href="/guides/transport-sanitaire-conformite-2026-2027"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg transition whitespace-nowrap"
+            >
+              Voir le hub
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+            <Link
+              href="/guides/transport-sanitaire-conformite-2026-2027"
+              className="text-sm text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Hub conformité 2026-2027
+            </Link>
+            <Link
+              href="/guides/ambulance-reglementation-conformite-2026"
+              className="text-sm text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Guide ambulance
+            </Link>
+            <Link
+              href="/guides/taxi-conventionne-convention-cpam-2025"
+              className="text-sm text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Guide taxi conventionné
+            </Link>
+            <Link
+              href="/guides/vsl-reglementation-transport-partage"
+              className="text-sm text-blue-700 hover:text-blue-800 hover:underline"
+            >
+              Guide VSL
+            </Link>
+          </div>
+        </div>
+
         {/* Filtres metier */}
         <div className="mb-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Métier</p>

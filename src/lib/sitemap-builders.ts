@@ -185,6 +185,21 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
   ];
 }
 
+/** Guides SEO transport sanitaire (Phase 5). */
+export function buildGuidesSitemap(): SitemapEntry[] {
+  const slugs = [
+    "transport-sanitaire-conformite-2026-2027",
+    "ambulance-reglementation-conformite-2026",
+    "taxi-conventionne-convention-cpam-2025",
+    "vsl-reglementation-transport-partage",
+  ];
+  return slugs.map((slug) => ({
+    url: `${BASE_URL}/guides/${slug}`,
+    changefreq: "monthly" as const,
+    priority: 0.8,
+  }));
+}
+
 /** Veille reglementaire : page liste + une entree par alerte publiee */
 export async function buildRegAlertsSitemap(): Promise<SitemapEntry[]> {
   const supabase = getSupabase();
