@@ -16,8 +16,14 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { dilaJorfSource } from "@/lib/veille/sources/dila-jorf";
 import { legifrancePisteSource } from "@/lib/veille/sources/legifrance-piste";
+import { legifrssSource } from "@/lib/veille/sources/legifrss";
 import { matchCandidate, MIN_RELEVANCE_SCORE } from "@/lib/veille/matcher";
-import type { IngestionSource, RawCandidate } from "@/lib/veille/sources/types";
+import { dedupeCandidates } from "@/lib/veille/dedup";
+import type {
+  IngestionSource,
+  RawCandidate,
+  SourceKey,
+} from "@/lib/veille/sources/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +31,7 @@ export const maxDuration = 60;
 
 const ALL_SOURCES: IngestionSource[] = [
   dilaJorfSource,
+  legifrssSource,
   legifrancePisteSource,
 ];
 
@@ -37,45 +44,29 @@ type SourceStats = {
   error_message?: string;
 };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-async function processSource(
-  supabase: any,
-  source: IngestionSource,
-  dryRun: boolean
-): Promise<SourceStats> {
-  const stats: SourceStats = {
-    fetched: 0,
-    matched: 0,
-    inserted: 0,
-    duplicates: 0,
-    errors: 0,
-  };
+type FetchResult = { source: SourceKey; candidates: RawCandidate[]; error?: string };
 
-  let candidates: RawCandidate[] = [];
+async function fetchOne(source: IngestionSource): Promise<FetchResult> {
   try {
-    candidates = await source.fetch();
+    const candidates = await source.fetch();
+    return { source: source.key, candidates };
   } catch (err) {
-    stats.errors = 1;
-    stats.error_message = err instanceof Error ? err.message : String(err);
-    console.error(`[veille-ingest] ${source.key} fetch error:`, stats.error_message);
-    return stats;
+    const error = err instanceof Error ? err.message : String(err);
+    console.error(`[veille-ingest] ${source.key} fetch error:`, error);
+    return { source: source.key, candidates: [], error };
   }
-  stats.fetched = candidates.length;
+}
 
-  const relevant: { candidate: RawCandidate; score: number; matched: string[] }[] = [];
-  for (const c of candidates) {
-    const { score, matched } = matchCandidate(c);
-    if (score >= MIN_RELEVANCE_SCORE) {
-      relevant.push({ candidate: c, score, matched });
-    }
-  }
-  stats.matched = relevant.length;
-
-  if (dryRun) return stats;
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function insertRelevant(
+  supabase: any,
+  source: SourceKey,
+  relevant: { candidate: RawCandidate; score: number; matched: string[] }[],
+  stats: SourceStats
+): Promise<void> {
   for (const { candidate, score, matched } of relevant) {
     const payload = {
-      source: source.key,
+      source,
       source_url: candidate.source_url,
       source_identifier: candidate.source_identifier ?? null,
       title: candidate.title.slice(0, 500),
@@ -98,7 +89,6 @@ async function processSource(
       stats.inserted += 1;
       continue;
     }
-    // Conflit unique : doublon attendu.
     const msg = error.message || "";
     if (
       /duplicate key|unique constraint|already exists/i.test(msg) ||
@@ -108,15 +98,13 @@ async function processSource(
     } else {
       stats.errors += 1;
       console.warn(
-        `[veille-ingest] ${source.key} insert error:`,
+        `[veille-ingest] ${source} insert error:`,
         msg,
         "for",
         candidate.source_url
       );
     }
   }
-
-  return stats;
 }
 
 async function handle(req: Request) {
@@ -168,7 +156,61 @@ async function handle(req: Request) {
   const startedAt = Date.now();
   const statsBySource: Record<string, SourceStats> = {};
   for (const src of sources) {
-    statsBySource[src.key] = await processSource(supabase, src, dryRun);
+    statsBySource[src.key] = {
+      fetched: 0,
+      matched: 0,
+      inserted: 0,
+      duplicates: 0,
+      errors: 0,
+    };
+  }
+
+  // 1. Fetch en parallele (Promise.allSettled : un echec n'arrete pas les autres).
+  const settled = await Promise.allSettled(sources.map((s) => fetchOne(s)));
+  const tagged: ({ source: SourceKey } & RawCandidate)[] = [];
+  for (let i = 0; i < settled.length; i += 1) {
+    const src = sources[i];
+    const res = settled[i];
+    if (res.status === "fulfilled") {
+      const { candidates, error } = res.value;
+      statsBySource[src.key].fetched = candidates.length;
+      if (error) {
+        statsBySource[src.key].errors = 1;
+        statsBySource[src.key].error_message = error;
+      }
+      for (const c of candidates) {
+        tagged.push({ source: src.key, ...c });
+      }
+    } else {
+      statsBySource[src.key].errors = 1;
+      statsBySource[src.key].error_message =
+        res.reason instanceof Error ? res.reason.message : String(res.reason);
+    }
+  }
+
+  // 2. Dedup cross-source (URL > source_identifier > titre+date) avec
+  //    priorite dila_jorf > legifrance_piste > legifrss.
+  const deduped = dedupeCandidates(tagged);
+
+  // 3. Matching + insertion par source.
+  const relevantBySource = new Map<
+    SourceKey,
+    { candidate: RawCandidate; score: number; matched: string[] }[]
+  >();
+  for (const c of deduped) {
+    const { source, ...candidate } = c;
+    const { score, matched } = matchCandidate(candidate);
+    if (score < MIN_RELEVANCE_SCORE) continue;
+    const arr = relevantBySource.get(source) || [];
+    arr.push({ candidate, score, matched });
+    relevantBySource.set(source, arr);
+  }
+
+  for (const src of sources) {
+    const relevant = relevantBySource.get(src.key) || [];
+    statsBySource[src.key].matched = relevant.length;
+    if (dryRun) continue;
+    await insertRelevant(supabase, src.key, relevant, statsBySource[src.key]);
   }
 
   // Agrege final.

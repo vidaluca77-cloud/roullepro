@@ -6,7 +6,7 @@
  * V2 : Legifrance PISTE (souscription en attente, stub pour l'instant).
  */
 
-export type SourceKey = "dila_jorf" | "legifrance_piste";
+export type SourceKey = "dila_jorf" | "legifrance_piste" | "legifrss";
 
 export interface RawCandidate {
   source_url: string;
