@@ -98,6 +98,108 @@ export function buildVeilleConfirmationHtml(params: {
 </html>`;
 }
 
+export type WeeklyAlertSummary = {
+  slug: string;
+  title_short: string;
+  summary_oneliner: string;
+  urgency: "critical" | "high" | "medium" | "info";
+  applicable_from: string | null;
+};
+
+const URGENCY_BADGE: Record<
+  "critical" | "high" | "medium" | "info",
+  { label: string; bg: string; fg: string; border: string }
+> = {
+  critical: { label: "Critique", bg: "#fee2e2", fg: "#991b1b", border: "#fecaca" },
+  high: { label: "Urgence élevée", bg: "#ffedd5", fg: "#9a3412", border: "#fed7aa" },
+  medium: { label: "Importance moyenne", bg: "#fef3c7", fg: "#92400e", border: "#fde68a" },
+  info: { label: "Information", bg: "#dbeafe", fg: "#1e40af", border: "#bfdbfe" },
+};
+
+function formatApplicableFromFr(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const formatted = d.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const now = new Date();
+  return d.getTime() <= now.getTime()
+    ? `Applicable depuis le ${formatted}`
+    : `Applicable à partir du ${formatted}`;
+}
+
+export function buildVeilleWeeklyHtml(params: {
+  alertes: WeeklyAlertSummary[];
+  metiers: string[];
+  unsubscribeUrl: string;
+  appUrl: string;
+  mode?: "weekly" | "weekly_fallback";
+}): string {
+  const { alertes, metiers, unsubscribeUrl, appUrl, mode = "weekly" } = params;
+  const segmentLabels = metiersLabels(metiers) || "tous les métiers";
+
+  const intro =
+    mode === "weekly_fallback"
+      ? `Pas d'alerte publiée cette semaine. Voici un rappel des évolutions réglementaires majeures actuellement en vigueur pour ${segmentLabels}.`
+      : `Voici les évolutions réglementaires de la semaine pour ${segmentLabels}.`;
+
+  const alertCards = alertes
+    .map((a) => {
+      const badge = URGENCY_BADGE[a.urgency] || URGENCY_BADGE.info;
+      const detailUrl = `${appUrl}/veille-reglementaire/${a.slug}`;
+      const applicable = formatApplicableFromFr(a.applicable_from);
+      return `
+        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; background: #ffffff;">
+          <div style="margin-bottom: 10px;">
+            <span style="display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: ${badge.bg}; color: ${badge.fg}; border: 1px solid ${badge.border}; text-transform: uppercase; letter-spacing: 0.4px;">
+              ${escapeHtml(badge.label)}
+            </span>
+          </div>
+          <h3 style="margin: 0 0 8px; color: #0f172a; font-size: 17px; line-height: 1.35;">
+            <a href="${escapeHtml(detailUrl)}" style="color: #0f172a; text-decoration: none;">${escapeHtml(a.title_short)}</a>
+          </h3>
+          <p style="margin: 0 0 12px; color: #334155; font-size: 14px; line-height: 1.55;">
+            ${escapeHtml(a.summary_oneliner)}
+          </p>
+          ${
+            applicable
+              ? `<p style="margin: 0 0 12px; color: #64748b; font-size: 12px;">${escapeHtml(applicable)}</p>`
+              : ""
+          }
+          <a href="${escapeHtml(detailUrl)}" style="display: inline-block; color: #1d4ed8; font-size: 14px; font-weight: 600; text-decoration: none;">
+            Lire l'analyse &rarr;
+          </a>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="fr">
+<body style="margin: 0; padding: 0; background: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;">
+  <div style="max-width: 600px; margin: 0 auto; background: white;">
+    ${HEADER}
+    <div style="padding: 28px 32px;">
+      <p style="color: #334155; font-size: 15px; line-height: 1.6; margin: 0 0 22px;">
+        ${escapeHtml(intro)}
+      </p>
+      ${alertCards}
+      <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <a href="${escapeHtml(appUrl)}/veille-reglementaire"
+           style="display: inline-block; background: #0f172a; color: white; padding: 12px 22px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px;">
+          Voir toutes les alertes
+        </a>
+      </div>
+    </div>
+    ${footer(unsubscribeUrl)}
+  </div>
+</body>
+</html>`;
+}
+
 export function buildVeilleWelcomeHtml(params: {
   email: string;
   unsubscribeUrl: string;

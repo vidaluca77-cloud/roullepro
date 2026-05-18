@@ -20,6 +20,10 @@
 [functions."indexnow-daily"]
   schedule = "0 2 * * *"
 
+# Scheduled function : newsletter veille reglementaire, mardi 06:00 UTC (8h Paris ete)
+[functions."veille-weekly"]
+  schedule = "0 6 * * 2"
+
 [[headers]]
   for = "/*"
   [headers.values]
