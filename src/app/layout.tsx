@@ -4,6 +4,7 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
+import NewsletterBanner from '@/components/NewsletterBanner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -151,6 +152,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
+        <NewsletterBanner />
       </body>
     </html>
   );

@@ -37,6 +37,8 @@ export async function POST(request: Request) {
       typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     const source =
       typeof body?.source === "string" ? body.source.slice(0, 60) : "blog";
+    // Opt-in veille réglementaire (par défaut true depuis la bannière sticky)
+    const regOptin = body?.reg_newsletter_optin === false ? false : true;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Email invalide" }, { status: 400 });
@@ -68,6 +70,11 @@ export async function POST(request: Request) {
           source,
           ip_hash: ip ? `sha:${Buffer.from(ip).toString("base64").slice(0, 32)}` : null,
           user_agent: userAgent.slice(0, 200),
+          reg_newsletter_optin: regOptin,
+          confirmed_at: new Date().toISOString(),
+          metiers_segments: regOptin
+            ? ["ambulance", "taxi_conventionne", "vsl"]
+            : [],
         },
         { onConflict: "email", ignoreDuplicates: true }
       );
