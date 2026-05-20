@@ -165,7 +165,7 @@ export default async function ProPage() {
           <PlanCard
             nom="Plan Pro"
             prix="19,90 €"
-            sousTitre="/mois HT, sans engagement"
+            sousTitre="/mois TTC, sans engagement"
             couleur="border-emerald-300 ring-2 ring-emerald-100"
             accent="bg-emerald-50 text-emerald-700"
             populaire

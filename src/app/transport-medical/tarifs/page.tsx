@@ -136,7 +136,7 @@ export default async function TarifsPage() {
             <div className="text-2xl font-bold text-gray-900 mb-1">Plan Pro</div>
             <div className="flex items-baseline gap-1 mb-5">
               <div className="text-4xl font-bold text-[#0066CC]">19,90 €</div>
-              <div className="text-sm text-gray-500">/mois HT, sans engagement</div>
+              <div className="text-sm text-gray-500">/mois TTC, sans engagement</div>
             </div>
             {!isPro && <PromoBanner variant="inline" />}
             <ul className="space-y-2.5 mb-6 flex-1">
@@ -196,7 +196,7 @@ export default async function TarifsPage() {
               <div className="text-xs font-semibold uppercase tracking-wide text-[#0066CC] mb-1">
                 Plan Établissements
               </div>
-              <div className="text-2xl font-bold text-gray-900 mb-2">~49 € /mois HT</div>
+              <div className="text-2xl font-bold text-gray-900 mb-2">~49 € /mois TTC</div>
               <p className="text-gray-700 leading-relaxed mb-5">
                 Pour les sociétés qui travaillent avec EHPAD, cabinets et hôpitaux : recevoir les demandes
                 récurrentes de prescripteurs B2B, gestion multi-utilisateurs pour la flotte, et un canal direct

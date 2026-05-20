@@ -11,8 +11,10 @@ const PRICE_ENV_MAP: Record<string, string> = {
 };
 
 // Prix Stripe live créés pour l'annuaire sanitaire — fallback si env non définie
+// essential : nouveau price 19,90 € TTC (tax_behavior=inclusive) pour facturation TVA correcte par Stripe Tax
+// Ancien price price_1TPTHrJQRPoIacwzO3PxAv8M conservé pour les abonnements existants
 const PRICE_ID_DEFAULTS: Record<string, string> = {
-  essential: "price_1TPTHrJQRPoIacwzO3PxAv8M",
+  essential: "price_1TZFdwJQRPoIacwzQ4zPEYLF",
   premium: "price_1TPTHrJQRPoIacwzXphLkYRy",
   pro_plus: "price_1TPTHrJQRPoIacwz0HDK9iC1",
 };
@@ -95,6 +97,14 @@ export async function POST(req: Request) {
         metadata: { pro_id, plan_key, user_id: user.id },
       },
       metadata: { pro_id, plan_key, user_id: user.id, source: "sanitaire" },
+      // Stripe Tax : calcul automatique de la TVA FR (20 %) en TTC -> ventile HT + TVA sur la facture
+      automatic_tax: { enabled: true },
+      // Collecter l'adresse de facturation (requise par Stripe Tax pour determiner le taux)
+      billing_address_collection: "required",
+      // Permettre a Stripe de creer / mettre a jour l'adresse sur le Customer (pre-requis automatic_tax)
+      customer_update: pro.stripe_customer_id ? { address: "auto", name: "auto" } : undefined,
+      // Activer la collecte du numero de TVA intracommunautaire (auto-liquidation B2B UE)
+      tax_id_collection: { enabled: true },
       success_url: `${baseUrl}/transport-medical/pro/dashboard?upgraded=1`,
       cancel_url: `${baseUrl}/transport-medical/tarifs`,
       allow_promotion_codes: true,
