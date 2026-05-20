@@ -22,7 +22,6 @@ import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliStatusSection from "@/components/sanitaire/AmeliStatusSection";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
-import PromoBanner from "@/components/sanitaire/PromoBanner";
 import {
   fetchMatchedAlerts,
   getProgressByAlert,
@@ -541,7 +540,6 @@ export default async function ProDashboard({
                   <div className="text-2xl font-bold text-gray-900">19,90 €</div>
                   <div className="text-xs text-gray-500">/mois TTC</div>
                 </div>
-                <PromoBanner variant="inline" />
                 <ul className="space-y-1.5 text-xs text-gray-700 mb-4">
                   <li className="flex items-start gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -550,6 +548,14 @@ export default async function ProDashboard({
                   <li className="flex items-start gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
                     Meilleure visibilité dans votre ville
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Veille réglementaire métier (alertes email)
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    Tableau de bord conformité
                   </li>
                   <li className="flex items-start gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0 mt-0.5" />
