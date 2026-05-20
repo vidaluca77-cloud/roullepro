@@ -45,11 +45,23 @@ export async function POST(req: Request) {
 
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, claimed_by, raison_sociale, nom_commercial, stripe_customer_id")
+      .select("id, claimed_by, raison_sociale, nom_commercial, stripe_customer_id, stripe_subscription_id, plan, plan_offer_source, plan_expires_at")
       .eq("id", pro_id)
       .maybeSingle();
     if (!pro || pro.claimed_by !== user.id) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
+    }
+
+    // Calcul du trial Stripe : si le pro est déjà en essai gratuit (auto-trial 2 mois ou offre),
+    // on aligne le premier débit sur la fin de son essai actuel — pas de 14j de bonus supplémentaire.
+    let trialBehavior: { trial_period_days: number } | { trial_end: number } = {
+      trial_period_days: 14,
+    };
+    const planExpiresAt = pro.plan_expires_at ? new Date(pro.plan_expires_at).getTime() : 0;
+    const isOnFreeTrial = !pro.stripe_subscription_id && !!pro.plan_offer_source;
+    if (isOnFreeTrial && planExpiresAt > Date.now()) {
+      // trial_end attend un timestamp UNIX en secondes
+      trialBehavior = { trial_end: Math.floor(planExpiresAt / 1000) };
     }
 
     const stripe = getStripe();
@@ -79,7 +91,7 @@ export async function POST(req: Request) {
       customer_email: pro.stripe_customer_id ? undefined : user.email,
       line_items: lineItems,
       subscription_data: {
-        trial_period_days: 14,
+        ...trialBehavior,
         metadata: { pro_id, plan_key, user_id: user.id },
       },
       metadata: { pro_id, plan_key, user_id: user.id, source: "sanitaire" },

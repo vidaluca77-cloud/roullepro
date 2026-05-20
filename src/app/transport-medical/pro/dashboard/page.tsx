@@ -88,6 +88,13 @@ export default async function ProDashboard({
   // Plan unique « Pro » (19,90 €/mois) — toute valeur autre que 'gratuit' débloque la messagerie
   const isPro =
     fiche.plan === "essential" || fiche.plan === "premium" || fiche.plan === "pro_plus";
+  // Distingue un VRAI abonné payant (Stripe actif) d'un Pro en essai gratuit (auto_trial_2months ou offert)
+  const isOnFreeTrial =
+    isPro && !fiche.stripe_subscription_id && !!fiche.plan_offer_source;
+  const trialEndsAt = fiche.plan_expires_at ? new Date(fiche.plan_expires_at) : null;
+  const daysUntilTrialEnd = trialEndsAt
+    ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   // Conformité (Phase 3) : 1 profil possible par fiche.
   const ficheIds = fiches.map((f) => f.id);
@@ -218,9 +225,15 @@ export default async function ProDashboard({
                   tone="dark"
                 />
                 {isPro ? (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full">
-                    <Star className="w-3 h-3" /> Plan Pro
-                  </span>
+                  isOnFreeTrial ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium bg-amber-400 text-amber-950 px-2 py-0.5 rounded-full">
+                      <Sparkles className="w-3 h-3" /> Essai Pro {daysUntilTrialEnd !== null ? `— ${daysUntilTrialEnd} j restants` : ""}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium bg-emerald-400 text-emerald-950 px-2 py-0.5 rounded-full">
+                      <Star className="w-3 h-3" /> Plan Pro
+                    </span>
+                  )
                 ) : (
                   <span className="inline-flex items-center gap-1 text-xs font-medium bg-white/10 border border-white/20 px-2 py-0.5 rounded-full">
                     Plan gratuit
@@ -241,12 +254,12 @@ export default async function ProDashboard({
               >
                 <Eye className="w-4 h-4" /> Voir ma fiche publique
               </Link>
-              {!isPro && (
+              {(!isPro || isOnFreeTrial) && (
                 <Link
                   href="/transport-medical/tarifs"
                   className="inline-flex items-center gap-2 bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-semibold px-4 py-2 rounded-xl transition text-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" /> Activer le plan Pro
+                  <Sparkles className="w-3.5 h-3.5" /> {isOnFreeTrial ? "Activer mon abonnement" : "Activer le plan Pro"}
                 </Link>
               )}
             </div>

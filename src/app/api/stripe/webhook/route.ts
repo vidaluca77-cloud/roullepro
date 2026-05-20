@@ -287,17 +287,40 @@ async function handleSanitaireSubscription(sub: Stripe.Subscription, session: St
   const periodEnd = (sub as unknown as { current_period_end?: number }).current_period_end;
   const activeUntil = periodEnd ? new Date(periodEnd * 1000).toISOString() : null;
 
+  // Quand l'abonnement Stripe devient actif (ou trialing payant), on nettoie
+  // les marqueurs d'auto-trial pour empecher le cron expire_pro_plans_daily
+  // de redescendre la fiche en gratuit a la fin des 2 mois offerts.
+  const updatePayload: Record<string, unknown> = {
+    plan: planToSet,
+    plan_active_until: activeUntil,
+    stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
+    stripe_subscription_id: sub.id,
+  };
+  if (active && !deleted) {
+    updatePayload.plan_offer_source = null;
+    updatePayload.plan_offer_granted_at = null;
+    updatePayload.plan_expires_at = null;
+  }
+
   const { error } = await db
     .from("pros_sanitaire")
-    .update({
-      plan: planToSet,
-      plan_active_until: activeUntil,
-      stripe_customer_id: typeof sub.customer === "string" ? sub.customer : sub.customer?.id,
-      stripe_subscription_id: sub.id,
-    })
+    .update(updatePayload)
     .eq("id", proId);
 
   if (error) console.error("[sanitaire webhook] update error", error.message);
+
+  // Revoquer les grants d'offre auto-trial encore actifs sur ce pro (conversion payante)
+  if (active && !deleted) {
+    const { error: grantErr } = await db
+      .from("plan_offer_grants")
+      .update({
+        revoked_at: new Date().toISOString(),
+        revoked_reason: "converted_to_paid",
+      })
+      .eq("pro_id", proId)
+      .is("revoked_at", null);
+    if (grantErr) console.warn("[sanitaire webhook] revoke grants error", grantErr.message);
+  }
 
   // Auto-inscription newsletter veille reglementaire a l'activation d'un plan payant.
   if (active && planToSet !== "gratuit") {

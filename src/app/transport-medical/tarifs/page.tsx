@@ -31,17 +31,28 @@ export default async function TarifsPage() {
   } = await supabase.auth.getUser();
   let ficheId: string | null = null;
   let currentPlan: string | null = null;
+  let stripeSubId: string | null = null;
+  let planOfferSource: string | null = null;
+  let planExpiresAt: string | null = null;
   if (user) {
     const { data } = await supabase
       .from("pros_sanitaire")
-      .select("id, plan")
+      .select("id, plan, stripe_subscription_id, plan_offer_source, plan_expires_at")
       .eq("claimed_by", user.id)
       .maybeSingle();
     ficheId = data?.id ?? null;
     currentPlan = data?.plan ?? null;
+    stripeSubId = (data?.stripe_subscription_id as string | null) ?? null;
+    planOfferSource = (data?.plan_offer_source as string | null) ?? null;
+    planExpiresAt = (data?.plan_expires_at as string | null) ?? null;
   }
   const isPro =
     currentPlan === "essential" || currentPlan === "premium" || currentPlan === "pro_plus";
+  // En essai gratuit (auto-trial) : pas d'abonnement Stripe + offer_source présent
+  const isOnFreeTrial = isPro && !stripeSubId && !!planOfferSource;
+  const trialEndsAtLabel = planExpiresAt
+    ? new Date(planExpiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+    : null;
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-blue-50/40">
@@ -144,9 +155,16 @@ export default async function TarifsPage() {
                 </li>
               ))}
             </ul>
-            {isPro ? (
+            {isPro && !isOnFreeTrial ? (
               <div className="block text-center bg-emerald-50 text-emerald-700 font-semibold px-5 py-3 rounded-xl border border-emerald-200">
                 Votre plan actuel
+              </div>
+            ) : isOnFreeTrial && ficheId ? (
+              <div className="space-y-2">
+                <div className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  Vous êtes en essai gratuit{trialEndsAtLabel ? ` jusqu'au ${trialEndsAtLabel}` : ""}. Activez votre abonnement dès maintenant : votre carte ne sera débitée qu'à la fin de l'essai.
+                </div>
+                <CheckoutButton planKey="essential" ficheId={ficheId} popular />
               </div>
             ) : user && ficheId ? (
               <CheckoutButton planKey="essential" ficheId={ficheId} popular />
