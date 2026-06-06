@@ -254,20 +254,30 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   }
   const villesUniques = Array.from(new Set(villesAll));
 
+  // Top villes FR à fort volume de recherche : priority surélevée pour signaler
+  // à Google les pages stratégiques (données DataForSEO Search Volume).
+  const VILLES_TOP_FR = new Set([
+    "paris", "marseille", "lyon", "toulouse", "nice", "nantes", "montpellier",
+    "strasbourg", "bordeaux", "lille", "rennes", "reims", "saint-etienne",
+    "toulon", "le-havre", "grenoble", "dijon", "angers", "nimes", "villeurbanne",
+  ]);
+
   const villePages: SitemapEntry[] = villesUniques.map((slug) => ({
     url: `${BASE_URL}/transport-medical/${slug}`,
     changefreq: "daily",
-    priority: 0.7,
+    priority: VILLES_TOP_FR.has(slug) ? 0.9 : 0.75,
   }));
 
   const categoriesSanitaire = ["ambulance", "vsl", "taxi-conventionne"];
   const villeCatPages: SitemapEntry[] = [];
   for (const slug of villesUniques) {
+    const isTopVille = VILLES_TOP_FR.has(slug);
     for (const c of categoriesSanitaire) {
       villeCatPages.push({
         url: `${BASE_URL}/transport-medical/${slug}/${c}`,
         changefreq: "weekly",
-        priority: 0.6,
+        // Pages hub locales = forte valeur SEO (cible "ambulance Paris" 1600/m)
+        priority: isTopVille ? 0.85 : 0.7,
       });
     }
   }

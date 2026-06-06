@@ -21,10 +21,16 @@ import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "RoullePro — Trouvez une ambulance, un VSL ou un taxi conventionné",
+  title: "Ambulance, VSL, Taxi conventionné : annuaire officiel 26 000+ pros | RoullePro",
   description:
-    "Annuaire gratuit du transport sanitaire en France. Trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous. Numéros directs, horaires, tarifs.",
+    "Annuaire gratuit du transport sanitaire en France : 26 000+ ambulances, VSL et taxis conventionnés CPAM. Téléphone direct, tarif Sécurité sociale, tiers payant.",
   alternates: { canonical: "/" },
+  openGraph: {
+    title: "RoullePro — Annuaire transport sanitaire France",
+    description: "26 000+ ambulances, VSL et taxis conventionnés CPAM avec téléphone direct.",
+    type: "website",
+    locale: "fr_FR",
+  },
 };
 
 // Optimisation perf : lit des vues matérialisées au lieu de scanner 22k lignes à chaque revalidation.
@@ -77,8 +83,46 @@ async function getRegionsCount() {
 export default async function HomePage() {
   const [stats, topVilles, regions] = await Promise.all([getStats(), getTopVilles(), getRegionsCount()]);
 
+  // JSON-LD : Organization + WebSite avec SearchAction (sitelinks search box Google)
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "RoullePro",
+    alternateName: "Roulle Pro",
+    url: "https://roullepro.com",
+    logo: "https://roullepro.com/android-chrome-512x512.png",
+    description: `Annuaire officiel du transport sanitaire en France : ${stats.total} ambulances, VSL et taxis conventionnés CPAM.`,
+    foundingDate: "2025",
+    areaServed: { "@type": "Country", name: "France" },
+    knowsAbout: [
+      "Transport sanitaire", "Ambulance", "VSL", "Taxi conventionné",
+      "CPAM", "Tiers payant", "Convention nationale transport", "FINESS", "ARS",
+    ],
+    sameAs: [
+      "https://www.linkedin.com/company/roullepro",
+      "https://www.facebook.com/roullepro",
+    ],
+  };
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "RoullePro",
+    url: "https://roullepro.com",
+    inLanguage: "fr-FR",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: "https://roullepro.com/transport-medical/recherche?q={search_term_string}",
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <main className="min-h-screen bg-white">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
       <section className="relative bg-gradient-to-br from-[#0B1120] via-[#0f2048] to-[#0066CC] text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10" aria-hidden="true">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">

@@ -4,15 +4,91 @@ import { Search, BadgeCheck, MessageCircle, BarChart3, Star, Shield } from "luci
 import ReclamerRechercheForm from "@/components/sanitaire/ReclamerRechercheForm";
 
 export const metadata: Metadata = {
-  title: "Espace pros — Réclamer ma fiche transport sanitaire",
+  title: "Espace pros ambulanciers, VSL et taxis conventionnés — Réclamer ma fiche gratuitement | RoullePro",
   description:
-    "Vous êtes ambulancier, VSL ou taxi conventionné ? Votre fiche est déjà pré-remplie. Récupérez-la gratuitement et recevez des demandes de patients.",
+    "Ambulancier, VSL ou taxi conventionné CPAM ? Votre fiche est déjà créée sur le 1er annuaire du transport sanitaire en France (26 000+ pros). Réclamez-la gratuitement, recevez les demandes patients en direct, sans commission. Badge Pro vérifié, statistiques, veille réglementaire à partir de 19,90€/mois.",
+  keywords: [
+    "annuaire ambulancier",
+    "annuaire VSL",
+    "annuaire taxi conventionné",
+    "réclamer fiche transport sanitaire",
+    "logiciel ambulancier",
+    "référencement entreprise ambulance",
+    "acquisition patients transport médical",
+    "plateforme transport sanitaire France",
+  ],
   alternates: { canonical: "/transport-medical/pro" },
+  openGraph: {
+    title: "Espace pros transport sanitaire — Réclamer votre fiche RoullePro",
+    description: "Le 1er annuaire ambulance, VSL et taxi conventionné CPAM en France. 26 000+ pros référencés. Réclamez votre fiche gratuitement.",
+    type: "website",
+    locale: "fr_FR",
+  },
+};
+
+const proPageJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "RoullePro — Référencement pro du transport sanitaire",
+  serviceType: "Référencement et acquisition de patients pour ambulanciers, VSL et taxis conventionnés CPAM",
+  provider: {
+    "@type": "Organization",
+    name: "RoullePro",
+    url: "https://roullepro.com",
+  },
+  areaServed: { "@type": "Country", name: "France" },
+  audience: {
+    "@type": "BusinessAudience",
+    audienceType: "Ambulanciers, sociétés de VSL, taxis conventionnés CPAM",
+  },
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Abonnements pro RoullePro",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        name: "Fiche gratuite",
+        price: "0",
+        priceCurrency: "EUR",
+        description: "Fiche visible publiquement, téléphone cliquable, horaires + adresse",
+      },
+      {
+        "@type": "Offer",
+        name: "Essential",
+        price: "19.90",
+        priceCurrency: "EUR",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "19.90",
+          priceCurrency: "EUR",
+          unitText: "MONTH",
+        },
+        description: "Badge Pro vérifié, galerie photos, veille réglementaire, statistiques",
+      },
+      {
+        "@type": "Offer",
+        name: "Premium",
+        price: "39",
+        priceCurrency: "EUR",
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: "39",
+          priceCurrency: "EUR",
+          unitText: "MONTH",
+        },
+        description: "Top 3 ville, messagerie patients, badge Recommandé, 20 photos + vidéo",
+      },
+    ],
+  },
 };
 
 export default function EspacePro() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/40 to-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(proPageJsonLd) }}
+      />
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-16 sm:py-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-medium mb-6">

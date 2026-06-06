@@ -66,20 +66,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (pros.length === 0) {
     return {
-      title: `Transport sanitaire à ${nomVille}`,
-      description: `Ambulances, VSL et taxis conventionnés à ${nomVille}. Annuaire gratuit.`,
+      title: `Transport sanitaire à ${nomVille} | RoullePro`,
+      description: `Ambulances, VSL et taxis conventionnés à ${nomVille}. Annuaire gratuit, téléphone direct, remboursement Sécurité sociale.`,
       alternates: { canonical: `/transport-medical/${ville}` },
     };
   }
 
+  const nbAmb = pros.filter((p) => p.categorie === "ambulance").length;
+  const nbVsl = pros.filter((p) => p.categorie === "vsl").length;
+  const nbTaxi = pros.filter((p) => p.categorie === "taxi_conventionne").length;
+  const breakdown = [
+    nbAmb > 0 ? `${nbAmb} ambulances` : null,
+    nbVsl > 0 ? `${nbVsl} VSL` : null,
+    nbTaxi > 0 ? `${nbTaxi} taxis conventionnés` : null,
+  ].filter(Boolean).join(", ");
+
+  const title = `Transport sanitaire à ${nomVille} : ${pros.length} pros conventionnés CPAM | RoullePro`;
+  const description = `${breakdown} à ${nomVille}. Téléphone direct, tarif Sécurité sociale, tiers payant. Réservation gratuite en ligne 24h/24.`.slice(0, 160);
+
   return {
-    title: `Ambulance, VSL, Taxi conventionné à ${nomVille} — ${pros.length} pros`,
-    description: `Trouvez ${pros.length} professionnels du transport sanitaire à ${nomVille} : ambulances, VSL, taxis conventionnés. Numéros directs, horaires, remboursement Sécurité sociale.`,
+    title,
+    description,
     alternates: { canonical: `/transport-medical/${ville}` },
     openGraph: {
       title: `Transport sanitaire à ${nomVille} — ${pros.length} professionnels`,
-      description: `Annuaire complet des ambulances, VSL et taxis conventionnés à ${nomVille}.`,
+      description,
       type: "website",
+      locale: "fr_FR",
+    },
+    twitter: {
+      card: "summary",
+      title: `Transport sanitaire ${nomVille}`,
+      description,
     },
   };
 }

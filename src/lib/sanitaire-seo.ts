@@ -10,10 +10,33 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
 type CategorieKey = "ambulance" | "vsl" | "taxi_conventionne";
 
-const CATEGORIE_TO_TYPE: Record<CategorieKey, string> = {
-  ambulance: "EmergencyService",
-  vsl: "LocalBusiness",
-  taxi_conventionne: "TaxiService",
+// @type principal optimisé pour Google Rich Results + AI search :
+// - ambulance : EmergencyService (spécifique secours santé)
+// - vsl : MedicalBusiness (santé, transport patient)
+// - taxi_conventionne : TaxiService (spécifique transport)
+const CATEGORIE_TO_TYPE: Record<CategorieKey, string[]> = {
+  ambulance: ["EmergencyService", "MedicalBusiness", "LocalBusiness"],
+  vsl: ["MedicalBusiness", "LocalBusiness"],
+  taxi_conventionne: ["TaxiService", "LocalBusiness"],
+};
+
+// Services offerts par catégorie pour le champ makesOffer / hasOfferCatalog
+const CATEGORIE_SERVICES: Record<CategorieKey, { name: string; description: string }[]> = {
+  ambulance: [
+    { name: "Transport sanitaire urgent", description: "Transport médicalisé allongé sur prescription ou régulation SAMU." },
+    { name: "Transport programmé allongé", description: "Sorties d'hôpital, transferts inter-établissements, consultations spécialisées." },
+    { name: "Transport conventionné CPAM", description: "Remboursé par la Sécurité sociale sur prescription, avec tiers payant." },
+  ],
+  vsl: [
+    { name: "Transport assis professionnalisé", description: "Véhicule sanitaire léger pour patients autonomes sur prescription médicale." },
+    { name: "Transport dialyse / chimiothérapie", description: "Trajets récurrents pour séances de soins programmées." },
+    { name: "Transport conventionné CPAM", description: "Remboursé par la Sécurité sociale, tiers payant accepté." },
+  ],
+  taxi_conventionne: [
+    { name: "Transport assis sur prescription", description: "Taxi agréé CPAM pour consultations, examens, kinésithérapie, dialyse." },
+    { name: "Tiers payant Sécurité sociale", description: "Pas d'avance de frais avec prescription et carte Vitale." },
+    { name: "Course classique", description: "Service taxi traditionnel sans prescription." },
+  ],
 };
 
 const CATEGORIE_LABEL: Record<CategorieKey, string> = {
@@ -37,9 +60,12 @@ export function buildProJsonLd(
   const url = `${BASE_URL}/transport-medical/${ville}/${categorie}/${slug}`;
   const nom = pro.nom_commercial || pro.raison_sociale;
 
+  const typesForCategorie = CATEGORIE_TO_TYPE[categorieKey] || ["LocalBusiness"];
+  const servicesForCategorie = CATEGORIE_SERVICES[categorieKey] || [];
+
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": CATEGORIE_TO_TYPE[categorieKey] || "LocalBusiness",
+    "@type": typesForCategorie,
     "@id": url,
     name: nom,
     legalName: pro.raison_sociale,
@@ -88,6 +114,34 @@ export function buildProJsonLd(
       "Taxi conventionné CPAM",
     ],
     isAcceptingNewPatients: true,
+    // Services explicites = meilleure compréhension par Google + AI (Perplexity, ChatGPT, Gemini)
+    makesOffer: servicesForCategorie.map((s) => ({
+      "@type": "Offer",
+      itemOffered: {
+        "@type": "Service",
+        name: s.name,
+        description: s.description,
+        provider: { "@type": "Organization", name: nom },
+      },
+      areaServed: { "@type": "City", name: pro.ville },
+      eligibleRegion: { "@type": "Country", name: "France" },
+    })),
+    // medicalSpecialty pour MedicalBusiness/EmergencyService
+    ...(categorieKey === "ambulance" ? { medicalSpecialty: "Emergency" } : {}),
+    ...(categorieKey === "vsl" ? { medicalSpecialty: "PreventiveMedicine" } : {}),
+    // Conventionnement CPAM exprimé comme certification structurée
+    ...(pro.ameli_conventionne ? {
+      hasCredential: {
+        "@type": "EducationalOccupationalCredential",
+        credentialCategory: "license",
+        name: "Conventionnement CPAM",
+        recognizedBy: {
+          "@type": "GovernmentOrganization",
+          name: "Caisse Primaire d'Assurance Maladie",
+          url: "https://www.ameli.fr",
+        },
+      },
+    } : {}),
     speakable: {
       "@type": "SpeakableSpecification",
       cssSelector: ["h1", ".fiche-resume", "section[data-fiche-faq] dt"],
