@@ -36,14 +36,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return {};
   const nomVille = deslugifyVille(ville);
   const pros = await fetchProsVilleCategorie(ville, cat.key);
+  const nb = pros.length;
+  const conventionnes = pros.filter((p) => p.ameli_conventionne).length;
+
+  // Title : action + nombre = signal d'utilité + AI search
+  const title = nb > 0
+    ? `${cat.labelPluriel} à ${nomVille} : ${nb} pros conventionnés CPAM | RoullePro`
+    : `${cat.labelPluriel} à ${nomVille} | RoullePro`;
+
+  // Description : nombre pros, % conventionnés, tiers payant, devis gratuit
+  const description = nb > 0
+    ? `${nb} ${cat.labelPluriel.toLowerCase()} à ${nomVille}${conventionnes > 0 ? `, dont ${conventionnes} conventionnés CPAM` : ""}. Téléphone direct, tarif Sécu, tiers payant. Réservation gratuite en ligne.`.slice(0, 160)
+    : `${cat.labelPluriel} à ${nomVille} : annuaire gratuit. Tarif Sécurité sociale, tiers payant, réservation en ligne.`.slice(0, 160);
+
   return {
-    title: `${cat.label} à ${nomVille} — ${pros.length} professionnels`,
-    description: `Liste complète des ${cat.labelPluriel.toLowerCase()} à ${nomVille}. ${cat.description} Numéros directs, horaires, remboursement Sécurité sociale.`,
+    title,
+    description,
     alternates: { canonical: `/transport-medical/${ville}/${categorie}` },
     openGraph: {
-      title: `${cat.labelPluriel} à ${nomVille}`,
-      description: `${pros.length} ${cat.labelPluriel.toLowerCase()} à ${nomVille} — annuaire gratuit.`,
+      title: `${cat.labelPluriel} à ${nomVille} — ${nb} pros`,
+      description,
       type: "website",
+      locale: "fr_FR",
+    },
+    twitter: {
+      card: "summary",
+      title: `${cat.labelPluriel} à ${nomVille}`,
+      description,
     },
   };
 }
@@ -57,12 +76,20 @@ export default async function VilleCategoriePage({ params }: Props) {
   const nomVille = pros.length > 0 ? pros[0].ville : deslugifyVille(ville);
   const departement = pros.length > 0 ? pros[0].departement : "";
 
+  // JSON-LD ItemList enrichi : Google peut afficher en carrousel local
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "CollectionPage",
+    "@type": "ItemList",
     name: `${cat.labelPluriel} à ${nomVille}`,
-    description: `Annuaire des ${cat.labelPluriel.toLowerCase()} à ${nomVille}`,
+    description: `Annuaire des ${cat.labelPluriel.toLowerCase()} conventionnés CPAM à ${nomVille}`,
     url: `https://roullepro.com/transport-medical/${ville}/${categorie}`,
+    numberOfItems: pros.length,
+    itemListElement: pros.slice(0, 20).map((p, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `https://roullepro.com/transport-medical/${ville}/${categorie}/${p.slug}`,
+      name: p.nom_commercial || p.raison_sociale,
+    })),
   };
 
   const faqQuestions = getVilleFaq(nomVille, pros.length);
