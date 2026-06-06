@@ -81,11 +81,11 @@ export function buildProJsonLd(
     knowsLanguage: ["fr", "fr-FR"],
     knowsAbout: [
       "Transport sanitaire",
-      "Transport conventionne CPAM",
-      "Tiers payant Securite sociale",
-      categorieKey === "ambulance" ? "Transport medicalise allonge" :
-      categorieKey === "vsl" ? "Vehicule sanitaire leger" :
-      "Taxi conventionne CPAM",
+      "Transport conventionné CPAM",
+      "Tiers payant Sécurité sociale",
+      categorieKey === "ambulance" ? "Transport médicalisé allongé" :
+      categorieKey === "vsl" ? "Véhicule sanitaire léger" :
+      "Taxi conventionné CPAM",
     ],
     isAcceptingNewPatients: true,
     speakable: {
@@ -224,45 +224,45 @@ export function buildFicheSeoText(
   // ---- 1. Phrase d'ouverture (4 variantes) ----
   const opensA: Record<CategorieKey, string[]> = {
     ambulance: [
-      `${nom} est une societe d'ambulances agreee, etablie a ${localisation}.`,
-      `Implantee a ${localisation}, ${nom} est une entreprise specialisee dans le transport sanitaire en ambulance.`,
-      `${nom} exerce comme societe d'ambulance a ${localisation}, en region ${region}.`,
-      `Basee a ${localisation}${dep ? " dans le departement " + dep : ""}, ${nom} assure des transports sanitaires en ambulance.`,
+      `${nom} est une société d'ambulances agréée, établie à ${localisation}.`,
+      `Implantée à ${localisation}, ${nom} est une entreprise spécialisée dans le transport sanitaire en ambulance.`,
+      `${nom} exerce comme société d'ambulance à ${localisation}, en région ${region}.`,
+      `Basée à ${localisation}${dep ? " dans le département " + dep : ""}, ${nom} assure des transports sanitaires en ambulance.`,
     ],
     vsl: [
-      `${nom} est une societe de transport sanitaire en VSL (Vehicule Sanitaire Leger), etablie a ${localisation}.`,
-      `Implantee a ${localisation}, ${nom} exploite des Vehicules Sanitaires Legers (VSL) pour les transports medicaux assis.`,
-      `${nom} assure le transport en VSL a ${localisation}, sur prescription medicale.`,
-      `Basee a ${localisation}${dep ? " (" + dep + ")" : ""}, ${nom} est specialisee dans le transport sanitaire en Vehicule Sanitaire Leger.`,
+      `${nom} est une société de transport sanitaire en VSL (Véhicule Sanitaire Léger), établie à ${localisation}.`,
+      `Implantée à ${localisation}, ${nom} exploite des Véhicules Sanitaires Légers (VSL) pour les transports médicaux assis.`,
+      `${nom} assure le transport en VSL à ${localisation}, sur prescription médicale.`,
+      `Basée à ${localisation}${dep ? " (" + dep + ")" : ""}, ${nom} est spécialisée dans le transport sanitaire en Véhicule Sanitaire Léger.`,
     ],
     taxi_conventionne: [
-      `${nom} est un taxi conventionne CPAM, etabli a ${localisation}.`,
-      `Implante a ${localisation}, ${nom} est un taxi agree par la Caisse Primaire d'Assurance Maladie pour le transport de patients sur prescription.`,
-      `${nom} exerce comme taxi conventionne a ${localisation}, en region ${region}.`,
-      `Base a ${localisation}${dep ? " (" + dep + ")" : ""}, ${nom} assure le transport medical assis en taxi conventionne.`,
+      `${nom} est un taxi conventionné CPAM, établi à ${localisation}.`,
+      `Implanté à ${localisation}, ${nom} est un taxi agréé par la Caisse Primaire d'Assurance Maladie pour le transport de patients sur prescription.`,
+      `${nom} exerce comme taxi conventionné à ${localisation}, en région ${region}.`,
+      `Basé à ${localisation}${dep ? " (" + dep + ")" : ""}, ${nom} assure le transport médical assis en taxi conventionné.`,
     ],
   };
 
   // ---- 2. Coordonnees ----
   const coordParts: string[] = [];
   if (adresseRue) coordParts.push(`L'adresse exacte est ${adresseRue}, ${cp || ""} ${villePretty}`.trim().replace(/\s+/g, " "));
-  if (pro.telephone_public) coordParts.push(`Telephone : ${pro.telephone_public}`);
+  if (pro.telephone_public) coordParts.push(`Téléphone : ${pro.telephone_public}`);
   if (pro.email_public) coordParts.push(`Email : ${pro.email_public}`);
   if (pro.site_web) coordParts.push(`Site web : ${pro.site_web}`);
   if (pro.siret) coordParts.push(`SIRET : ${pro.siret}`);
 
   // ---- 3. Description du service (specifique categorie) ----
   const services: Record<CategorieKey, string> = {
-    ambulance: `Une ambulance est un transport sanitaire medicalise pour les patients allonges ou dont l'etat necessite une surveillance pendant le trajet. Le vehicule est equipe d'oxygene, d'un brancard, d'un matelas a depression, d'un defibrillateur et de materiel de premiers secours. L'equipage comprend au minimum un Diplome d'Etat d'Ambulancier (DEA) accompagne d'un auxiliaire ambulancier. Les motifs de transport sont varies : entree ou sortie d'hospitalisation, consultation specialisee, examen complementaire (IRM, scanner, dialyse, radiotherapie, chimiotherapie), retour a domicile, transfert inter-hospitalier ou prise en charge a la suite d'un appel du SAMU lorsque la situation ne necessite pas de SMUR.`,
-    vsl: `Le VSL (Vehicule Sanitaire Leger) est un vehicule banalise de type berline ou monospace destine au transport assis de patients en etat stable. Il transporte jusqu'a trois patients simultanement, sur prescription medicale. Les motifs courants sont les seances de dialyse, de chimiotherapie, de radiotherapie, les consultations de specialistes, les examens d'imagerie ou les sorties d'hospitalisation. Le chauffeur detient le diplome d'auxiliaire ambulancier ou un titre equivalent et a suivi une formation aux gestes de premiers secours. Le VSL ne transporte pas de patients allonges et n'intervient pas en urgence.`,
-    taxi_conventionne: `Le taxi conventionne est un taxi titulaire d'une convention signee avec la Caisse Primaire d'Assurance Maladie (CPAM). Il transporte les patients autonomes en position assise dans le cadre de soins programmes : consultations, dialyses, kinesitherapie, examens, suivis post-hospitalisation. Le conventionnement permet la dispense d'avance de frais grace au tiers payant, sur presentation d'une prescription medicale de transport et de la carte Vitale du patient. Le chauffeur n'a pas de formation medicale specifique, ce qui le distingue du VSL ou de l'ambulance.`,
+    ambulance: `Une ambulance est un transport sanitaire médicalisé pour les patients allongés ou dont l'état nécessite une surveillance pendant le trajet. Le véhicule est équipé d'oxygène, d'un brancard, d'un matelas à dépression, d'un défibrillateur et de matériel de premiers secours. L'équipage comprend au minimum un Diplôme d'État d'Ambulancier (DEA) accompagné d'un auxiliaire ambulancier. Les motifs de transport sont variés : entrée ou sortie d'hospitalisation, consultation spécialisée, examen complémentaire (IRM, scanner, dialyse, radiothérapie, chimiothérapie), retour à domicile, transfert inter-hospitalier ou prise en charge à la suite d'un appel du SAMU lorsque la situation ne nécessite pas de SMUR.`,
+    vsl: `Le VSL (Véhicule Sanitaire Léger) est un véhicule banalisé de type berline ou monospace destiné au transport assis de patients en état stable. Il transporte jusqu'à trois patients simultanément, sur prescription médicale. Les motifs courants sont les séances de dialyse, de chimiothérapie, de radiothérapie, les consultations de spécialistes, les examens d'imagerie ou les sorties d'hospitalisation. Le chauffeur détient le diplôme d'auxiliaire ambulancier ou un titre équivalent et a suivi une formation aux gestes de premiers secours. Le VSL ne transporte pas de patients allongés et n'intervient pas en urgence.`,
+    taxi_conventionne: `Le taxi conventionné est un taxi titulaire d'une convention signée avec la Caisse Primaire d'Assurance Maladie (CPAM). Il transporte les patients autonomes en position assise dans le cadre de soins programmés : consultations, dialyses, kinésithérapie, examens, suivis post-hospitalisation. Le conventionnement permet la dispense d'avance de frais grâce au tiers payant, sur présentation d'une prescription médicale de transport et de la carte Vitale du patient. Le chauffeur n'a pas de formation médicale spécifique, ce qui le distingue du VSL ou de l'ambulance.`,
   };
 
   // ---- 4. Cadre legal et remboursement ----
   const remboursement: Record<CategorieKey, string> = {
-    ambulance: `Le transport en ambulance prescrit par un medecin est pris en charge par la Securite sociale a hauteur de 55 % du tarif conventionne, et a 100 % en cas d'Affection Longue Duree (ALD), de maternite a partir du 1er jour du 6e mois, d'accident du travail / maladie professionnelle, pour les nouveau-nes de moins de 30 jours ou en CSS/AME. L'hospitalisation seule n'ouvre les 100 % que si elle est liee a une de ces situations. Le tiers payant est generalement applique : le patient n'avance pas les frais. La franchise medicale de 4 euros par trajet (plafonnee a 8 euros par jour et 50 euros par an) s'applique. Les ambulances doivent obtenir un agrement de l'Agence Regionale de Sante (ARS) pour exercer.`,
-    vsl: `Le transport en VSL prescrit par un medecin est rembourse par la Securite sociale dans les memes conditions que l'ambulance : 55 % du tarif conventionne en regime general, 100 % en ALD, maternite a partir du 1er jour du 6e mois, AT/MP, nouveau-nes de moins de 30 jours, CSS/AME. L'hospitalisation seule n'ouvre les 100 % que si elle est liee a une de ces situations. Le tiers payant est applique. La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique. Les VSL sont, comme les ambulances, soumis a l'agrement de l'Agence Regionale de Sante (ARS).`,
-    taxi_conventionne: `Le transport en taxi conventionne est rembourse par la Securite sociale a 55 % du tarif conventionne, et a 100 % en cas d'ALD, maternite a partir du 1er jour du 6e mois, AT/MP, nouveau-nes de moins de 30 jours, CSS/AME, sur presentation d'une prescription medicale de transport. L'hospitalisation seule n'ouvre les 100 % que si elle est liee a une de ces situations. Le tiers payant permet de ne pas avancer les frais. La franchise medicale de 4 euros par trajet (plafonnee a 8 euros par jour et 50 euros par an) reste a la charge du patient. Les tarifs des courses sanitaires en taxi conventionne sont fixes par convention locale entre la CPAM et les organisations professionnelles departementales, sur la base de la convention-cadre nationale adoptee le 13 mai 2025.`,
+    ambulance: `Le transport en ambulance prescrit par un médecin est pris en charge par la Sécurité sociale à hauteur de 55 % du tarif conventionné, et à 100 % en cas d'Affection Longue Durée (ALD), de maternité à partir du 1er jour du 6e mois, d'accident du travail / maladie professionnelle, pour les nouveau-nés de moins de 30 jours ou en CSS/AME. L'hospitalisation seule n'ouvre les 100 % que si elle est liée à une de ces situations. Le tiers payant est généralement appliqué : le patient n'avance pas les frais. La franchise médicale de 4 euros par trajet (plafonnée à 8 euros par jour et 50 euros par an) s'applique. Les ambulances doivent obtenir un agrément de l'Agence Régionale de Santé (ARS) pour exercer.`,
+    vsl: `Le transport en VSL prescrit par un médecin est remboursé par la Sécurité sociale dans les mêmes conditions que l'ambulance : 55 % du tarif conventionné en régime général, 100 % en ALD, maternité à partir du 1er jour du 6e mois, AT/MP, nouveau-nés de moins de 30 jours, CSS/AME. L'hospitalisation seule n'ouvre les 100 % que si elle est liée à une de ces situations. Le tiers payant est appliqué. La franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an) s'applique. Les VSL sont, comme les ambulances, soumis à l'agrément de l'Agence Régionale de Santé (ARS).`,
+    taxi_conventionne: `Le transport en taxi conventionné est remboursé par la Sécurité sociale à 55 % du tarif conventionné, et à 100 % en cas d'ALD, maternité à partir du 1er jour du 6e mois, AT/MP, nouveau-nés de moins de 30 jours, CSS/AME, sur présentation d'une prescription médicale de transport. L'hospitalisation seule n'ouvre les 100 % que si elle est liée à une de ces situations. Le tiers payant permet de ne pas avancer les frais. La franchise médicale de 4 euros par trajet (plafonnée à 8 euros par jour et 50 euros par an) reste à la charge du patient. Les tarifs des courses sanitaires en taxi conventionné sont fixés par convention locale entre la CPAM et les organisations professionnelles départementales, sur la base de la convention-cadre nationale adoptée le 13 mai 2025.`,
   };
 
   // ---- 5. Zone d'intervention ----
@@ -275,12 +275,12 @@ export function buildFicheSeoText(
     const communeAdsPretty = communeAdsRaw ? titleCaseVille(communeAdsRaw) : null;
     const communeRattachement = communeAdsPretty || villePretty;
     if (numeroAds && communeAdsPretty) {
-      zone = `${nom} est titulaire de l'autorisation de stationnement (ADS) numero ${numeroAds} delivree par la commune de ${communeAdsPretty}. Conformement aux articles L.3121-1 et L.3121-11 du Code des transports, l'activite de taxi est rattachee a cette commune : prise en charge des clients sur la voie publique uniquement dans la commune de rattachement (ou la zone unique de prise en charge en cas de ZUPC), et retour obligatoire apres chaque course hors zone.`;
+      zone = `${nom} est titulaire de l'autorisation de stationnement (ADS) numéro ${numeroAds} délivrée par la commune de ${communeAdsPretty}. Conformément aux articles L.3121-1 et L.3121-11 du Code des transports, l'activité de taxi est rattachée à cette commune : prise en charge des clients sur la voie publique uniquement dans la commune de rattachement (ou la zone unique de prise en charge en cas de ZUPC), et retour obligatoire après chaque course hors zone.`;
     } else {
-      zone = `${nom} exerce son activite de taxi conventionne au depart de ${communeRattachement}${dep ? " (" + dep + ")" : ""}. Conformement aux articles L.3121-1 et L.3121-11 du Code des transports, le taxi est rattache a une commune (ou ZUPC) qui delimite sa zone de prise en charge sur la voie publique. Les courses reservees a l'avance peuvent etre realisees au depart de tout point.`;
+      zone = `${nom} exerce son activité de taxi conventionné au départ de ${communeRattachement}${dep ? " (" + dep + ")" : ""}. Conformément aux articles L.3121-1 et L.3121-11 du Code des transports, le taxi est rattaché à une commune (ou ZUPC) qui délimite sa zone de prise en charge sur la voie publique. Les courses réservées à l'avance peuvent être réalisées au départ de tout point.`;
     }
   } else {
-    zone = `${nom} intervient principalement a ${villePretty}${dep ? " et dans le departement " + dep : ""}${region ? " en region " + region : ""}.`;
+    zone = `${nom} intervient principalement à ${villePretty}${dep ? " et dans le département " + dep : ""}${region ? " en région " + region : ""}.`;
     if (villesVoisines && villesVoisines.length > 0) {
       const noms = villesVoisines.slice(0, 6).map((v) => titleCaseVille(v.ville)).join(", ");
       zone += ` Les communes proches couvertes par les professionnels du secteur incluent ${noms}.`;
@@ -289,9 +289,9 @@ export function buildFicheSeoText(
 
   // ---- 6. CTA / pratique ----
   const ctaVariants = [
-    `Pour reserver un transport ou obtenir un devis, contactez ${nom} directement par telephone. Pour les transports programmes (dialyse, consultation, examen), il est recommande de prendre rendez-vous au moins 24 heures a l'avance.`,
-    `${nom} traite les demandes de transport sur rendez-vous. Munissez-vous de votre prescription medicale de transport et de votre carte Vitale lors de la prise en charge.`,
-    `Pour organiser un transport, prevoyez votre prescription medicale de transport (CERFA 11574*07, reference S3138g) et appelez ${nom}. Le tiers payant evite l'avance de frais.`,
+    `Pour réserver un transport ou obtenir un devis, contactez ${nom} directement par téléphone. Pour les transports programmés (dialyse, consultation, examen), il est recommandé de prendre rendez-vous au moins 24 heures à l'avance.`,
+    `${nom} traite les demandes de transport sur rendez-vous. Munissez-vous de votre prescription médicale de transport et de votre carte Vitale lors de la prise en charge.`,
+    `Pour organiser un transport, prévoyez votre prescription médicale de transport (CERFA 11574*07, référence S3138g) et appelez ${nom}. Le tiers payant évite l'avance de frais.`,
   ];
 
   // ---- Assemblage avec selection deterministe par hash SIRET/id ----
@@ -301,7 +301,7 @@ export function buildFicheSeoText(
   const titre = `A propos de ${nom}`;
   const paragraphes: string[] = [];
 
-  paragraphes.push(opensA[cat]?.[idxOpen] || `${nom} est une entreprise de transport sanitaire a ${localisation}.`);
+  paragraphes.push(opensA[cat]?.[idxOpen] || `${nom} est une entreprise de transport sanitaire à ${localisation}.`);
 
   if (coordParts.length > 0) paragraphes.push(coordParts.join(". ") + ".");
 

@@ -16,17 +16,7 @@ export const metadata: Metadata = {
     template: "%s | RoullePro",
   },
   description: "Annuaire gratuit du transport sanitaire en France : trouvez une ambulance, un VSL ou un taxi conventionné près de chez vous. Plus de 26 000 fiches avec téléphone direct, adresse et horaires. Remboursé par la Sécurité sociale.",
-  keywords: [
-    "ambulance",
-    "VSL",
-    "taxi conventionné",
-    "transport sanitaire",
-    "annuaire ambulance",
-    "taxi CPAM",
-    "transport médical",
-    "ambulancier",
-    "transport remboursé sécurité sociale",
-  ],
+  // meta keywords retiré : ignoré par Google depuis 2009, identique sur toutes les pages = signal négatif/keyword stuffing
   metadataBase: new URL(APP_URL),
   alternates: {
     canonical: '/',
