@@ -68,19 +68,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nom = pro.nom_commercial || pro.raison_sociale;
   const cat = getCategorieBySlug(categorie);
   const catLabel = cat?.label || "Transport sanitaire";
-  const seo = buildFicheSeoText(pro);
-  // Description meta : 2 premieres phrases du texte SEO, tronquees a 158 chars
-  const metaDesc = (
-    pro.description?.slice(0, 158) ||
-    seo.paragraphes[0]?.slice(0, 158) ||
-    `${catLabel} ${nom} à ${pro.ville}. Téléphone, adresse, horaires.`
-  );
+
+  // Meta description optimisée CTR : téléphone, conventionné CPAM, tiers payant, CTA
+  // Cible : 150-160 caractères, signaux de confiance + action
+  const tel = pro.telephone_public ? ` ☎ ${pro.telephone_public}` : "";
+  const convention = pro.ameli_conventionne ? " Conventionné CPAM, tiers payant accepté." : "";
+  const baseDesc = `${catLabel} ${nom} à ${pro.ville}.${convention}${tel} Devis gratuit, réservation en ligne.`;
+  const metaDesc = baseDesc.length > 160
+    ? `${catLabel} à ${pro.ville} : ${nom}.${convention}${tel} Devis gratuit.`.slice(0, 160)
+    : baseDesc;
+
+  // Title optimisé : nom + catégorie + ville + signal qualité court
+  const metaTitle = `${nom} — ${catLabel} ${pro.ville} | Conventionné CPAM`;
+
   return {
-    title: `${nom} — ${catLabel} à ${pro.ville}`,
+    title: metaTitle,
     description: metaDesc,
     alternates: { canonical: `/transport-medical/${ville}/${categorie}/${slug}` },
     openGraph: {
-      title: `${nom} — ${catLabel} à ${pro.ville}`,
+      title: metaTitle,
       description: metaDesc,
       type: "website",
       locale: "fr_FR",
