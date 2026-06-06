@@ -74,6 +74,33 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      // Corse : code historique "20" -> Corse-du-Sud (2A) par défaut
+      {
+        source: '/transport-medical/departement/20',
+        destination: '/transport-medical/departement/2A',
+        permanent: true,
+      },
+      // Codes DOM-TOM invalides (970, 978, 980) -> page d'accueil transport médical
+      // Les codes valides DOM-TOM sont : 971, 972, 973, 974, 976
+      {
+        source: '/transport-medical/departement/970',
+        destination: '/transport-medical/departement/971',
+        permanent: true,
+      },
+      {
+        source: '/transport-medical/departement/978',
+        destination: '/transport-medical/departement/976',
+        permanent: true,
+      },
+      {
+        source: '/transport-medical/departement/980',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
