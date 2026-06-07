@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import SearchHero from "@/components/sanitaire/SearchHero";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
+import { getProStats } from "@/lib/stats";
 
 export const revalidate = 3600;
 
@@ -33,25 +34,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Optimisation perf : lit des vues matérialisées au lieu de scanner 22k lignes à chaque revalidation.
-// Les vues sont raffraîchies par un cron quotidien (REFRESH MATERIALIZED VIEW).
-
-async function getStats() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { data } = await supabase
-    .from("sanitaire_home_stats")
-    .select("total, ambulances, vsl, taxis")
-    .maybeSingle();
-  return {
-    total: data?.total ?? 0,
-    ambulances: data?.ambulances ?? 0,
-    vsl: data?.vsl ?? 0,
-    taxis: data?.taxis ?? 0,
-  };
-}
+// Les comptages proviennent du helper unique getProStats (filtre de visibilite canonique, cache 15 min).
 
 async function getTopVilles() {
   const supabase = createClient(
@@ -81,7 +64,7 @@ async function getRegionsCount() {
 }
 
 export default async function HomePage() {
-  const [stats, topVilles, regions] = await Promise.all([getStats(), getTopVilles(), getRegionsCount()]);
+  const [stats, topVilles, regions] = await Promise.all([getProStats(), getTopVilles(), getRegionsCount()]);
 
   // JSON-LD : Organization + WebSite avec SearchAction (sitelinks search box Google)
   const orgLd = {
@@ -91,7 +74,7 @@ export default async function HomePage() {
     alternateName: "Roulle Pro",
     url: "https://roullepro.com",
     logo: "https://roullepro.com/android-chrome-512x512.png",
-    description: `Annuaire officiel du transport sanitaire en France : ${stats.total} ambulances, VSL et taxis conventionnés CPAM.`,
+    description: `Annuaire officiel du transport sanitaire en France : ${stats.total.toLocaleString("fr-FR")} ambulances, VSL et taxis conventionnés CPAM.`,
     foundingDate: "2025",
     areaServed: { "@type": "Country", name: "France" },
     knowsAbout: [
@@ -181,7 +164,7 @@ export default async function HomePage() {
             icon={<Cross className="w-6 h-6" />}
             color="bg-rose-50 text-rose-600 border-rose-100"
             title="Ambulance"
-            count={stats.ambulances}
+            count={stats.byCategory.ambulance}
             description="Transport médicalisé, équipage diplômé, matériel à bord. Urgences et transports programmés."
           />
           <CategorieCard
@@ -189,7 +172,7 @@ export default async function HomePage() {
             icon={<Car className="w-6 h-6" />}
             color="bg-blue-50 text-blue-600 border-blue-100"
             title="VSL"
-            count={stats.vsl}
+            count={stats.byCategory.vsl}
             description="Véhicule Sanitaire Léger, transport assis sur prescription, remboursé par la Sécurité sociale."
           />
           <CategorieCard
@@ -197,7 +180,7 @@ export default async function HomePage() {
             icon={<Users className="w-6 h-6" />}
             color="bg-amber-50 text-amber-600 border-amber-100"
             title="Taxi conventionné"
-            count={stats.taxis}
+            count={stats.byCategory.taxi_conventionne}
             description="Taxi agréé par la CPAM, transport assis sur prescription, tiers payant Sécurité sociale."
           />
         </div>

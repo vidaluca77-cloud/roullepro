@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@supabase/supabase-js";
 import {
   BadgeCheck,
   ShieldCheck,
@@ -15,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react";
 import ReclamerRechercheForm from "@/components/sanitaire/ReclamerRechercheForm";
+import { getProStats } from "@/lib/stats";
 
 export const revalidate = 3600;
 
@@ -25,19 +25,8 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pro" },
 };
 
-async function getCount() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { count } = await supabase
-    .from("pros_sanitaire")
-    .select("*", { count: "exact", head: true });
-  return count ?? 0;
-}
-
 export default async function ProPage() {
-  const total = await getCount();
+  const { total } = await getProStats();
 
   return (
     <main className="min-h-screen bg-white">
