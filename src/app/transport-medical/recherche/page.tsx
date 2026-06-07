@@ -3,20 +3,54 @@ import Link from "next/link";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES_SANITAIRE, getCategorieBySlug, slugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
+import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
+import GeolocBouton from "@/components/sanitaire/GeolocBouton";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string; categorie?: string; ameli?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    categorie?: string;
+    ameli?: string;
+    lat?: string;
+    lng?: string;
+    radius?: string;
+  }>;
 };
 
+// Distance Haversine en km entre deux points lat/lng.
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 export default async function RecherchePage({ searchParams }: Props) {
-  const { q, categorie, ameli } = await searchParams;
+  const { q, categorie, ameli, lat, lng, radius } = await searchParams;
   const queryVille = (q || "").trim();
   const cat = categorie ? getCategorieBySlug(categorie) : null;
   const villeSlug = slugifyVille(queryVille);
   // Filtre conventionne Ameli : OFF par defaut (inclusivite). Active via ?ameli=1
   const ameliOnly = ameli === "1";
+
+  // Geolocalisation "autour de moi" : tri par distance si lat/lng fournis.
+  const userLat = lat ? parseFloat(lat) : null;
+  const userLng = lng ? parseFloat(lng) : null;
+  const hasGeo =
+    userLat !== null && userLng !== null && Number.isFinite(userLat) && Number.isFinite(userLng);
+  const RADIUS_OPTIONS = [5, 10, 20, 50];
+  const rayonKm = (() => {
+    const r = radius ? parseInt(radius, 10) : 10;
+    return RADIUS_OPTIONS.includes(r) ? r : 10;
+  })();
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -53,7 +87,35 @@ export default async function RecherchePage({ searchParams }: Props) {
     : null;
 
   let pros: ProSanitaire[] = [];
-  if (matchedRegion) {
+  if (hasGeo) {
+    // Recherche "autour de moi" : bounding box puis tri Haversine par distance.
+    // 1 deg lat ~= 111 km ; 1 deg lng ~= 73 km a 45 deg N (marge suffisante en France metropolitaine).
+    const dLat = rayonKm / 111;
+    const dLng = rayonKm / 73;
+    let query = supabase
+      .from("pros_sanitaire_public")
+      .select("*")
+      .eq("actif", true).eq("suspendu", false)
+      .not("latitude", "is", null)
+      .gte("latitude", userLat! - dLat)
+      .lte("latitude", userLat! + dLat)
+      .gte("longitude", userLng! - dLng)
+      .lte("longitude", userLng! + dLng)
+      .limit(500);
+    if (cat) query = query.eq("categorie", cat.key);
+    if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
+    const { data } = await query;
+    const withDist = ((data || []) as ProSanitaire[])
+      .filter((p) => p.latitude != null && p.longitude != null)
+      .map((p) => ({
+        ...p,
+        distance_km: haversineKm(userLat!, userLng!, p.latitude as number, p.longitude as number),
+      }))
+      .filter((p) => p.distance_km <= rayonKm)
+      .sort((a, b) => a.distance_km - b.distance_km)
+      .slice(0, 100);
+    pros = withDist as ProSanitaire[];
+  } else if (matchedRegion) {
     // Recherche par region (clic depuis la page d'accueil ou saisie d'un nom de region)
     let query = supabase
       .from("pros_sanitaire_public")
@@ -98,7 +160,9 @@ export default async function RecherchePage({ searchParams }: Props) {
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4">
-            {cat ? `${cat.labelPluriel} ` : "Résultats "}{queryVille ? `à ${queryVille}` : ""}
+            {hasGeo
+              ? `${cat ? cat.labelPluriel : "Transport sanitaire"} autour de vous`
+              : `${cat ? `${cat.labelPluriel} ` : "Résultats "}${queryVille ? `à ${queryVille}` : ""}`}
           </h1>
           <form action="/transport-medical/recherche" className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2">
             <div className="flex-1 flex items-center gap-3 px-4">
@@ -148,6 +212,35 @@ export default async function RecherchePage({ searchParams }: Props) {
             />
             <span className="text-sm">Conventionne Ameli uniquement</span>
           </label>
+
+          <div className="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+            <GeolocBouton radius={rayonKm} categorie={categorie} className="[&_button]:bg-white [&_button]:border-white [&_button]:text-[#0066CC] [&_button]:hover:bg-blue-50" />
+            {hasGeo && (
+              <div className="flex items-center gap-2 text-sm text-blue-100">
+                <span>Rayon :</span>
+                {RADIUS_OPTIONS.map((r) => {
+                  const params = new URLSearchParams();
+                  params.set("lat", String(userLat));
+                  params.set("lng", String(userLng));
+                  params.set("radius", String(r));
+                  if (categorie) params.set("categorie", categorie);
+                  return (
+                    <Link
+                      key={r}
+                      href={`/transport-medical/recherche?${params.toString()}`}
+                      className={`px-2.5 py-1 rounded-full border transition ${
+                        r === rayonKm
+                          ? "bg-white text-[#0066CC] border-white font-semibold"
+                          : "border-white/30 text-white hover:bg-white/10"
+                      }`}
+                    >
+                      {r} km
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -156,7 +249,9 @@ export default async function RecherchePage({ searchParams }: Props) {
         {pros.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
             <p className="text-gray-600 mb-4">
-              Aucun professionnel référencé pour cette recherche. Essayez une ville voisine ou élargissez le type.
+              {hasGeo
+                ? `Aucun professionnel dans un rayon de ${rayonKm} km. Élargissez le rayon ci-dessus ou tapez votre ville.`
+                : "Aucun professionnel référencé pour cette recherche. Essayez une ville voisine ou élargissez le type."}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/transport-medical" className="text-[#0066CC] font-medium hover:underline">
@@ -215,11 +310,18 @@ export default async function RecherchePage({ searchParams }: Props) {
                         {pro.telephone_public}
                       </div>
                     )}
+                    <OpenStatusBadge horaires={pro.horaires} variant="card" />
                     <AmeliBadge
                       conventionne={pro.ameli_conventionne}
                       lastSeen={pro.ameli_last_seen}
                       variant="sm"
                     />
+                    {typeof (pro as ProSanitaire & { distance_km?: number }).distance_km === "number" && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-gray-600 bg-gray-100 rounded-full px-2 py-0.5">
+                        <MapPin className="w-3 h-3" />
+                        {(pro as ProSanitaire & { distance_km?: number }).distance_km!.toFixed(1)} km
+                      </span>
+                    )}
                   </div>
                 </Link>
               );
