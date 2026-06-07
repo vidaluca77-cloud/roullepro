@@ -5,19 +5,23 @@ import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
+import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
+import AmeliBadge from "@/components/sanitaire/AmeliBadge";
+import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
 
 export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ ville: string; categorie: string }>;
+  searchParams: Promise<{ ameli?: string }>;
 };
 
-async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string) {
+async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string, ameliOnly = false) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data } = await supabase
+  let query = supabase
     .from("pros_sanitaire_public")
     .select("*")
     .eq("actif", true).eq("suspendu", false)
@@ -27,6 +31,8 @@ async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string) 
     .order("claimed", { ascending: false })
     .order("raison_sociale")
     .limit(200);
+  if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
+  const { data } = await query;
   return (data || []) as ProSanitaire[];
 }
 
@@ -67,12 +73,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function VilleCategoriePage({ params }: Props) {
+export default async function VilleCategoriePage({ params, searchParams }: Props) {
   const { ville, categorie } = await params;
+  const { ameli } = await searchParams;
+  const ameliOnly = ameli === "1";
   const cat = getCategorieBySlug(categorie);
   if (!cat) notFound();
 
-  const pros = await fetchProsVilleCategorie(ville, cat.key);
+  const pros = await fetchProsVilleCategorie(ville, cat.key, ameliOnly);
   const nomVille = pros.length > 0 ? pros[0].ville : deslugifyVille(ville);
   const departement = pros.length > 0 ? pros[0].departement : "";
 
@@ -129,9 +137,23 @@ export default async function VilleCategoriePage({ params }: Props) {
           ))}
         </div>
 
+        <div className="mb-6">
+          <AmeliFilterToggle active={ameliOnly} />
+        </div>
+
         {pros.length === 0 ? (
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 text-gray-700">
-            Aucun {cat.label.toLowerCase()} référencé à {nomVille} pour l'instant.
+            {ameliOnly ? (
+              <>
+                Aucun {cat.label.toLowerCase()} conventionné CPAM confirmé à {nomVille} pour l&apos;instant.{" "}
+                <Link href={`/transport-medical/${ville}/${categorie}`} className="text-[#0066CC] font-medium hover:underline">
+                  Afficher tous les {cat.labelPluriel.toLowerCase()}
+                </Link>
+                .
+              </>
+            ) : (
+              <>Aucun {cat.label.toLowerCase()} référencé à {nomVille} pour l&apos;instant.</>
+            )}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
@@ -204,6 +226,10 @@ function ProCard({
             Recommandé
           </span>
         )}
+      </div>
+      <div className="flex flex-wrap items-center gap-2 mt-3">
+        <OpenStatusBadge horaires={pro.horaires} variant="card" />
+        <AmeliBadge conventionne={pro.ameli_conventionne} lastSeen={pro.ameli_last_seen} variant="sm" />
       </div>
       <div className="flex flex-wrap items-center gap-3 mt-3">
         {pro.telephone_public ? (
