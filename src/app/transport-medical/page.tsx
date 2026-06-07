@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Cross, Car, MapPin, Search, Phone, Shield, Users, Clock, ChevronRight } from "lucide-react";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getDepartementByCode } from "@/lib/departements-fr";
+import { getProStats } from "@/lib/stats";
 
 export const revalidate = 3600;
 
@@ -19,33 +20,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-async function getStats() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { count: total } = await supabase
-    .from("pros_sanitaire_public")
-    .select("*", { count: "exact", head: true })
-    .eq("actif", true);
-  const { count: ambulances } = await supabase
-    .from("pros_sanitaire_public")
-    .select("*", { count: "exact", head: true })
-    .eq("actif", true)
-    .eq("categorie", "ambulance");
-  const { count: vsl } = await supabase
-    .from("pros_sanitaire_public")
-    .select("*", { count: "exact", head: true })
-    .eq("actif", true)
-    .eq("categorie", "vsl");
-  const { count: taxis } = await supabase
-    .from("pros_sanitaire_public")
-    .select("*", { count: "exact", head: true })
-    .eq("actif", true)
-    .eq("categorie", "taxi_conventionne");
-  return { total: total ?? 0, ambulances: ambulances ?? 0, vsl: vsl ?? 0, taxis: taxis ?? 0 };
-}
 
 async function getTopVilles() {
   const supabase = createClient(
@@ -176,7 +150,7 @@ async function getAllVilles() {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
 export default async function TransportMedicalHome() {
-  const stats = await getStats();
+  const stats = await getProStats();
   const topVilles = await getTopVilles();
   const regionsCouvertes = await getRegionsCouvertes();
   const departementsCouverts = await getDepartementsCouverts();
@@ -251,9 +225,9 @@ export default async function TransportMedicalHome() {
 
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl">
             <Stat label="Professionnels référencés" value={stats.total.toLocaleString("fr-FR")} />
-            <Stat label="Ambulances" value={stats.ambulances.toLocaleString("fr-FR")} />
-            <Stat label="VSL" value={stats.vsl.toLocaleString("fr-FR")} />
-            <Stat label="Taxis conventionnés" value={stats.taxis.toLocaleString("fr-FR")} />
+            <Stat label="Ambulances" value={stats.byCategory.ambulance.toLocaleString("fr-FR")} />
+            <Stat label="VSL" value={stats.byCategory.vsl.toLocaleString("fr-FR")} />
+            <Stat label="Taxis conventionnés" value={stats.byCategory.taxi_conventionne.toLocaleString("fr-FR")} />
           </div>
         </div>
       </section>

@@ -16,11 +16,15 @@ import {
   getVilleFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
+import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
+import AmeliBadge from "@/components/sanitaire/AmeliBadge";
+import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
 
 export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ ville: string }>;
+  searchParams: Promise<{ ameli?: string }>;
 };
 
 // Limite à 150 fiches max en SSR pour éviter le bloat HTML sur les grandes villes
@@ -28,12 +32,12 @@ type Props = {
 const MAX_PROS_PER_VILLE_SSR = 150;
 const MAX_PROS_PER_CATEGORIE_SSR = 50;
 
-async function fetchProsForVille(villeSlug: string) {
+async function fetchProsForVille(villeSlug: string, ameliOnly = false) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data, error } = await supabase
+  let query = supabase
     .from("pros_sanitaire_public")
     .select("*")
     .eq("actif", true).eq("suspendu", false)
@@ -42,6 +46,8 @@ async function fetchProsForVille(villeSlug: string) {
     .order("claimed", { ascending: false })
     .order("raison_sociale")
     .limit(MAX_PROS_PER_VILLE_SSR);
+  if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
+  const { data, error } = await query;
   if (error) return [];
   return (data || []) as ProSanitaire[];
 }
@@ -102,14 +108,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function VillePage({ params }: Props) {
+export default async function VillePage({ params, searchParams }: Props) {
   const { ville } = await params;
+  const { ameli } = await searchParams;
+  const ameliOnly = ameli === "1";
   const [pros, totalCount] = await Promise.all([
-    fetchProsForVille(ville),
+    fetchProsForVille(ville, ameliOnly),
     countProsForVille(ville),
   ]);
 
-  if (pros.length === 0) {
+  if (pros.length === 0 && !ameliOnly) {
     const nomVille = deslugifyVille(ville);
     return (
       <main className="min-h-screen bg-white">
@@ -136,9 +144,9 @@ export default async function VillePage({ params }: Props) {
     );
   }
 
-  const nomVille = pros[0].ville;
-  const departement = pros[0].departement;
-  const region = pros[0].region;
+  const nomVille = pros[0]?.ville || deslugifyVille(ville);
+  const departement = pros[0]?.departement || "";
+  const region = pros[0]?.region || "";
 
   const groupedFull = {
     ambulance: pros.filter((p) => p.categorie === "ambulance"),
@@ -245,6 +253,20 @@ export default async function VillePage({ params }: Props) {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-10">
+        <div className="mb-6">
+          <AmeliFilterToggle active={ameliOnly} />
+        </div>
+
+        {ameliOnly && pros.length === 0 && (
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6 text-gray-700 mb-8">
+            Aucun professionnel conventionné CPAM confirmé à {nomVille} pour l&apos;instant.{" "}
+            <Link href={`/transport-medical/${ville}`} className="text-[#0066CC] font-medium hover:underline">
+              Afficher tous les professionnels
+            </Link>
+            .
+          </div>
+        )}
+
         <div className="prose prose-sm max-w-none text-gray-700 mb-8">
           <p className="leading-relaxed">
             L'annuaire RoullePro recense <strong>{pros.length} professionnels du transport sanitaire
@@ -414,6 +436,11 @@ function ProCard({ pro, villeSlug }: { pro: ProSanitaire; villeSlug: string }) {
       {pro.description && isPremium ? (
         <p className="text-sm text-gray-600 line-clamp-2 mb-3">{pro.description}</p>
       ) : null}
+
+      <div className="flex flex-wrap items-center gap-2 mt-3">
+        <OpenStatusBadge horaires={pro.horaires} variant="card" />
+        <AmeliBadge conventionne={pro.ameli_conventionne} lastSeen={pro.ameli_last_seen} variant="sm" />
+      </div>
 
       <div className="flex flex-wrap items-center gap-3 mt-3">
         {pro.telephone_public ? (
