@@ -35,10 +35,11 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+          cache-dependency-path: scripts/phone_enrichment/requirements.txt
 
       - name: Install dependencies
         run: |
-          pip install requests
+          pip install -r scripts/phone_enrichment/requirements.txt
 
       - name: Run enrichment worker
         env:
