@@ -1,7 +1,7 @@
 name: Enrichissement téléphones RoullePro
 
 on:
-  # Toutes les heures à HH:05 (~330 fiches/heure max si DFS rapide)
+  # Toutes les heures à HH:05, durée ~55 min/run (~330 fiches/run)
   schedule:
     - cron: "5 * * * *"
   # Permet de déclencher manuellement depuis l'onglet Actions
@@ -10,7 +10,7 @@ on:
       max_minutes:
         description: "Durée max (minutes, 1-340)"
         required: false
-        default: "50"
+        default: "55"
       batch_size:
         description: "Batch size (1-500)"
         required: false
@@ -25,7 +25,7 @@ jobs:
   enrich:
     runs-on: ubuntu-latest
     # Timeout dur GitHub Actions = 6h ; on garde une marge
-    timeout-minutes: 350
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,7 +47,7 @@ jobs:
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          MAX_MINUTES: ${{ github.event.inputs.max_minutes || '50' }}
+          MAX_MINUTES: ${{ github.event.inputs.max_minutes || '55' }}
           BATCH_SIZE: ${{ github.event.inputs.batch_size || '100' }}
         run: |
           python scripts/phone_enrichment/enrich.py
