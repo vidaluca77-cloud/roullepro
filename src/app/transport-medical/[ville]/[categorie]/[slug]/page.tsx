@@ -37,6 +37,8 @@ import PhoneReveal from "@/components/sanitaire/PhoneReveal";
 import CallbackButton from "@/components/sanitaire/CallbackButton";
 import FicheStatusBadge from "@/components/sanitaire/FicheStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
+import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
+import ItineraireButton from "@/components/sanitaire/ItineraireButton";
 
 // Revalidation 60s : permet aux pros de voir leurs modifications (horaires, photos, description)
 // rapidement après sauvegarde. Le PATCH /api/sanitaire/fiche appelle revalidatePath en complément.
@@ -279,10 +281,13 @@ export default async function FicheProPage({ params }: Props) {
 
           {pro.horaires && Object.keys(pro.horaires).length > 0 && (
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-[#0066CC]" />
-                Horaires d&apos;ouverture
-              </h2>
+              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-[#0066CC]" />
+                  Horaires d&apos;ouverture
+                </h2>
+                <OpenStatusBadge horaires={pro.horaires} variant="fiche" />
+              </div>
               <div className="divide-y divide-gray-100">
                 {[
                   { key: "lundi", label: "Lundi" },
@@ -393,6 +398,14 @@ export default async function FicheProPage({ params }: Props) {
                       {pro.adresse}<br />
                       {pro.code_postal} {pro.ville}
                     </div>
+                    <ItineraireButton
+                      latitude={pro.latitude}
+                      longitude={pro.longitude}
+                      raisonSociale={pro.raison_sociale}
+                      ville={pro.ville}
+                      codePostal={pro.code_postal}
+                      adresse={pro.adresse}
+                    />
                   </div>
                 </div>
               )}
