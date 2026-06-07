@@ -155,14 +155,35 @@ export default async function RecherchePage({ searchParams }: Props) {
     pros = (data || []) as ProSanitaire[];
   }
 
+  // Etat par defaut : aucune recherche active. On ne montre jamais "0 resultat".
+  // On peuple la grille avec un echantillon de pros mis en avant (claimed/plan en priorite).
+  const aucuneRecherche = !hasGeo && !matchedRegion && !queryVille && !cat;
+  if (aucuneRecherche) {
+    let query = supabase
+      .from("pros_sanitaire_public")
+      .select("*")
+      .eq("actif", true).eq("suspendu", false)
+      .order("claimed", { ascending: false })
+      .order("plan", { ascending: false })
+      .limit(24);
+    if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
+    const { data } = await query;
+    pros = (data || []) as ProSanitaire[];
+  }
+
+  // Villes populaires proposees en raccourci sur l'etat d'accueil.
+  const VILLES_POPULAIRES = ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Bordeaux", "Lille"];
+
   return (
     <main className="min-h-screen bg-gray-50">
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-10">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4">
-            {hasGeo
-              ? `${cat ? cat.labelPluriel : "Transport sanitaire"} autour de vous`
-              : `${cat ? `${cat.labelPluriel} ` : "Résultats "}${queryVille ? `à ${queryVille}` : ""}`}
+            {aucuneRecherche
+              ? "Trouvez un professionnel près de chez vous"
+              : hasGeo
+                ? `${cat ? cat.labelPluriel : "Transport sanitaire"} autour de vous`
+                : `${cat ? `${cat.labelPluriel} ` : "Résultats "}${queryVille ? `à ${queryVille}` : ""}`}
           </h1>
           <form action="/transport-medical/recherche" className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2">
             <div className="flex-1 flex items-center gap-3 px-4">
@@ -245,7 +266,31 @@ export default async function RecherchePage({ searchParams }: Props) {
       </section>
 
       <section className="max-w-5xl mx-auto px-4 py-8">
-        <div className="text-sm text-gray-600 mb-4">{pros.length} résultat{pros.length > 1 ? "s" : ""}</div>
+        {aucuneRecherche && (
+          <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
+            <p className="text-gray-700 font-medium mb-1">
+              Tapez votre ville ci-dessus ou cliquez sur « Autour de moi » pour trouver un professionnel proche.
+            </p>
+            <p className="text-sm text-gray-500 mb-4">Ou choisissez une ville parmi les plus recherchées :</p>
+            <div className="flex flex-wrap gap-2">
+              {VILLES_POPULAIRES.map((v) => (
+                <Link
+                  key={v}
+                  href={`/transport-medical/recherche?q=${encodeURIComponent(v)}`}
+                  className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] bg-blue-50 hover:bg-blue-100 rounded-full px-3 py-1.5 transition"
+                >
+                  <MapPin className="w-3.5 h-3.5" />
+                  {v}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="text-sm text-gray-600 mb-4">
+          {aucuneRecherche
+            ? "Professionnels mis en avant"
+            : `${pros.length} résultat${pros.length > 1 ? "s" : ""}`}
+        </div>
         {pros.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-2xl p-8 text-center">
             <p className="text-gray-600 mb-4">
