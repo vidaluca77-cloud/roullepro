@@ -5,6 +5,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProSanitaire } from "./sanitaire-data";
+import { buildOpeningHoursSpecification } from "./horaires";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -63,6 +64,10 @@ export function buildProJsonLd(
   const typesForCategorie = CATEGORIE_TO_TYPE[categorieKey] || ["LocalBusiness"];
   const servicesForCategorie = CATEGORIE_SERVICES[categorieKey] || [];
 
+  // Horaires reels du pro mappes en openingHoursSpecification.
+  // Si aucun horaire exploitable, on omet le champ (plutot que mentir avec un 24/7).
+  const openingHours = buildOpeningHoursSpecification(pro.horaires);
+
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": typesForCategorie,
@@ -96,14 +101,7 @@ export function buildProJsonLd(
     hasMap: pro.latitude && pro.longitude
       ? `https://www.google.com/maps/search/?api=1&query=${pro.latitude},${pro.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${pro.raison_sociale} ${pro.ville}`)}`,
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-        opens: "00:00",
-        closes: "23:59",
-      },
-    ],
+    openingHoursSpecification: openingHours || undefined,
     knowsLanguage: ["fr", "fr-FR"],
     knowsAbout: [
       "Transport sanitaire",
