@@ -38,6 +38,12 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    // Ne ping /api/messages que pour les utilisateurs connectes : un visiteur
+    // anonyme n'a pas de messages, inutile de charger le serveur et la batterie.
+    if (!user) {
+      setUnreadCount(0);
+      return;
+    }
     const fetchUnread = async () => {
       try {
         const res = await fetch('/api/messages?role=seller');
@@ -50,7 +56,7 @@ export default function Navbar() {
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000); // toutes les 30s
     return () => clearInterval(interval);
-  }, []);
+  }, [user]);
 
   const loadUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
