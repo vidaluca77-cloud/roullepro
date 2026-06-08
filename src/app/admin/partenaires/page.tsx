@@ -33,12 +33,15 @@ async function fetchData(): Promise<{
     { auth: { autoRefreshToken: false, persistSession: false } }
   );
 
-  // Récupère tous les clics pour agréger côté JS (volume faible attendu)
+  // Récupère les clics pour agréger côté JS (volume faible attendu).
+  // Les lignes servent au calcul des totaux (clics totaux, 7j) : baisser à 200
+  // tronquerait l'agrégation et fausserait les KPIs. On ramène donc le cap à 5000
+  // (au lieu de 10000) — page admin only, force-dynamic, hors chemin p95 homepage.
   const { data: allClicks } = await supabase
     .from("partner_clicks")
     .select("partner_code, created_at")
     .order("created_at", { ascending: false })
-    .limit(10000);
+    .limit(5000);
 
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const map = new Map<
