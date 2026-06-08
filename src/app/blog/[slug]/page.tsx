@@ -147,7 +147,7 @@ export default function BlogPostPage({
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/20" />
         </div>
       </div>
 
@@ -157,10 +157,13 @@ export default function BlogPostPage({
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.2),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_90%_100%,rgba(0,0,0,0.2),transparent_50%)]" />
+        {/* Voile sombre : garantit le contraste même si le dégradé de
+            catégorie venait à manquer ou si le fond est trop clair. */}
+        <div className="absolute inset-0 bg-black/25" />
 
         <div className="relative max-w-4xl mx-auto px-4 py-14 md:py-20">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-white/70 mb-6">
+          <nav className="flex items-center gap-2 text-sm text-white/80 mb-6 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
             <Link
               href="/blog"
               className="hover:text-white transition inline-flex items-center gap-1"
@@ -184,15 +187,15 @@ export default function BlogPostPage({
             </span>
           </div>
 
-          <h1 className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-5">
+          <h1 className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
             {post.title}
           </h1>
 
-          <p className="text-lg md:text-xl text-white/85 leading-relaxed mb-6 max-w-3xl">
+          <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-6 max-w-3xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
             {post.excerpt}
           </p>
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/75">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-white/85 drop-shadow-[0_1px_3px_rgba(0,0,0,0.4)]">
             <div className="flex items-center gap-1.5">
               <Calendar size={14} />
               <time>
