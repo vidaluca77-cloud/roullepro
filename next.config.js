@@ -52,6 +52,11 @@ const securityHeaders = [
 
 const nextConfig = {
   images: {
+    // Les visuels de catégorie du blog sont des SVG statiques internes (trusted).
+    // contentDispositionType + CSP empêchent toute exécution de script embarqué.
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
         protocol: 'https',
