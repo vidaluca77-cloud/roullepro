@@ -318,4 +318,96 @@ Pour un patient autonome muni d'une prescription, le taxi conventionné ou le VS
 À Marseille, le taxi conventionné facilite l'accès aux hôpitaux de l'AP-HM et à l'institut Paoli-Calmettes, avec une prise en charge avantageuse pour les patients prescrits. Pour trouver sans attendre un transporteur agréé, lancez une recherche sur [RoullePro à Marseille](/transport-medical/marseille).
 `,
   },
+  {
+    slug: "ambulance-privee-vs-publique-2026",
+    title:
+      "Ambulance privée : différences avec l'ambulance publique (coût, délais, prise en charge)",
+    excerpt:
+      "Ambulance privée ou publique : statuts juridiques, qui appeler selon la situation, tarifs réels, délais, remboursement CPAM et conventionnement. Le guide clair pour comprendre en 2026.",
+    category: "Transport sanitaire",
+    date: "2026-05-18",
+    readingTime: 12,
+    image: "/blog/ambulance-privee-vs-publique-2026.jpg",
+    imageAlt:
+      "Ambulance privée et véhicule de secours public stationnés côte à côte devant un hôpital",
+    keywords: [
+      "ambulance privée",
+      "ambulance publique",
+      "ambulance différence",
+      "transport sanitaire privé",
+      "coût ambulance privée",
+    ],
+    content: `
+**En résumé : l'ambulance privée est exploitée par une entreprise de transport sanitaire agréée, sur prescription ou régulation médicale, et son coût est pris en charge par l'Assurance Maladie. L'ambulance publique relève des structures hospitalières et du service d'aide médicale urgente (SAMU) pour les urgences. Pour une urgence vitale, on appelle le 15 ; pour un transport programmé, on contacte une entreprise privée conventionnée.**
+
+La distinction entre ambulance privée et ambulance publique prête souvent à confusion. Les deux assurent des transports allongés et médicalisés, mais leurs statuts, leurs missions et les circuits d'appel diffèrent. Comprendre ces différences permet de réagir correctement, que l'on soit face à une urgence ou que l'on organise un transport programmé. Ce guide fait le point pour 2026.
+
+## Deux statuts juridiques distincts
+
+### L'ambulance privée
+
+L'ambulance privée est exploitée par une entreprise de transport sanitaire titulaire d'un agrément délivré par l'agence régionale de santé (ARS). Ces entreprises emploient des ambulanciers diplômés et disposent de véhicules homologués. Elles interviennent sur prescription médicale pour les transports programmés et peuvent être réquisitionnées par le SAMU pour des urgences via la régulation.
+
+La grande majorité des entreprises privées sont conventionnées avec l'Assurance Maladie, ce qui permet le tiers payant et la prise en charge décrite sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports).
+
+### L'ambulance publique
+
+Les ambulances publiques sont rattachées à des structures hospitalières ou aux services départementaux d'incendie et de secours (SDIS) pour les sapeurs-pompiers. Le SAMU, via le centre de régulation du 15, coordonne les moyens publics et privés en cas d'urgence. Les SMUR (structures mobiles d'urgence et de réanimation) interviennent pour les urgences vitales avec une équipe médicale à bord.
+
+## Qui appelle quoi ?
+
+Le bon réflexe dépend de la situation :
+
+- Urgence vitale (détresse respiratoire, malaise grave, accident) : appeler le 15 (SAMU) ou le 112 (numéro d'urgence européen). La régulation médicale décide du moyen le plus adapté.
+- Incendie, accident sur la voie publique : le 18 (sapeurs-pompiers).
+- Transport programmé (hospitalisation prévue, retour à domicile, soins en série) : contacter directement une entreprise d'ambulance privée conventionnée, sur prescription médicale.
+
+Pour un transport assis sans surveillance, l'ambulance n'est pas nécessaire : un VSL ou un taxi conventionné suffit. Notre comparatif [VSL ou taxi conventionné](/blog/vsl-ou-taxi-conventionne-comparatif-2026) aide à choisir.
+
+## Coût et prise en charge
+
+### Le principe du remboursement
+
+Qu'elle soit privée ou publique, l'ambulance prescrite est prise en charge par l'Assurance Maladie selon les mêmes règles que les autres transports sanitaires :
+
+- 65 % du tarif conventionné dans le cas général.
+- 100 % en cas d'ALD en lien avec le transport, d'hospitalisation, d'accident du travail ou pour certaines situations spécifiques.
+
+Le complément est généralement couvert par la complémentaire santé. Avec le tiers payant, le patient n'avance le plus souvent rien. Les conditions sont détaillées sur [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165).
+
+### Les tarifs réels
+
+Le tarif d'une ambulance privée comprend un forfait de prise en charge, un tarif kilométrique et d'éventuels suppléments (forfait agglomération, dimanche et jours fériés, urgence). Ces tarifs sont encadrés par la convention nationale des transporteurs sanitaires. Un transport allongé coûte logiquement plus cher qu'un transport assis, ce qui justifie que la prescription précise le mode adapté à l'état du patient.
+
+### Qui paye au final ?
+
+Pour un transport prescrit et conventionné, c'est l'Assurance Maladie qui règle la part obligatoire et la complémentaire qui couvre le reste. Le patient ne paie que l'éventuel reste à charge non couvert. En l'absence de prescription valable, le transport peut rester intégralement à la charge du patient.
+
+## Urgence ou programmé : deux logiques
+
+Le transport d'urgence est déclenché par la régulation médicale du 15, qui mobilise le moyen disponible le plus proche, public ou privé. Le transport programmé, lui, s'anticipe : il fait l'objet d'une prescription et d'une réservation auprès d'une entreprise privée. Cette distinction est essentielle, car elle conditionne à la fois le circuit d'appel et les modalités de prise en charge.
+
+## Comment choisir une ambulance privée
+
+Pour un transport programmé, il est conseillé de choisir une entreprise conventionnée, proche du domicile ou de l'établissement, et de réserver à l'avance. Vérifiez l'agrément et le conventionnement avant de confirmer. RoullePro recense les transporteurs sanitaires par ville : lancez une [recherche d'ambulance](/transport-medical/recherche?q=ambulance) ou consultez la méthode décrite dans [Ambulance près de chez moi](/blog/ambulance-pres-de-chez-moi-trouver-2026).
+
+## Questions fréquentes
+
+### Une ambulance privée est-elle remboursée ?
+
+Oui, dès lors que le transport est prescrit médicalement et que l'entreprise est conventionnée. L'Assurance Maladie rembourse 65 % du tarif conventionné dans le cas général, et 100 % en ALD, hospitalisation ou accident du travail. La complémentaire santé couvre généralement le reste, et le tiers payant évite l'avance de frais.
+
+### Comment choisir entre ambulance privée et publique ?
+
+Vous ne choisissez pas vous-même en cas d'urgence : la régulation du 15 décide du moyen le plus adapté, public ou privé. Pour un transport programmé, vous contactez directement une entreprise d'ambulance privée conventionnée, sur prescription de votre médecin.
+
+### Qui paye l'ambulance ?
+
+Pour un transport prescrit et conventionné, l'Assurance Maladie règle la part obligatoire et la complémentaire santé couvre le solde. Le patient ne supporte que l'éventuel reste à charge non couvert. Sans prescription valable, le coût peut rester entièrement à la charge du patient.
+
+## En conclusion
+
+Ambulance privée et ambulance publique répondent à des logiques différentes : l'une au transport programmé sur prescription, l'autre à l'urgence coordonnée par le SAMU. Dans les deux cas, le transport prescrit et conventionné est pris en charge par l'Assurance Maladie. Pour organiser un transport programmé, trouvez un transporteur agréé sur [RoullePro](/transport-medical/recherche?q=ambulance).
+`,
+  },
 ];
