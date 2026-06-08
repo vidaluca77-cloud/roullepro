@@ -132,4 +132,99 @@ Oui, dans la quasi-totalité des cas. Le transport doit être prescrit par un m�
 Le taxi conventionné est une solution simple et économique pour se rendre à ses soins à Paris, à condition de disposer d'une prescription médicale valable. La prise en charge par l'Assurance Maladie, couplée au tiers payant, évite la plupart du temps toute avance de frais. Pour trouver rapidement un transporteur agréé près de chez vous, lancez une recherche sur [RoullePro à Paris](/transport-medical/paris).
 `,
   },
+  {
+    slug: "taxi-conventionne-lyon-guide-2026",
+    title:
+      "Taxi conventionné Lyon : guide complet 2026 (tarifs CPAM, démarches)",
+    excerpt:
+      "Guide complet du taxi conventionné à Lyon en 2026 : conditions de prise en charge CPAM, tarifs, démarches, hôpitaux desservis (HCL, Léon Bérard, Lyon Sud) et conseils pour trouver un transporteur agréé.",
+    category: "Transport sanitaire",
+    date: "2026-05-14",
+    readingTime: 11,
+    image: "/blog/taxi-conventionne-lyon-guide-2026.jpg",
+    imageAlt:
+      "Taxi conventionné circulant dans une rue de Lyon avec la colline de Fourvière en arrière-plan",
+    keywords: [
+      "taxi conventionné lyon",
+      "taxi cpam lyon",
+      "tarif taxi conventionné",
+      "transport médical lyon",
+    ],
+    content: `
+**En résumé : à Lyon, le taxi conventionné transporte les patients vers leurs soins sur prescription médicale, avec une prise en charge de 65 % par la CPAM (100 % en ALD ou hospitalisation) et le tiers payant. Les Hospices Civils de Lyon, le centre Léon Bérard et l'hôpital Lyon Sud génèrent une forte demande de transports conventionnés.**
+
+Lyon concentre une offre de soins majeure en Auvergne-Rhône-Alpes. Entre les Hospices Civils de Lyon (HCL), le centre de lutte contre le cancer Léon Bérard et les grands plateaux techniques de Lyon Sud, des milliers de patients ont besoin chaque semaine d'un transport vers leurs rendez-vous médicaux. Le taxi conventionné est l'une des réponses les plus courantes. Voici le guide complet pour 2026.
+
+## Le taxi conventionné en bref
+
+Un taxi conventionné est un taxi ayant signé une convention avec l'Assurance Maladie. Pour un transport prescrit médicalement, il applique une grille tarifaire négociée, pratique le tiers payant et transmet la facture à la CPAM. Le véhicule reste un taxi ordinaire ; c'est le cadre du trajet qui change.
+
+Ce mode de transport relève du transport assis, comme le véhicule sanitaire léger (VSL). Il s'adresse aux patients autonomes n'ayant pas besoin d'être allongés ni surveillés. Les règles nationales sont décrites sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports).
+
+## Qui peut en bénéficier à Lyon ?
+
+La prise en charge nécessite une prescription médicale et l'une des situations prévues par l'Assurance Maladie :
+
+- Affection de longue durée (ALD) avec transport lié à la pathologie.
+- Hospitalisation complète, partielle ou ambulatoire.
+- Soins en série de plus de 50 km ou plus de quatre transports de plus de 50 km sur deux mois.
+- Accident du travail ou maladie professionnelle.
+- État du patient justifiant un transport assis accompagné.
+
+Le détail des conditions figure sur [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165). Pour les patients suivis à Léon Bérard en oncologie, les séances de chimiothérapie ou de radiothérapie entrent fréquemment dans le cadre des soins en série.
+
+## Tarifs du taxi conventionné à Lyon en 2026
+
+Les tarifs résultent d'une convention locale propre au Rhône, signée entre les taxis et l'Assurance Maladie. Ils combinent une prise en charge au départ, un tarif kilométrique, un éventuel tarif d'attente et une remise conventionnelle obligatoire.
+
+### Exemple chiffré
+
+Un patient de Villeurbanne se rendant au centre Léon Bérard (Lyon 8e), soit environ 6 km, paiera une course calculée selon la grille du Rhône, à laquelle s'applique la remise conventionnelle. En cas d'ALD, la CPAM rembourse 100 % du montant et le patient n'avance rien. Hors ALD, la prise en charge est de 65 %, le solde relevant de la complémentaire santé.
+
+Pour comprendre la logique de tarification au niveau national et la notion de zone, consultez notre article dédié à la [grille tarifaire du taxi conventionné 2026](/blog/tarif-taxi-conventionne-2026-grille-cpam).
+
+## Les hôpitaux clés desservis à Lyon
+
+Le taxi conventionné dessert l'ensemble des établissements lyonnais, parmi lesquels :
+
+- Les Hospices Civils de Lyon (HCL), premier centre hospitalier universitaire de la région, avec notamment l'hôpital Édouard Herriot et l'hôpital de la Croix-Rousse.
+- Le centre Léon Bérard, centre de lutte contre le cancer, très demandeur de transports en série.
+- L'hôpital Lyon Sud à Pierre-Bénite, grand plateau technique du sud de l'agglomération.
+- L'hôpital Femme Mère Enfant à Bron.
+
+La diversité des sites et la circulation lyonnaise rendent la réservation anticipée particulièrement utile, surtout pour les rendez-vous matinaux.
+
+## Démarches pas à pas
+
+1. Obtenez la prescription médicale de transport (formulaire CERFA 11574) auprès de votre médecin. Notre guide [CERFA 11574 rempli pas-à-pas](/blog/cerfa-11574-bon-transport-medical-exemple-rempli) détaille chaque champ.
+2. Choisissez un transporteur conventionné, en privilégiant la proximité de votre domicile.
+3. Réservez en indiquant l'adresse, l'horaire et le motif (soins programmés, hospitalisation).
+4. Le jour J, présentez votre carte Vitale et votre prescription. Le tiers payant s'applique.
+5. Conservez les justificatifs en cas de soins en série.
+
+## Comment trouver un taxi conventionné à Lyon
+
+Plusieurs pistes existent : demander à l'établissement de soins, contacter la CPAM du Rhône, ou utiliser un annuaire spécialisé. RoullePro référence les transporteurs sanitaires par ville. Consultez les professionnels à [Lyon](/transport-medical/lyon) ou lancez une [recherche géolocalisée](/transport-medical/recherche?q=Lyon).
+
+Pensez à vérifier l'agrément du transporteur avant le trajet. Notre article [Ambulance près de chez moi](/blog/ambulance-pres-de-chez-moi-trouver-2026) explique comment s'en assurer en quelques secondes.
+
+## Questions fréquentes
+
+### Combien coûte un taxi conventionné à Lyon ?
+
+Le coût dépend de la distance, du temps d'attente et de la grille conventionnée du Rhône. Pour le patient en ALD ou hospitalisé, le reste à charge est nul grâce à la prise en charge à 100 % et au tiers payant. Hors ALD, la CPAM rembourse 65 % et la complémentaire couvre généralement le reste.
+
+### Le taxi conventionné lyonnais accepte-t-il la carte Vitale ?
+
+Oui. Le tiers payant est la règle : le transporteur facture directement l'Assurance Maladie à partir de la carte Vitale et de la prescription, sans avance de frais pour un transport pris en charge à 100 %.
+
+### Faut-il une prescription pour aller à Léon Bérard en taxi conventionné ?
+
+Oui. Comme pour tout transport conventionné, une prescription médicale (CERFA 11574) est nécessaire. En oncologie, les séances répétées relèvent souvent des soins en série, qui ouvrent droit à la prise en charge.
+
+## En conclusion
+
+À Lyon, le taxi conventionné offre une solution accessible pour rejoindre les grands hôpitaux et centres de soins de l'agglomération. Avec une prescription valable et le tiers payant, la plupart des patients n'avancent aucun frais. Pour identifier rapidement un transporteur agréé, lancez votre recherche sur [RoullePro à Lyon](/transport-medical/lyon).
+`,
+  },
 ];
