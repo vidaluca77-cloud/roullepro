@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Lock, MessageCircle, Mail, Phone } from "lucide-react";
+import { Lock, MessageCircle, Mail, Phone, CheckCircle2 } from "lucide-react";
 import { isPaidPlan } from "@/lib/sanitaire-plans";
+import ReplyForm from "./ReplyForm";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,23 @@ export default async function MessagesPage() {
     .eq("pro_id", pro.id)
     .order("created_at", { ascending: false })
     .limit(100);
+
+  // Réponses déjà envoyées (pour afficher l'historique sous chaque message)
+  const messageIds = (messages || []).map((m) => m.id);
+  const { data: replies } = messageIds.length
+    ? await supabase
+        .from("sanitaire_replies")
+        .select("id, message_id, content, created_at")
+        .in("message_id", messageIds)
+        .order("created_at", { ascending: true })
+    : { data: [] as { id: string; message_id: string; content: string; created_at: string }[] };
+
+  const repliesByMessage = new Map<string, typeof replies>();
+  for (const r of replies || []) {
+    const list = repliesByMessage.get(r.message_id) || [];
+    list.push(r);
+    repliesByMessage.set(r.message_id, list);
+  }
 
   // Mark as read
   if (messages && messages.length > 0) {
@@ -107,23 +125,44 @@ export default async function MessagesPage() {
                   </div>
                 </div>
                 <p className="text-gray-700 whitespace-pre-line leading-relaxed">{m.content}</p>
-                <div className="mt-4 pt-3 border-t border-gray-100 flex gap-2">
-                  <a
-                    href={`mailto:${m.sender_email}?subject=Re : demande de transport`}
-                    className="inline-flex items-center gap-1 bg-[#0066CC] hover:bg-[#0052a3] text-white text-sm font-semibold px-4 py-2 rounded-lg"
-                  >
-                    <Mail className="w-3.5 h-3.5" />
-                    Répondre par email
-                  </a>
-                  {m.sender_phone && (
+
+                {m.replied && (
+                  <div className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Répondu
+                  </div>
+                )}
+
+                {(repliesByMessage.get(m.id) || []).map((r) => (
+                  <div key={r.id} className="mt-3 ml-4 border-l-2 border-[#0066CC] bg-[#f0f6ff] rounded-r-lg p-3">
+                    <div className="text-xs font-semibold text-[#0066CC] mb-1">Votre réponse</div>
+                    <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">{r.content}</p>
+                    <div className="text-[11px] text-gray-400 mt-1">
+                      {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <ReplyForm messageId={m.id} alreadyReplied={!!m.replied} />
+                  <div className="flex gap-2 mt-2">
                     <a
-                      href={`tel:${m.sender_phone}`}
+                      href={`mailto:${m.sender_email}?subject=Re : demande de transport`}
                       className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg"
                     >
-                      <Phone className="w-3.5 h-3.5" />
-                      Appeler
+                      <Mail className="w-3.5 h-3.5" />
+                      Répondre par email
                     </a>
-                  )}
+                    {m.sender_phone && (
+                      <a
+                        href={`tel:${m.sender_phone}`}
+                        className="inline-flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-gray-900 text-sm font-semibold px-4 py-2 rounded-lg"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        Appeler
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
