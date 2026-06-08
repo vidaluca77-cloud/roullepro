@@ -218,7 +218,26 @@ const MEDICAL_POSTS: BlogPost[] = (() => {
   }
 })();
 
-const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS, ...SEO_POSTS, ...MEDICAL_POSTS];
+// Cluster transport sanitaire — articles villes/CPAM Q2 2026 (10 articles SEO)
+const SEO_VILLES_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-seo-villes");
+    return Array.isArray(mod?.SEO_VILLES_POSTS)
+      ? (mod.SEO_VILLES_POSTS as BlogPost[])
+      : [];
+  } catch {
+    return [];
+  }
+})();
+
+const ALL_POSTS: BlogPost[] = [
+  ...POSTS,
+  ...NEW_POSTS,
+  ...SEO_POSTS,
+  ...MEDICAL_POSTS,
+  ...SEO_VILLES_POSTS,
+];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */
 
