@@ -19,6 +19,21 @@ export const metadata: Metadata = {
       "L'expertise dédiée aux professionnels du transport routier : acheter, vendre, financer vos véhicules.",
     type: "website",
     url: "https://roullepro.com/blog",
+    images: [
+      {
+        url: "https://roullepro.com/blog/categories/default.svg",
+        width: 1200,
+        height: 675,
+        alt: "Blog RoullePro",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog RoullePro",
+    description:
+      "L'expertise dédiée aux professionnels du transport routier.",
+    images: ["https://roullepro.com/blog/categories/default.svg"],
   },
   alternates: {
     canonical: "https://roullepro.com/blog",
