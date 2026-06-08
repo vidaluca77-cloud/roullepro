@@ -56,7 +56,7 @@ export async function GET() {
       db.from('messages').select('id', { count: 'exact', head: true }),
       db.from('messages').select('id', { count: 'exact', head: true }).gte('created_at', d7),
       db.from('notations').select('id', { count: 'exact', head: true }),
-      db.from('signalements').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+      db.from('signalements').select('id', { count: 'exact', head: true }).eq('statut', 'en_attente'),
       db.from('alertes_categories').select('id', { count: 'exact', head: true }),
       db.from('annonces')
         .select('category_id, categories(name)')
