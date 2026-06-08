@@ -695,4 +695,112 @@ Il n'y a pas de plafond forfaitaire universel : sont pris en charge les transpor
 Le transport médical en ALD peut être pris en charge à 100 %, à condition d'être prescrit et lié à la pathologie reconnue. La clé réside dans le protocole de soins, la prescription CERFA 11574 et le choix d'un transporteur conventionné. Pour trouver un professionnel agréé près de chez vous, lancez une recherche sur [RoullePro](/transport-medical/recherche).
 `,
   },
+  {
+    slug: "cerfa-11574-bon-transport-medical-exemple-rempli",
+    title:
+      "Bon de transport médical CERFA 11574 : exemple rempli pas-à-pas",
+    excerpt:
+      "Le CERFA 11574 expliqué champ par champ : qui le remplit, exemple rempli pas-à-pas, erreurs fréquentes à éviter, cas particuliers (urgence, transport en série) et durée de validité. Guide pratique 2026.",
+    category: "Transport sanitaire",
+    date: "2026-05-26",
+    readingTime: 11,
+    image: "/blog/cerfa-11574-bon-transport-medical-exemple-rempli.jpg",
+    imageAlt:
+      "Formulaire CERFA 11574 de prescription médicale de transport rempli posé sur un bureau",
+    keywords: [
+      "cerfa 11574",
+      "bon de transport médical",
+      "formulaire transport sanitaire",
+      "prescription transport médical",
+    ],
+    content: `
+**En résumé : le CERFA 11574 est la prescription médicale de transport. Il est rempli par le médecin (ou le praticien hospitalier) et conditionne le remboursement du transport sanitaire. Il précise l'identité du patient, le motif médical, le mode de transport prescrit et son caractère éventuel en série. Sans ce document correctement rempli, aucun remboursement n'est possible.**
+
+Le bon de transport médical, officiellement le formulaire CERFA 11574, est la pièce maîtresse de tout transport sanitaire remboursé. Mal rempli ou absent, il bloque la prise en charge. Ce guide le décortique champ par champ, propose un exemple rempli et liste les erreurs à éviter, pour 2026.
+
+## À quoi sert le CERFA 11574 ?
+
+Le CERFA 11574 est la prescription médicale de transport. Il atteste que le déplacement du patient vers ses soins est médicalement justifié et indique le mode de transport adapté à son état. C'est ce document que le transporteur joint à sa facturation pour obtenir le paiement par l'Assurance Maladie. Le cadre général est décrit sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports).
+
+## Qui remplit le formulaire ?
+
+Le formulaire est rempli par un médecin : médecin traitant, médecin spécialiste ou praticien hospitalier. Dans certains cas, une sage-femme ou un chirurgien-dentiste peut prescrire un transport dans le cadre de ses compétences. Le patient ne remplit pas lui-même la partie médicale ; il fournit simplement ses informations administratives et sa carte Vitale au transporteur.
+
+## Le formulaire champ par champ
+
+Voici les principales rubriques du CERFA 11574 et comment elles sont renseignées.
+
+### Identification du patient
+
+Nom, prénom, date de naissance et numéro de sécurité sociale (NIR) du patient. Ces informations doivent être exactes pour permettre le rapprochement avec le dossier de l'Assurance Maladie.
+
+### Motif et nature du transport
+
+Le médecin coche le motif médical : hospitalisation, soins ou traitement en lien avec une ALD, transport lié à un accident du travail, soins en série, etc. Cette case détermine le taux de prise en charge (65 % ou 100 %). Pour comprendre le lien avec l'ALD, voir notre guide [Transport médical en ALD](/blog/transport-medical-ald-remboursement-100-2026).
+
+### Mode de transport prescrit
+
+Le médecin indique le mode adapté à l'état du patient : transport assis (taxi conventionné ou VSL) ou ambulance (transport allongé ou surveillé). Le choix doit être médicalement justifié. Notre comparatif [VSL ou taxi conventionné](/blog/vsl-ou-taxi-conventionne-comparatif-2026) explique les critères.
+
+### Caractère répété (transport en série)
+
+Pour des soins répétés (dialyse, radiothérapie), le médecin peut prescrire un transport en série, ce qui évite de refaire une prescription à chaque trajet sur la période concernée.
+
+### Date, signature et cachet
+
+Le formulaire doit être daté, signé et porter le cachet du prescripteur. Une prescription non signée est invalide.
+
+## Exemple rempli pas-à-pas
+
+Prenons une patiente reconnue en ALD pour une insuffisance rénale, devant se rendre trois fois par semaine en centre de dialyse, en transport assis.
+
+1. Identification : nom, prénom, date de naissance et NIR de la patiente.
+2. Motif : case soins en lien avec l'ALD cochée.
+3. Mode de transport : transport assis prescrit (la patiente est autonome).
+4. Caractère répété : transport en série coché, avec la période couverte.
+5. Date, signature et cachet du néphrologue.
+
+Munie de ce formulaire, la patiente choisit un transporteur conventionné, qui assure les trajets et facture l'Assurance Maladie en tiers payant. En ALD, la prise en charge est de 100 %.
+
+## Erreurs fréquentes à éviter
+
+- Oublier la signature ou le cachet du prescripteur : la prescription est alors invalide.
+- Renseigner un NIR ou une date de naissance erronés, ce qui bloque le rapprochement.
+- Choisir un mode de transport non conforme à l'état du patient.
+- Ne pas cocher le caractère répété alors que les soins sont en série, obligeant à multiplier les prescriptions.
+- Perdre l'original : conservez toujours le document jusqu'au remboursement.
+
+## Cas particuliers
+
+### Urgence
+
+En cas d'urgence, le transport peut être réalisé avant l'établissement de la prescription, qui est alors régularisée a posteriori. La régulation médicale du 15 organise le transport ; voir notre article [Ambulance privée vs publique](/blog/ambulance-privee-vs-publique-2026).
+
+### Transport de longue distance ou en série
+
+Certains transports (longue distance, série) peuvent nécessiter un accord préalable de l'Assurance Maladie. Le médecin et la CPAM peuvent indiquer si cette formalité s'applique.
+
+## Durée de validité et perte
+
+La prescription doit être utilisée dans un délai raisonnable en lien avec les soins prescrits. Pour un transport en série, elle couvre la période indiquée. En cas de perte, rapprochez-vous du prescripteur pour obtenir un duplicata avant le trajet, faute de quoi le remboursement peut être compromis.
+
+## Questions fréquentes
+
+### Qui remplit le CERFA 11574 ?
+
+Le formulaire est rempli par un médecin (traitant, spécialiste ou hospitalier), et dans certains cas par une sage-femme ou un chirurgien-dentiste dans leur champ de compétence. Le patient fournit ses informations administratives et sa carte Vitale, mais ne remplit pas la partie médicale.
+
+### Quelle est la validité du bon de transport ?
+
+La prescription doit être utilisée en cohérence avec les soins prescrits. Pour un transport en série, elle couvre la période indiquée par le médecin. Une prescription trop ancienne ou sans lien avec un soin en cours peut ne pas être prise en charge.
+
+### Que faire si on a perdu le bon de transport ?
+
+Contactez le médecin prescripteur pour obtenir un duplicata avant d'effectuer le trajet. Sans prescription valable présentée au transporteur, le transport risque de ne pas être remboursé et de rester à votre charge.
+
+## En conclusion
+
+Le CERFA 11574 est la clé de voûte du remboursement du transport sanitaire : bien rempli, signé et conforme à l'état du patient, il garantit une prise en charge fluide. Une fois la prescription en main, trouvez un transporteur conventionné près de chez vous sur [RoullePro](/transport-medical/recherche).
+`,
+  },
 ];
