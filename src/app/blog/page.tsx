@@ -10,13 +10,13 @@ import { ArticleCard } from "@/components/blog/ArticleCard";
 import { NewsletterInline } from "@/components/blog/NewsletterInline";
 
 export const metadata: Metadata = {
-  title: "Blog RoullePro — Guides, fiscalité et conseils pour les pros du transport",
+  title: "Blog du transport sanitaire conventionné — Guides, réglementation et conseils | RoullePro",
   description:
-    "Guides d'achat et de vente, fiscalité, financement, réglementation : toute l'expertise RoullePro pour les professionnels du véhicule utilitaire, taxi, VTC et ambulance.",
+    "Actualités, conseils et guides pour les pros du transport médical : ambulances, VSL et taxis conventionnés CPAM. Réglementation, conventionnement, fiscalité et financement.",
   openGraph: {
-    title: "Blog RoullePro",
+    title: "Blog du transport sanitaire conventionné — RoullePro",
     description:
-      "L'expertise dédiée aux professionnels du transport routier : acheter, vendre, financer vos véhicules.",
+      "Actualités, conseils et guides pour les professionnels du transport médical conventionné : ambulances, VSL et taxis CPAM.",
     type: "website",
     url: "https://roullepro.com/blog",
     images: [
@@ -30,9 +30,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blog RoullePro",
+    title: "Blog du transport sanitaire conventionné — RoullePro",
     description:
-      "L'expertise dédiée aux professionnels du transport routier.",
+      "Actualités, conseils et guides pour les pros du transport médical conventionné.",
     images: ["https://roullepro.com/blog/categories/default.svg"],
   },
   alternates: {
@@ -54,20 +54,20 @@ export default function BlogIndexPage() {
           <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
             <BookOpen size={15} className="text-blue-300" />
             <span className="text-sm font-medium tracking-wide">
-              Expertise B2B
+              Transport médical conventionné
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold mb-5 leading-[1.05] tracking-tight">
-            Le blog des pros
+            Le blog du transport
             <br />
             <span className="bg-gradient-to-r from-blue-300 to-cyan-200 bg-clip-text text-transparent">
-              du véhicule professionnel
+              sanitaire conventionné
             </span>
           </h1>
           <p className="text-lg md:text-xl text-white/75 max-w-2xl leading-relaxed">
-            Guides d&apos;achat et de vente, fiscalité, financement, actualités
-            réglementaires : tout pour gérer votre flotte et vos transactions
-            entre professionnels.
+            Actualités, conseils et guides pour les pros du transport médical :
+            ambulances, VSL et taxis conventionnés CPAM. Réglementation,
+            conventionnement, fiscalité et financement.
           </p>
         </div>
       </div>
