@@ -29,20 +29,26 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
   },
-  // CSP en Report-Only : surveille sans bloquer.
+  // CSP en mode enforce : bloque réellement les sources non autorisées.
   // Sources autorisées identifiées par audit :
   //   - Supabase (API, Auth, Storage)
   //   - Netlify RUM (same-origin /_next/)
   //   - Next.js inline scripts/styles (unsafe-inline requis pour App Router)
+  //   - Resend (connect-src api.resend.com)
+  //   - Google Tag Manager + Google Analytics (tracking marketing)
+  //   - Google Ads (conversions + tag remarketing)
+  //   - hCaptcha (protection anti-bot)
+  //   - Stripe Checkout (frame pour formulaire de paiement hosted)
   {
-    key: 'Content-Security-Policy-Report-Only',
+    key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com",
+      "style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com",
       "img-src 'self' https: data: blob:",
-      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com`,
+      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com`,
       "font-src 'self' data:",
+      "frame-src https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com",
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",

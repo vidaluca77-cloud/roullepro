@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Mail, Phone, Loader2, CheckCircle2, Copy, LogIn } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { Mail, Phone, Loader2, CheckCircle2, LogIn } from "lucide-react";
 
 type Props = {
   proId: string;
@@ -12,29 +10,36 @@ type Props = {
   emailPublic: string | null;
 };
 
+// Masque une adresse email pour l'affichage public : jean.dupont@exemple.fr -> j***@exemple.fr
+function maskEmail(email: string | null): string {
+  if (!email) return "";
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  const head = local.slice(0, 1);
+  return `${head}***@${domain}`;
+}
+
 export default function ReclamerForm({ proId, proNom, telephonePublic, emailPublic }: Props) {
-  const router = useRouter();
   const [step, setStep] = useState<"choose" | "send" | "verify" | "done">("choose");
   const [method, setMethod] = useState<"email_domaine" | "sms">("email_domaine");
-  const [contact, setContact] = useState("");
   const [code, setCode] = useState("");
   const [claimId, setClaimId] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
-  const [accountEmail, setAccountEmail] = useState<string>("");
-  const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [autoConnecting, setAutoConnecting] = useState(false);
+
+  const maskedEmail = maskEmail(emailPublic);
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
+      // SÉCURITÉ : on n'envoie plus d'adresse de destination. Le serveur envoie le code
+      // exclusivement à l'email officiel de la fiche.
       const res = await fetch("/api/sanitaire/claim/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pro_id: proId, method, contact: contact.trim() }),
+        body: JSON.stringify({ pro_id: proId, method }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
@@ -61,14 +66,6 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Code invalide");
 
-      // Deconnecte toute session existante pour eviter les conflits de compte
-      const supabase = createClient();
-      try {
-        await supabase.auth.signOut();
-      } catch {}
-
-      setAccountEmail(data.email || contact);
-      setTempPassword(data.temp_password || null);
       setStep("done");
     } catch (err) {
       setError((err as Error).message);
@@ -77,102 +74,29 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
     }
   };
 
-  const connectAuto = async () => {
-    if (!accountEmail || !tempPassword) return;
-    setAutoConnecting(true);
-    setError(null);
-    try {
-      const supabase = createClient();
-      const { error: signErr } = await supabase.auth.signInWithPassword({
-        email: accountEmail,
-        password: tempPassword,
-      });
-      if (signErr) throw signErr;
-      window.location.href = "/transport-medical/pro/dashboard?welcome=1";
-    } catch (err) {
-      setError((err as Error).message || "Connexion impossible");
-      setAutoConnecting(false);
-    }
-  };
-
-  const copyToClipboard = async (text: string, field: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedField(field);
-      setTimeout(() => setCopiedField(null), 2000);
-    } catch {}
-  };
-
   if (step === "done") {
     return (
       <div className="bg-white border border-green-200 rounded-2xl p-6 space-y-5">
         <div className="text-center">
           <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
           <div className="font-bold text-gray-900 mb-1">Réclamation enregistrée</div>
-          <p className="text-sm text-gray-600">Votre demande est <strong>en attente de validation</strong> par notre équipe (sous 24h ouvrées). En attendant, vous pouvez accéder à votre espace pro pour compléter votre fiche.</p>
+          <p className="text-sm text-gray-600">Votre demande est <strong>en attente de validation</strong> par notre équipe (sous 24h ouvrées).</p>
         </div>
 
-        {tempPassword ? (
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 space-y-3">
-            <div>
-              <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Email</div>
-              <div className="flex items-center justify-between gap-2 bg-white border border-blue-100 rounded-lg px-3 py-2">
-                <span className="font-mono text-sm text-gray-900 break-all">{accountEmail}</span>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(accountEmail, "email")}
-                  className="shrink-0 text-blue-600 hover:text-blue-800 text-xs font-medium inline-flex items-center gap-1"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  {copiedField === "email" ? "Copié" : "Copier"}
-                </button>
-              </div>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1">Mot de passe temporaire</div>
-              <div className="flex items-center justify-between gap-2 bg-white border border-blue-100 rounded-lg px-3 py-2">
-                <span className="font-mono text-sm text-gray-900">{tempPassword}</span>
-                <button
-                  type="button"
-                  onClick={() => copyToClipboard(tempPassword, "pwd")}
-                  className="shrink-0 text-blue-600 hover:text-blue-800 text-xs font-medium inline-flex items-center gap-1"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  {copiedField === "pwd" ? "Copié" : "Copier"}
-                </button>
-              </div>
-            </div>
-            <div className="text-xs text-gray-600">
-              Ces identifiants vous sont aussi envoyés par email à {accountEmail}. Changez votre mot de passe après la première connexion.
-            </div>
-          </div>
-        ) : (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-            Un email avec vos identifiants vient d&apos;être envoyé à {accountEmail}. Si vous ne le recevez pas, utilisez &laquo; Mot de passe oublié &raquo; sur la page de connexion.
-          </div>
-        )}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900">
+          Un email contenant vos identifiants et un lien de connexion vient d&apos;être envoyé à l&apos;adresse officielle de la fiche
+          {maskedEmail && <strong> ({maskedEmail})</strong>}. Ouvrez cet email pour accéder à votre espace pro. Si vous ne le recevez pas, utilisez &laquo; Mot de passe oublié &raquo; sur la page de connexion.
+        </div>
 
         {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</div>}
 
-        {tempPassword ? (
-          <button
-            type="button"
-            onClick={connectAuto}
-            disabled={autoConnecting}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
-          >
-            {autoConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
-            Me connecter à mon espace pro
-          </button>
-        ) : (
-          <a
-            href={`/auth/login?next=/transport-medical/pro/dashboard?welcome=1&email=${encodeURIComponent(accountEmail)}`}
-            className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
-          >
-            <LogIn className="w-4 h-4" />
-            Aller à la page de connexion
-          </a>
-        )}
+        <a
+          href="/auth/login?next=/transport-medical/pro/dashboard?welcome=1"
+          className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-5 py-3 rounded-xl transition"
+        >
+          <LogIn className="w-4 h-4" />
+          Aller à la page de connexion
+        </a>
       </div>
     );
   }
@@ -183,7 +107,7 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
         <div>
           <h3 className="font-semibold text-gray-900 mb-1">Entrez le code reçu</h3>
           <p className="text-sm text-gray-600">
-            Un code à 6 chiffres vous a été envoyé par {method === "email_domaine" ? "email" : "SMS"} à {contact}.
+            Un code à 6 chiffres a été envoyé par {method === "email_domaine" ? "email" : "SMS"} à l&apos;adresse officielle de la fiche{maskedEmail ? ` (${maskedEmail})` : ""}.
           </p>
         </div>
         <input
@@ -236,8 +160,8 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
               Vérification par email
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              Recevez un code à votre adresse email. Toutes les adresses sont acceptées (y compris Gmail, Yahoo, Orange, Outlook…). Validation manuelle ensuite par notre équipe.
-              {emailPublic && <span className="block mt-1 text-xs text-gray-500">Email enregistré : {emailPublic}</span>}
+              Un code de vérification est envoyé à l&apos;adresse email officielle enregistrée sur la fiche. Vous devez avoir accès à cette boîte mail. Validation manuelle ensuite par notre équipe.
+              {maskedEmail && <span className="block mt-1 text-xs text-gray-500">Email officiel de la fiche : {maskedEmail}</span>}
             </p>
           </div>
         </label>
@@ -258,25 +182,22 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
         </label>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-          {method === "email_domaine" ? "Votre adresse email" : "Votre numéro de téléphone (avec indicatif)"}
-        </label>
-        <input
-          type={method === "email_domaine" ? "email" : "tel"}
-          placeholder={method === "email_domaine" ? "vous@exemple.fr" : "+33 6 12 34 56 78"}
-          value={contact}
-          onChange={(e) => setContact(e.target.value)}
-          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none transition"
-          required
-        />
-      </div>
+      {maskedEmail ? (
+        <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+          Le code sera envoyé à l&apos;adresse officielle de la fiche : <strong>{maskedEmail}</strong>.
+          Vous devez avoir accès à cette boîte mail pour réclamer la fiche.
+        </div>
+      ) : (
+        <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+          Aucun email de contact n&apos;est enregistré sur cette fiche. Contactez le support à contact@roullepro.com pour la réclamer.
+        </div>
+      )}
 
       {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</div>}
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !emailPublic}
         className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
