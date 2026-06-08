@@ -892,4 +892,92 @@ Un patient en fauteuil roulant pliable et suffisamment autonome peut souvent voy
 VSL et taxi conventionné sont deux solutions de transport assis remboursées de la même façon ; le choix dépend de l'état du patient, du besoin d'accompagnement et de l'offre locale, toujours dans le cadre de la prescription médicale. Pour comparer les transporteurs disponibles près de chez vous, lancez une recherche sur [RoullePro](/transport-medical/recherche).
 `,
   },
+  {
+    slug: "ambulance-pres-de-chez-moi-trouver-2026",
+    title:
+      "Ambulance près de chez moi : comment trouver le bon transporteur en 30 secondes",
+    excerpt:
+      "Trouver une ambulance ou un transporteur sanitaire près de chez soi en 2026 : méthode pas à pas, critères de choix, vérification de l'agrément CPAM, géolocalisation RoullePro et distinction urgence / programmé.",
+    category: "Transport sanitaire",
+    date: "2026-05-30",
+    readingTime: 10,
+    image: "/blog/ambulance-pres-de-chez-moi-trouver-2026.jpg",
+    imageAlt:
+      "Carte de géolocalisation affichant des ambulances disponibles à proximité sur un smartphone",
+    keywords: [
+      "ambulance près de chez moi",
+      "trouver ambulance",
+      "ambulance proche",
+      "transport sanitaire local",
+    ],
+    content: `
+**En résumé : pour un transport programmé, on trouve une ambulance ou un transporteur sanitaire près de chez soi en utilisant un annuaire géolocalisé, en vérifiant l'agrément et le conventionnement, puis en réservant à l'avance avec sa prescription. Pour une urgence vitale, on n'effectue aucune recherche : on appelle immédiatement le 15.**
+
+Quand survient un besoin de transport sanitaire, la première question est souvent : comment trouver rapidement une ambulance fiable à proximité ? La réponse dépend de la situation. Pour une urgence, le réflexe est immédiat. Pour un transport programmé, une méthode simple permet de choisir le bon transporteur en quelques secondes. Ce guide la détaille pour 2026.
+
+## D'abord : urgence ou transport programmé ?
+
+La distinction est fondamentale et conditionne toute la démarche.
+
+- Urgence vitale (malaise grave, détresse, accident) : ne cherchez pas d'ambulance, appelez le 15 (SAMU) ou le 112. La régulation médicale envoie le moyen le plus adapté. Voir [Ambulance privée vs publique](/blog/ambulance-privee-vs-publique-2026).
+- Transport programmé (hospitalisation prévue, retour à domicile, soins en série) : c'est là qu'une recherche de transporteur a du sens, sur prescription médicale.
+
+Le reste de ce guide concerne le transport programmé.
+
+## La méthode en 30 secondes
+
+1. Munissez-vous de votre prescription médicale de transport (CERFA 11574). Voir notre guide [CERFA 11574](/blog/cerfa-11574-bon-transport-medical-exemple-rempli).
+2. Lancez une recherche géolocalisée sur un annuaire spécialisé, en indiquant votre ville ou en activant la localisation.
+3. Vérifiez que le transporteur est agréé et conventionné.
+4. Comparez la proximité, la disponibilité et les avis éventuels.
+5. Réservez en précisant adresse, horaire, motif et mode de transport prescrit.
+
+RoullePro permet précisément cette recherche : utilisez la [recherche transport médical](/transport-medical/recherche) avec l'option de géolocalisation pour afficher les professionnels proches, ou parcourez les transporteurs de votre ville, par exemple à [Paris](/transport-medical/paris), [Lyon](/transport-medical/lyon) ou [Marseille](/transport-medical/marseille).
+
+## Les critères pour bien choisir
+
+- Proximité : un transporteur proche réduit les délais et, pour certains trajets, le coût kilométrique.
+- Agrément et conventionnement : indispensables pour la prise en charge et le tiers payant.
+- Disponibilité : capacité à assurer le créneau souhaité, surtout pour les transports matinaux.
+- Mode de transport adapté : assis (VSL, taxi conventionné) ou allongé (ambulance), selon la prescription. Voir [VSL ou taxi conventionné](/blog/vsl-ou-taxi-conventionne-comparatif-2026).
+- Régularité : pour des soins en série, un transporteur capable d'assurer tous les trajets simplifie l'organisation.
+
+## Vérifier l'agrément CPAM
+
+Un transporteur sanitaire doit disposer d'un agrément de l'ARS et, pour bénéficier du tiers payant, d'une convention avec l'Assurance Maladie. Pour vous en assurer :
+
+- Demandez directement au transporteur de confirmer son conventionnement.
+- Vérifiez la mention sur ses supports ou son profil dans un annuaire spécialisé.
+- En cas de doute, rapprochez-vous de votre CPAM. Le cadre du remboursement figure sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports) et [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165).
+
+## Pourquoi la géolocalisation change tout
+
+Chercher manuellement parmi des dizaines de transporteurs prend du temps. Une recherche géolocalisée affiche directement les professionnels les plus proches de votre position ou de l'adresse saisie, avec leurs coordonnées. C'est l'approche la plus rapide pour un transport programmé, et elle évite les allers-retours téléphoniques. RoullePro propose cette fonction sur sa [page de recherche](/transport-medical/recherche).
+
+## Anticiper pour éviter les déconvenues
+
+- Réservez la veille pour les rendez-vous matinaux.
+- Communiquez précisément l'adresse de départ et de destination.
+- Préparez carte Vitale et prescription pour le jour du trajet.
+- Pour des soins répétés, calez à l'avance l'ensemble des créneaux.
+
+## Questions fréquentes
+
+### Comment vérifier qu'une ambulance est agréée CPAM ?
+
+Demandez au transporteur de confirmer son agrément ARS et sa convention avec l'Assurance Maladie, condition du tiers payant. Vous pouvez aussi vérifier la mention sur son profil dans un annuaire spécialisé ou contacter votre CPAM en cas de doute.
+
+### Combien de temps faut-il attendre une ambulance ?
+
+Pour un transport programmé, le délai dépend de la disponibilité du transporteur et du créneau réservé : mieux vaut réserver à l'avance. Pour une urgence, vous n'attendez pas un transport que vous auriez recherché : la régulation du 15 mobilise le moyen le plus proche.
+
+### Puis-je choisir mon transporteur ?
+
+Pour un transport programmé, oui : vous pouvez choisir un transporteur conventionné, idéalement proche de chez vous, dans le respect du mode prescrit. En cas d'urgence, c'est la régulation médicale qui décide du moyen envoyé.
+
+## En conclusion
+
+Trouver une ambulance près de chez soi est simple pour un transport programmé : une recherche géolocalisée, une vérification de l'agrément et une réservation anticipée suffisent. Pour une urgence, le seul bon réflexe reste le 15. Pour identifier en quelques secondes un transporteur conventionné autour de vous, utilisez la [recherche géolocalisée de RoullePro](/transport-medical/recherche).
+`,
+  },
 ];
