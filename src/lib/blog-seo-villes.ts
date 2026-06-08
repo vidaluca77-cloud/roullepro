@@ -227,4 +227,95 @@ Oui. Comme pour tout transport conventionné, une prescription médicale (CERFA 
 À Lyon, le taxi conventionné offre une solution accessible pour rejoindre les grands hôpitaux et centres de soins de l'agglomération. Avec une prescription valable et le tiers payant, la plupart des patients n'avancent aucun frais. Pour identifier rapidement un transporteur agréé, lancez votre recherche sur [RoullePro à Lyon](/transport-medical/lyon).
 `,
   },
+  {
+    slug: "taxi-conventionne-marseille-2026",
+    title:
+      "Taxi conventionné Marseille : trouver un transporteur agréé en 2026",
+    excerpt:
+      "Comment trouver un taxi conventionné à Marseille en 2026 : conditions de prise en charge CPAM, tarifs, hôpitaux de l'AP-HM (La Timone, Nord, Conception) et institut Paoli-Calmettes, démarches et conseils.",
+    category: "Transport sanitaire",
+    date: "2026-05-16",
+    readingTime: 11,
+    image: "/blog/taxi-conventionne-marseille-2026.jpg",
+    imageAlt:
+      "Taxi conventionné devant un hôpital de l'AP-HM à Marseille avec le ciel méditerranéen",
+    keywords: [
+      "taxi conventionné marseille",
+      "taxi cpam marseille",
+      "tarif taxi conventionné",
+      "transport médical marseille",
+    ],
+    content: `
+**En résumé : à Marseille, le taxi conventionné assure les trajets vers les soins sur prescription médicale, avec une prise en charge de 65 % par la CPAM (100 % en ALD ou hospitalisation) et le tiers payant. L'Assistance Publique-Hôpitaux de Marseille (AP-HM) et l'institut Paoli-Calmettes structurent l'essentiel de la demande.**
+
+Deuxième ville de France, Marseille dispose d'un réseau hospitalier dense piloté par l'AP-HM, auquel s'ajoute l'institut Paoli-Calmettes, centre de référence en cancérologie. Pour des milliers de patients des Bouches-du-Rhône, le taxi conventionné est le moyen le plus pratique de rejoindre ces établissements. Ce guide explique comment trouver un transporteur agréé et obtenir la prise en charge en 2026.
+
+## Comprendre le taxi conventionné
+
+Un taxi conventionné est un taxi qui a signé une convention avec l'Assurance Maladie. Pour un transport prescrit, il applique la grille tarifaire négociée localement, pratique le tiers payant et facture directement la CPAM. Il s'agit d'un transport assis, au même titre que le VSL, destiné aux patients autonomes.
+
+Le cadre national du remboursement des transports est présenté sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports). Pour distinguer transport assis et allongé, notre comparatif [VSL ou taxi conventionné](/blog/vsl-ou-taxi-conventionne-comparatif-2026) est un bon point de départ.
+
+## Conditions de prise en charge à Marseille
+
+Le transport en taxi conventionné est remboursé si une prescription médicale a été établie et si la situation correspond à l'un des cas prévus :
+
+- Affection de longue durée (ALD) en lien avec le transport.
+- Hospitalisation, sous toutes ses formes.
+- Soins en série de plus de 50 km ou plus de quatre transports de plus de 50 km sur deux mois.
+- Accident du travail ou maladie professionnelle.
+- État du patient justifiant un transport assis professionnel.
+
+Les conditions détaillées sont décrites sur [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165). À l'institut Paoli-Calmettes, les patients en oncologie relèvent fréquemment de l'ALD et des soins en série.
+
+## Les hôpitaux marseillais desservis
+
+Le taxi conventionné dessert l'ensemble des grands sites marseillais :
+
+- L'hôpital de la Timone, plus grand établissement de l'AP-HM, avec son plateau technique de référence.
+- L'hôpital Nord, dans les quartiers nord de la ville.
+- L'hôpital de la Conception, en centre-ville.
+- L'institut Paoli-Calmettes, centre de lutte contre le cancer.
+
+La topographie marseillaise et les distances entre quartiers nord et sud rendent la distance kilométrique parfois importante, ce qui souligne l'intérêt de la prise en charge pour les patients réguliers.
+
+## Tarifs et exemple chiffré
+
+Les tarifs découlent de la convention locale des Bouches-du-Rhône. Ils associent une prise en charge au départ, un tarif kilométrique, un tarif d'attente éventuel et la remise conventionnelle obligatoire.
+
+Exemple : un patient du 8e arrondissement se rendant à la Timone (5e), soit environ 5 km, paie une course calculée selon la grille départementale, diminuée de la remise conventionnelle. En ALD, la CPAM rembourse 100 % et le patient n'avance rien. Hors ALD, la prise en charge est de 65 %, le reste relevant de la complémentaire. Pour le détail national, voir notre [grille tarifaire 2026](/blog/tarif-taxi-conventionne-2026-grille-cpam).
+
+## Trouver un taxi conventionné à Marseille
+
+Pour identifier un transporteur agréé, vous pouvez demander à l'établissement de soins, contacter la CPAM des Bouches-du-Rhône, ou consulter un annuaire spécialisé. RoullePro recense les transporteurs sanitaires à [Marseille](/transport-medical/marseille) et propose une [recherche géolocalisée](/transport-medical/recherche?q=Marseille) pour trouver un professionnel proche.
+
+Pour les besoins urgents ou allongés, le taxi conventionné n'est pas adapté : reportez-vous à notre article [Ambulance à Marseille](/blog/ambulance-marseille-urgences-cpam-2026).
+
+## Démarches à suivre
+
+1. Faites établir la prescription médicale de transport (CERFA 11574) par votre médecin.
+2. Sélectionnez un transporteur conventionné proche de votre domicile.
+3. Réservez à l'avance, en précisant adresse, horaire et motif.
+4. Présentez carte Vitale et prescription le jour du trajet ; le tiers payant s'applique.
+5. Pour des soins répétés, conservez le même transporteur autant que possible.
+
+## Questions fréquentes
+
+### Combien coûte un taxi conventionné à Marseille ?
+
+Le coût dépend de la distance, du temps d'attente et de la grille des Bouches-du-Rhône. Pour un patient en ALD ou hospitalisé, le reste à charge est nul grâce à la prise en charge à 100 % et au tiers payant. Hors ALD, la CPAM rembourse 65 % et la complémentaire santé couvre généralement le solde.
+
+### Comment savoir si un taxi marseillais est conventionné ?
+
+Le transporteur doit pouvoir justifier de sa convention avec l'Assurance Maladie et accepter le tiers payant pour un transport prescrit. En cas de doute, demandez confirmation avant de réserver, ou utilisez un annuaire spécialisé comme RoullePro.
+
+### Quel transport pour aller à la Timone ?
+
+Pour un patient autonome muni d'une prescription, le taxi conventionné ou le VSL conviennent. Pour un patient devant être allongé ou surveillé, une ambulance est nécessaire. Le mode de transport est indiqué par le médecin sur la prescription.
+
+## En conclusion
+
+À Marseille, le taxi conventionné facilite l'accès aux hôpitaux de l'AP-HM et à l'institut Paoli-Calmettes, avec une prise en charge avantageuse pour les patients prescrits. Pour trouver sans attendre un transporteur agréé, lancez une recherche sur [RoullePro à Marseille](/transport-medical/marseille).
+`,
+  },
 ];
