@@ -6,6 +6,19 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // Les dégradés de catégorie du blog sont construits dynamiquement
+  // (`bg-gradient-to-br ${cat.color}`), donc invisibles au scan de Tailwind.
+  // Sans safelist ils sont purgés → fond transparent → texte blanc illisible.
+  safelist: [
+    'from-sky-500', 'to-cyan-600',
+    'from-emerald-500', 'to-teal-600',
+    'from-blue-500', 'to-indigo-600',
+    'from-amber-500', 'to-orange-600',
+    'from-violet-500', 'to-purple-600',
+    'from-rose-500', 'to-pink-600',
+    'from-green-500', 'to-lime-600',
+    'from-slate-500', 'to-gray-700',
+  ],
   theme: {
     extend: {
       colors: {
