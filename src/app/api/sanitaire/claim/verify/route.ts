@@ -331,14 +331,15 @@ export async function POST(req: Request) {
       }).catch(() => undefined);
     } catch {}
 
+    // SÉCURITÉ : le mot de passe temporaire et le magic link ne sortent JAMAIS dans la
+    // réponse JSON. Ils sont transmis uniquement par email à l'adresse officielle de la
+    // fiche, ce qui empêche le squat d'une fiche par un appelant qui n'a pas accès à
+    // cette boîte mail.
     return NextResponse.json({
       ok: true,
       pro_id: claim.pro_id,
       created_account: createdAccount,
-      magic_link: magicLink,
-      email: accountEmail,
-      has_temp_password: !!tempPassword,
-      temp_password: tempPassword,
+      message: "Un code de vérification a été envoyé sur l'email officiel de la fiche",
     });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
