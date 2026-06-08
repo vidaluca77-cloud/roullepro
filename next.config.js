@@ -29,13 +29,14 @@ const securityHeaders = [
     key: 'Strict-Transport-Security',
     value: 'max-age=63072000; includeSubDomains; preload',
   },
-  // CSP en Report-Only : surveille sans bloquer.
+  // CSP en mode enforce : bloque réellement les sources non autorisées.
   // Sources autorisées identifiées par audit :
   //   - Supabase (API, Auth, Storage)
   //   - Netlify RUM (same-origin /_next/)
   //   - Next.js inline scripts/styles (unsafe-inline requis pour App Router)
+  //   - Resend (connect-src api.resend.com)
   {
-    key: 'Content-Security-Policy-Report-Only',
+    key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
