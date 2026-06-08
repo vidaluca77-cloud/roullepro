@@ -604,4 +604,95 @@ Pour un transport programmé vers la Timone, contactez une entreprise d'ambulanc
 À Marseille, distinguer l'urgence (15, 18, 112) du transport programmé (ambulance privée conventionnée sur prescription) est la clé d'une prise en charge fluide. Pour organiser un transport sanitaire vers les hôpitaux de l'AP-HM, trouvez un transporteur agréé sur [RoullePro à Marseille](/transport-medical/marseille).
 `,
   },
+  {
+    slug: "transport-medical-ald-remboursement-100-2026",
+    title:
+      "Transport médical en ALD : démarches, formulaires et remboursement 100%",
+    excerpt:
+      "Transport médical en ALD : conditions du remboursement à 100 %, ALD éligibles, prescription, formulaire CERFA, articulation avec la mutuelle et démarches concrètes. Le guide complet 2026.",
+    category: "Transport sanitaire",
+    date: "2026-05-24",
+    readingTime: 12,
+    image: "/blog/transport-medical-ald-remboursement-100-2026.jpg",
+    imageAlt:
+      "Patient en affection de longue durée montant dans un véhicule de transport sanitaire conventionné",
+    keywords: [
+      "transport ald",
+      "transport médical ald",
+      "ald remboursement transport",
+      "ald 100 transport",
+    ],
+    content: `
+**En résumé : un patient en affection de longue durée (ALD) peut bénéficier d'une prise en charge à 100 % de ses transports liés à sa pathologie, sur prescription médicale et sous conditions. Le médecin établit le protocole de soins et la prescription de transport (CERFA 11574). Le tiers payant évite l'avance de frais. La mutuelle intervient pour les éventuels restes à charge hors champ ALD.**
+
+Les patients atteints d'une affection de longue durée effectuent souvent de nombreux trajets vers leurs soins : consultations spécialisées, examens, séances de dialyse, chimiothérapie ou radiothérapie. Le dispositif ALD permet, sous conditions, une prise en charge à 100 % de ces transports. Encore faut-il connaître les démarches et les formulaires. Ce guide les détaille pour 2026.
+
+## Qu'est-ce qu'une ALD ?
+
+L'affection de longue durée est une maladie nécessitant un suivi prolongé et des soins coûteux, reconnue par l'Assurance Maladie. Cette reconnaissance ouvre droit à une exonération du ticket modérateur pour les soins en lien avec la pathologie, c'est-à-dire une prise en charge à 100 % du tarif de base de l'Assurance Maladie.
+
+Il existe une liste d'ALD dites exonérantes (par exemple certains cancers, le diabète, l'insuffisance rénale chronique terminale, certaines maladies cardiovasculaires). La liste et les critères sont présentés sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/affections-longue-duree-et-situations-particulieres). C'est le médecin traitant qui demande la reconnaissance de l'ALD via un protocole de soins, validé par le médecin-conseil de l'Assurance Maladie.
+
+## Transport en ALD : quelles conditions pour le 100 % ?
+
+La prise en charge à 100 % du transport suppose deux conditions cumulatives :
+
+- Le patient est reconnu en ALD.
+- Le transport est en lien direct avec la pathologie reconnue au titre de l'ALD et le patient présente une incapacité ou une déficience justifiant un transport (état médical le nécessitant).
+
+Autrement dit, tous les transports d'un patient en ALD ne sont pas automatiquement pris en charge à 100 % : seul le transport lié aux soins de la pathologie exonérante l'est, lorsque l'état du patient le justifie. Les règles sont précisées sur [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165).
+
+## Quel mode de transport selon l'état du patient ?
+
+Le médecin prescrit le mode adapté à l'état de santé :
+
+- Transport assis (taxi conventionné ou VSL) pour un patient autonome.
+- Ambulance pour un patient devant être transporté allongé ou sous surveillance.
+
+Pour arbitrer entre transport assis et allongé, notre comparatif [VSL ou taxi conventionné](/blog/vsl-ou-taxi-conventionne-comparatif-2026) est utile. Le respect du mode prescrit est important : un mode plus coûteux que nécessaire peut ne pas être intégralement pris en charge.
+
+## Les démarches pas à pas
+
+1. Faire reconnaître l'ALD : le médecin traitant établit le protocole de soins, transmis au médecin-conseil pour validation.
+2. Obtenir la prescription de transport : à chaque besoin, le médecin remplit le formulaire CERFA 11574 en précisant le mode et le motif. Voir notre guide [CERFA 11574 rempli](/blog/cerfa-11574-bon-transport-medical-exemple-rempli).
+3. Choisir un transporteur conventionné, proche du domicile.
+4. Présenter carte Vitale et prescription le jour du trajet ; le tiers payant s'applique.
+5. Conserver les justificatifs, notamment pour les soins en série.
+
+## Le formulaire CERFA et la prescription
+
+Le document central est la prescription médicale de transport, formellement le CERFA 11574. Le médecin y indique le motif médical, le mode de transport et, le cas échéant, le caractère répété des trajets. Pour certaines situations (transport de longue distance, transport en série), une demande d'accord préalable auprès de l'Assurance Maladie peut être requise. Mieux vaut vérifier ce point avec son médecin ou sa CPAM.
+
+## Combien d'aller-retours sont pris en charge ?
+
+Il n'existe pas de plafond forfaitaire universel : la prise en charge couvre les transports médicalement justifiés en lien avec l'ALD. Pour les soins répétés (dialyse trois fois par semaine, séances de radiothérapie quotidiennes), les trajets correspondants sont pris en charge dès lors qu'ils sont prescrits. Certaines situations de transport en série ou de longue distance peuvent nécessiter un accord préalable.
+
+## Articulation avec la mutuelle
+
+La prise en charge à 100 % en ALD s'applique au tarif de base de l'Assurance Maladie pour les soins liés à la pathologie. La complémentaire santé (mutuelle) intervient pour :
+
+- Les éventuels dépassements ou restes à charge non couverts.
+- Les transports hors champ ALD, pris en charge à 65 % par l'Assurance Maladie, dont la mutuelle peut couvrir le solde.
+
+Il est donc utile de vérifier les garanties transport de son contrat de complémentaire santé.
+
+## Questions fréquentes
+
+### Qui décide de l'ALD ?
+
+La reconnaissance de l'ALD est demandée par le médecin traitant, qui établit un protocole de soins. Ce protocole est validé par le médecin-conseil de l'Assurance Maladie. C'est cette validation qui ouvre droit à l'exonération du ticket modérateur pour les soins liés à la pathologie.
+
+### Quel formulaire pour un transport ALD ?
+
+Le formulaire est la prescription médicale de transport, le CERFA 11574, rempli par le médecin. Il précise le mode de transport et le motif médical. Selon la situation (longue distance, série), un accord préalable de l'Assurance Maladie peut être nécessaire.
+
+### Combien d'aller-retours par an sont remboursés ?
+
+Il n'y a pas de plafond forfaitaire universel : sont pris en charge les transports médicalement justifiés et prescrits en lien avec l'ALD. Pour les soins répétés comme la dialyse ou la radiothérapie, les trajets correspondants sont couverts dès lors qu'ils sont prescrits.
+
+## En conclusion
+
+Le transport médical en ALD peut être pris en charge à 100 %, à condition d'être prescrit et lié à la pathologie reconnue. La clé réside dans le protocole de soins, la prescription CERFA 11574 et le choix d'un transporteur conventionné. Pour trouver un professionnel agréé près de chez vous, lancez une recherche sur [RoullePro](/transport-medical/recherche).
+`,
+  },
 ];
