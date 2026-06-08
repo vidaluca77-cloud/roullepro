@@ -40,13 +40,18 @@ async function fetchDepartementData(code: string): Promise<{
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
-  // Recupere toutes les fiches actives du departement
+  // Recupere toutes les fiches actives du departement pour agreger les comptages.
+  // Les lignes servent a calculer les totaux exacts affiches (H1, badges, FAQ JSON-LD) :
+  // on ne peut donc PAS baisser cette limite a 200 sans corrompre les comptages.
+  // Le cap est ramene a 5000 (au lieu de 10000) : aucun departement francais n'atteint
+  // ce volume de pros sanitaire (le plus dense ~2500), donc comportement identique sur
+  // toutes les donnees reelles, tout en bornant le pire cas theorique.
   const { data: pros, error } = await supabase
     .from("pros_sanitaire_public")
     .select("ville, ville_slug, categorie")
     .eq("actif", true)
     .eq("departement", code)
-    .limit(10000);
+    .limit(5000);
 
   if (error || !pros || pros.length === 0) return null;
 
