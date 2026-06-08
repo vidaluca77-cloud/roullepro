@@ -803,4 +803,93 @@ Contactez le médecin prescripteur pour obtenir un duplicata avant d'effectuer l
 Le CERFA 11574 est la clé de voûte du remboursement du transport sanitaire : bien rempli, signé et conforme à l'état du patient, il garantit une prise en charge fluide. Une fois la prescription en main, trouvez un transporteur conventionné près de chez vous sur [RoullePro](/transport-medical/recherche).
 `,
   },
+  {
+    slug: "vsl-ou-taxi-conventionne-comparatif-2026",
+    title:
+      "VSL ou taxi conventionné : lequel choisir selon votre situation (avec arbre de décision)",
+    excerpt:
+      "VSL ou taxi conventionné : tableau comparatif, arbre de décision, critères médicaux (autonomie, accompagnement), coûts et remboursement. Le guide clair pour savoir lequel choisir en 2026.",
+    category: "Transport sanitaire",
+    date: "2026-05-28",
+    readingTime: 11,
+    image: "/blog/vsl-ou-taxi-conventionne-comparatif-2026.jpg",
+    imageAlt:
+      "Véhicule sanitaire léger et taxi conventionné stationnés côte à côte devant un centre de soins",
+    keywords: [
+      "vsl ou taxi conventionné",
+      "différence vsl taxi",
+      "transport médical assis",
+      "vsl véhicule sanitaire léger",
+    ],
+    content: `
+**En résumé : le VSL (véhicule sanitaire léger) et le taxi conventionné sont deux modes de transport assis pour patients autonomes, tous deux pris en charge par l'Assurance Maladie sur prescription. Le VSL est conduit par un personnel formé au transport sanitaire et peut transporter plusieurs patients ; le taxi conventionné offre souvent plus de souplesse. Le choix dépend de l'état du patient, du besoin d'accompagnement et de l'offre locale, mais c'est le médecin qui prescrit le mode adapté.**
+
+Quand un patient doit se rendre à ses soins sans avoir besoin d'être allongé, deux options de transport assis s'offrent à lui : le VSL ou le taxi conventionné. Les deux sont remboursés dans les mêmes conditions, mais présentent des différences pratiques. Ce guide propose un comparatif clair et un arbre de décision pour 2026.
+
+## Deux transports assis, un même cadre de remboursement
+
+Le VSL et le taxi conventionné relèvent tous deux du transport assis professionnalisé, destiné aux patients autonomes ne nécessitant ni position allongée ni surveillance médicale. Leur prise en charge par l'Assurance Maladie est identique : 65 % du tarif conventionné dans le cas général, 100 % en ALD, hospitalisation ou accident du travail, avec tiers payant. Les règles figurent sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports).
+
+La différence avec l'ambulance est nette : l'ambulance est réservée aux transports allongés ou surveillés. Pour cette distinction, voir [Ambulance privée vs publique](/blog/ambulance-privee-vs-publique-2026).
+
+## Qu'est-ce qu'un VSL ?
+
+Le véhicule sanitaire léger est un véhicule agréé pour le transport sanitaire assis, conduit par un personnel formé (auxiliaire ambulancier ou ambulancier). Il peut transporter jusqu'à trois patients simultanément et est équipé pour le transport sanitaire (signalétique, matériel de première nécessité). Il est exploité par une entreprise de transport sanitaire agréée par l'ARS.
+
+## Qu'est-ce qu'un taxi conventionné ?
+
+Le taxi conventionné est un taxi ordinaire ayant signé une convention avec l'Assurance Maladie. Pour un transport prescrit, il applique la grille conventionnée et pratique le tiers payant. Il offre généralement une grande souplesse de réservation et une bonne couverture territoriale, y compris en zone peu dense. Nos guides villes détaillent son fonctionnement, par exemple à [Paris](/blog/taxi-conventionne-paris-tarifs-cpam-2026) ou à [Lyon](/blog/taxi-conventionne-lyon-guide-2026).
+
+## Tableau comparatif
+
+| Critère | VSL | Taxi conventionné |
+| --- | --- | --- |
+| Type de transport | Assis, sanitaire | Assis, conventionné |
+| Conducteur | Personnel formé au transport sanitaire | Chauffeur de taxi |
+| Patients transportés | Jusqu'à trois | En général un (ou covoiturage selon organisation) |
+| Souplesse de réservation | Selon disponibilité de l'entreprise | Souvent élevée |
+| Couverture territoriale | Bonne en zone urbaine | Très bonne, y compris zones rurales |
+| Prise en charge CPAM | 65 % (100 % en ALD) | 65 % (100 % en ALD) |
+| Tiers payant | Oui | Oui |
+
+## Arbre de décision
+
+Voici une logique simple pour s'orienter. C'est néanmoins toujours le médecin qui prescrit le mode adapté.
+
+1. Le patient doit-il être transporté allongé ou surveillé ? Si oui, ce n'est ni un VSL ni un taxi : il faut une ambulance.
+2. Si le patient est autonome et assis : un transport assis convient (VSL ou taxi conventionné).
+3. Le patient a-t-il besoin d'un accompagnement par un personnel formé au transport sanitaire (aide à la marche, fragilité particulière) ? Si oui, le VSL est souvent privilégié.
+4. La priorité est-elle la souplesse horaire ou la couverture en zone peu dense ? Le taxi conventionné est souvent plus disponible.
+5. Dans tous les cas : suivre le mode prescrit par le médecin sur le CERFA 11574. Voir notre guide [CERFA 11574](/blog/cerfa-11574-bon-transport-medical-exemple-rempli).
+
+## Critères médicaux à considérer
+
+- Autonomie : capacité à se déplacer et à monter seul dans le véhicule.
+- Besoin d'aide : assistance à la marche, fragilité, désorientation.
+- Position : assise possible sans difficulté, sinon transport allongé requis.
+- Fauteuil roulant : un patient en fauteuil pliable autonome peut souvent voyager en transport assis ; un transport adapté peut être nécessaire selon la situation, à apprécier médicalement.
+
+## Coûts et reste à charge
+
+Le coût brut diffère selon la grille (VSL relevant des tarifs sanitaires, taxi relevant de la convention taxi départementale), mais la logique de remboursement est la même. Pour le patient en ALD ou hospitalisé, le reste à charge est nul grâce à la prise en charge à 100 % et au tiers payant. Hors ALD, le solde de 35 % est généralement couvert par la complémentaire santé. Pour la logique de tarif, voir notre [grille tarifaire 2026](/blog/tarif-taxi-conventionne-2026-grille-cpam).
+
+## Questions fréquentes
+
+### Le VSL est-il plus cher que le taxi conventionné ?
+
+Les tarifs de base relèvent de grilles différentes, mais la prise en charge par l'Assurance Maladie est identique (65 %, ou 100 % en ALD) avec tiers payant. Pour le patient, le reste à charge est donc le même dans la plupart des cas. Le choix se fait surtout sur des critères pratiques et médicaux.
+
+### Qui décide entre VSL et taxi conventionné ?
+
+Le médecin prescrit le mode de transport adapté à l'état du patient sur le CERFA 11574. Entre deux modes assis équivalents, le patient peut tenir compte de la disponibilité locale et de son besoin d'accompagnement, dans le respect de la prescription.
+
+### Peut-on prendre un VSL si l'on est en fauteuil roulant ?
+
+Un patient en fauteuil roulant pliable et suffisamment autonome peut souvent voyager en transport assis. Selon la situation, un véhicule adapté peut être nécessaire. C'est le médecin qui apprécie le mode de transport approprié et l'indique sur la prescription.
+
+## En conclusion
+
+VSL et taxi conventionné sont deux solutions de transport assis remboursées de la même façon ; le choix dépend de l'état du patient, du besoin d'accompagnement et de l'offre locale, toujours dans le cadre de la prescription médicale. Pour comparer les transporteurs disponibles près de chez vous, lancez une recherche sur [RoullePro](/transport-medical/recherche).
+`,
+  },
 ];
