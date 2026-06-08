@@ -513,4 +513,95 @@ Selon les conventions départementales, des majorations peuvent s'appliquer la n
 Le tarif du taxi conventionné suit une grille départementale qui explique les écarts d'une ville à l'autre, tout en garantissant au patient un remboursement national stable et, le plus souvent, l'absence d'avance de frais. Pour trouver un transporteur conventionné dans votre secteur, lancez une recherche sur [RoullePro](/transport-medical/recherche?q=taxi%20conventionn%C3%A9).
 `,
   },
+  {
+    slug: "ambulance-marseille-urgences-cpam-2026",
+    title:
+      "Ambulance à Marseille : urgences, transports programmés, conventionnés CPAM",
+    excerpt:
+      "Tout sur l'ambulance à Marseille en 2026 : numéros d'urgence (15, 18, 112), différence entre urgence et transport programmé, prise en charge CPAM, hôpitaux de l'AP-HM et conseils pour trouver une ambulance conventionnée.",
+    category: "Transport sanitaire",
+    date: "2026-05-22",
+    readingTime: 11,
+    image: "/blog/ambulance-marseille-urgences-cpam-2026.jpg",
+    imageAlt:
+      "Ambulance privée conventionnée circulant dans Marseille avec le Vieux-Port en arrière-plan",
+    keywords: [
+      "ambulance marseille",
+      "ambulance privée marseille",
+      "transport sanitaire marseille",
+      "ambulance cpam marseille",
+    ],
+    content: `
+**En résumé : à Marseille, en cas d'urgence vitale, on appelle le 15 (SAMU) ou le 112 ; pour un incendie ou un accident sur la voie publique, le 18 (pompiers). Pour un transport allongé programmé, on contacte une entreprise d'ambulance privée conventionnée, sur prescription. Le transport prescrit et conventionné est pris en charge par l'Assurance Maladie, avec tiers payant.**
+
+Marseille, avec son réseau de l'AP-HM et sa densité de population, génère un volume important de transports sanitaires. Entre urgences régulées par le SAMU et transports programmés vers les hôpitaux, il est essentiel de savoir quel numéro appeler et comment obtenir la prise en charge. Ce guide récapitule l'essentiel pour 2026.
+
+## Les numéros utiles à connaître
+
+- 15 : SAMU, pour toute urgence médicale (malaise grave, détresse respiratoire, douleur thoracique). La régulation médicale décide du moyen à envoyer.
+- 18 : sapeurs-pompiers, pour un incendie, un accident sur la voie publique ou un secours à personne.
+- 112 : numéro d'urgence européen, accessible depuis tout téléphone, qui redirige vers le service compétent.
+- 114 : numéro d'urgence par message pour les personnes sourdes ou malentendantes.
+
+En cas de doute sur la gravité, le 15 oriente et conseille. Ces numéros sont gratuits et joignables 24 heures sur 24.
+
+## Urgence ou transport programmé : deux circuits
+
+### L'urgence
+
+En situation d'urgence, c'est la régulation médicale du SAMU (15) qui mobilise le moyen le plus adapté : ambulance privée réquisitionnée, véhicule des pompiers ou SMUR pour les urgences vitales. Le patient n'a pas à choisir lui-même le transporteur ; tout est coordonné par le centre de régulation.
+
+### Le transport programmé
+
+Pour une hospitalisation prévue, un retour à domicile ou des soins en série, le transport s'anticipe. Il fait l'objet d'une prescription médicale (formulaire CERFA 11574) et d'une réservation auprès d'une entreprise d'ambulance privée conventionnée. Notre guide [CERFA 11574 pas-à-pas](/blog/cerfa-11574-bon-transport-medical-exemple-rempli) détaille la marche à suivre.
+
+Si le patient est autonome et n'a pas besoin d'être allongé, l'ambulance n'est pas nécessaire : un VSL ou un [taxi conventionné à Marseille](/blog/taxi-conventionne-marseille-2026) suffit.
+
+## Prise en charge par l'Assurance Maladie
+
+Le transport en ambulance, lorsqu'il est prescrit et réalisé par une entreprise conventionnée, est remboursé selon les règles nationales :
+
+- 65 % du tarif conventionné dans le cas général.
+- 100 % en cas d'ALD en lien avec le transport, d'hospitalisation, d'accident du travail ou de maladie professionnelle.
+
+La complémentaire santé couvre généralement le reste. Avec le tiers payant, le patient n'avance le plus souvent rien. Le détail figure sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports) et [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165).
+
+## Les hôpitaux marseillais concernés
+
+Les transports en ambulance à Marseille desservent notamment :
+
+- L'hôpital de la Timone (5e), site majeur de l'AP-HM avec ses urgences et son plateau technique.
+- L'hôpital Nord (15e), pour les quartiers nord de la ville.
+- L'hôpital de la Conception (5e), en centre-ville.
+- L'institut Paoli-Calmettes, centre de lutte contre le cancer.
+
+Pour les patients en oncologie à Paoli-Calmettes, les transports répétés relèvent souvent des soins en série ouvrant droit à une prise en charge renforcée.
+
+## Combien coûte une ambulance à Marseille ?
+
+Le tarif d'une ambulance privée comprend un forfait de prise en charge, un tarif kilométrique et d'éventuels suppléments (agglomération, dimanche et jours fériés, urgence), dans le cadre de la convention nationale des transporteurs sanitaires. Pour un transport prescrit et conventionné, ce montant est pris en charge par l'Assurance Maladie et la complémentaire. Le patient ne supporte que l'éventuel reste à charge non couvert. Notre article [Ambulance privée vs publique](/blog/ambulance-privee-vs-publique-2026) détaille la structure de ces tarifs.
+
+## Trouver une ambulance conventionnée à Marseille
+
+Pour un transport programmé, choisissez une entreprise conventionnée, proche du domicile ou de l'hôpital, et réservez à l'avance. RoullePro recense les transporteurs sanitaires à [Marseille](/transport-medical/marseille) et permet une [recherche géolocalisée](/transport-medical/recherche?q=Marseille). La méthode de vérification de l'agrément est expliquée dans [Ambulance près de chez moi](/blog/ambulance-pres-de-chez-moi-trouver-2026).
+
+## Questions fréquentes
+
+### Quel numéro appeler ?
+
+Pour une urgence médicale, appelez le 15 (SAMU). Pour un incendie ou un accident sur la voie publique, le 18 (pompiers). Le 112 est le numéro d'urgence européen, joignable depuis tout téléphone. Pour un transport programmé, contactez directement une entreprise d'ambulance privée conventionnée sur prescription.
+
+### Combien coûte une ambulance à Marseille ?
+
+Le tarif associe un forfait, un kilométrage et d'éventuels suppléments, encadrés par la convention nationale. Pour un transport prescrit et conventionné, l'Assurance Maladie et la complémentaire prennent en charge le coût, le patient ne réglant que l'éventuel reste à charge. Sans prescription, le transport peut rester à sa charge.
+
+### Quelle ambulance pour la Timone ?
+
+Pour un transport programmé vers la Timone, contactez une entreprise d'ambulance privée conventionnée si le patient doit être allongé ou surveillé. Pour un patient autonome, un VSL ou un taxi conventionné convient. En cas d'urgence, c'est le 15 qui organise le transport.
+
+## En conclusion
+
+À Marseille, distinguer l'urgence (15, 18, 112) du transport programmé (ambulance privée conventionnée sur prescription) est la clé d'une prise en charge fluide. Pour organiser un transport sanitaire vers les hôpitaux de l'AP-HM, trouvez un transporteur agréé sur [RoullePro à Marseille](/transport-medical/marseille).
+`,
+  },
 ];
