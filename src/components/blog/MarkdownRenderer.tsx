@@ -10,7 +10,19 @@ type Block =
   | { type: "h2"; text: string; id: string }
   | { type: "h3"; text: string; id: string }
   | { type: "p"; text: string }
-  | { type: "ul"; items: string[] };
+  | { type: "ul"; items: string[] }
+  | { type: "table"; headers: string[]; rows: string[][] };
+
+function splitRow(line: string): string[] {
+  return line
+    .replace(/^\||\|$/g, "")
+    .split("|")
+    .map((c) => c.trim());
+}
+
+function isTableSeparator(line: string): boolean {
+  return /^\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?$/.test(line.trim());
+}
 
 function slugify(s: string): string {
   return s
@@ -33,10 +45,29 @@ function parseMarkdown(raw: string): Block[] {
     }
   };
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmed = line.trim();
     if (!trimmed) {
       pushList();
+      continue;
+    }
+    // Tableau : ligne d'en-tête « | a | b | » suivie d'un séparateur « | --- | --- | »
+    if (
+      trimmed.startsWith("|") &&
+      i + 1 < lines.length &&
+      isTableSeparator(lines[i + 1])
+    ) {
+      pushList();
+      const headers = splitRow(trimmed);
+      const rows: string[][] = [];
+      i += 2;
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        rows.push(splitRow(lines[i].trim()));
+        i++;
+      }
+      i--; // compense l'incrément de boucle
+      blocks.push({ type: "table", headers, rows });
       continue;
     }
     if (trimmed.startsWith("### ")) {
@@ -59,16 +90,57 @@ function parseMarkdown(raw: string): Block[] {
   return blocks;
 }
 
-/** Rend le gras inline **texte** */
+/** Rend le gras inline **texte** et les liens markdown [texte](url) */
 function renderInline(s: string): React.ReactNode {
+  // On découpe d'abord sur les liens [texte](url), puis sur le gras dans chaque segment.
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = linkRegex.exec(s)) !== null) {
+    if (match.index > lastIndex) {
+      nodes.push(
+        <React.Fragment key={key++}>
+          {renderBold(s.slice(lastIndex, match.index), key)}
+        </React.Fragment>
+      );
+    }
+    const [, label, href] = match;
+    const isExternal = /^https?:\/\//.test(href);
+    nodes.push(
+      <a
+        key={key++}
+        href={href}
+        className="text-blue-600 font-medium underline decoration-blue-300 underline-offset-2 hover:text-blue-700 hover:decoration-blue-600 transition"
+        {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
+        {label}
+      </a>
+    );
+    lastIndex = linkRegex.lastIndex;
+  }
+  if (lastIndex < s.length) {
+    nodes.push(
+      <React.Fragment key={key++}>
+        {renderBold(s.slice(lastIndex), key)}
+      </React.Fragment>
+    );
+  }
+  return nodes;
+}
+
+/** Rend le gras inline **texte** dans un segment dépourvu de lien. */
+function renderBold(s: string, keyBase: number): React.ReactNode {
   const parts = s.split(/(\*\*[^*]+\*\*)/);
   return parts.map((part, i) =>
     part.startsWith("**") && part.endsWith("**") ? (
-      <strong key={i} className="font-semibold text-gray-900">
+      <strong key={`${keyBase}-${i}`} className="font-semibold text-gray-900">
         {part.slice(2, -2)}
       </strong>
     ) : (
-      <React.Fragment key={i}>{part}</React.Fragment>
+      <React.Fragment key={`${keyBase}-${i}`}>{part}</React.Fragment>
     )
   );
 }
@@ -116,6 +188,40 @@ export function MarkdownRenderer({ content }: { content: string }) {
                 </li>
               ))}
             </ul>
+          );
+        }
+        if (b.type === "table") {
+          return (
+            <div key={i} className="my-6 overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    {b.headers.map((h, j) => (
+                      <th
+                        key={j}
+                        className="border border-gray-200 px-4 py-2.5 text-left font-semibold text-gray-900"
+                      >
+                        {renderInline(h)}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {b.rows.map((row, r) => (
+                    <tr key={r} className="even:bg-gray-50/50">
+                      {row.map((cell, c) => (
+                        <td
+                          key={c}
+                          className="border border-gray-200 px-4 py-2.5 text-gray-700 align-top"
+                        >
+                          {renderInline(cell)}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           );
         }
         return (

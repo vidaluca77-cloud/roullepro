@@ -26,6 +26,7 @@ export async function generateMetadata({
   if (!cat) return { title: "Catégorie introuvable — RoullePro" };
 
   const url = `https://roullepro.com/blog/categorie/${cat.slug}`;
+  const image = `https://roullepro.com/blog/categories/${cat.slug}.svg`;
   return {
     title: `${cat.label} — Blog RoullePro`,
     description: cat.description,
@@ -35,6 +36,13 @@ export async function generateMetadata({
       description: cat.description,
       url,
       type: "website",
+      images: [{ url: image, width: 1200, height: 675, alt: cat.label }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${cat.label} — Blog RoullePro`,
+      description: cat.description,
+      images: [image],
     },
   };
 }

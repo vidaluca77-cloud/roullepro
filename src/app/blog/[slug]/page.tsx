@@ -3,6 +3,7 @@
  */
 
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react";
@@ -12,7 +13,15 @@ import {
   getRelatedPosts,
   categoryLabelToSlug,
   getCategoryBySlug,
+  getPostImage,
 } from "@/lib/blog";
+import {
+  SITE_URL,
+  getPostImageUrl,
+  buildArticleJsonLd,
+  extractFaq,
+  buildFaqJsonLd,
+} from "@/lib/blog-seo";
 import {
   MarkdownRenderer,
   extractHeadings,
@@ -32,6 +41,8 @@ export function generateMetadata({
 }): Metadata {
   const post = getPostBySlug(params.slug);
   if (!post) return { title: "Article introuvable" };
+  const imageUrl = getPostImageUrl(post);
+  const { alt } = getPostImage(post);
   return {
     title: `${post.title} — RoullePro`,
     description: post.excerpt,
@@ -41,10 +52,17 @@ export function generateMetadata({
       description: post.excerpt,
       type: "article",
       publishedTime: post.date,
-      url: `https://roullepro.com/blog/${post.slug}`,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      images: [{ url: imageUrl, width: 1200, height: 630, alt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [imageUrl],
     },
     alternates: {
-      canonical: `https://roullepro.com/blog/${post.slug}`,
+      canonical: `${SITE_URL}/blog/${post.slug}`,
     },
   };
 }
@@ -62,42 +80,13 @@ export default function BlogPostPage({
   const gradient = cat?.color || "from-blue-500 to-indigo-600";
   const headings = extractHeadings(post.content);
   const related = getRelatedPosts(post, 3);
+  const heroImage = getPostImage(post);
 
   const wordCount = post.content.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.round(wordCount / 200));
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: post.title,
-    description: post.excerpt,
-    datePublished: post.date,
-    dateModified: post.date,
-    inLanguage: "fr-FR",
-    wordCount,
-    timeRequired: `PT${readingMinutes}M`,
-    author: { "@type": "Organization", name: "RoullePro", url: "https://roullepro.com" },
-    publisher: {
-      "@type": "Organization",
-      name: "RoullePro",
-      url: "https://roullepro.com",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://roullepro.com/logo.png",
-      },
-    },
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": `https://roullepro.com/blog/${post.slug}`,
-    },
-    speakable: {
-      "@type": "SpeakableSpecification",
-      cssSelector: ["h1", ".article-excerpt", "article p:first-of-type"],
-    },
-    keywords: post.keywords.join(", "),
-    articleSection: post.category,
-    isAccessibleForFree: true,
-  };
+  const jsonLd = buildArticleJsonLd(post);
+  const faqLd = buildFaqJsonLd(extractFaq(post.content));
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -107,13 +96,13 @@ export default function BlogPostPage({
         "@type": "ListItem",
         position: 1,
         name: "Blog",
-        item: "https://roullepro.com/blog",
+        item: `${SITE_URL}/blog`,
       },
       {
         "@type": "ListItem",
         position: 2,
         name: post.category,
-        item: `https://roullepro.com/blog/categorie/${categorySlug}`,
+        item: `${SITE_URL}/blog/categorie/${categorySlug}`,
       },
       {
         "@type": "ListItem",
@@ -140,6 +129,27 @@ export default function BlogPostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      {faqLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
+
+      {/* ─── IMAGE HERO ─────────────────────────── */}
+      <div className="relative w-full bg-gray-900">
+        <div className="relative w-full aspect-[21/9] max-h-[480px]">
+          <Image
+            src={heroImage.src}
+            alt={heroImage.alt}
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        </div>
+      </div>
 
       {/* ─── HERO ─────────────────────────────── */}
       <div

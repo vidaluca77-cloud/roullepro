@@ -13,6 +13,10 @@ export interface BlogPost {
   /** Contenu Markdown-like — rendu via une fonction simple dans la page */
   content: string;
   keywords: string[];
+  /** Chemin relatif depuis /public, ex: "/blog/taxi-conventionne-paris.jpg" */
+  image?: string;
+  /** Texte alternatif français descriptif de l'image */
+  imageAlt?: string;
 }
 
 const POSTS: BlogPost[] = [
@@ -214,7 +218,26 @@ const MEDICAL_POSTS: BlogPost[] = (() => {
   }
 })();
 
-const ALL_POSTS: BlogPost[] = [...POSTS, ...NEW_POSTS, ...SEO_POSTS, ...MEDICAL_POSTS];
+// Cluster transport sanitaire — articles villes/CPAM Q2 2026 (10 articles SEO)
+const SEO_VILLES_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-seo-villes");
+    return Array.isArray(mod?.SEO_VILLES_POSTS)
+      ? (mod.SEO_VILLES_POSTS as BlogPost[])
+      : [];
+  } catch {
+    return [];
+  }
+})();
+
+const ALL_POSTS: BlogPost[] = [
+  ...POSTS,
+  ...NEW_POSTS,
+  ...SEO_POSTS,
+  ...MEDICAL_POSTS,
+  ...SEO_VILLES_POSTS,
+];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */
 
@@ -330,4 +353,28 @@ export function getRelatedPosts(post: BlogPost, limit = 3): BlogPost[] {
 /** Les N derniers articles toutes catégories confondues */
 export function getLatestPosts(limit = 3): BlogPost[] {
   return getAllPosts().slice(0, limit);
+}
+
+/* ----------------------------- IMAGES ----------------------------- */
+
+/** Slugs de catégorie disposant d'un visuel placeholder dédié dans /public/blog/categories. */
+const CATEGORY_IMAGE_SLUGS = new Set(CATEGORIES.map((c) => c.slug));
+
+/**
+ * Détermine l'image et le texte alternatif à afficher pour un article.
+ * Ordre de priorité :
+ *   1. Image propre à l'article (post.image), avec alt = post.imageAlt ou, à défaut, post.title.
+ *   2. Visuel générique de la catégorie : /blog/categories/<slug-categorie>.svg.
+ *   3. Fallback ultime si la catégorie est inconnue : /blog/categories/default.svg.
+ */
+export function getPostImage(post: BlogPost): { src: string; alt: string } {
+  if (post.image) {
+    return { src: post.image, alt: post.imageAlt || post.title };
+  }
+  const categorySlug = categoryLabelToSlug(post.category);
+  const slug = CATEGORY_IMAGE_SLUGS.has(categorySlug) ? categorySlug : "default";
+  return {
+    src: `/blog/categories/${slug}.svg`,
+    alt: `Illustration de la catégorie ${post.category}`,
+  };
 }

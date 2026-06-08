@@ -19,6 +19,21 @@ export const metadata: Metadata = {
       "L'expertise dédiée aux professionnels du transport routier : acheter, vendre, financer vos véhicules.",
     type: "website",
     url: "https://roullepro.com/blog",
+    images: [
+      {
+        url: "https://roullepro.com/blog/categories/default.svg",
+        width: 1200,
+        height: 675,
+        alt: "Blog RoullePro",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog RoullePro",
+    description:
+      "L'expertise dédiée aux professionnels du transport routier.",
+    images: ["https://roullepro.com/blog/categories/default.svg"],
   },
   alternates: {
     canonical: "https://roullepro.com/blog",
@@ -65,7 +80,7 @@ export default function BlogIndexPage() {
               Parcourir par thème
             </h2>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {CATEGORIES.map((cat) => {
               const count = getPostsByCategorySlug(cat.slug).length;
               if (count === 0) return null;
@@ -73,19 +88,18 @@ export default function BlogIndexPage() {
                 <Link
                   key={cat.slug}
                   href={`/blog/categorie/${cat.slug}`}
-                  className="group relative overflow-hidden rounded-xl p-4 border border-gray-200 hover:border-transparent bg-white hover:shadow-lg transition-all"
+                  className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
                 >
                   <div
-                    className={`absolute inset-0 bg-gradient-to-br ${cat.color} opacity-0 group-hover:opacity-100 transition-opacity`}
-                  />
-                  <div className="relative">
-                    <div
-                      className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cat.color} mb-3 group-hover:bg-white/20 transition`}
-                    />
-                    <div className="text-sm font-bold text-gray-900 group-hover:text-white transition leading-tight">
+                    className={`relative h-24 bg-gradient-to-br ${cat.color} overflow-hidden`}
+                  >
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,255,255,0.25),transparent_60%)]" />
+                  </div>
+                  <div className="p-4">
+                    <div className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition leading-tight">
                       {cat.label}
                     </div>
-                    <div className="text-xs text-gray-400 group-hover:text-white/80 mt-1 transition">
+                    <div className="text-xs text-gray-400 mt-1">
                       {count} {count > 1 ? "articles" : "article"}
                     </div>
                   </div>
@@ -106,25 +120,35 @@ export default function BlogIndexPage() {
             </span>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {featured && <ArticleCard post={featured} variant="featured" />}
-            {rest.slice(0, 2).map((post) => (
+          {/* Article à la une, pleine largeur */}
+          {featured && (
+            <div className="mb-8">
+              <ArticleCard post={featured} variant="featured" />
+            </div>
+          )}
+
+          {/* Premiers articles */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rest.slice(0, 6).map((post) => (
               <ArticleCard key={post.slug} post={post} />
             ))}
           </div>
 
           {/* Newsletter au milieu */}
-          {rest.length > 2 && (
-            <div className="md:mx-0">
+          {rest.length > 6 && (
+            <div className="my-8">
               <NewsletterInline />
             </div>
           )}
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mt-2">
-            {rest.slice(2).map((post) => (
-              <ArticleCard key={post.slug} post={post} />
-            ))}
-          </div>
+          {/* Reste des articles */}
+          {rest.length > 6 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {rest.slice(6).map((post) => (
+                <ArticleCard key={post.slug} post={post} />
+              ))}
+            </div>
+          )}
         </section>
 
         {/* ─── CTA FINAL ───────────────────────────────── */}
