@@ -410,4 +410,107 @@ Pour un transport prescrit et conventionné, l'Assurance Maladie règle la part 
 Ambulance privée et ambulance publique répondent à des logiques différentes : l'une au transport programmé sur prescription, l'autre à l'urgence coordonnée par le SAMU. Dans les deux cas, le transport prescrit et conventionné est pris en charge par l'Assurance Maladie. Pour organiser un transport programmé, trouvez un transporteur agréé sur [RoullePro](/transport-medical/recherche?q=ambulance).
 `,
   },
+  {
+    slug: "tarif-taxi-conventionne-2026-grille-cpam",
+    title: "Tarif taxi conventionné 2026 : grille officielle CPAM par zone",
+    excerpt:
+      "Comprendre la tarification du taxi conventionné en 2026 : structure de la grille CPAM, notion de zone tarifaire, remise conventionnelle, exemples chiffrés par grande ville et reste à charge du patient.",
+    category: "Transport sanitaire",
+    date: "2026-05-20",
+    readingTime: 11,
+    image: "/blog/tarif-taxi-conventionne-2026-grille-cpam.jpg",
+    imageAlt:
+      "Compteur de taxi conventionné et document de prescription médicale posés sur un tableau de bord",
+    keywords: [
+      "tarif taxi conventionné",
+      "prix taxi cpam",
+      "grille tarifaire transport sanitaire",
+      "convention taxi cpam",
+    ],
+    content: `
+**En résumé : le tarif d'un taxi conventionné repose sur une grille négociée localement entre les taxis et l'Assurance Maladie. Elle combine une prise en charge au départ, un tarif kilométrique, un tarif d'attente et une remise conventionnelle obligatoire. Le tarif n'est donc pas uniforme en France : il varie selon le département et la zone. Le patient prescrit est remboursé à 65 % (100 % en ALD), sans avance de frais grâce au tiers payant.**
+
+Beaucoup de patients s'interrogent sur le prix d'un trajet en taxi conventionné et sur les écarts qu'ils constatent d'une ville à l'autre. La tarification obéit pourtant à une logique précise, encadrée par les conventions locales signées avec l'Assurance Maladie. Ce guide décrypte la grille 2026 et fournit des ordres de grandeur par zone.
+
+## Comment se construit le tarif d'un taxi conventionné
+
+### Les composantes de la grille
+
+Le montant d'une course conventionnée s'appuie sur plusieurs éléments :
+
+- Une prise en charge forfaitaire au départ de la course.
+- Un tarif kilométrique appliqué à la distance réellement parcourue.
+- Un tarif d'attente, lorsque le chauffeur patiente pendant les soins du patient.
+- Des majorations possibles (nuit, dimanche et jours fériés) selon les conventions.
+- Une remise conventionnelle obligatoire, déduite du total.
+
+La remise conventionnelle est la spécificité du taxi conventionné : c'est un pourcentage de réduction négocié dans la convention départementale, qui garantit à l'Assurance Maladie un tarif maîtrisé par rapport à une course classique au compteur. Le cadre général figure sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transports).
+
+### La notion de zone tarifaire
+
+Les conventions sont signées au niveau départemental, entre les organisations de taxis et la CPAM locale. C'est pourquoi le tarif varie d'un département à l'autre : densité urbaine, distances moyennes, conditions de circulation et accord local influent sur la grille. Une même distance peut donc ne pas coûter exactement le même montant à Paris, à Lyon ou en zone rurale.
+
+## Le tarif est-il identique partout en France ?
+
+Non. Il n'existe pas de tarif national unique du taxi conventionné. Chaque convention départementale fixe ses propres paramètres dans le cadre réglementaire général. Les règles de remboursement, en revanche, sont nationales : 65 % de prise en charge dans le cas général, 100 % en ALD, hospitalisation ou accident du travail. Les conditions sont décrites sur [Service-Public.fr](https://www.service-public.fr/particuliers/vosdroits/F165).
+
+## Ordres de grandeur par grande ville en 2026
+
+Le tableau ci-dessous présente des fourchettes indicatives pour un aller simple urbain court (environ 5 à 7 km), avant prise en charge par l'Assurance Maladie. Ces valeurs sont des ordres de grandeur destinés à illustrer la logique de zone, et non des tarifs officiels figés.
+
+| Ville | Trajet urbain court (aller) | Particularité de zone |
+| --- | --- | --- |
+| Paris | 20 à 30 euros | Forte densité, circulation dense, temps d'attente fréquent |
+| Lyon | 18 à 28 euros | Agglomération étendue, sites hospitaliers dispersés |
+| Marseille | 18 à 28 euros | Distances nord-sud importantes |
+| Ville moyenne | 15 à 25 euros | Distances plus courtes, attente réduite |
+| Zone rurale | Variable selon distance | Tarif kilométrique déterminant sur longue distance |
+
+Pour un éclairage local, consultez nos guides dédiés au [taxi conventionné à Paris](/blog/taxi-conventionne-paris-tarifs-cpam-2026), [à Lyon](/blog/taxi-conventionne-lyon-guide-2026) et [à Marseille](/blog/taxi-conventionne-marseille-2026).
+
+## Exemple détaillé de calcul
+
+Prenons un patient en ALD effectuant un aller-retour de 6 km vers son centre de soins, avec 45 minutes d'attente sur place :
+
+- Prise en charge au départ et kilométrage aller-retour calculés selon la grille départementale.
+- Tarif d'attente appliqué pour la durée des soins.
+- Remise conventionnelle déduite du total.
+- En ALD, l'Assurance Maladie rembourse 100 % du montant : le patient ne paie rien grâce au tiers payant.
+
+Hors ALD, le même trajet serait pris en charge à 65 %, le solde de 35 % étant généralement couvert par la complémentaire santé.
+
+## Pourquoi mon taxi conventionné facture-t-il parfois plus cher ?
+
+Plusieurs facteurs expliquent les écarts perçus :
+
+- Une distance plus longue, notamment vers un établissement éloigné.
+- Un temps d'attente important pendant les soins.
+- Des majorations de nuit, de dimanche ou de jour férié.
+- Une zone départementale dont la grille est plus élevée.
+
+Ces éléments sont normaux dès lors qu'ils respectent la convention. En cas de doute sur une facture, vous pouvez demander le détail au transporteur ou vous rapprocher de votre CPAM.
+
+## Reste à charge et tiers payant
+
+Le tiers payant est la règle pour les transports conventionnés prescrits : le transporteur facture directement l'Assurance Maladie et, le cas échéant, la complémentaire. Le patient n'avance rien pour un transport pris en charge à 100 %. Hors ALD, le reste à charge correspond à la part non couverte par la complémentaire santé.
+
+## Questions fréquentes
+
+### Le tarif est-il identique partout en France ?
+
+Non. La grille tarifaire du taxi conventionné est négociée au niveau départemental, ce qui entraîne des écarts d'une zone à l'autre. Seules les règles de remboursement (65 % en général, 100 % en ALD) sont nationales et identiques partout.
+
+### Pourquoi mon taxi conventionné facture plus cher ?
+
+Le montant dépend de la distance, du temps d'attente, des éventuelles majorations (nuit, dimanche, jour férié) et de la grille départementale. Un trajet plus long ou une attente prolongée pendant les soins augmentent logiquement le montant, dans le respect de la convention.
+
+### Y a-t-il un supplément la nuit ?
+
+Selon les conventions départementales, des majorations peuvent s'appliquer la nuit, le dimanche et les jours fériés. Ces majorations sont encadrées par la convention locale. Le transporteur doit pouvoir vous en justifier le détail.
+
+## En conclusion
+
+Le tarif du taxi conventionné suit une grille départementale qui explique les écarts d'une ville à l'autre, tout en garantissant au patient un remboursement national stable et, le plus souvent, l'absence d'avance de frais. Pour trouver un transporteur conventionné dans votre secteur, lancez une recherche sur [RoullePro](/transport-medical/recherche?q=taxi%20conventionn%C3%A9).
+`,
+  },
 ];
