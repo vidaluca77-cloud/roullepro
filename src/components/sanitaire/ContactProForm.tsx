@@ -62,13 +62,12 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
   useEffect(() => {
     if (!GOOGLE_MAPS_API_KEY) return;
 
-    const initAutocomplete = () => {
-      if (!window.google) return;
+    const attachAutocomplete = () => {
+      if (!window.google?.maps?.places) return;
       const opts = {
         componentRestrictions: { country: "fr" },
         fields: ["formatted_address", "name"],
       };
-
       if (lieuDepartRef.current && !departAutocompleteRef.current) {
         const ac = new window.google.maps.places.Autocomplete(lieuDepartRef.current, opts);
         ac.addListener("place_changed", () => {
@@ -77,7 +76,6 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
         });
         departAutocompleteRef.current = ac;
       }
-
       if (lieuArriveeRef.current && !arriveeAutocompleteRef.current) {
         const ac = new window.google.maps.places.Autocomplete(lieuArriveeRef.current, opts);
         ac.addListener("place_changed", () => {
@@ -88,19 +86,17 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
       }
     };
 
-    // Script déjà chargé
+    // Cas 1 : script déjà chargé (navigation SPA) — attendre le prochain frame pour que les refs soient peupées
     if (window.google?.maps?.places) {
-      initAutocomplete();
-      return;
+      const raf = requestAnimationFrame(attachAutocomplete);
+      return () => cancelAnimationFrame(raf);
     }
 
-    // Callback global appelé une fois le script Maps chargé
-    window.initGooglePlaces = initAutocomplete;
-
+    // Cas 2 : script pas encore chargé — l'injecter avec callback
+    window.initGooglePlaces = attachAutocomplete;
     const scriptId = "google-maps-places-script";
-    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
-    if (!script) {
-      script = document.createElement("script");
+    if (!document.getElementById(scriptId)) {
+      const script = document.createElement("script");
       script.id = scriptId;
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
       script.async = true;
@@ -119,9 +115,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           arriveeAutocompleteRef.current = null;
         }
       }
-      if (window.initGooglePlaces) {
-        delete window.initGooglePlaces;
-      }
+      delete window.initGooglePlaces;
     };
   }, []);
 
