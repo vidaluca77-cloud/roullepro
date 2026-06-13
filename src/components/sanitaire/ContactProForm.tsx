@@ -1,10 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, CheckCircle2, Calendar, MapPin, Stethoscope, Accessibility } from "lucide-react";
 
 type TypeTransport = "indifferent" | "ambulance" | "vsl" | "taxi_conventionne";
 type Mobilite = "autonome" | "aide_marche" | "fauteuil" | "brancard";
+
+// Types minimaux pour Google Maps Places (chargé dynamiquement, pas de npm package).
+interface GooglePlacesAutocomplete {
+  addListener: (event: string, handler: () => void) => void;
+  getPlace: () => { formatted_address?: string; name?: string };
+}
+interface GoogleMapsGlobal {
+  maps: {
+    places: {
+      Autocomplete: new (
+        input: HTMLInputElement,
+        opts?: { componentRestrictions?: { country: string }; fields?: string[] }
+      ) => GooglePlacesAutocomplete;
+    };
+    event: { clearInstanceListeners: (instance: object) => void };
+  };
+}
+declare global {
+  interface Window {
+    google?: GoogleMapsGlobal;
+    initGooglePlaces?: () => void;
+  }
+}
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 export default function ContactProForm({ proId, proNom }: { proId: string; proNom: string }) {
   // Identité
@@ -27,6 +52,78 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
   const [sent, setSent] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Google Places Autocomplete (chargement dynamique du script Maps)
+  const lieuDepartRef = useRef<HTMLInputElement>(null);
+  const lieuArriveeRef = useRef<HTMLInputElement>(null);
+  const departAutocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
+  const arriveeAutocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
+
+  useEffect(() => {
+    if (!GOOGLE_MAPS_API_KEY) return;
+
+    const initAutocomplete = () => {
+      if (!window.google) return;
+      const opts = {
+        componentRestrictions: { country: "fr" },
+        fields: ["formatted_address", "name"],
+      };
+
+      if (lieuDepartRef.current && !departAutocompleteRef.current) {
+        const ac = new window.google.maps.places.Autocomplete(lieuDepartRef.current, opts);
+        ac.addListener("place_changed", () => {
+          const place = ac.getPlace();
+          setLieuDepart(place.formatted_address || place.name || "");
+        });
+        departAutocompleteRef.current = ac;
+      }
+
+      if (lieuArriveeRef.current && !arriveeAutocompleteRef.current) {
+        const ac = new window.google.maps.places.Autocomplete(lieuArriveeRef.current, opts);
+        ac.addListener("place_changed", () => {
+          const place = ac.getPlace();
+          setLieuArrivee(place.formatted_address || place.name || "");
+        });
+        arriveeAutocompleteRef.current = ac;
+      }
+    };
+
+    // Script déjà chargé
+    if (window.google?.maps?.places) {
+      initAutocomplete();
+      return;
+    }
+
+    // Callback global appelé une fois le script Maps chargé
+    window.initGooglePlaces = initAutocomplete;
+
+    const scriptId = "google-maps-places-script";
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (window.google?.maps?.event) {
+        if (departAutocompleteRef.current) {
+          window.google.maps.event.clearInstanceListeners(departAutocompleteRef.current);
+          departAutocompleteRef.current = null;
+        }
+        if (arriveeAutocompleteRef.current) {
+          window.google.maps.event.clearInstanceListeners(arriveeAutocompleteRef.current);
+          arriveeAutocompleteRef.current = null;
+        }
+      }
+      if (window.initGooglePlaces) {
+        delete window.initGooglePlaces;
+      }
+    };
+  }, []);
 
   const labelTransport: Record<TypeTransport, string> = {
     indifferent: "Indifférent / à conseiller",
@@ -193,6 +290,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           <div>
             <label className={labelCls}>Lieu de départ</label>
             <input
+              ref={lieuDepartRef}
               type="text"
               placeholder="Ex : Domicile, 12 rue des Lilas, Caen"
               value={lieuDepart}
@@ -204,6 +302,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           <div>
             <label className={labelCls}>Lieu d&apos;arrivée</label>
             <input
+              ref={lieuArriveeRef}
               type="text"
               placeholder="Ex : Centre hospitalier de Caen, service dialyse"
               value={lieuArrivee}
