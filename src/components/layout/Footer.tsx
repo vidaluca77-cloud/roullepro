@@ -142,6 +142,12 @@ export default function Footer() {
           </ul>
         </div>
 
+        <div className="border-t border-gray-800 mt-6 pt-6">
+          <p className="text-sm text-gray-500">
+            Vous êtes chauffeur de taxi ? → Gérez vos courses avec <a href="https://taxiconnectpro.net" target="_blank" rel="noopener" className="hover:text-white transition underline">Taxi Connect Pro</a>
+          </p>
+        </div>
+
         <div className="border-t border-gray-800 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} RoullePro. Tous droits réservés.
