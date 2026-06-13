@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
@@ -143,6 +144,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="min-h-screen">{children}</main>
         <Footer />
         <NewsletterBanner />
+        <Script
+          src="https://taxiconnectpro.net/widget-roulepro.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
