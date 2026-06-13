@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/layout/Navbar';
@@ -136,9 +137,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        <script defer src="https://taxiconnectpro.net/widget-roulepro.js"></script>
       </head>
       <body className={inter.className}>
+        <Script
+          src="https://taxiconnectpro.net/widget-roulepro.js"
+          strategy="afterInteractive"
+        />
         <GoogleAnalytics />
         <Navbar />
         <main className="min-h-screen">{children}</main>

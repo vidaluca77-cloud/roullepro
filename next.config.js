@@ -43,10 +43,10 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net",
       "style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com",
       "img-src 'self' https: data: blob:",
-      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com`,
+      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net`,
       "font-src 'self' data:",
       "frame-src https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com",
       "frame-ancestors 'none'",
