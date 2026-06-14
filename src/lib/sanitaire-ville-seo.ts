@@ -58,6 +58,39 @@ const NICE_FAQ: VilleFaqItem[] = [
   },
 ];
 
+const PARIS_FAQ: VilleFaqItem[] = [
+  {
+    question: "Comment trouver un taxi conventionné CPAM à Paris ?",
+    answer:
+      "Utilisez l'annuaire RoullePro Paris qui recense les taxis conventionnés agréés par la CPAM de Paris (75). Chaque fiche indique le numéro d'agrément, les modes de paiement acceptés (dispense d'avance des frais possible), l'arrondissement de rattachement et les véhicules adaptés.",
+  },
+  {
+    question: "Quel est le tarif d'un taxi conventionné à Paris ?",
+    answer:
+      "Le tarif est encadré par la convention CPAM signée pour 2025-2026 entre la caisse de Paris et les organisations professionnelles. La CPAM rembourse 100 % sur prescription médicale en cas d'ALD, et 65 % pour les autres motifs, avec dispense d'avance des frais.",
+  },
+  {
+    question: "Faut-il une prescription pour utiliser un taxi conventionné à Paris ?",
+    answer:
+      "Oui, la prescription médicale (bon de transport) du médecin traitant ou hospitalier est obligatoire pour bénéficier du remboursement CPAM. Sans prescription, la course est considérée comme un taxi parisien classique au tarif libre.",
+  },
+  {
+    question: "Quelle différence entre taxi conventionné, VSL et ambulance à Paris ?",
+    answer:
+      "Le taxi conventionné transporte un patient autonome en position assise. Le VSL est un véhicule sanitaire léger avec personnel formé, pour patients nécessitant un accompagnement. L'ambulance est requise pour les patients allongés ou en état grave. Le choix est indiqué par le médecin sur la prescription.",
+  },
+  {
+    question: "Comment réserver un taxi conventionné à Paris en urgence ?",
+    answer:
+      "Appelez directement l'une des entreprises listées sur RoullePro Paris. Pour une réservation immédiate à toute heure, privilégiez les compagnies disposant d'un standard 24/7 (signalées sur leur fiche). Les retours d'hospitalisation depuis Pitié-Salpêtrière, Cochin ou Georges-Pompidou doivent être réservés 48 h à l'avance.",
+  },
+  {
+    question: "Les taxis conventionnés de Paris acceptent-ils la dispense d'avance des frais ?",
+    answer:
+      "La majorité des taxis conventionnés CPAM 75 pratiquent la dispense d'avance des frais (tiers payant). Présentez votre carte Vitale et la prescription, le chauffeur facture directement la CPAM. Cette mention est précisée sur chaque fiche entreprise.",
+  },
+];
+
 const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
   nice: {
     title: "Taxi conventionné Nice 06 | Transport médical CPAM | RoullePro",
@@ -68,6 +101,16 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
       "À Nice et dans les Alpes-Maritimes, plus de 47 taxis conventionnés CPAM proposent un transport médical pris en charge à 100 % sur prescription médicale. Que ce soit pour des séances de dialyse au CHU Pasteur, des consultations à l'Archet, ou un retour d'hospitalisation depuis la clinique Saint-Georges, RoullePro centralise les coordonnées et agréments officiels de chaque entreprise. Vous évitez de chercher pendant des heures : tarif convention, numéro d'agrément CPAM 06, modes de paiement (tiers payant, dispense d'avance des frais), véhicules adaptés (PMR, civière, brancard), réservation 7j/7. Notre annuaire est vérifié chaque mois auprès des préfectures et de la CPAM 06. Pour les patients en ALD (affection longue durée), la prescription du médecin traitant suffit pour activer la prise en charge à 100 %. Consultez ci-dessous la liste des taxis conventionnés à Nice classés par quartier, ou utilisez notre recherche par adresse pour trouver immédiatement le transport médical le plus proche de chez vous.",
     faq: NICE_FAQ,
     departement: "06",
+  },
+  paris: {
+    title: "Taxi conventionné Paris 75 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire des taxis conventionnés CPAM à Paris (75). Réservation, tarif convention 2026, agrément vérifié. Tous les arrondissements couverts.",
+    h1: "Taxi conventionné Paris — Transport médical CPAM dans les 20 arrondissements",
+    intro:
+      "Paris concentre l'un des plus importants parcs de taxis conventionnés CPAM de France, avec plus de 600 entreprises agréées par la CPAM 75 pour assurer le transport médical des patients. Que vous habitiez le 16e ou le 19e arrondissement, que vous soyez transféré entre Pitié-Salpêtrière, Cochin, Necker, Saint-Louis ou l'Hôpital européen Georges-Pompidou, RoullePro centralise les coordonnées officielles, numéros d'agrément CPAM et modes de paiement de chaque taxi conventionné parisien. Le tarif est encadré par la convention CPAM 2025-2026 et la prise en charge atteint 100 % en cas d'affection longue durée (ALD) sur prescription médicale. Les taxis conventionnés Paris proposent dispense d'avance des frais, véhicules adaptés PMR, réservation 24/7 pour les retours d'hospitalisation. Filtrez par arrondissement ou par établissement de destination pour trouver immédiatement le transport médical adapté à votre situation, sans devoir contacter dix compagnies une à une.",
+    faq: PARIS_FAQ,
+    departement: "75",
   },
 };
 
