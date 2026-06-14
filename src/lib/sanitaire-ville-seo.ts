@@ -124,6 +124,39 @@ const LYON_FAQ: VilleFaqItem[] = [
   },
 ];
 
+const MARSEILLE_FAQ: VilleFaqItem[] = [
+  {
+    question: "Comment trouver un taxi conventionné CPAM à Marseille ?",
+    answer:
+      "Utilisez l'annuaire RoullePro Marseille qui recense les taxis conventionnés agréés par la CPAM des Bouches-du-Rhône (13). Chaque fiche indique le numéro d'agrément, les modes de paiement acceptés (dispense d'avance des frais possible), la zone d'intervention et les véhicules adaptés.",
+  },
+  {
+    question: "Quel est le tarif d'un taxi conventionné à Marseille ?",
+    answer:
+      "Le tarif est encadré par la convention CPAM signée pour 2025-2026 entre la caisse des Bouches-du-Rhône et les organisations professionnelles. La CPAM rembourse 100 % sur prescription médicale en cas d'ALD, et 65 % pour les autres motifs, avec dispense d'avance des frais.",
+  },
+  {
+    question: "Faut-il une prescription pour utiliser un taxi conventionné à Marseille ?",
+    answer:
+      "Oui, la prescription médicale (bon de transport) du médecin traitant ou hospitalier est obligatoire pour bénéficier du remboursement CPAM. Sans prescription, la course est considérée comme un taxi classique au tarif libre.",
+  },
+  {
+    question: "Quelle différence entre taxi conventionné, VSL et ambulance à Marseille ?",
+    answer:
+      "Le taxi conventionné transporte un patient autonome en position assise. Le VSL est un véhicule sanitaire léger avec personnel formé, pour patients nécessitant un accompagnement. L'ambulance est requise pour les patients allongés ou en état grave. Le choix est indiqué par le médecin sur la prescription.",
+  },
+  {
+    question: "Comment réserver un taxi conventionné à Marseille en urgence ?",
+    answer:
+      "Appelez directement l'une des entreprises listées sur RoullePro Marseille. Pour une réservation immédiate à toute heure, privilégiez les compagnies disposant d'un standard 24/7 (signalées sur leur fiche). Les trajets vers l'AP-HM (Timone, Conception, Nord), l'Hôpital Européen ou l'Institut Paoli-Calmettes doivent être réservés 48 h à l'avance.",
+  },
+  {
+    question: "Les taxis conventionnés de Marseille acceptent-ils la dispense d'avance des frais ?",
+    answer:
+      "La majorité des taxis conventionnés CPAM 13 pratiquent la dispense d'avance des frais (tiers payant). Présentez votre carte Vitale et la prescription, le chauffeur facture directement la CPAM. Cette mention est précisée sur chaque fiche entreprise.",
+  },
+];
+
 const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
   nice: {
     title: "Taxi conventionné Nice 06 | Transport médical CPAM | RoullePro",
@@ -154,6 +187,16 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
       "À Lyon et dans le département du Rhône, plus de 180 taxis conventionnés CPAM assurent le transport médical des patients sur prescription. Que ce soit pour rejoindre les Hospices Civils de Lyon, Hôpital Édouard-Herriot, l'Hôpital de la Croix-Rousse, le Centre Léon Bérard ou des cliniques privées comme Charcot ou Mermoz, RoullePro centralise les fiches officielles validées par la CPAM 69. Chaque entreprise listée affiche son numéro d'agrément, ses modes de paiement (tiers payant possible), ses véhicules adaptés (PMR, brancard) et sa zone d'intervention dans le Grand Lyon. La convention CPAM 2025-2026 fixe le tarif et la prise en charge est de 100 % sur ALD. Pour les séances régulières (dialyse, chimiothérapie, radiothérapie), réservez 48 h à l'avance auprès d'une compagnie avec standard 24/7 pour assurer la continuité du transport médical.",
     faq: LYON_FAQ,
     departement: "69",
+  },
+  marseille: {
+    title: "Taxi conventionné Marseille 13 | Transport médical CPAM | RoullePro",
+    description:
+      "Taxis conventionnés CPAM à Marseille (13). Annuaire vérifié : agrément, tarif convention, tiers payant, véhicules adaptés.",
+    h1: "Taxi conventionné Marseille — Transport médical CPAM dans les Bouches-du-Rhône",
+    intro:
+      "Marseille est l'un des bassins de transport médical les plus actifs de France, avec plus de 250 taxis conventionnés CPAM agréés sur le département des Bouches-du-Rhône. RoullePro répertorie toutes les entreprises validées par la CPAM 13 pour vos trajets vers l'AP-HM (Timone, Conception, Nord, Sud), l'Hôpital Européen, l'Hôpital Saint-Joseph, l'Institut Paoli-Calmettes ou les cliniques privées d'Aix-Marseille. Sur chaque fiche figurent agrément CPAM, mode de paiement (dispense d'avance des frais largement pratiquée), véhicules adaptés PMR et brancard, zones d'intervention couvertes (Marseille intra-muros, Aix, Aubagne, Salon, étang de Berre). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en ALD ou pour les hospitalisations consécutives à un accident du travail.",
+    faq: MARSEILLE_FAQ,
+    departement: "13",
   },
 };
 
