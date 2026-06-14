@@ -390,11 +390,12 @@ Le decret s'applique a l'ensemble du territoire francais depuis debut 2025 pour 
   // ============================================================
   {
     slug: "transport-chimiotherapie-dialyse-radiotherapie",
-    title: "Transport en ambulance pour chimiotherapie, dialyse ou radiotherapie : guide complet",
+    title: "Transport chimiothérapie, dialyse, radiothérapie 2026 : remboursement 100 %",
+    h1: "Transport pour chimiothérapie, dialyse et radiothérapie : organiser et faire rembourser vos trajets",
     excerpt:
-      "Vous avez des soins reguliers en dialyse, chimio ou radio ? Voici comment organiser et faire rembourser vos transports medicaux iteratifs a 100% en 2026.",
+      "Soins réguliers en dialyse, chimio ou radio ? Découvrez comment organiser et faire rembourser vos transports médicaux itératifs à 100 % en 2026.",
     category: "Transport sanitaire",
-    date: "2026-04-29",
+    date: "2026-06-14",
     readingTime: 12,
     keywords: [
       "transport dialyse chimiotherapie radiotherapie rembourse",
@@ -406,7 +407,7 @@ Le decret s'applique a l'ensemble du territoire francais depuis debut 2025 pour 
       "transport dialyse ALD ambulance",
     ],
     content: `
-Mis a jour le 29 avril 2026
+Article mis a jour le 14 juin 2026
 
 Vous suivez des soins reguliers — seances de dialyse, cures de chimiotherapie ou seances de radiotherapie — et vous devez vous rendre plusieurs fois par semaine dans un centre medical eloigne de chez vous ? L'Assurance Maladie a prevu un dispositif specifique : le **transport dialyse chimiotherapie radiotherapie rembourse** dit "transport iteratif". Ce mecanisme vous permet de beneficier d'une couverture integrale sur toute une periode de traitement, sans avoir a obtenir un nouveau bon de transport a chaque seance. Ce guide vous explique tout : la prescription, le remboursement, l'organisation pratique et les pieges a eviter.
 
@@ -563,6 +564,10 @@ Si votre etat de sante se degrade et necessite un mode de transport plus medical
 ### Existe-t-il un forfait mensuel pour le transport en dialyse ?
 
 Il n'existe pas de "forfait mensuel" au sens strict, mais le dispositif de prescription iterative sur 90 jours realise un effet similaire en couvrant tous les trajets d'une periode. Certains centres de dialyse ont des conventions directes avec des societes de transport qui gerent les tournees et la facturation globale, ce qui simplifie les demarches administratives. Renseignez-vous aupres du service social de votre centre de dialyse.
+
+### Quel mode de transport choisir selon mon traitement (dialyse, chimio, radio) ?
+
+Le mode depend de votre etat et non du type de soin. En **dialyse**, la plupart des patients stables utilisent un VSL ou un taxi conventionne ; une ambulance est reservee aux patients fragiles ou en cas de complication. En **chimiotherapie**, l'etat pouvant varier fortement apres une perfusion, le medecin prescrit parfois une ambulance pour le retour et un transport assis pour l'aller. En **radiotherapie**, les seances etant quotidiennes et le patient generalement autonome, le taxi conventionne est le mode le plus frequent. Dans tous les cas, c'est le medecin prescripteur qui determine le mode adapte et le mentionne sur la prescription iterative.
 
 ---
 
