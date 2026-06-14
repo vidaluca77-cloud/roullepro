@@ -88,6 +88,10 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/transport-medical" className="hover:text-white transition">Annuaire complet</Link></li>
               <li><Link href="/transport-medical/recherche" className="hover:text-white transition">Rechercher par ville</Link></li>
+              <li><Link href="/taxi-conventionne" className="hover:text-white transition">Guide taxi conventionné</Link></li>
+              <li><Link href="/vsl" className="hover:text-white transition">Guide VSL</Link></li>
+              <li><Link href="/transport-sanitaire" className="hover:text-white transition">Guide transport sanitaire</Link></li>
+              <li><Link href="/ambulance-autour-de-moi" className="hover:text-white transition">Ambulance autour de moi</Link></li>
               <li><Link href="/transport-medical/notre-engagement" className="hover:text-white transition">Notre engagement</Link></li>
               <li><Link href="/transport-medical/pro" className="hover:text-white transition">Espace professionnel</Link></li>
               <li><Link href="/transport-medical/inscription" className="hover:text-white transition">Inscrire mon entreprise</Link></li>

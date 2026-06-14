@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getAllPosts, CATEGORIES } from "./blog";
 import { CATEGORIES_SEO, VILLES_SEO } from "./seo-data";
 import { getAllDepartementCodes } from "./departements-fr";
+import { VSL_VILLES } from "../data/vsl-villes";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -163,6 +164,21 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/transport-medical/inscription`, changefreq: "monthly", priority: 0.7 },
   ];
 
+  // Hubs nationaux thematiques (Phase 2 SEO) : forte priorite, requetes a fort volume.
+  const sanitaireHubs: SitemapEntry[] = [
+    { url: `${BASE_URL}/vsl`, changefreq: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/taxi-conventionne`, changefreq: "weekly", priority: 0.9 },
+    { url: `${BASE_URL}/transport-sanitaire`, changefreq: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/ambulance-autour-de-moi`, changefreq: "weekly", priority: 0.8 },
+  ];
+
+  // Pages VSL par ville (Phase 2 SEO) : 30 grandes villes.
+  const vslVilles: SitemapEntry[] = VSL_VILLES.map((v) => ({
+    url: `${BASE_URL}/vsl/${v.slug}`,
+    changefreq: "weekly",
+    priority: 0.8,
+  }));
+
   // Pages departement (101 entrees : metropole + outre-mer)
   const sanitaireDepartements: SitemapEntry[] = getAllDepartementCodes().map((code) => ({
     url: `${BASE_URL}/transport-medical/departement/${code}`,
@@ -181,6 +197,8 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     ...vehiculesProCatPages,
     ...vehiculesProCatVillePages,
     ...sanitaireStatic,
+    ...sanitaireHubs,
+    ...vslVilles,
     ...sanitaireDepartements,
   ];
 }

@@ -293,6 +293,40 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Nos guides : hubs nationaux thematiques (maillage interne SEO Phase 2) */}
+      <section className="border-t border-gray-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+          <div className="mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Nos guides</h2>
+            <p className="text-gray-600 max-w-2xl">
+              Tout comprendre sur le transport médical conventionné : modes de transport, prescription, tarifs et
+              remboursement CPAM.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { href: "/taxi-conventionne", title: "Taxi conventionné", desc: "Tarifs convention CPAM, prescription, remboursement et annuaire par ville." },
+              { href: "/vsl", title: "VSL — Véhicule Sanitaire Léger", desc: "Définition, indications médicales, tarif et remboursement du transport assis." },
+              { href: "/transport-medical", title: "Transport médical", desc: "Ambulance, VSL, taxi conventionné : le guide complet et l'annuaire France entière." },
+              { href: "/transport-sanitaire", title: "Transport sanitaire", desc: "Cadre légal, agrément ARS, spécialités et entreprises agréées." },
+              { href: "/ambulance-autour-de-moi", title: "Ambulance autour de moi", desc: "Trouver une ambulance proche, bons réflexes en cas d'urgence et remboursement." },
+            ].map((g) => (
+              <Link
+                key={g.href}
+                href={g.href}
+                className="group block bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-lg transition"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <h3 className="text-base font-bold text-gray-900">{g.title}</h3>
+                  <ChevronRight className="w-4 h-4 text-[#0066CC] group-hover:translate-x-0.5 transition-transform" />
+                </div>
+                <p className="text-sm text-gray-600">{g.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Bande prescripteurs */}
       <section className="border-t border-gray-200 bg-white">
         <div className="max-w-6xl mx-auto px-4 py-10 sm:py-12">
