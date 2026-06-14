@@ -157,6 +157,39 @@ const MARSEILLE_FAQ: VilleFaqItem[] = [
   },
 ];
 
+const MONTPELLIER_FAQ: VilleFaqItem[] = [
+  {
+    question: "Comment trouver un taxi conventionné CPAM à Montpellier ?",
+    answer:
+      "Utilisez l'annuaire RoullePro Montpellier qui recense les taxis conventionnés agréés par la CPAM de l'Hérault (34). Chaque fiche indique le numéro d'agrément, les modes de paiement acceptés (dispense d'avance des frais possible), la zone d'intervention dans la métropole et les véhicules adaptés.",
+  },
+  {
+    question: "Quel est le tarif d'un taxi conventionné à Montpellier ?",
+    answer:
+      "Le tarif est encadré par la convention CPAM signée pour 2025-2026 entre la caisse de l'Hérault et les organisations professionnelles. La CPAM rembourse 100 % sur prescription médicale en cas d'ALD, et 65 % pour les autres motifs, avec dispense d'avance des frais.",
+  },
+  {
+    question: "Faut-il une prescription pour utiliser un taxi conventionné à Montpellier ?",
+    answer:
+      "Oui, la prescription médicale (bon de transport) du médecin traitant ou hospitalier est obligatoire pour bénéficier du remboursement CPAM. Sans prescription, la course est considérée comme un taxi classique au tarif libre.",
+  },
+  {
+    question: "Quelle différence entre taxi conventionné, VSL et ambulance à Montpellier ?",
+    answer:
+      "Le taxi conventionné transporte un patient autonome en position assise. Le VSL est un véhicule sanitaire léger avec personnel formé, pour patients nécessitant un accompagnement. L'ambulance est requise pour les patients allongés ou en état grave. Le choix est indiqué par le médecin sur la prescription.",
+  },
+  {
+    question: "Comment réserver un taxi conventionné à Montpellier en urgence ?",
+    answer:
+      "Appelez directement l'une des entreprises listées sur RoullePro Montpellier. Pour une réservation immédiate à toute heure, privilégiez les compagnies disposant d'un standard 24/7 (signalées sur leur fiche). Les trajets vers le CHU de Montpellier (Lapeyronie, Gui de Chauliac, Saint-Éloi), la clinique du Parc ou Beau Soleil doivent être réservés 48 h à l'avance.",
+  },
+  {
+    question: "Les taxis conventionnés de Montpellier acceptent-ils la dispense d'avance des frais ?",
+    answer:
+      "La majorité des taxis conventionnés CPAM 34 pratiquent la dispense d'avance des frais (tiers payant). Présentez votre carte Vitale et la prescription, le chauffeur facture directement la CPAM. Cette mention est précisée sur chaque fiche entreprise.",
+  },
+];
+
 const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
   nice: {
     title: "Taxi conventionné Nice 06 | Transport médical CPAM | RoullePro",
@@ -197,6 +230,16 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
       "Marseille est l'un des bassins de transport médical les plus actifs de France, avec plus de 250 taxis conventionnés CPAM agréés sur le département des Bouches-du-Rhône. RoullePro répertorie toutes les entreprises validées par la CPAM 13 pour vos trajets vers l'AP-HM (Timone, Conception, Nord, Sud), l'Hôpital Européen, l'Hôpital Saint-Joseph, l'Institut Paoli-Calmettes ou les cliniques privées d'Aix-Marseille. Sur chaque fiche figurent agrément CPAM, mode de paiement (dispense d'avance des frais largement pratiquée), véhicules adaptés PMR et brancard, zones d'intervention couvertes (Marseille intra-muros, Aix, Aubagne, Salon, étang de Berre). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en ALD ou pour les hospitalisations consécutives à un accident du travail.",
     faq: MARSEILLE_FAQ,
     departement: "13",
+  },
+  montpellier: {
+    title: "Taxi conventionné Montpellier 34 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire des taxis conventionnés CPAM à Montpellier (34) : agrément vérifié, tarif convention, dispense d'avance des frais, véhicules adaptés.",
+    h1: "Taxi conventionné Montpellier — Transport médical CPAM dans l'Hérault",
+    intro:
+      "À Montpellier et dans l'Hérault, plus de 120 taxis conventionnés CPAM assurent le transport médical des patients sur prescription, dans l'une des métropoles à la croissance démographique la plus rapide de France. Que ce soit pour des séances de dialyse, de chimiothérapie ou de radiothérapie au CHU de Montpellier (Lapeyronie, Gui de Chauliac, Saint-Éloi), pour une consultation à la clinique du Parc ou pour un retour d'hospitalisation depuis la clinique Beau Soleil, RoullePro centralise les coordonnées officielles et agréments de chaque entreprise. Chaque fiche précise le numéro d'agrément CPAM 34, les modes de paiement (tiers payant, dispense d'avance des frais), les véhicules adaptés (PMR, brancard) et la zone d'intervention dans la métropole (Montpellier intra-muros, Lattes, Castelnau-le-Lez, Juvignac, Pérols). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en affection longue durée (ALD). Pour les soins programmés et réguliers, réservez 48 h à l'avance auprès d'une compagnie disposant d'un standard 24/7. Consultez ci-dessous la liste des taxis conventionnés à Montpellier, ou utilisez la recherche par adresse pour trouver immédiatement le transport médical le plus proche.",
+    faq: MONTPELLIER_FAQ,
+    departement: "34",
   },
 };
 

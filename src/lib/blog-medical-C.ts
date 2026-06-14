@@ -5,23 +5,25 @@ export const ARTICLES: BlogPost[] = [
   // ============================================================
   {
     slug: "transport-medical-ald-droits",
-    title: "Transport medical en ALD : vos droits et comment en beneficier en 2026",
+    title: "Transport médical ALD 2026 : droits, prise en charge 100 % et démarches",
+    h1: "Transport médical pour patients en ALD — Droits et prise en charge à 100 % en 2026",
     excerpt:
-      "En affection de longue duree (ALD), vous avez droit au transport medical rembourse a 100%. Decouvrez vos droits, les demarches et comment trouver un transporteur agree.",
+      "Patients ALD : transport médical pris en charge à 100 % par la CPAM. Conditions, prescription, dispense d'avance des frais, contestation refus.",
     category: "Transport sanitaire",
-    date: "2026-04-29",
-    readingTime: 12,
+    date: "2026-06-14",
+    readingTime: 13,
     keywords: [
+      "transport medical ALD",
       "transport medical ALD rembourse 100%",
       "transport ALD dialyse chimiotherapie",
       "remboursement 100% transport ALD",
       "transport sanitaire ALD demarches",
       "affection longue duree transport",
-      "exoneration ticket moderateur ALD",
+      "liste ALD transport",
       "bon transport ALD CPAM",
     ],
     content: `
-Mis a jour le 29 avril 2026
+Article mis à jour le 14 juin 2026
 
 Si vous etes reconnu en **affection de longue duree (ALD)**, vous beneficiez d'un regime de remboursement exceptionnel : vos soins en rapport avec l'ALD sont pris en charge a 100 % par l'Assurance Maladie. Ce privilege s'etend au **transport medical ALD rembourse 100%** — ambulance, VSL ou taxi conventionne — lorsque ce transport est prescrit par votre medecin et que le trajet est en lien avec votre pathologie. Cet article vous explique tout : la liste des ALD reconnues, le mecanisme d'exoneration, les types de transports couverts et la procedure etape par etape pour obtenir votre prise en charge.
 
@@ -29,25 +31,42 @@ Si vous etes reconnu en **affection de longue duree (ALD)**, vous beneficiez d'u
 
 Une ALD est une maladie chronique qui necessite un traitement prolonge et couteux. L'Assurance Maladie a cree ce dispositif pour que les patients atteints de pathologies graves ne soient pas freines financierement dans l'acces aux soins. Etre reconnu en ALD ouvre des droits specifiques : exoneration du ticket moderateur sur les actes et produits en rapport avec la maladie, et donc remboursement a 100 % du tarif conventionne Securite sociale.
 
-### La liste des 30 ALD reconnues
+### Liste des 30 ALD ouvrant droit au transport remboursé à 100 %
 
-Il existe **30 categories d'affections de longue duree** officiellement reconnues par l'Assurance Maladie (liste ALD 30). On y trouve notamment :
+Il existe **30 affections de longue durée** officiellement reconnues par l'Assurance Maladie (liste ALD 30). Lorsque le transport est prescrit en lien avec l'une de ces affections, il est pris en charge à 100 % du tarif convention. Voici la liste complète des 30 ALD ouvrant droit au transport médical remboursé :
 
-- Le diabete de type 1 et de type 2
-- Les maladies coronariennes et insuffisance cardiaque grave
-- Les cancers (toutes localisations)
-- L'insuffisance renale chronique grave (dialyse)
-- Les maladies inflammatoires chroniques de l'intestin (Crohn, rectocolite)
-- La sclerose en plaques
-- L'epilepsie grave
-- Les psychoses, troubles bipolaires et depressions severes
-- La maladie de Parkinson
-- La polyarthrite rhumatoide evolutive
-- Le VIH/Sida
-- Les troubles du rythme grave, valvulopathies
-- L'arteriosclerose obliterante avec ischemie chronique grave
+1. Accident vasculaire cérébral invalidant
+2. Insuffisances médullaires et autres cytopénies chroniques
+3. Artériopathies chroniques avec manifestations ischémiques
+4. Bilharziose compliquée
+5. Insuffisance cardiaque grave, troubles du rythme graves, cardiopathies valvulaires graves, cardiopathies congénitales graves
+6. Maladies chroniques actives du foie et cirrhoses
+7. Déficit immunitaire primitif grave nécessitant un traitement prolongé, infection par le VIH
+8. Diabète de type 1 et diabète de type 2
+9. Formes graves des affections neurologiques et musculaires (dont myopathies), épilepsie grave
+10. Hémoglobinopathies, hémolyses chroniques constitutionnelles et acquises sévères
+11. Hémophilies et affections constitutionnelles de l'hémostase graves
+12. Maladie coronaire
+13. Insuffisance respiratoire chronique grave
+14. Maladie d'Alzheimer et autres démences
+15. Maladie de Parkinson
+16. Maladies métaboliques héréditaires nécessitant un traitement prolongé spécialisé
+17. Mucoviscidose
+18. Néphropathie chronique grave et syndrome néphrotique primitif
+19. Paraplégie
+20. Vascularites, lupus érythémateux systémique, sclérodermie systémique
+21. Polyarthrite rhumatoïde évolutive
+22. Affections psychiatriques de longue durée
+23. Rectocolite hémorragique et maladie de Crohn évolutives
+24. Sclérose en plaques
+25. Scoliose idiopathique structurale évolutive
+26. Spondylarthrite ankylosante grave
+27. Suites de transplantation d'organe
+28. Tuberculose active, lèpre
+29. Tumeur maligne, affection maligne du tissu lymphatique ou hématopoïétique (cancers)
+30. Maladies métaboliques héréditaires et autres affections graves caractérisées
 
-A ces 30 pathologies s'ajoutent les ALD hors liste (pathologies graves ne figurant pas dans la liste officielle mais reconnues au cas par cas par le medecin-conseil) et les polypathologies invalidantes. La liste complete est consultable sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement).
+À ces 30 pathologies s'ajoutent les ALD hors liste (pathologies graves ne figurant pas dans la liste officielle mais reconnues au cas par cas par le médecin-conseil) et les polypathologies invalidantes. La liste officielle est consultable sur [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement).
 
 ### Comment faire reconnaitre une ALD ?
 
@@ -165,27 +184,31 @@ Pour beneficier du remboursement a 100 % en ALD, vous devez imperativement chois
 - [Trouver une ambulance, VSL ou taxi a Lyon](https://roullepro.com/transport-medical/lyon)
 - [Acceder a l'annuaire complet par ville](https://roullepro.com/transport-medical)
 
-## Questions frequentes
+## Questions fréquentes
 
-### En ALD, dois-je quand meme avoir une prescription de transport ?
+### Qui décide de la reconnaissance d'une ALD ?
 
-Oui, absolument. Le statut ALD ne dispense pas de la prescription medicale de transport (bon CERFA 11574). Votre medecin traitant ou le specialiste doit toujours etablir ce bon pour chaque serie de transports. La prescription est la condition prealable obligatoire, meme pour un remboursement a 100 %.
+La reconnaissance d'une ALD est décidée par le médecin-conseil de votre CPAM, sur la base d'un protocole de soins établi par votre médecin traitant en concertation avec un médecin spécialiste. Vous ne pouvez pas demander vous-même une ALD : c'est une démarche médicale. Une fois la demande validée par le médecin-conseil, vous recevez une notification et votre carte Vitale est mise à jour avec la mention ALD, qui active l'exonération à 100 %.
 
-### Mon ALD couvre-t-elle tous mes transports medicaux ?
+### Quelle est la durée de validité d'une prescription de transport en ALD ?
 
-Non. L'exoneration a 100 % ne couvre que les transports "en rapport avec votre ALD". Si vous devez vous rendre chez un medecin pour une pathologie differente de celle reconnue en ALD, le taux de remboursement normal (55 % en regime general) s'applique. En cas de doute, votre medecin precise sur la prescription si le transport est en lien avec l'ALD.
+Pour des soins répétés liés à l'ALD (dialyse, chimiothérapie, radiothérapie, kinésithérapie de suivi), le médecin peut établir une prescription couvrant une série de transports sur une période définie, généralement jusqu'à 6 mois, renouvelable. Pour un trajet ponctuel, le bon de transport CERFA 11574 vaut pour le déplacement prescrit. La prescription doit toujours être établie avant le trajet : aucune prescription rétroactive n'est acceptée.
 
-### Le transport est-il gratuit pour les patients ALD ?
+### L'accompagnant d'un patient en ALD est-il remboursé ?
 
-Pas totalement. Le transport est rembourse a 100 % du tarif de base conventionne, mais la **franchise medicale de 4 euros par trajet** reste due (sauf exoneration pour les mineurs, femmes enceintes et beneficiaires de la complementaire sante solidaire). Le plafond annuel de la franchise est de 50 euros, et le plafond journalier est de 8 euros.
+Oui, sous conditions. Le transport d'un accompagnant peut être pris en charge par la CPAM lorsque l'état du patient le justifie médicalement (enfant mineur, personne dont l'assistance est indispensable) et que le médecin l'indique sur la prescription. La présence de l'accompagnant doit être justifiée par l'incapacité du patient à se déplacer seul. En l'absence de cette mention sur le bon de transport, les frais de l'accompagnant ne sont pas remboursés.
 
-### Puis-je choisir n'importe quel transporteur en etant ALD ?
+### Comment fonctionne l'ALD pour un enfant ?
 
-Vous choisissez librement le transporteur, mais il doit imperativement etre **agree par la CPAM de votre departement**. Un transporteur non conventionne ne peut pas appliquer le tiers payant, et votre CPAM refusera de rembourser le trajet, meme avec un bon de transport valide et un statut ALD.
+Un enfant atteint d'une affection longue durée bénéficie de la prise en charge à 100 % au même titre qu'un adulte, sur protocole de soins validé par le médecin-conseil. Pour les transports, les enfants de moins de 18 ans cumulent deux avantages : le remboursement à 100 % des trajets liés à l'ALD et l'exonération totale de la franchise médicale de 4 euros par trajet, contrairement aux adultes en ALD qui restent soumis à cette franchise.
 
-### Comment faire si ma CPAM refuse le transport malgre mon ALD ?
+### Que faire si ma CPAM refuse le transport malgré mon ALD ?
 
-En cas de refus injustifie, plusieurs recours sont possibles : contactez d'abord le service medical de votre CPAM pour comprendre le motif du refus. Si le refus persiste, saisissez la **commission de recours amiable (CRA)** de votre caisse dans un delai de deux mois a compter de la notification de refus. En dernier recours, le tribunal judiciaire du contentieux de la protection sociale peut etre saisi. Conservez toujours les copies de vos prescriptions, bons de transport et justificatifs de trajet.
+En cas de refus, contactez d'abord le service médical de votre CPAM pour comprendre le motif (transport non lié à l'ALD, transporteur non agréé, prescription non conforme). Si le refus persiste, saisissez la Commission de recours amiable (CRA) de votre caisse dans un délai de 2 mois à compter de la notification. En dernier recours, le pôle social du Tribunal judiciaire peut être saisi. Conservez toujours les copies de vos prescriptions, bons de transport et justificatifs de trajet.
+
+### Faut-il renouveler son ALD et sa prise en charge transport ?
+
+Oui. Une ALD est accordée pour une durée déterminée (souvent 3 à 5 ans selon la pathologie), puis réexaminée par le médecin-conseil sur la base d'un protocole de soins actualisé par votre médecin traitant. Tant que l'ALD est active et que le transport reste en lien avec elle, la prise en charge à 100 % se poursuit. Pensez à vérifier sur votre compte Ameli que votre exonération ALD est toujours en cours de validité, notamment avant une série de transports.
 
 ---
 
@@ -367,11 +390,12 @@ Le decret s'applique a l'ensemble du territoire francais depuis debut 2025 pour 
   // ============================================================
   {
     slug: "transport-chimiotherapie-dialyse-radiotherapie",
-    title: "Transport en ambulance pour chimiotherapie, dialyse ou radiotherapie : guide complet",
+    title: "Transport chimiothérapie, dialyse, radiothérapie 2026 : remboursement 100 %",
+    h1: "Transport pour chimiothérapie, dialyse et radiothérapie : organiser et faire rembourser vos trajets",
     excerpt:
-      "Vous avez des soins reguliers en dialyse, chimio ou radio ? Voici comment organiser et faire rembourser vos transports medicaux iteratifs a 100% en 2026.",
+      "Soins réguliers en dialyse, chimio ou radio ? Découvrez comment organiser et faire rembourser vos transports médicaux itératifs à 100 % en 2026.",
     category: "Transport sanitaire",
-    date: "2026-04-29",
+    date: "2026-06-14",
     readingTime: 12,
     keywords: [
       "transport dialyse chimiotherapie radiotherapie rembourse",
@@ -383,7 +407,7 @@ Le decret s'applique a l'ensemble du territoire francais depuis debut 2025 pour 
       "transport dialyse ALD ambulance",
     ],
     content: `
-Mis a jour le 29 avril 2026
+Article mis a jour le 14 juin 2026
 
 Vous suivez des soins reguliers — seances de dialyse, cures de chimiotherapie ou seances de radiotherapie — et vous devez vous rendre plusieurs fois par semaine dans un centre medical eloigne de chez vous ? L'Assurance Maladie a prevu un dispositif specifique : le **transport dialyse chimiotherapie radiotherapie rembourse** dit "transport iteratif". Ce mecanisme vous permet de beneficier d'une couverture integrale sur toute une periode de traitement, sans avoir a obtenir un nouveau bon de transport a chaque seance. Ce guide vous explique tout : la prescription, le remboursement, l'organisation pratique et les pieges a eviter.
 
@@ -540,6 +564,10 @@ Si votre etat de sante se degrade et necessite un mode de transport plus medical
 ### Existe-t-il un forfait mensuel pour le transport en dialyse ?
 
 Il n'existe pas de "forfait mensuel" au sens strict, mais le dispositif de prescription iterative sur 90 jours realise un effet similaire en couvrant tous les trajets d'une periode. Certains centres de dialyse ont des conventions directes avec des societes de transport qui gerent les tournees et la facturation globale, ce qui simplifie les demarches administratives. Renseignez-vous aupres du service social de votre centre de dialyse.
+
+### Quel mode de transport choisir selon mon traitement (dialyse, chimio, radio) ?
+
+Le mode depend de votre etat et non du type de soin. En **dialyse**, la plupart des patients stables utilisent un VSL ou un taxi conventionne ; une ambulance est reservee aux patients fragiles ou en cas de complication. En **chimiotherapie**, l'etat pouvant varier fortement apres une perfusion, le medecin prescrit parfois une ambulance pour le retour et un transport assis pour l'aller. En **radiotherapie**, les seances etant quotidiennes et le patient generalement autonome, le taxi conventionne est le mode le plus frequent. Dans tous les cas, c'est le medecin prescripteur qui determine le mode adapte et le mentionne sur la prescription iterative.
 
 ---
 

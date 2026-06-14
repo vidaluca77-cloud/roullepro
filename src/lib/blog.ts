@@ -6,6 +6,8 @@
 export interface BlogPost {
   slug: string;
   title: string;
+  /** H1 éditorial affiché en tête de page (si absent, on utilise title). */
+  h1?: string;
   excerpt: string;
   category: string;
   date: string; // ISO

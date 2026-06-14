@@ -87,6 +87,13 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Fusion 301 : suppression du doublon /blog/transport-medical-nice qui
+      // cannibalise le hub ville /transport-medical/nice (cannibalisation GSC).
+      {
+        source: '/blog/transport-medical-nice',
+        destination: '/transport-medical/nice',
+        permanent: true,
+      },
       // Corse : code historique "20" -> Corse-du-Sud (2A) par défaut
       {
         source: '/transport-medical/departement/20',

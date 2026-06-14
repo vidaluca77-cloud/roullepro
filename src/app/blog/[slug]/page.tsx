@@ -21,6 +21,8 @@ import {
   buildArticleJsonLd,
   extractFaq,
   buildFaqJsonLd,
+  extractHowTo,
+  buildHowToJsonLd,
 } from "@/lib/blog-seo";
 import {
   MarkdownRenderer,
@@ -87,6 +89,7 @@ export default function BlogPostPage({
 
   const jsonLd = buildArticleJsonLd(post);
   const faqLd = buildFaqJsonLd(extractFaq(post.content));
+  const howToLd = buildHowToJsonLd(extractHowTo(post.content));
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -133,6 +136,12 @@ export default function BlogPostPage({
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        />
+      )}
+      {howToLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
         />
       )}
 
@@ -188,7 +197,7 @@ export default function BlogPostPage({
           </div>
 
           <h1 className="text-3xl md:text-5xl font-bold leading-[1.1] tracking-tight mb-5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
-            {post.title}
+            {post.h1 || post.title}
           </h1>
 
           <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-6 max-w-3xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">

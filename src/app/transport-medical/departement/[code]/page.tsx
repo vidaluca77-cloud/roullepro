@@ -9,6 +9,7 @@ import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
 } from "@/lib/sanitaire-seo";
+import { getDepartementSeoOverride } from "@/lib/sanitaire-departement-seo";
 
 export const revalidate = 3600;
 
@@ -78,6 +79,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { code } = await params;
   const dep = getDepartementByCode(code);
   if (!dep) return { title: "Departement introuvable" };
+
+  // Hubs departementaux prioritaires : title/meta editoriaux cibles.
+  const seoOverride = getDepartementSeoOverride(dep.code);
+  if (seoOverride) {
+    return {
+      title: seoOverride.title,
+      description: seoOverride.description,
+      alternates: { canonical: `/transport-medical/departement/${dep.code}` },
+      openGraph: {
+        title: seoOverride.title,
+        description: seoOverride.description,
+        type: "website",
+        locale: "fr_FR",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: seoOverride.title,
+        description: seoOverride.description,
+      },
+    };
+  }
+
   const data = await fetchDepartementData(dep.code);
   const total = data?.counts.total || 0;
   const titre = `Transport medical ${dep.nom} (${dep.code}) — Ambulances, VSL et taxis conventionnes`;
@@ -109,12 +132,22 @@ export default async function DepartementPage({ params }: Props) {
   const villes = data?.villes || [];
   const counts = data?.counts || { ambulance: 0, vsl: 0, taxi_conventionne: 0, total: 0 };
 
-  const breadLd = buildBreadcrumbJsonLd([
-    { name: "Annuaire", url: "/transport-medical" },
-    { name: `Departement ${dep.nom} (${dep.code})`, url: `/transport-medical/departement/${dep.code}` },
-  ]);
+  const seoOverride = getDepartementSeoOverride(dep.code);
 
-  const faqs = [
+  const breadLd = buildBreadcrumbJsonLd(
+    seoOverride
+      ? [
+          { name: "Accueil", url: "/" },
+          { name: "Transport médical", url: "/transport-medical" },
+          { name: dep.nom, url: `/transport-medical/departement/${dep.code}` },
+        ]
+      : [
+          { name: "Annuaire", url: "/transport-medical" },
+          { name: `Departement ${dep.nom} (${dep.code})`, url: `/transport-medical/departement/${dep.code}` },
+        ],
+  );
+
+  const genericFaqs = [
     {
       question: `Combien y a-t-il de societes de transport sanitaire dans le ${dep.nom} ?`,
       answer: `${counts.total} professionnels du transport sanitaire sont referencies dans le departement ${dep.code} (${dep.nom}) : ${counts.ambulance} societes d'ambulances, ${counts.vsl} VSL et ${counts.taxi_conventionne} taxis conventionnes CPAM.`,
@@ -132,6 +165,7 @@ export default async function DepartementPage({ params }: Props) {
       answer: `La prefecture du departement ${dep.code} (${dep.nom}) est ${dep.prefecture}, en region ${dep.region}.`,
     },
   ];
+  const faqs = seoOverride ? seoOverride.faq : genericFaqs;
   const faqLd = buildFaqJsonLd(faqs);
 
   // ItemList JSON-LD pour les villes
@@ -163,7 +197,7 @@ export default async function DepartementPage({ params }: Props) {
             <span className="text-white">{dep.nom} ({dep.code})</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            Transport sanitaire dans le {dep.nom} ({dep.code})
+            {seoOverride ? seoOverride.h1 : `Transport sanitaire dans le ${dep.nom} (${dep.code})`}
           </h1>
           <p className="text-blue-100 max-w-3xl">
             Annuaire des ambulances, VSL et taxis conventionnes du departement {dep.code}, en region {dep.region}. Prefecture : {dep.prefecture}.
@@ -186,6 +220,7 @@ export default async function DepartementPage({ params }: Props) {
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-3">A propos du transport sanitaire dans le {dep.nom}</h2>
           <div className="space-y-3 text-gray-700 leading-relaxed">
+            {seoOverride && <p>{seoOverride.intro}</p>}
             <p>
               Le departement du {dep.nom} ({dep.code}) compte {counts.total} professionnels du transport sanitaire reference sur RoullePro :
               {" "}{counts.ambulance} societes d'ambulances, {counts.vsl} Vehicules Sanitaires Legers (VSL) et {counts.taxi_conventionne} taxis

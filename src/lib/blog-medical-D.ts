@@ -209,23 +209,24 @@ Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
   // ============================================================
   {
     slug: "agrement-cpam-taxi-conventionne",
-    title: "Agrement CPAM pour taxi conventionne : demarches et obligations en 2026",
+    title: "Agrément CPAM taxi conventionné 2026 : conditions, démarches, formulaire",
+    h1: "Agrément CPAM taxi conventionné — Conditions, démarches et formulaire 2026",
     excerpt:
-      "Chauffeur de taxi souhaitant devenir conventionne CPAM ? Decouvrez toutes les conditions, demarches, obligations et conseils pour obtenir votre agrement en 2026.",
+      "Comment obtenir l'agrément CPAM pour taxi conventionné en 2026 : conditions, dossier, formulaire, délais, renouvellement et tarifs convention.",
     category: "Transport sanitaire",
-    date: "2026-04-29",
-    readingTime: 12,
+    date: "2026-06-14",
+    readingTime: 13,
     keywords: [
-      "agrement CPAM taxi conventionne demarches",
+      "agrement CPAM taxi conventionne",
+      "agrement CPAM taxi conventionne 2026",
       "devenir taxi conventionne",
       "convention taxi CPAM",
-      "taxi medical agrement",
-      "obligations taxi conventionne",
-      "facturation CPAM taxi",
+      "dossier agrement taxi conventionne",
+      "formulaire agrement CPAM taxi",
       "tiers payant taxi conventionne",
     ],
     content: `
-Mis a jour le 29 avril 2026
+Article mis à jour le 14 juin 2026
 
 Vous etes chauffeur de taxi et vous souhaitez elargir votre activite en transportant des patients sur prescription medicale ? L'**agrement CPAM pour taxi conventionne** ouvre droit a la facturation de la Securite sociale et au tiers payant, ce qui garantit un flux de patients regulier et securise. Mais obtenir la convention CPAM implique de respecter des conditions precises, de constituer un dossier complet et d'assumer des obligations strictes. Ce guide detaille chaque etape, des conditions d'eligibilite a la signature de la convention, en passant par les obligations quotidiennes du taxi conventionne en 2026.
 
@@ -300,20 +301,24 @@ Vous pouvez joindre votre CPAM :
 
 Signalez votre intention de devenir taxi conventionne et demandez la liste complete des pieces a fournir ainsi que le calendrier de traitement des dossiers (certaines caisses ont des delais de plusieurs semaines).
 
-### Etape 2 : Constituer le dossier de demande
+### Étape 2 : Constituer le dossier de demande
 
-Le dossier type comprend generalement les pieces suivantes :
+Le dossier d'agrément CPAM est détaillé dans la section dédiée ci-dessous. Une fois les 8 pièces réunies, transmettez-les à votre CPAM selon les modalités indiquées lors de votre premier contact (dépôt physique, courrier recommandé ou téléservice selon les caisses).
 
-- **Copie de la licence de taxi** en cours de validite
-- **Copie du permis de conduire** (valide, sans restriction medicale)
-- **Carte grise du vehicule** a votre nom ou celui de votre societe
-- **Attestation d'assurance** avec extension "transport de malades assis"
-- **Attestation de formation premiers secours** (PSC1 ou superieur, de moins de 2 ans)
-- **Extrait Kbis** (pour les societes) ou attestation d'immatriculation (pour les auto-entrepreneurs)
-- **RIB** pour le reglement des remboursements par virement
-- **Justificatif de domicile professionnel**
+## Dossier d'agrément : 8 pièces à fournir
 
-Certaines CPAM demandent egalement une copie de votre contrat d'assurance responsabilite civile professionnelle et une photo recente de votre vehicule montrant l'etat general et l'absence de marquage sanitaire (le taxi conventionne ne doit pas etre confondu avec un VSL ou une ambulance).
+Pour constituer un dossier d'agrément CPAM taxi conventionné conforme et éviter tout retard d'instruction, réunissez les **8 pièces obligatoires** suivantes. C'est la liste exhaustive demandée par la majorité des CPAM départementales en 2026 :
+
+1. **Copie de la licence de taxi (ADS)** en cours de validité, délivrée par la mairie ou la préfecture.
+2. **Copie du permis de conduire** valide, sans restriction médicale incompatible avec le transport de personnes.
+3. **Carte grise du véhicule** à votre nom ou à celui de votre société.
+4. **Attestation d'assurance** comportant l'extension « transport de malades assis ».
+5. **Attestation de formation aux premiers secours** (PSC1 ou supérieur, de moins de 2 ans).
+6. **Extrait Kbis** (pour les sociétés) ou attestation d'immatriculation (pour les auto-entrepreneurs et artisans).
+7. **RIB** professionnel pour le règlement des remboursements par virement.
+8. **Justificatif de domicile professionnel** (bail, facture, attestation d'établissement).
+
+Certaines CPAM demandent également une copie de votre contrat d'assurance responsabilité civile professionnelle et une photo récente de votre véhicule montrant l'état général et l'absence de marquage sanitaire (le taxi conventionné ne doit pas être confondu avec un VSL ou une ambulance). Vérifiez la liste exacte auprès de votre caisse, car des pièces complémentaires peuvent être exigées localement.
 
 ### Etape 3 : Signer la convention avec la CPAM
 
@@ -415,6 +420,10 @@ La formation minimale exigee est le **PSC1** (Prevention et Secours Civiques de 
 ### Quel vehicule est requis pour etre taxi conventionne CPAM ?
 
 Le vehicule doit etre un taxi en regle (carte grise mention "taxi"), avec au moins 4 places passagers, generalement age de moins de 5 a 7 ans selon votre convention departementale, assure en responsabilite civile avec extension "transport de malades assis". Il doit etre en bon etat de proprete, sans marquage sanitaire (croix bleue), et equipe d'un kit de premiers secours. Une inspection technique peut etre demandee par la CPAM avant la signature de la convention.
+
+### Comment renouveler son agrément CPAM de taxi conventionné ?
+
+La convention taxi conventionné est signée pour une durée déterminée (souvent reconductible annuellement par tacite reconduction tant que les conditions restent réunies). Pour la maintenir, vous devez conserver une licence de taxi valide, une assurance « transport de malades assis » à jour, une formation premiers secours en cours de validité (PSC1 de moins de 2 ans renouvelé) et respecter les tarifs convention 2025-2026 fixés par avenant départemental. En cas de changement de véhicule ou d'évolution réglementaire, transmettez les pièces actualisées à votre CPAM pour éviter toute suspension de la facturation en tiers payant.
 
 ---
 
