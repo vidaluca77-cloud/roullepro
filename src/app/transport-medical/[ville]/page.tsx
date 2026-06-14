@@ -198,8 +198,9 @@ export default async function VillePage({ params, searchParams }: Props) {
         "@type": "ListItem",
         position: i + 1,
         item: {
-          "@type": "LocalBusiness",
+          "@type": "MedicalBusiness",
           name: p.nom_commercial || p.raison_sociale,
+          medicalSpecialty: "MedicalTransport",
           telephone: p.telephone_public || undefined,
           address: {
             "@type": "PostalAddress",

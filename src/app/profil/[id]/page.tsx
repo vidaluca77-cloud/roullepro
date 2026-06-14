@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import AnnonceCard from '@/components/AnnonceCard';
 import StarRating from '@/components/StarRating';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import ProfilVendeurClient from './ProfilVendeurClient';
 import {
   BadgeCheck,
@@ -189,6 +190,14 @@ export default async function ProfilVendeurPage({
         {/* Header */}
         <div className="bg-white border-b">
           <div className="max-w-5xl mx-auto px-4 py-8">
+            <Breadcrumbs
+              className="mb-4"
+              items={[
+                { label: 'Accueil', href: '/' },
+                { label: 'Annonces', href: '/annonces' },
+                { label: vendeurNom, href: `/profil/${params.id}` },
+              ]}
+            />
             <Link
               href="/annonces"
               className="flex items-center gap-2 text-gray-500 hover:text-blue-600 mb-6 text-sm"
