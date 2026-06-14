@@ -91,6 +91,39 @@ const PARIS_FAQ: VilleFaqItem[] = [
   },
 ];
 
+const LYON_FAQ: VilleFaqItem[] = [
+  {
+    question: "Comment trouver un taxi conventionné CPAM à Lyon ?",
+    answer:
+      "Utilisez l'annuaire RoullePro Lyon qui recense les taxis conventionnés agréés par la CPAM du Rhône (69). Chaque fiche indique le numéro d'agrément, les modes de paiement acceptés (dispense d'avance des frais possible), la zone d'intervention dans le Grand Lyon et les véhicules adaptés.",
+  },
+  {
+    question: "Quel est le tarif d'un taxi conventionné à Lyon ?",
+    answer:
+      "Le tarif est encadré par la convention CPAM signée pour 2025-2026 entre la caisse du Rhône et les organisations professionnelles. La CPAM rembourse 100 % sur prescription médicale en cas d'ALD, et 65 % pour les autres motifs, avec dispense d'avance des frais.",
+  },
+  {
+    question: "Faut-il une prescription pour utiliser un taxi conventionné à Lyon ?",
+    answer:
+      "Oui, la prescription médicale (bon de transport) du médecin traitant ou hospitalier est obligatoire pour bénéficier du remboursement CPAM. Sans prescription, la course est considérée comme un taxi classique au tarif libre.",
+  },
+  {
+    question: "Quelle différence entre taxi conventionné, VSL et ambulance à Lyon ?",
+    answer:
+      "Le taxi conventionné transporte un patient autonome en position assise. Le VSL est un véhicule sanitaire léger avec personnel formé, pour patients nécessitant un accompagnement. L'ambulance est requise pour les patients allongés ou en état grave. Le choix est indiqué par le médecin sur la prescription.",
+  },
+  {
+    question: "Comment réserver un taxi conventionné à Lyon en urgence ?",
+    answer:
+      "Appelez directement l'une des entreprises listées sur RoullePro Lyon. Pour une réservation immédiate à toute heure, privilégiez les compagnies disposant d'un standard 24/7 (signalées sur leur fiche). Les trajets vers les Hospices Civils de Lyon, Édouard-Herriot ou le Centre Léon Bérard doivent être réservés 48 h à l'avance.",
+  },
+  {
+    question: "Les taxis conventionnés de Lyon acceptent-ils la dispense d'avance des frais ?",
+    answer:
+      "La majorité des taxis conventionnés CPAM 69 pratiquent la dispense d'avance des frais (tiers payant). Présentez votre carte Vitale et la prescription, le chauffeur facture directement la CPAM. Cette mention est précisée sur chaque fiche entreprise.",
+  },
+];
+
 const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
   nice: {
     title: "Taxi conventionné Nice 06 | Transport médical CPAM | RoullePro",
@@ -111,6 +144,16 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
       "Paris concentre l'un des plus importants parcs de taxis conventionnés CPAM de France, avec plus de 600 entreprises agréées par la CPAM 75 pour assurer le transport médical des patients. Que vous habitiez le 16e ou le 19e arrondissement, que vous soyez transféré entre Pitié-Salpêtrière, Cochin, Necker, Saint-Louis ou l'Hôpital européen Georges-Pompidou, RoullePro centralise les coordonnées officielles, numéros d'agrément CPAM et modes de paiement de chaque taxi conventionné parisien. Le tarif est encadré par la convention CPAM 2025-2026 et la prise en charge atteint 100 % en cas d'affection longue durée (ALD) sur prescription médicale. Les taxis conventionnés Paris proposent dispense d'avance des frais, véhicules adaptés PMR, réservation 24/7 pour les retours d'hospitalisation. Filtrez par arrondissement ou par établissement de destination pour trouver immédiatement le transport médical adapté à votre situation, sans devoir contacter dix compagnies une à une.",
     faq: PARIS_FAQ,
     departement: "75",
+  },
+  lyon: {
+    title: "Taxi conventionné Lyon 69 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire taxis conventionnés CPAM Lyon et Métropole. Tarif convention 2026, agrément vérifié, dispense d'avance des frais.",
+    h1: "Taxi conventionné Lyon — Transport médical CPAM dans la métropole et le Rhône",
+    intro:
+      "À Lyon et dans le département du Rhône, plus de 180 taxis conventionnés CPAM assurent le transport médical des patients sur prescription. Que ce soit pour rejoindre les Hospices Civils de Lyon, Hôpital Édouard-Herriot, l'Hôpital de la Croix-Rousse, le Centre Léon Bérard ou des cliniques privées comme Charcot ou Mermoz, RoullePro centralise les fiches officielles validées par la CPAM 69. Chaque entreprise listée affiche son numéro d'agrément, ses modes de paiement (tiers payant possible), ses véhicules adaptés (PMR, brancard) et sa zone d'intervention dans le Grand Lyon. La convention CPAM 2025-2026 fixe le tarif et la prise en charge est de 100 % sur ALD. Pour les séances régulières (dialyse, chimiothérapie, radiothérapie), réservez 48 h à l'avance auprès d'une compagnie avec standard 24/7 pour assurer la continuité du transport médical.",
+    faq: LYON_FAQ,
+    departement: "69",
   },
 };
 
