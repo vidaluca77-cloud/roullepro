@@ -5,25 +5,44 @@ export const ARTICLES: BlogPost[] = [
   // ============================================================
   {
     slug: "remboursement-transport-medical",
-    title: "Remboursement transport medical : tout ce qu'il faut savoir en 2026",
+    title: "Remboursement transport médical CPAM 2026 : tarifs, conditions, démarches",
+    h1: "Remboursement transport médical CPAM 2026 — Guide complet des taux, conditions et démarches",
     excerpt:
-      "Ambulance, VSL, taxi conventionne : comment se faire rembourser son transport medical par la CPAM ? Taux, conditions, demarches — tout est explique simplement.",
+      "Découvrez les conditions de remboursement transport médical par la CPAM en 2026 : taux ALD 100 %, tarif convention, prescription, démarches simplifiées.",
     category: "Transport sanitaire",
-    date: "2026-04-29",
-    readingTime: 12,
+    date: "2026-06-14",
+    readingTime: 13,
     keywords: [
       "remboursement transport medical",
+      "remboursement transport medical CPAM 2026",
       "remboursement ambulance CPAM",
       "transport medical 100%",
       "franchise medicale transport",
       "taux remboursement transport sanitaire",
-      "transport medical prescription",
+      "tarif convention transport medical",
       "remboursement VSL secu",
     ],
     content: `
-Mis a jour le 29 avril 2026
+Article mis à jour le 14 juin 2026
 
-Le **remboursement transport medical** par la Securite sociale concerne trois modes de transport : l'ambulance, le VSL (vehicule sanitaire leger) et le taxi conventionne. Ces transports sont pris en charge uniquement sur prescription medicale, aupres d'un transporteur agree CPAM. Le taux de remboursement varie selon votre situation : 55 % pour les soins courants, 100 % pour certaines affections ou situations specifiques. Dans ce guide complet, nous detaillons les conditions, les taux applicables, la franchise medicale et les quatre etapes pour obtenir votre remboursement en 2026.
+Le **remboursement transport médical CPAM** en 2026 concerne trois modes de transport : l'ambulance, le VSL (véhicule sanitaire léger) et le taxi conventionné. Ces transports sont pris en charge uniquement sur prescription médicale, auprès d'un transporteur agréé CPAM. Le taux de remboursement varie selon votre situation : 55 % pour les soins courants, 100 % pour les patients en ALD (affection longue durée) et certaines situations spécifiques. Dans ce guide complet 2026, nous détaillons les conditions, les taux applicables, le tarif convention, la franchise médicale, le comparatif des modes de transport et les cinq démarches pour obtenir votre remboursement.
+
+## Comparatif détaillé : taxi conventionné, VSL ou ambulance ?
+
+Le mode de transport est choisi par le médecin sur la prescription, en fonction de votre état de santé. Voici un comparatif détaillé des trois modes de transport médical pris en charge par la CPAM en 2026, pour comprendre lequel correspond à votre situation et comment chacun est remboursé.
+
+| Critère | Taxi conventionné | VSL | Ambulance |
+|---|---|---|---|
+| Position du patient | Assise, patient autonome | Assise, patient stable | Allongée ou état grave |
+| Personnel à bord | Chauffeur agréé CPAM | Auxiliaire de transport formé | Équipage diplômé (DEA + auxiliaire) |
+| Agrément requis | Convention CPAM départementale | Agrément ARS | Agrément ARS |
+| Patients transportés | 1 (ou trajet partagé) | Jusqu'à 3 patients | 1 patient |
+| Équipement médical | Aucun | Léger (siège, accompagnement) | Oxygène, brancard, défibrillateur |
+| Tarif | Convention CPAM taxi 2025-2026 | Tarif convention VSL | Tarif convention ambulance |
+| Taux de remboursement | 55 % (100 % si ALD) | 55 % (100 % si ALD) | 55 % (100 % si ALD) |
+| Indications types | Consultations, soins programmés | Dialyse, chimiothérapie, examens | Urgences, transfert, sortie de bloc |
+
+Pour approfondir, consultez nos guides dédiés [VSL — Véhicule Sanitaire Léger : guide complet et annuaire](https://roullepro.com/vsl), [Taxi conventionné : guide et annuaire CPAM](https://roullepro.com/taxi-conventionne) et [l'annuaire national du transport médical](https://roullepro.com/transport-medical).
 
 ## Qui peut beneficier d'un transport medical rembourse ?
 
@@ -95,37 +114,41 @@ A noter : les patients en **ALD** beneficient du taux 100 % mais **restent soumi
 
 La franchise medicale est plafonnee a **50 euros par an et par beneficiaire**, tous actes confondus (medicaments, actes paramedicaux et transports). Des que ce plafond est atteint dans l'annee civile, la CPAM ne deduit plus de franchise sur vos remboursements, y compris pour les transports.
 
-## Comment obtenir le remboursement ? Les 4 etapes
+## Démarches en 5 étapes pour obtenir le remboursement
 
-La procedure de remboursement d'un transport medical suit un parcours clair en quatre etapes. La respecter integralement est indispensable pour eviter tout refus de la CPAM.
+La procédure de remboursement d'un transport médical suit un parcours clair en cinq étapes. La respecter intégralement est indispensable pour éviter tout refus de la CPAM en 2026.
 
-### Etape 1 : obtenir la prescription medicale (CERFA 11574)
+### Étape 1 : obtenir la prescription médicale (CERFA 11574)
 
 Demandez a votre medecin le **formulaire CERFA 11574** (aussi appele "bon de transport") avant votre deplacement. Ce formulaire doit etre rempli et signe par le medecin : il precise le motif medical, le mode de transport prescrit (ambulance, VSL ou taxi), l'adresse de depart, la destination (etablissement de soin) et la date du trajet. Notre fiche pratique [Bon de transport medical CERFA 11574 : comment le remplir ?](https://roullepro.com/blog/bon-transport-medical-cerfa-11574) vous guide pas a pas.
 
 Sans ce bon de transport rempli avant le deplacement, votre remboursement sera refuse. Les medecins ne peuvent pas etablir de prescription retroactive pour un trajet deja effectue (sauf exceptions medicalement justifiees, tres rarement acceptees).
 
-### Etape 2 : choisir un transporteur agree CPAM
+### Étape 2 : choisir un transporteur agréé CPAM
 
 Une fois le bon de transport en main, choisissez librement un **transporteur conventionne** : ambulance, VSL ou taxi selon ce qui est prescrit. Vous pouvez utiliser [notre annuaire de transport medical](https://roullepro.com/transport-medical) pour trouver un professionnel agree pres de chez vous, avec coordonnees et disponibilites.
 
 Attention : si vous choisissez un transporteur non conventionne, vous serez rembourse dans des conditions tres defavorables (ou pas du tout). Verifiez toujours la convention CPAM avant de reserver.
 
-### Etape 3 : faire signer la feuille de transport
+### Étape 3 : faire signer la feuille de transport
 
 Apres chaque trajet, le transporteur remplit et signe la **feuille de transport** (volet du CERFA 11574 ou document equivalent fourni par la societe de transport). Ce document atteste que le transport a bien eu lieu, aux dates et conditions precisees sur la prescription. Vous devez conserver votre exemplaire.
 
 Dans la plupart des cas, si vous avez presente votre carte Vitale au transporteur agree, celui-ci transmet directement les informations a la CPAM en feuille de soins electronique (tiers payant). Vous n'avez alors aucune demarche supplementaire a effectuer pour la part CPAM.
 
-### Etape 4 : envoyer a votre CPAM ou mutuelle
+### Étape 4 : envoyer le dossier à votre CPAM (si avance de frais)
 
-Si le tiers payant n'a pas ete applique (cas d'un remboursement sur avance de frais), envoyez a votre CPAM :
+Si le tiers payant n'a pas été appliqué (cas d'un remboursement sur avance de frais), envoyez à votre CPAM :
 
-- La **feuille de transport signee** par le transporteur
-- La **prescription medicale originale** (CERFA 11574)
-- Votre **carte Vitale** (ou attestation)
+- La **feuille de transport signée** par le transporteur
+- La **prescription médicale originale** (CERFA 11574)
+- Votre **carte Vitale** (ou attestation de droits)
 
-Le remboursement est generalement effectue sous 10 a 15 jours ouvrables. Pour la part complementaire, transmettez le releve CPAM a votre mutuelle selon les modalites de votre contrat.
+Le remboursement est généralement effectué sous 10 à 15 jours ouvrables.
+
+### Étape 5 : transmettre le complément à votre mutuelle
+
+Pour la part complémentaire (ticket modérateur de 45 % en régime général), transmettez le relevé de remboursement CPAM à votre mutuelle selon les modalités de votre contrat. En cas de télétransmission Noémie active entre votre CPAM et votre complémentaire santé, cette étape est automatique : vous n'avez rien à faire. Les patients en ALD remboursés à 100 % n'ont généralement aucun complément à réclamer pour les transports liés à leur affection.
 
 ## Transport medical et mutuelle : ce qu'elle rembourse en plus
 
@@ -177,27 +200,31 @@ Pour beneficier du remboursement CPAM, vous devez imperativement choisir un tran
 
 Pour aller plus loin, consultez notre guide [Ambulance, VSL ou taxi conventionne : quelles differences ?](https://roullepro.com/blog/difference-ambulance-vsl-taxi-conventionne) et notre fiche pratique [Bon de transport CERFA 11574](https://roullepro.com/blog/bon-transport-medical-cerfa-11574).
 
-## Questions frequentes
+## Questions fréquentes
 
-### Quel est le taux de remboursement d'une ambulance par la Secu ?
+### Quel est le taux de remboursement du transport médical en ALD ?
 
-La CPAM rembourse 55 % du tarif conventionne d'une ambulance en regime general, avec une franchise de 4 euros par trajet (plafond 8 euros/jour et 50 euros/an). Le taux passe a 100 % pour les patients en ALD, en maternite (a partir du 1er jour du 6e mois), pour les nouveau-nes de moins de 30 jours, ou victimes d'un accident du travail / maladie professionnelle. A noter : seules certaines categories (mineurs, CSS, AME, maternite, victimes du terrorisme, invalides de guerre) sont exonerees de la franchise ; les patients en ALD y restent soumis. La mutuelle peut couvrir le ticket moderateur de 45 % restant selon votre contrat.
+Les patients en affection longue durée (ALD) bénéficient d'un remboursement à 100 % du tarif convention pour les transports liés directement à leur ALD, sur prescription médicale. Le médecin doit indiquer explicitement le lien avec l'ALD sur le bon de transport CERFA 11574. Attention : le taux de 100 % ne dispense pas de la franchise médicale de 4 euros par trajet, qui reste due par les patients en ALD. Pour un déplacement sans rapport avec l'ALD, le taux général de 55 % s'applique.
 
-### La mutuelle rembourse-t-elle le transport medical ?
+### Quel est le plafond annuel de la franchise médicale sur les transports ?
 
-Oui, la plupart des mutuelles prennent en charge le ticket moderateur (45 %) sur les transports sanitaires agrees par la CPAM. En revanche, les contrats "responsables" ne peuvent pas rembourser la franchise medicale de 4 euros par trajet, conformement a la reglementation. Verifiez le detail du poste "transports" dans votre tableau de garanties.
+La franchise médicale est plafonnée à 50 euros par an et par bénéficiaire, tous actes confondus (médicaments, actes paramédicaux et transports), avec un sous-plafond de 8 euros par jour pour les transports. Chaque trajet sanitaire entraîne une déduction de 4 euros. Une fois le plafond annuel de 50 euros atteint dans l'année civile, la CPAM ne déduit plus aucune franchise de vos remboursements jusqu'au 31 décembre.
 
-### Peut-on se faire rembourser un transport medical sans prescription ?
+### Que faire si mon transport médical est refusé par la CPAM ?
 
-Non. La prescription medicale prealable (formulaire CERFA 11574) est une condition indispensable au remboursement par la CPAM. Sans ce document, meme si vous etes en ALD ou en grossesse, aucun remboursement ne sera accorde. Seuls les transports d'urgence (SAMU, 15, 18) font l'objet de regles specifiques.
+Un refus n'est pas définitif. Vérifiez d'abord le motif sur la notification CPAM (prescription non conforme, transporteur non agréé, absence d'accord préalable pour longue distance, dossier incomplet). Vous pouvez ensuite contester par recours amiable écrit dans un délai de 2 mois, puis saisir la Commission de recours amiable (CRA) de votre CPAM. En dernier recours, le pôle social du Tribunal judiciaire peut être saisi. Dans la majorité des cas, corriger un dossier incomplet suffit à débloquer le remboursement.
 
-### Qu'est-ce que la franchise medicale sur les transports ?
+### Quel justificatif fournir pour se faire rembourser un transport médical ?
 
-La franchise medicale est une participation de 4 euros par trajet sanitaire qui reste a la charge de l'assure. Elle est automatiquement deduite du remboursement CPAM, dans la limite de 8 euros par jour et 50 euros par an tous actes confondus. Sont exoneres : enfants de moins de 18 ans, femmes enceintes a partir du 1er jour du 6e mois jusqu'au 12e jour apres l'accouchement, beneficiaires de la CSS ou de l'AME, victimes du terrorisme, invalides de guerre. Les patients en ALD ne sont pas exoneres de la franchise (mais beneficient du taux 100 %).
+Pour obtenir le remboursement, conservez et fournissez la prescription médicale originale (CERFA 11574 rempli et signé par le médecin avant le trajet) et la feuille de transport signée par le transporteur agréé après chaque trajet. Si le tiers payant a été appliqué via votre carte Vitale, le transporteur transmet directement ces informations à la CPAM et vous n'avez aucun justificatif à envoyer.
 
-### Comment declarer un transport medical a la CPAM ?
+### Quel est le délai de remboursement d'un transport médical par la CPAM ?
 
-Si votre transporteur agree a applique le tiers payant (cas le plus courant), la CPAM est automatiquement informee : vous n'avez rien a faire. Si vous avez avance les frais, envoyez a votre CPAM la prescription medicale originale et la feuille de transport signee par le transporteur. Le remboursement intervient generalement sous 10 a 15 jours. Vous pouvez suivre l'etat de votre dossier sur votre compte Ameli.
+Le remboursement est généralement effectué sous 10 à 15 jours ouvrables après réception du dossier complet par la CPAM. En cas de tiers payant (dispense d'avance des frais), aucun versement n'est attendu de votre part puisque la CPAM règle directement le transporteur. Vous pouvez suivre l'avancement de votre remboursement sur votre compte Ameli, rubrique « Mes paiements ».
+
+### Le dépassement du tarif convention est-il remboursé ?
+
+Non. La CPAM rembourse uniquement sur la base du tarif convention fixé pour 2025-2026 (taxi conventionné, VSL, ambulance). Un transporteur agréé s'engage à respecter ce tarif et ne peut pas facturer de dépassement aux assurés sur les transports prescrits et conventionnés. Si vous faites appel à un transporteur non conventionné ou à un taxi classique au tarif libre, le surcoût reste intégralement à votre charge et n'est pas pris en charge par la CPAM ni, en général, par votre mutuelle.
 
 ---
 

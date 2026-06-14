@@ -131,6 +131,89 @@ export function extractFaq(content: string): FaqItem[] {
   return faq;
 }
 
+/** Une étape extraite d'une section « Démarches en N étapes ». */
+export interface HowToStep {
+  name: string;
+  text: string;
+}
+
+/**
+ * Extrait les étapes numérotées d'une section dont le titre H2 contient
+ * « démarches en » et « étapes » (ex. « Démarches en 5 étapes »). Chaque étape
+ * est un titre H3 (« Étape 1 : ... »), le texte correspond aux paragraphes qui
+ * suivent jusqu'au prochain H3 ou H2. Retourne { name, steps } ou null.
+ */
+export function extractHowTo(
+  content: string,
+): { name: string; steps: HowToStep[] } | null {
+  const lines = content.split("\n");
+  let inHowTo = false;
+  let sectionName = "";
+  const steps: HowToStep[] = [];
+  let currentName: string | null = null;
+  let textLines: string[] = [];
+
+  const flush = () => {
+    if (currentName) {
+      const text = textLines.join(" ").replace(/\s+/g, " ").trim();
+      if (text) steps.push({ name: currentName, text });
+    }
+    currentName = null;
+    textLines = [];
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("## ")) {
+      if (inHowTo) {
+        flush();
+        inHowTo = false;
+      }
+      const raw = trimmed.slice(3);
+      const heading = raw
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "");
+      if (heading.includes("demarches en") && heading.includes("etape")) {
+        inHowTo = true;
+        sectionName = raw;
+      }
+      continue;
+    }
+    if (!inHowTo) continue;
+    if (trimmed.startsWith("### ")) {
+      flush();
+      currentName = trimmed.slice(4);
+    } else if (trimmed && currentName) {
+      const clean = trimmed
+        .replace(/\*\*([^*]+)\*\*/g, "$1")
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
+      textLines.push(clean);
+    }
+  }
+  flush();
+  if (steps.length === 0) return null;
+  return { name: sectionName, steps };
+}
+
+/** JSON-LD HowTo à partir d'une section d'étapes (null si vide). */
+export function buildHowToJsonLd(
+  howTo: { name: string; steps: HowToStep[] } | null,
+) {
+  if (!howTo || howTo.steps.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: howTo.name,
+    step: howTo.steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+    })),
+  };
+}
+
 /** JSON-LD FAQPage à partir des items extraits (null si vide). */
 export function buildFaqJsonLd(faq: FaqItem[]) {
   if (faq.length === 0) return null;
