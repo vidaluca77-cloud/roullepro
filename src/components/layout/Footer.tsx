@@ -27,6 +27,14 @@ const TOP_VILLES_SEO: { ville: string; slug: string }[] = [
   { ville: 'Villeurbanne', slug: 'villeurbanne' },
 ];
 
+// Départements et régions d'outre-mer (pages dédiées transport médical)
+const DOM_SEO: { slug: string; nom: string }[] = [
+  { slug: 'reunion', nom: 'La Réunion (974)' },
+  { slug: 'martinique', nom: 'Martinique (972)' },
+  { slug: 'guadeloupe', nom: 'Guadeloupe (971)' },
+  { slug: 'mayotte', nom: 'Mayotte (976)' },
+];
+
 // Départements clés (les plus peuplés + outre-mer)
 const TOP_DEPARTEMENTS_SEO: { code: string; nom: string }[] = [
   { code: '75', nom: 'Paris' },
@@ -123,6 +131,16 @@ export default function Footer() {
                 <li key={d.code}>
                   <Link href={`/transport-medical/departement/${d.code}`} className="hover:text-white transition">
                     {d.nom} ({d.code})
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <h3 className="font-semibold mb-4 mt-6">Outre-mer</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              {DOM_SEO.map((d) => (
+                <li key={d.slug}>
+                  <Link href={`/transport-medical/dom/${d.slug}`} className="hover:text-white transition">
+                    Transport médical {d.nom}
                   </Link>
                 </li>
               ))}

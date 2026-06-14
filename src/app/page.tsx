@@ -310,6 +310,7 @@ export default async function HomePage() {
               { href: "/transport-medical", title: "Transport médical", desc: "Ambulance, VSL, taxi conventionné : le guide complet et l'annuaire France entière." },
               { href: "/transport-sanitaire", title: "Transport sanitaire", desc: "Cadre légal, agrément ARS, spécialités et entreprises agréées." },
               { href: "/ambulance-autour-de-moi", title: "Ambulance autour de moi", desc: "Trouver une ambulance proche, bons réflexes en cas d'urgence et remboursement." },
+              { href: "/transport-medical/dom/reunion", title: "Transport médical outre-mer", desc: "Réunion, Martinique, Guadeloupe, Mayotte : prise en charge CGSS / CSSM et démarches." },
             ].map((g) => (
               <Link
                 key={g.href}
