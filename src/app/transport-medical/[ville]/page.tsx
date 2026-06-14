@@ -16,6 +16,10 @@ import {
   getVilleFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
+import {
+  getVilleSeoOverride,
+  buildVilleServiceJsonLd,
+} from "@/lib/sanitaire-ville-seo";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
@@ -68,6 +72,28 @@ async function countProsForVille(villeSlug: string): Promise<number> {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { ville } = await params;
   const nomVille = deslugifyVille(ville);
+
+  // Hubs villes prioritaires : title/meta editoriaux cibles "taxi conventionné [ville]".
+  const override = getVilleSeoOverride(ville);
+  if (override) {
+    return {
+      title: override.title,
+      description: override.description,
+      alternates: { canonical: `/transport-medical/${ville}` },
+      openGraph: {
+        title: override.title,
+        description: override.description,
+        type: "website",
+        locale: "fr_FR",
+      },
+      twitter: {
+        card: "summary",
+        title: override.title,
+        description: override.description,
+      },
+    };
+  }
+
   const pros = await fetchProsForVille(ville);
 
   if (pros.length === 0) {
@@ -187,12 +213,24 @@ export default async function VillePage({ params, searchParams }: Props) {
     },
   };
 
-  const faqQuestions = getVilleFaq(nomVille, pros.length);
+  const override = getVilleSeoOverride(ville);
+  const faqQuestions = override ? override.faq : getVilleFaq(nomVille, pros.length);
   const faqLd = buildFaqJsonLd(faqQuestions);
-  const breadLd = buildBreadcrumbJsonLd([
-    { name: "Annuaire", url: "/transport-medical" },
-    { name: nomVille, url: `/transport-medical/${ville}` },
-  ]);
+  const breadLd = buildBreadcrumbJsonLd(
+    override
+      ? [
+          { name: "Accueil", url: "/" },
+          { name: "Transport médical", url: "/transport-medical" },
+          { name: nomVille, url: `/transport-medical/${ville}` },
+        ]
+      : [
+          { name: "Annuaire", url: "/transport-medical" },
+          { name: nomVille, url: `/transport-medical/${ville}` },
+        ]
+  );
+  const serviceLd = override
+    ? buildVilleServiceJsonLd(nomVille, ville, override.departement)
+    : null;
 
   const firstWithGeo = pros.find((p) => p.latitude && p.longitude);
   const supabase = createClient(
@@ -218,6 +256,9 @@ export default async function VillePage({ params, searchParams }: Props) {
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
+      {serviceLd && (
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }} />
+      )}
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-6xl mx-auto px-4 py-12">
@@ -229,7 +270,7 @@ export default async function VillePage({ params, searchParams }: Props) {
             <span className="text-white">{nomVille}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Transport sanitaire à {nomVille}
+            {override ? override.h1 : `Transport sanitaire à ${nomVille}`}
           </h1>
           <p className="text-blue-100">
             {totalCount} professionnels référencés · Département {departement} · {region}
@@ -268,6 +309,7 @@ export default async function VillePage({ params, searchParams }: Props) {
         )}
 
         <div className="prose prose-sm max-w-none text-gray-700 mb-8">
+          {override && <p className="leading-relaxed mb-3">{override.intro}</p>}
           <p className="leading-relaxed">
             L'annuaire RoullePro recense <strong>{pros.length} professionnels du transport sanitaire
             à {nomVille}</strong> ({departement}, {region}) : {grouped.ambulance.length} ambulance{grouped.ambulance.length > 1 ? "s" : ""},{" "}
