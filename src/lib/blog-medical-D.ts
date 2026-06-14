@@ -182,6 +182,25 @@ Pour RoullePro, connectez-vous a votre espace professionnel sur [roullepro.com/p
 ---
 
 *Contenu verifie par l'equipe RoullePro — Annuaire de reference des transports sanitaires en France. Sources : [Bpifrance Creation](https://bpifrance-creation.fr/encyclopedie/gerer-son-entreprise/communication-commerciale/communication-digitale-tpe), [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), [Ministere de la Sante](https://sante.gouv.fr/professionnels/gerer-un-etablissement-de-sante-medico-social/transports-sanitaires).*
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Au-delà du référencement, votre activité a aussi besoin d'un outil de gestion. La page de réservation publique avec QR code de Taxi Connect Pro est en soi un levier de visibilité supplémentaire.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=referencer-entreprise-transport-sanitaire) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=referencer-entreprise-transport-sanitaire)
+
 `,
   },
 
@@ -400,6 +419,25 @@ Le vehicule doit etre un taxi en regle (carte grise mention "taxi"), avec au moi
 ---
 
 *Contenu verifie par l'equipe RoullePro — Annuaire de reference des transports sanitaires en France. Sources : [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement), [Ministere de la Sante](https://sante.gouv.fr/professionnels/gerer-un-etablissement-de-sante-medico-social/transports-sanitaires), [Service-public.fr](https://www.service-public.fr/particuliers/vosdroits/F954).*
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Une fois votre agrément CPAM signé, le quotidien d'un taxi conventionné se joue dans la rigueur de la facturation, la gestion des tarifs préfectoraux et le suivi de votre conventionnement.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=agrement-cpam-taxi-conventionne) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=agrement-cpam-taxi-conventionne)
+
 `,
   },
 ];

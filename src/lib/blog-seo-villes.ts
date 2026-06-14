@@ -160,6 +160,25 @@ Oui, dans la quasi-totalité des cas. Le transport doit être prescrit par un m�
 ## En conclusion
 
 Le taxi conventionné est une solution simple et économique pour se rendre à ses soins à Paris, à condition de disposer d'une prescription médicale valable. La prise en charge par l'Assurance Maladie, couplée au tiers payant, évite la plupart du temps toute avance de frais. Pour trouver rapidement un transporteur agréé près de chez vous, lancez une recherche sur [RoullePro à Paris](/transport-medical/paris).
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Vous exercez en taxi conventionné à Paris ou en petite couronne ? Les tarifs préfectoraux 75 sont déjà intégrés et appliqués automatiquement sur chaque course.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-paris-tarifs-cpam-2026) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-paris-tarifs-cpam-2026)
+
 `,
   },
   {
@@ -288,6 +307,25 @@ Oui. Comme pour tout transport conventionné, une prescription médicale (CERFA 
 ## En conclusion
 
 À Lyon, le taxi conventionné offre une solution accessible pour rejoindre les grands hôpitaux et centres de soins de l'agglomération. Avec une prescription valable et le tiers payant, la plupart des patients n'avancent aucun frais. Pour identifier rapidement un transporteur agréé, lancez votre recherche sur [RoullePro à Lyon](/transport-medical/lyon).
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Vous exercez en taxi conventionné à Lyon ou dans le Rhône ? Les tarifs préfectoraux 69 sont déjà intégrés et appliqués automatiquement sur chaque course.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-lyon-guide-2026) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-lyon-guide-2026)
+
 `,
   },
   {
@@ -419,6 +457,25 @@ Pour un patient autonome muni d'une prescription, le taxi conventionné ou le VS
 ## En conclusion
 
 À Marseille, le taxi conventionné facilite l'accès aux hôpitaux de l'AP-HM et à l'institut Paoli-Calmettes, avec une prise en charge avantageuse pour les patients prescrits. Pour trouver sans attendre un transporteur agréé, lancez une recherche sur [RoullePro à Marseille](/transport-medical/marseille).
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Vous exercez en taxi conventionné à Marseille ou dans les Bouches-du-Rhône ? Les tarifs préfectoraux 13 sont déjà intégrés et appliqués automatiquement sur chaque course.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-marseille-2026) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=taxi-conventionne-marseille-2026)
+
 `,
   },
   {
@@ -673,6 +730,25 @@ Selon les conventions départementales, des majorations peuvent s'appliquer la n
 ## En conclusion
 
 Le tarif du taxi conventionné suit une grille départementale qui explique les écarts d'une ville à l'autre, tout en garantissant au patient un remboursement national stable et, le plus souvent, l'absence d'avance de frais. Pour trouver un transporteur conventionné dans votre secteur, lancez une recherche sur [RoullePro](/transport-medical/recherche?q=taxi%20conventionn%C3%A9).
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Les grilles tarifaires préfectorales 2026 sont déjà intégrées et tenues à jour pour 100 départements. Plus besoin de chercher votre arrêté préfectoral à chaque course : tarifs A, B, C, D appliqués automatiquement.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=tarif-taxi-conventionne-2026-grille-cpam) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=tarif-taxi-conventionne-2026-grille-cpam)
+
 `,
   },
   {
@@ -1155,6 +1231,25 @@ Un patient en fauteuil roulant pliable et suffisamment autonome peut souvent voy
 ## En conclusion
 
 VSL et taxi conventionné sont deux solutions de transport assis remboursées de la même façon ; le choix dépend de l'état du patient, du besoin d'accompagnement et de l'offre locale, toujours dans le cadre de la prescription médicale. Pour comparer les transporteurs disponibles près de chez vous, lancez une recherche sur [RoullePro](/transport-medical/recherche).
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Si vous exercez en taxi conventionné, vous avez besoin d'un outil dédié à votre métier (et pas à celui des VSL ou ambulances).
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=vsl-ou-taxi-conventionne-comparatif-2026) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=vsl-ou-taxi-conventionne-comparatif-2026)
+
 `,
   },
   {

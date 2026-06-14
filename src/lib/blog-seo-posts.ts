@@ -175,6 +175,25 @@ La carte professionnelle de conducteur de taxi est delivree individuellement par
 ## Deposer une annonce de cession sur RoullePro
 
 RoullePro est la seule marketplace vehicules professionnels en France avec verification SIRET obligatoire. Chaque annonce est moderee sous 24 heures. Le paiement est securise par sequestre Stripe, ce qui protege a la fois le vendeur et l'acquereur lors des transactions importantes. Pour deposer une annonce de cession d'ADS ou de package taxi complet, rendez-vous sur roullepro.com/deposer-annonce. Pour consulter les annonces disponibles : roullepro.com/annonces. Contact : 06 15 47 28 13 ou contact@roullepro.com.
+
+<!-- TCP_INTEGRATION_V1 -->
+
+## Vous êtes chauffeur de taxi conventionné ?
+
+Une fois votre ADS acquise, équipez-vous d'un outil de gestion adapté. Taxi Connect Pro gère l'inventaire ADS, les véhicules, les conventionnements CPAM et calcule vos courses au tarif préfectoral.
+
+[Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=combien-coute-licence-taxi-2026) vous accompagne au quotidien :
+
+- Saisie de course avec les tarifs préfectoraux 2026 de votre département pré-remplis
+- Facturation CPAM et mutuelles automatisée
+- Gestion des ADS, véhicules, contrôles techniques et conventionnements
+- Page de réservation publique avec QR code à imprimer dans votre taxi
+- Mode flotte pour les centrales et petites flottes
+
+Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
+
+[Découvrir Taxi Connect Pro](https://taxiconnectpro.net?utm_source=roullepro&utm_medium=blog&utm_campaign=tcp_integration_jun2026&utm_content=combien-coute-licence-taxi-2026)
+
 `,
   },
   {
