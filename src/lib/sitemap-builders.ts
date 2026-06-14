@@ -8,6 +8,7 @@ import { getAllPosts, CATEGORIES } from "./blog";
 import { CATEGORIES_SEO, VILLES_SEO } from "./seo-data";
 import { getAllDepartementCodes } from "./departements-fr";
 import { VSL_VILLES } from "../data/vsl-villes";
+import { DOM_TERRITOIRES } from "../data/dom-territoires";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -179,6 +180,13 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     priority: 0.8,
   }));
 
+  // Pages DOM (departements et regions d'outre-mer) : transport medical conventionne.
+  const sanitaireDom: SitemapEntry[] = DOM_TERRITOIRES.map((t) => ({
+    url: `${BASE_URL}/transport-medical/dom/${t.slug}`,
+    changefreq: "weekly",
+    priority: 0.8,
+  }));
+
   // Pages departement (101 entrees : metropole + outre-mer)
   const sanitaireDepartements: SitemapEntry[] = getAllDepartementCodes().map((code) => ({
     url: `${BASE_URL}/transport-medical/departement/${code}`,
@@ -199,6 +207,7 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     ...sanitaireStatic,
     ...sanitaireHubs,
     ...vslVilles,
+    ...sanitaireDom,
     ...sanitaireDepartements,
   ];
 }
