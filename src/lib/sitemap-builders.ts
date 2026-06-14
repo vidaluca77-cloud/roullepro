@@ -220,11 +220,27 @@ export function buildGuidesSitemap(): SitemapEntry[] {
     "taxi-conventionne-convention-cpam-2025",
     "vsl-reglementation-transport-partage",
   ];
-  return slugs.map((slug) => ({
-    url: `${BASE_URL}/guides/${slug}`,
-    changefreq: "monthly" as const,
-    priority: 0.8,
-  }));
+
+  // Phase B : pages comparatives long-tail (lastmod = date de publication).
+  const comparatives = [
+    "vsl-vs-taxi-conventionne",
+    "ambulance-vs-vsl",
+    "comment-se-faire-conventionner-cpam",
+  ];
+
+  return [
+    ...slugs.map((slug) => ({
+      url: `${BASE_URL}/guides/${slug}`,
+      changefreq: "monthly" as const,
+      priority: 0.8,
+    })),
+    ...comparatives.map((slug) => ({
+      url: `${BASE_URL}/guides/${slug}`,
+      lastmod: "2026-06-14",
+      changefreq: "monthly" as const,
+      priority: 0.8,
+    })),
+  ];
 }
 
 /** Veille reglementaire : page liste + une entree par alerte publiee */
