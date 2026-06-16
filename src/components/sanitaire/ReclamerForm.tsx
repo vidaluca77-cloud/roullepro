@@ -10,40 +10,30 @@ type Props = {
   emailPublic: string | null;
 };
 
-// Masque une adresse email pour l'affichage public : jean.dupont@exemple.fr -> j***@exemple.fr
-function maskEmail(email: string | null): string {
-  if (!email) return "";
-  const [local, domain] = email.split("@");
-  if (!domain) return email;
-  const head = local.slice(0, 1);
-  return `${head}***@${domain}`;
-}
-
 export default function ReclamerForm({ proId, proNom, telephonePublic, emailPublic }: Props) {
   const [step, setStep] = useState<"choose" | "send" | "verify" | "done">("choose");
   const [method, setMethod] = useState<"email_domaine" | "sms">("email_domaine");
+  const [contact, setContact] = useState("");
   const [code, setCode] = useState("");
   const [claimId, setClaimId] = useState("");
+  const [sentTo, setSentTo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const maskedEmail = maskEmail(emailPublic);
 
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      // SÉCURITÉ : on n'envoie plus d'adresse de destination. Le serveur envoie le code
-      // exclusivement à l'email officiel de la fiche.
       const res = await fetch("/api/sanitaire/claim/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pro_id: proId, method }),
+        body: JSON.stringify({ pro_id: proId, method, contact: contact.trim() }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erreur");
       setClaimId(data.claim_id);
+      setSentTo(contact.trim());
       setStep("verify");
     } catch (err) {
       setError((err as Error).message);
@@ -80,12 +70,13 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
         <div className="text-center">
           <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-3" />
           <div className="font-bold text-gray-900 mb-1">Réclamation enregistrée</div>
-          <p className="text-sm text-gray-600">Votre demande est <strong>en attente de validation</strong> par notre équipe (sous 24h ouvrées).</p>
+          <p className="text-sm text-gray-600">
+            Votre demande pour <strong>{proNom}</strong> est <strong>en attente de validation</strong> par notre équipe (sous 24h ouvrées).
+          </p>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-900">
-          Un email contenant vos identifiants et un lien de connexion vient d&apos;être envoyé à l&apos;adresse officielle de la fiche
-          {maskedEmail && <strong> ({maskedEmail})</strong>}. Ouvrez cet email pour accéder à votre espace pro. Si vous ne le recevez pas, utilisez &laquo; Mot de passe oublié &raquo; sur la page de connexion.
+          Un email contenant vos identifiants et un lien de connexion vient d&apos;être envoyé à <strong>{sentTo}</strong>. Ouvrez cet email pour accéder à votre espace pro. Si vous ne le recevez pas, vérifiez vos indésirables ou utilisez &laquo; Mot de passe oublié &raquo; sur la page de connexion.
         </div>
 
         {error && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</div>}
@@ -107,7 +98,7 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
         <div>
           <h3 className="font-semibold text-gray-900 mb-1">Entrez le code reçu</h3>
           <p className="text-sm text-gray-600">
-            Un code à 6 chiffres a été envoyé par {method === "email_domaine" ? "email" : "SMS"} à l&apos;adresse officielle de la fiche{maskedEmail ? ` (${maskedEmail})` : ""}.
+            Un code à 6 chiffres a été envoyé par email à <strong>{sentTo}</strong>. Vérifiez aussi vos indésirables.
           </p>
         </div>
         <input
@@ -135,7 +126,7 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
           onClick={() => setStep("choose")}
           className="w-full text-sm text-gray-500 hover:text-gray-700"
         >
-          Utiliser une autre méthode
+          Recommencer
         </button>
       </form>
     );
@@ -160,8 +151,7 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
               Vérification par email
             </div>
             <p className="text-sm text-gray-600 mt-1">
-              Un code de vérification est envoyé à l&apos;adresse email officielle enregistrée sur la fiche. Vous devez avoir accès à cette boîte mail. Validation manuelle ensuite par notre équipe.
-              {maskedEmail && <span className="block mt-1 text-xs text-gray-500">Email officiel de la fiche : {maskedEmail}</span>}
+              Saisissez l&apos;email professionnel de votre entreprise. Vous recevrez un code à 6 chiffres pour valider la réclamation. La validation finale est effectuée manuellement par notre équipe sous 24h ouvrées.
             </p>
           </div>
         </label>
@@ -175,21 +165,31 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
               <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Bientôt</span>
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              Pour l'instant, utilisez l'email professionnel de votre entreprise.
+              Pour l&apos;instant, utilisez l&apos;email professionnel de votre entreprise.
               {telephonePublic && <span className="block mt-1 text-xs text-gray-400">Numéro enregistré : {telephonePublic}</span>}
             </p>
           </div>
         </label>
       </div>
 
-      {maskedEmail ? (
-        <div className="text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-          Le code sera envoyé à l&apos;adresse officielle de la fiche : <strong>{maskedEmail}</strong>.
-          Vous devez avoir accès à cette boîte mail pour réclamer la fiche.
-        </div>
-      ) : (
-        <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-          Aucun email de contact n&apos;est enregistré sur cette fiche. Contactez le support à contact@roullepro.com pour la réclamer.
+      {method === "email_domaine" && (
+        <div>
+          <label htmlFor="contact-email" className="block text-sm font-medium text-gray-700 mb-1">
+            Votre email professionnel
+          </label>
+          <input
+            id="contact-email"
+            type="email"
+            value={contact}
+            onChange={(e) => setContact(e.target.value)}
+            placeholder="contact@votre-entreprise.fr"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#0066CC] focus:ring-2 focus:ring-blue-100 outline-none"
+            required
+            autoComplete="email"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            Utilisez l&apos;email de votre entreprise. Notre équipe vérifie ensuite votre légitimité avant publication du badge Pro vérifié.
+          </p>
         </div>
       )}
 
@@ -197,12 +197,16 @@ export default function ReclamerForm({ proId, proNom, telephonePublic, emailPubl
 
       <button
         type="submit"
-        disabled={loading || !emailPublic}
+        disabled={loading || (method === "email_domaine" && !contact.trim())}
         className="w-full inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-3 rounded-xl transition"
       >
         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
         Envoyer le code de vérification
       </button>
+
+      <p className="text-xs text-gray-500 text-center">
+        En réclamant cette fiche, vous acceptez que notre équipe vérifie manuellement votre légitimité (cohérence SIRET, nom commercial, email). Aucune fiche n&apos;est validée automatiquement.
+      </p>
     </form>
   );
 }
