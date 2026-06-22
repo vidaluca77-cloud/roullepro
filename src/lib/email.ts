@@ -1162,3 +1162,162 @@ export async function sendEscrowSellerFundsHeld(
   `;
   await sendEmail({ to, subject: `[RoullePro] Paiement sécurisé reçu — ${data.annonceTitle}`, html });
 }
+
+/* ═══════════════════════════════════════════════════════════
+   DEMANDES DE TRANSPORT (chantier FINESS) — formulaires unifiés
+═══════════════════════════════════════════════════════════ */
+
+function ligneInfo(label: string, valeur?: string | null): string {
+  if (!valeur) return '';
+  return `<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:8px 0;color:#6b7280;width:140px">${label}</td><td style="padding:8px 0;font-weight:600">${valeur}</td></tr>`;
+}
+
+function formatDateSouhaitee(iso?: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
+}
+
+/* ── 1. Notification au pro — nouvelle demande de transport ── */
+export async function sendDemandeTransportPro(p: {
+  to: string;
+  proNom: string;
+  typeLibelle: string;
+  demandeurNom: string;
+  telephone: string;
+  email?: string | null;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+  allerRetour?: boolean;
+  mobilite?: string | null;
+  precisions?: string | null;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader(`Nouvelle demande de transport (${p.typeLibelle})`)}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour <strong>${p.proNom}</strong>,</p>
+        <p style="font-size: 15px; color: #374151;">
+          Une personne recherche un transport <strong>${p.typeLibelle}</strong> via RoullePro et se trouve
+          dans votre zone. Contactez-la directement pour lui proposer une prise en charge.
+        </p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Demandeur', p.demandeurNom)}
+            ${ligneInfo('Téléphone', `<a href="tel:${p.telephone}" style="color:#2563eb">${p.telephone}</a>`)}
+            ${p.email ? ligneInfo('Email', `<a href="mailto:${p.email}" style="color:#2563eb">${p.email}</a>`) : ''}
+            ${ligneInfo('Départ', p.lieuDepart)}
+            ${ligneInfo('Arrivée', p.lieuArrivee)}
+            ${ligneInfo('Date souhaitée', dateStr)}
+            ${p.allerRetour ? ligneInfo('Trajet', 'Aller-retour') : ''}
+            ${ligneInfo('Mobilité', p.mobilite)}
+          </table>
+        </div>
+        ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${p.precisions.replace(/\n/g, '<br>')}</p></div>` : ''}
+        <p style="font-size:13px;color:#6b7280">Astuce : rappelez rapidement, les patients contactent souvent plusieurs transporteurs.</p>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: `[RoullePro] Demande de transport ${p.typeLibelle} — ${p.demandeurNom}`,
+    html,
+    reply_to: p.email || undefined,
+  });
+}
+
+/* ── 2. Confirmation au demandeur ── */
+export async function sendDemandeTransportConfirmation(p: {
+  to: string;
+  demandeurNom: string;
+  typeLibelle: string;
+  nbPros: number;
+}) {
+  const corps =
+    p.nbPros > 0
+      ? `Votre demande de transport <strong>${p.typeLibelle}</strong> a été transmise à ${p.nbPros} professionnel${p.nbPros > 1 ? 's' : ''} proche${p.nbPros > 1 ? 's' : ''} de vous. Ils vous recontacteront directement par téléphone.`
+      : `Votre demande de transport <strong>${p.typeLibelle}</strong> a bien été enregistrée. Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement.`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader('Votre demande de transport est transmise')}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour ${p.demandeurNom || ''},</p>
+        <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:14px 18px;margin:20px 0">
+          <p style="margin:0;color:#1d4ed8;font-size:14px">${corps}</p>
+        </div>
+        <p style="font-size:14px;color:#374151">
+          Gardez votre téléphone à portée de main. Si vous n'êtes pas rappelé rapidement, vous pouvez aussi
+          contacter d'autres transporteurs directement depuis l'annuaire RoullePro.
+        </p>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${APP_URL_DV}/transport-medical" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir l'annuaire transport médical</a>
+        </div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: `[RoullePro] Votre demande de transport ${p.typeLibelle} est transmise`,
+    html,
+  });
+}
+
+/* ── 3. Email de secours interne (aucun pro joignable) ── */
+export async function sendDemandeTransportFallback(p: {
+  to: string;
+  typeLibelle: string;
+  demandeurNom: string;
+  telephone: string;
+  email?: string | null;
+  departement?: string | null;
+  ville?: string | null;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+  precisions?: string | null;
+  demandeId: string;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader(`Demande sans pro joignable (${p.typeLibelle})`)}
+      <div style="padding: 28px 32px;">
+        <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:14px 18px;margin-bottom:20px">
+          <p style="margin:0;color:#9a3412;font-weight:600;font-size:14px">Aucun professionnel avec email n'a pu être notifié automatiquement. À traiter manuellement.</p>
+        </div>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Type', p.typeLibelle)}
+            ${ligneInfo('Demandeur', p.demandeurNom)}
+            ${ligneInfo('Téléphone', p.telephone)}
+            ${p.email ? ligneInfo('Email', p.email) : ''}
+            ${ligneInfo('Département', p.departement)}
+            ${ligneInfo('Ville', p.ville)}
+            ${ligneInfo('Départ', p.lieuDepart)}
+            ${ligneInfo('Arrivée', p.lieuArrivee)}
+            ${ligneInfo('Date souhaitée', dateStr)}
+            ${ligneInfo('ID demande', p.demandeId)}
+          </table>
+        </div>
+        ${p.precisions ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${p.precisions.replace(/\n/g, '<br>')}</p></div>` : ''}
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: `[RoullePro Interne] Demande transport ${p.typeLibelle} à traiter — ${p.ville || p.departement || ''}`,
+    html,
+  });
+}
