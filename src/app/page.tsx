@@ -263,7 +263,7 @@ export default async function HomePage() {
           <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
             <div className="text-center mb-10">
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-                Hôpitaux conventionnés près de chez vous
+                Hôpitaux près de chez vous
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
                 Trouvez un taxi conventionné, un VSL ou une ambulance pour votre rendez-vous à
@@ -312,7 +312,7 @@ export default async function HomePage() {
                 href="/etablissements/hopitaux"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-[#0066CC] hover:underline"
               >
-                Voir tous les hôpitaux conventionnés en France
+                Voir tous les hôpitaux en France
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
