@@ -51,8 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = getTypeBySlug(slug);
   if (t) {
     return {
-      title: `${t.labelPluriel} en France : annuaire des etablissements | RoullePro`,
-      description: `Liste des ${t.labelPluriel.toLowerCase()} en France (donnees FINESS). Adresse, ville, transport medical conventionne vers chaque etablissement.`,
+      title: `${t.labelPluriel} conventionnes en France — Annuaire RoullePro`,
+      description: `Annuaire des ${t.labelPluriel.toLowerCase()} en France (donnees FINESS). Adresse, ville, taxi conventionne CPAM, VSL et ambulance vers chaque etablissement.`,
       alternates: { canonical: `/etablissements/${t.slug}` },
     };
   }
@@ -60,7 +60,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!e) return {};
   const nom = e.nom_court || e.raison_sociale;
   return {
-    title: `${nom} a ${e.ville} : adresse, transport medical | RoullePro`,
+    title: `${nom} — Taxi conventionne CPAM et VSL | RoullePro`,
     description: `${e.raison_sociale} a ${e.ville}. Adresse, telephone, transport medical conventionne CPAM (taxi, VSL, ambulance) vers cet etablissement.`,
     alternates: { canonical: `/etablissements/${e.slug}` },
   };
@@ -91,11 +91,29 @@ export default async function EtablissementSlugPage({ params }: Props) {
       { label: t.labelPluriel, href: `/etablissements/${t.slug}` },
     ]);
 
+    // ItemList JSON-LD : liste ordonnee des etablissements de la categorie.
+    const itemListLd = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `${t.labelPluriel} en France`,
+      numberOfItems: etablissements.length,
+      itemListElement: etablissements.map((e, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `https://www.roullepro.com/etablissements/${e.slug}`,
+        name: e.nom_court || e.raison_sociale,
+      })),
+    };
+
     return (
       <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
         />
 
         <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">

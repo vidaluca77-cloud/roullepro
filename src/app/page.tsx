@@ -23,7 +23,7 @@ import { getProStats } from "@/lib/stats";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Ambulance, VSL, Taxi conventionné : annuaire officiel 26 000+ pros | RoullePro",
+  title: "Taxi conventionné CPAM, VSL, ambulance — Annuaire national | RoullePro",
   description:
     "Annuaire gratuit du transport sanitaire en France : 26 000+ ambulances, VSL et taxis conventionnés CPAM. Téléphone direct, tarif Sécurité sociale, tiers payant.",
   alternates: { canonical: "/" },
@@ -64,8 +64,64 @@ async function getRegionsCount() {
   }));
 }
 
+// Hopitaux phares : un CHU par grande ville (le plus gros par capacite),
+// pour creer un maillage interne riche depuis l'accueil vers les fiches
+// etablissements et les pages de transport conventionne.
+const VILLES_HOPITAUX_PHARES = [
+  "lyon",
+  "marseille",
+  "reims",
+  "toulouse",
+  "bordeaux",
+  "nantes",
+  "lille",
+  "strasbourg",
+  "rennes",
+];
+
+type HopitalPhare = {
+  id: string;
+  raison_sociale: string;
+  nom_court: string | null;
+  slug: string;
+  ville: string | null;
+  ville_slug: string | null;
+  departement: string | null;
+  capacite_lits: number | null;
+};
+
+async function getHopitauxPhares(): Promise<HopitalPhare[]> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("etablissements_sante_public")
+    .select("id, raison_sociale, nom_court, slug, ville, ville_slug, departement, capacite_lits")
+    .eq("categorie_simple", "hopital")
+    .in("ville_slug", VILLES_HOPITAUX_PHARES)
+    .order("capacite_lits", { ascending: false, nullsFirst: false })
+    .limit(200);
+
+  // Un seul etablissement par ville (le premier, donc le plus gros).
+  const parVille = new Map<string, HopitalPhare>();
+  for (const e of (data as HopitalPhare[]) ?? []) {
+    if (!e.ville_slug || parVille.has(e.ville_slug)) continue;
+    parVille.set(e.ville_slug, e);
+  }
+  // On respecte l'ordre de la liste des villes cibles.
+  return VILLES_HOPITAUX_PHARES.map((v) => parVille.get(v)).filter(
+    (e): e is HopitalPhare => Boolean(e)
+  );
+}
+
 export default async function HomePage() {
-  const [stats, topVilles, regions] = await Promise.all([getProStats(), getTopVilles(), getRegionsCount()]);
+  const [stats, topVilles, regions, hopitauxPhares] = await Promise.all([
+    getProStats(),
+    getTopVilles(),
+    getRegionsCount(),
+    getHopitauxPhares(),
+  ]);
 
   // JSON-LD : Organization + WebSite avec SearchAction (sitelinks search box Google)
   const orgLd = {
@@ -201,6 +257,68 @@ export default async function HomePage() {
           />
         </div>
       </section>
+
+      {hopitauxPhares.length > 0 && (
+        <section className="border-t border-gray-100 bg-white">
+          <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+            <div className="text-center mb-10">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+                Hôpitaux conventionnés près de chez vous
+              </h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Trouvez un taxi conventionné, un VSL ou une ambulance pour votre rendez-vous à
+                l&apos;hôpital.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {hopitauxPhares.map((h) => {
+                const nom = h.nom_court || h.raison_sociale;
+                return (
+                  <div
+                    key={h.id}
+                    className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-lg transition"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0066CC] flex items-center justify-center flex-shrink-0">
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div className="min-w-0">
+                        <Link
+                          href={`/etablissements/${h.slug}`}
+                          className="font-bold text-gray-900 hover:text-[#0066CC] transition block truncate"
+                        >
+                          {nom}
+                        </Link>
+                        <div className="text-xs text-gray-500 flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          {h.ville}
+                          {h.departement ? ` (${h.departement})` : ""}
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/transport-medical/vers/${h.slug}`}
+                      className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] hover:gap-2 transition-all"
+                    >
+                      Taxi conventionné et VSL vers {nom}
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-8 text-center">
+              <Link
+                href="/etablissements/hopitaux"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#0066CC] hover:underline"
+              >
+                Voir tous les hôpitaux conventionnés en France
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">

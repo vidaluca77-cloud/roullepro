@@ -5,6 +5,7 @@ import { ChevronRight, MapPin, ShieldCheck, Phone, Clock } from "lucide-react";
 import {
   getEtablissementBySlug,
   getSupabaseEtab,
+  type EtablissementPublic,
 } from "@/lib/etablissements-data";
 import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
 import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
@@ -25,6 +26,23 @@ export async function generateStaticParams() {
     .map((e) => ({ slug: e.slug }));
 }
 
+// Autres etablissements de la meme ville, pour un maillage croise complet
+// (lien vers la fiche et vers la page de transport de chacun).
+async function fetchAutresEtablissements(
+  e: EtablissementPublic
+): Promise<EtablissementPublic[]> {
+  if (!e.ville_slug) return [];
+  const supabase = getSupabaseEtab();
+  const { data } = await supabase
+    .from("etablissements_sante_public")
+    .select("id, raison_sociale, nom_court, slug, categorie_simple, ville")
+    .eq("ville_slug", e.ville_slug)
+    .neq("id", e.id)
+    .order("capacite_lits", { ascending: false, nullsFirst: false })
+    .limit(5);
+  return (data as EtablissementPublic[]) ?? [];
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -35,7 +53,7 @@ export async function generateMetadata({
   if (!e) return { title: "Transport medical | RoullePro" };
   const nom = e.nom_court || e.raison_sociale;
   return {
-    title: `Transport medical vers ${nom} : taxi conventionne, VSL, ambulance | RoullePro`,
+    title: `Taxi conventionne vers ${nom} — VSL et ambulance | RoullePro`,
     description: `Organisez votre transport medical conventionne vers ${nom}${
       e.ville ? ` (${e.ville})` : ""
     }. Taxi conventionne CPAM, VSL ou ambulance. Demande transmise aux professionnels de votre secteur.`,
@@ -53,6 +71,7 @@ export default async function TransportVersPage({
   if (!e) notFound();
 
   const nom = e.nom_court || e.raison_sociale;
+  const autres = await fetchAutresEtablissements(e);
 
   const breadLd = buildBreadcrumbJsonLd([
     { label: "Accueil", href: "/" },
@@ -158,6 +177,44 @@ export default async function TransportVersPage({
                 Voir la fiche complete de {nom}
                 <ChevronRight className="w-4 h-4" />
               </Link>
+            </div>
+          )}
+
+          {autres.length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-3">
+                {autres.length} autre{autres.length > 1 ? "s" : ""} etablissement
+                {autres.length > 1 ? "s" : ""}
+                {e.ville ? ` a ${e.ville}` : ""}
+              </h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Organisez aussi un transport conventionne vers ces etablissements proches.
+              </p>
+              <ul className="space-y-3">
+                {autres.map((a) => {
+                  const nomAutre = a.nom_court || a.raison_sociale;
+                  return (
+                    <li
+                      key={a.id}
+                      className="flex flex-col gap-1 border-b border-gray-100 pb-3 last:border-0 last:pb-0"
+                    >
+                      <Link
+                        href={`/etablissements/${a.slug}`}
+                        className="text-sm font-medium text-gray-900 hover:text-[#0066CC]"
+                      >
+                        {nomAutre}
+                      </Link>
+                      <Link
+                        href={`/transport-medical/vers/${a.slug}`}
+                        className="inline-flex items-center gap-1 text-xs text-[#0066CC] hover:underline"
+                      >
+                        Taxi conventionne et VSL vers {nomAutre}
+                        <ChevronRight className="w-3 h-3" />
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
 

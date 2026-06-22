@@ -61,8 +61,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const etabs = await fetchEtablissements(t.categorie, ville);
   const nomVille = etabs[0]?.ville || ville;
   return {
-    title: `${t.labelPluriel} a ${nomVille} : annuaire et transport medical | RoullePro`,
-    description: `${t.labelPluriel} a ${nomVille} (donnees FINESS). Adresse, capacite, et organisation du transport medical conventionne CPAM.`,
+    title: `${t.labelPluriel} a ${nomVille} — Taxi conventionne et VSL | RoullePro`,
+    description: `${t.labelPluriel} a ${nomVille} (donnees FINESS). Adresse, capacite, et organisation du transport medical conventionne CPAM (taxi, VSL, ambulance).`,
     alternates: { canonical: `/etablissements/${t.slug}/${ville}` },
   };
 }
@@ -85,11 +85,29 @@ export default async function TypeVillePage({ params }: Props) {
     { label: nomVille, href: `/etablissements/${t.slug}/${ville}` },
   ]);
 
+  // ItemList JSON-LD : liste ordonnee des etablissements de la ville.
+  const itemListLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: `${t.labelPluriel} a ${nomVille}`,
+    numberOfItems: etablissements.length,
+    itemListElement: etablissements.map((e, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: `https://www.roullepro.com/etablissements/${e.slug}`,
+      name: e.nom_court || e.raison_sociale,
+    })),
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
       />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
@@ -106,7 +124,7 @@ export default async function TypeVillePage({ params }: Props) {
             <span className="text-white">{nomVille}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            {t.labelPluriel} a {nomVille}
+            {t.labelPluriel} conventionnes a {nomVille}
           </h1>
           <p className="text-blue-100">
             {etablissements.length} etablissement{etablissements.length > 1 ? "s" : ""}
@@ -117,29 +135,41 @@ export default async function TypeVillePage({ params }: Props) {
 
       <section className="max-w-6xl mx-auto px-4 py-10">
         <div className="grid md:grid-cols-2 gap-3">
-          {etablissements.map((e) => (
-            <Link
-              key={e.id}
-              href={`/etablissements/${e.slug}`}
-              className="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 transition hover:border-blue-200"
-            >
-              <div className="flex items-start gap-3 min-w-0">
-                <Building2 className="w-4 h-4 text-[#0066CC] mt-0.5 flex-shrink-0" />
-                <div className="min-w-0">
-                  <div className="font-medium text-gray-900 truncate">
-                    {e.nom_court || e.raison_sociale}
+          {etablissements.map((e) => {
+            const nomEtab = e.nom_court || e.raison_sociale;
+            return (
+              <div
+                key={e.id}
+                className="bg-white border border-gray-200 rounded-xl px-4 py-3 transition hover:border-blue-200"
+              >
+                <Link
+                  href={`/etablissements/${e.slug}`}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-start gap-3 min-w-0">
+                    <Building2 className="w-4 h-4 text-[#0066CC] mt-0.5 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 truncate">{nomEtab}</div>
+                      <div className="text-xs text-gray-500 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {e.adresse ? `${e.adresse}, ` : ""}
+                        {e.code_postal} {e.ville}
+                        {e.capacite_lits ? ` · ${e.capacite_lits} lits` : ""}
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-xs text-gray-500 flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {e.adresse ? `${e.adresse}, ` : ""}
-                    {e.code_postal} {e.ville}
-                    {e.capacite_lits ? ` · ${e.capacite_lits} lits` : ""}
-                  </div>
-                </div>
+                  <ChevronRight className="w-4 h-4 text-[#0066CC] flex-shrink-0" />
+                </Link>
+                <Link
+                  href={`/transport-medical/vers/${e.slug}`}
+                  className="inline-flex items-center gap-1 text-xs text-[#0066CC] hover:underline mt-2 ml-7"
+                >
+                  Taxi conventionne et VSL vers {nomEtab}
+                  <ChevronRight className="w-3 h-3" />
+                </Link>
               </div>
-              <ChevronRight className="w-4 h-4 text-[#0066CC] flex-shrink-0" />
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 

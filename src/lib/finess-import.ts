@@ -30,17 +30,47 @@ export const FINESS_CSV_URL =
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CACHE_FILE = path.join(os.tmpdir(), "roullepro-finess-cache.csv");
 
-// Codes categorie d'agregation FINESS a conserver (chapitre A4 du spec).
-// Cle = code categorie FINESS, valeur = groupe SEO simplifie categorie_simple.
+// Codes categorie FINESS a conserver, mappes vers un groupe SEO simplifie
+// (categorie_simple). On accepte deux espaces de codes :
+//   - le code d'agregation (categagretab), plus stable et large ;
+//   - le code categorie d'etablissement (categetab), plus fin.
+// Le filtrage teste les deux (agregation prioritaire) afin de couvrir un
+// maximum d'etablissements sans casser les categories deja importees.
 export const CATEGORIE_FINESS_MAP: Record<string, string> = {
+  // Hopitaux (codes d'agregation)
   "1101": "hopital", // Centre Hospitalier Universitaire (CHU)
   "1102": "hopital", // Centre Hospitalier (CH)
+  "1103": "hopital", // Autre etablissement hospitalier rattache
+  // Cliniques
   "365": "clinique", // Etablissement de Soins Pluridisciplinaire (clinique MCO privee)
+  "122": "clinique", // Centre Hospitalier prive / clinique
+  "412": "clinique", // Etablissement de soins chirurgicaux
+  "800": "clinique", // Etablissement de soins medicaux
+  "801": "clinique", // Etablissement de soins obstetricaux
+  // EHPAD et hebergement personnes agees
   "500": "ehpad", // EHPAD
   "502": "ehpad", // Logement-foyer
   "355": "ehpad", // Maison de Repos et Convalescence
+  "200": "ehpad", // Maison de retraite
+  "202": "ehpad", // Maison de retraite (variante)
+  "207": "ehpad", // Etablissement d'hebergement pour personnes agees
+  "230": "ehpad", // Logement-foyer pour personnes agees
+  "4101": "ehpad", // EHPAD (code categorie etablissement)
+  "4102": "ehpad", // EHPA
+  "4103": "ehpad", // Etablissement d'hebergement temporaire
+  "4106": "ehpad", // Accueil de jour personnes agees
+  // Centres de sante
   "437": "centre-sante", // Centre Medico-Psychologique (CMP)
+  "124": "centre-sante", // Centre de sante
+  "603": "centre-sante", // Centre de sante polyvalent
+  "604": "centre-sante", // Centre de sante medical
+  "605": "centre-sante", // Centre de sante infirmier
+  // Dialyse
   "354": "centre-dialyse", // Centre de Dialyse / Autodialyse
+  "138": "centre-dialyse", // Unite de dialyse
+  "142": "centre-dialyse", // Centre d'hemodialyse
+  "199": "centre-dialyse", // Autodialyse
+  // Oncologie et readaptation
   "130": "centre-oncologie", // Etablissement de Lutte Contre le Cancer
   "156": "rehabilitation", // Etablissement de Readaptation Fonctionnelle
   "158": "rehabilitation", // Etablissement de Soins Longue Duree
@@ -50,12 +80,32 @@ export const CATEGORIE_FINESS_MAP: Record<string, string> = {
 const CATEGORIE_FINESS_LIBELLE: Record<string, string> = {
   "1101": "Centre Hospitalier Universitaire",
   "1102": "Centre Hospitalier",
+  "1103": "Etablissement hospitalier",
   "365": "Etablissement de soins pluridisciplinaire",
+  "122": "Clinique",
+  "412": "Etablissement de soins chirurgicaux",
+  "800": "Etablissement de soins medicaux",
+  "801": "Etablissement de soins obstetricaux",
   "500": "EHPAD",
   "502": "Logement-foyer",
   "355": "Maison de repos et convalescence",
+  "200": "Maison de retraite",
+  "202": "Maison de retraite",
+  "207": "Hebergement pour personnes agees",
+  "230": "Logement-foyer pour personnes agees",
+  "4101": "EHPAD",
+  "4102": "EHPA",
+  "4103": "Hebergement temporaire personnes agees",
+  "4106": "Accueil de jour personnes agees",
   "437": "Centre medico-psychologique",
+  "124": "Centre de sante",
+  "603": "Centre de sante polyvalent",
+  "604": "Centre de sante medical",
+  "605": "Centre de sante infirmier",
   "354": "Centre de dialyse",
+  "138": "Unite de dialyse",
+  "142": "Centre d'hemodialyse",
+  "199": "Autodialyse",
   "130": "Etablissement de lutte contre le cancer",
   "156": "Etablissement de readaptation fonctionnelle",
   "158": "Etablissement de soins longue duree",
@@ -200,8 +250,17 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
   const slugsVus = new Map<string, number>();
 
   for (const r of records) {
+    // On teste d'abord le code d'agregation (categagretab), puis, a defaut,
+    // le code categorie d'etablissement (categetab) plus fin. Le premier qui
+    // correspond a CATEGORIE_FINESS_MAP determine la categorie_simple.
     const codeAgreg = (r.categagretab || r.categagr || "").trim();
-    if (!codeAgreg || !CATEGORIE_FINESS_MAP[codeAgreg]) continue;
+    const codeCat = (r.categetab || r.categ || "").trim();
+    const codeMatch = CATEGORIE_FINESS_MAP[codeAgreg]
+      ? codeAgreg
+      : CATEGORIE_FINESS_MAP[codeCat]
+        ? codeCat
+        : "";
+    if (!codeMatch) continue;
 
     const finessGeo = (r.nofiness || r.nofiness_et || "").trim();
     if (!finessGeo) continue;
@@ -236,10 +295,13 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
       raison_sociale: raisonSociale,
       nom_court: genererNomCourt(raisonSociale),
       slug,
-      categorie_finess_code: codeAgreg,
+      categorie_finess_code: codeMatch,
       categorie_finess_libelle:
-        (r.libcategagretab || "").trim() || CATEGORIE_FINESS_LIBELLE[codeAgreg] || null,
-      categorie_simple: CATEGORIE_FINESS_MAP[codeAgreg],
+        (r.libcategagretab || "").trim() ||
+        (r.libcategetab || "").trim() ||
+        CATEGORIE_FINESS_LIBELLE[codeMatch] ||
+        null,
+      categorie_simple: CATEGORIE_FINESS_MAP[codeMatch],
       adresse,
       code_postal: codePostal,
       ville,
