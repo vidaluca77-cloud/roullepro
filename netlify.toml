@@ -28,6 +28,10 @@
 [functions."veille-ingest"]
   schedule = "0 7 * * 4"
 
+# Scheduled function : refresh mensuel du referentiel FINESS, le 1er du mois a 04:00 UTC
+[functions."etab-refresh-finess"]
+  schedule = "0 4 1 * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
