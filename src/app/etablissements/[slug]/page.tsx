@@ -10,7 +10,7 @@ import {
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
 import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
-import { FinessFooter } from "../page";
+import { FinessFooter } from "../FinessFooter";
 import FicheEtablissement from "./FicheEtablissement";
 
 export const revalidate = 86400;
