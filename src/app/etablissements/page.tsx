@@ -9,6 +9,7 @@ import {
 } from "@/lib/etablissements-data";
 import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
 import { getEtablissementsCount } from "@/lib/stats";
+import RechercheEtablissement from "@/components/RechercheEtablissement";
 import { FinessFooter } from "./FinessFooter";
 
 export const revalidate = 86400;
@@ -69,6 +70,10 @@ export default async function EtablissementsIndexPage() {
             </p>
           )}
         </div>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-4 pt-8">
+        <RechercheEtablissement placeholder="Rechercher un établissement par nom ou par ville..." />
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-10">

@@ -16,6 +16,7 @@ import {
   Heart,
 } from "lucide-react";
 import SearchHero from "@/components/sanitaire/SearchHero";
+import RechercheEtablissement from "@/components/RechercheEtablissement";
 import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getProStats } from "@/lib/stats";
@@ -208,8 +209,18 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Recherche d'etablissement de sante par nom ou ville */}
+      <section className="max-w-6xl mx-auto px-4 pt-8 sm:pt-10">
+        <div className="max-w-2xl mx-auto">
+          <RechercheEtablissement />
+          <p className="mt-2 text-center text-sm text-gray-500">
+            Trouvez votre hôpital, clinique, EHPAD ou centre de dialyse.
+          </p>
+        </div>
+      </section>
+
       {/* Formulaire de conversion : demande directe taxi/VSL/ambulance */}
-      <section className="max-w-6xl mx-auto px-4 -mt-10 sm:-mt-14 relative z-10">
+      <section className="max-w-6xl mx-auto px-4 mt-6 relative z-10">
         <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 sm:p-8 max-w-2xl mx-auto">
           <div className="text-center mb-5">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
