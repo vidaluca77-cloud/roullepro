@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, CheckCircle2, Car, Ambulance, Stethoscope } from "lucide-react";
+import { Send, Loader2, CheckCircle2, Car, Cross, Stethoscope } from "lucide-react";
 import {
   TYPES_TRANSPORT_DISPONIBLES,
   LIBELLE_TYPE_TRANSPORT,
@@ -21,7 +21,7 @@ const LABEL_MOBILITE: Record<Mobilite, string> = {
 const ICONES: Record<TypeTransport, typeof Car> = {
   taxi: Car,
   vsl: Stethoscope,
-  ambulance: Ambulance,
+  ambulance: Cross,
 };
 
 export type DemandeTransportFormProps = {
