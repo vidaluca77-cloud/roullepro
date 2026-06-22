@@ -30,85 +30,49 @@ export const FINESS_CSV_URL =
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const CACHE_FILE = path.join(os.tmpdir(), "roullepro-finess-cache.csv");
 
-// Codes categorie FINESS a conserver, mappes vers un groupe SEO simplifie
-// (categorie_simple). On accepte deux espaces de codes :
-//   - le code d'agregation (categagretab), plus stable et large ;
-//   - le code categorie d'etablissement (categetab), plus fin.
-// Le filtrage teste les deux (agregation prioritaire) afin de couvrir un
-// maximum d'etablissements sans casser les categories deja importees.
+// Whitelist STRICTE par code categorie d'etablissement FINESS (colonne `categetab`).
+// On ne conserve QUE les 7 familles pertinentes pour le transport sanitaire CPAM.
+// Tout code absent de cette table est ignore a l'import (jamais insere) : cela
+// exclut pharmacies (620), laboratoires (611), SSIAD (354), SESSAD (182), IME (183),
+// ESAT (246), PMI (223), CMP (156), MECS (177), FAM/MAS/SAVS, ITEP (186), ecoles, etc.
+//
+// Les codes sont les VRAIS codes `categetab` du fichier FINESS (les codes 1101/1102/1103
+// evoques ailleurs sont des codes d'agregation `categagretab`, non utilises ici).
 export const CATEGORIE_FINESS_MAP: Record<string, string> = {
-  // Hopitaux (codes d'agregation)
-  "1101": "hopital", // Centre Hospitalier Universitaire (CHU)
-  "1102": "hopital", // Centre Hospitalier (CH)
-  "1103": "hopital", // Autre etablissement hospitalier rattache
-  // Cliniques
-  "365": "clinique", // Etablissement de Soins Pluridisciplinaire (clinique MCO privee)
-  "122": "clinique", // Centre Hospitalier prive / clinique
-  "412": "clinique", // Etablissement de soins chirurgicaux
-  "800": "clinique", // Etablissement de soins medicaux
-  "801": "clinique", // Etablissement de soins obstetricaux
-  // EHPAD et hebergement personnes agees
-  "500": "ehpad", // EHPAD
-  "502": "ehpad", // Logement-foyer
-  "355": "ehpad", // Maison de Repos et Convalescence
-  "200": "ehpad", // Maison de retraite
-  "202": "ehpad", // Maison de retraite (variante)
-  "207": "ehpad", // Etablissement d'hebergement pour personnes agees
-  "230": "ehpad", // Logement-foyer pour personnes agees
-  "4101": "ehpad", // EHPAD (code categorie etablissement)
-  "4102": "ehpad", // EHPA
-  "4103": "ehpad", // Etablissement d'hebergement temporaire
-  "4106": "ehpad", // Accueil de jour personnes agees
-  // Centres de sante
-  "437": "centre-sante", // Centre Medico-Psychologique (CMP)
-  "124": "centre-sante", // Centre de sante
-  "603": "centre-sante", // Centre de sante polyvalent
-  "604": "centre-sante", // Centre de sante medical
-  "605": "centre-sante", // Centre de sante infirmier
-  // Dialyse
-  "354": "centre-dialyse", // Centre de Dialyse / Autodialyse
-  "138": "centre-dialyse", // Unite de dialyse
-  "142": "centre-dialyse", // Centre d'hemodialyse
-  "199": "centre-dialyse", // Autodialyse
-  // Oncologie et readaptation
-  "130": "centre-oncologie", // Etablissement de Lutte Contre le Cancer
-  "156": "rehabilitation", // Etablissement de Readaptation Fonctionnelle
-  "158": "rehabilitation", // Etablissement de Soins Longue Duree
+  // Hopitaux : Centre Hospitalier, CHR/CHU, Centre Hospitalier Specialise (psychiatrie).
+  "355": "hopital", // Centre Hospitalier (C.H.)
+  "101": "hopital", // Centre Hospitalier Regional (C.H.R. / C.H.U.)
+  "292": "hopital", // Centre Hospitalier Specialise lutte Maladies Mentales
+  // Cliniques privees.
+  "365": "clinique", // Etablissement de Soins Pluridisciplinaire
+  "122": "clinique", // Etablissement Soins Obstetriques Chirurgico-Gynecologiques
+  // EHPAD (vrai EHPAD uniquement).
+  "500": "ehpad", // Etablissement d'hebergement pour personnes agees dependantes
+  // Centres de sante (vrai centre de sante uniquement).
+  "124": "centre-sante", // Centre de Sante
+  // Dialyse.
+  "141": "centre-dialyse", // Centre de dialyse
+  "146": "centre-dialyse", // Structure d'Alternative a la dialyse en centre
+  // Readaptation / SSR.
+  "109": "rehabilitation", // Etablissement de sante prive autorise en SSR
+  // Maisons de sante pluriprofessionnelles.
+  "603": "maison-sante", // Maison de sante (L.6223-3)
 };
 
-// Libelles humains par code, pour remplir categorie_finess_libelle si absent du CSV.
+// Libelles humains par code categetab, pour remplir categorie_finess_libelle
+// si le libelle CSV (libcategetab) est absent.
 const CATEGORIE_FINESS_LIBELLE: Record<string, string> = {
-  "1101": "Centre Hospitalier Universitaire",
-  "1102": "Centre Hospitalier",
-  "1103": "Etablissement hospitalier",
+  "355": "Centre Hospitalier",
+  "101": "Centre Hospitalier Regional",
+  "292": "Centre Hospitalier Specialise",
   "365": "Etablissement de soins pluridisciplinaire",
-  "122": "Clinique",
-  "412": "Etablissement de soins chirurgicaux",
-  "800": "Etablissement de soins medicaux",
-  "801": "Etablissement de soins obstetricaux",
+  "122": "Etablissement de soins chirurgicaux et obstetricaux",
   "500": "EHPAD",
-  "502": "Logement-foyer",
-  "355": "Maison de repos et convalescence",
-  "200": "Maison de retraite",
-  "202": "Maison de retraite",
-  "207": "Hebergement pour personnes agees",
-  "230": "Logement-foyer pour personnes agees",
-  "4101": "EHPAD",
-  "4102": "EHPA",
-  "4103": "Hebergement temporaire personnes agees",
-  "4106": "Accueil de jour personnes agees",
-  "437": "Centre medico-psychologique",
   "124": "Centre de sante",
-  "603": "Centre de sante polyvalent",
-  "604": "Centre de sante medical",
-  "605": "Centre de sante infirmier",
-  "354": "Centre de dialyse",
-  "138": "Unite de dialyse",
-  "142": "Centre d'hemodialyse",
-  "199": "Autodialyse",
-  "130": "Etablissement de lutte contre le cancer",
-  "156": "Etablissement de readaptation fonctionnelle",
-  "158": "Etablissement de soins longue duree",
+  "141": "Centre de dialyse",
+  "146": "Structure d'alternative a la dialyse",
+  "109": "Etablissement de soins de suite et readaptation",
+  "603": "Maison de sante pluriprofessionnelle",
 };
 
 // Prefixes a retirer de la raison sociale pour produire un nom_court lisible
@@ -134,6 +98,8 @@ export type FinessRow = {
   finess_juri: string | null;
   raison_sociale: string;
   nom_court: string | null;
+  nom_affichage: string;
+  search_aliases: string;
   slug: string;
   categorie_finess_code: string | null;
   categorie_finess_libelle: string | null;
@@ -196,6 +162,212 @@ export function genererNomCourt(raisonSociale: string): string {
   return raisonSociale.trim();
 }
 
+// Mots conserves en minuscule lors de la capitalisation (sauf en tete de chaine).
+const MOTS_MINUSCULES = new Set([
+  "de", "du", "la", "le", "les", "des", "et", "sur", "en", "aux", "au",
+  "d", "l", "a", "sous", "lez", "les", "ile", "the",
+]);
+
+// Restauration ciblee d'accents/typographie sur des noms connus
+// (les donnees FINESS sont en majuscules non accentuees). Applique apres
+// capitalisation, en remplacant la forme capitalisee par la forme propre.
+const ACCENTS_CONNUS: Array<[RegExp, string]> = [
+  [/\bC[ôo]te De Nacre\b/gi, "Côte de Nacre"],
+  [/\bPitie[- ]?Salpetriere\b/gi, "Pitié-Salpêtrière"],
+  [/\bSalpetriere\b/gi, "Salpêtrière"],
+  [/\bHotel[- ]?Dieu\b/gi, "Hôtel-Dieu"],
+  [/\bHopital\b/gi, "Hôpital"],
+  [/\bHopitaux\b/gi, "Hôpitaux"],
+  [/\bGeneral\b/gi, "Général"],
+  [/\bRegional\b/gi, "Régional"],
+  [/\bSaint /gi, "Saint-"],
+  [/\bSainte /gi, "Sainte-"],
+];
+
+/** Capitalise proprement une chaine (mots de liaison conserves en minuscule). */
+function capitaliserMots(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[A-Za-zÀ-ÖØ-öø-ÿ]+/g, (mot: string, offset: number) => {
+      if (offset > 0 && MOTS_MINUSCULES.has(mot)) return mot;
+      return mot.charAt(0).toUpperCase() + mot.slice(1);
+    });
+}
+
+/** Capitalise puis restaure les accents connus. */
+function capitaliserAvecAccents(s: string): string {
+  let out = capitaliserMots(s);
+  for (const [re, val] of ACCENTS_CONNUS) out = out.replace(re, val);
+  return out.replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Corps de nom apres un prefixe ("CHU", "Centre Hospitalier"...) : on capitalise
+ * et on remet en minuscule un mot de liaison initial ("De Caen" -> "de Caen").
+ */
+function corpsApresPrefixe(reste: string): string {
+  return capitaliserAvecAccents(reste).replace(
+    /^(De|Du|Des|D'|La|Le|Les|L')\b/,
+    (m) => m.toLowerCase()
+  );
+}
+
+/**
+ * Genere un nom d'affichage lisible a partir de la raison sociale FINESS brute.
+ * Exemples :
+ *   "CENTRE HOSPITALIER UNIVERSITAIRE  COTE DE NACRE" (Caen) -> "CHU Côte de Nacre (Caen)"
+ *   "GHU APHP SORBONNE UNIVERSITE SITE PITIE SALPETRIERE" -> "Hôpital Pitié-Salpêtrière (AP-HP)"
+ *   "GHU APHP CENTRE-UNIVERSITE PARIS CITE SITE COCHIN PORT ROYAL" -> "Hôpital Cochin (AP-HP)"
+ */
+export function genererNomAffichage(raisonSociale: string, ville: string | null): string {
+  const nom = (raisonSociale || "").replace(/\s+/g, " ").trim();
+  if (!nom) return "";
+  const villeClean = (ville || "").trim();
+  const villeAffichee = villeClean ? capitaliserAvecAccents(villeClean) : "";
+
+  const ajouterVille = (base: string): string => {
+    if (villeClean && !normalize(base).includes(normalize(villeClean))) {
+      return `${base} (${villeAffichee})`;
+    }
+    return base;
+  };
+
+  // 1. AP-HP (Assistance Publique - Hopitaux de Paris).
+  if (/\b(GHU\s+APHP|AP[- ]?HP|APHP)\b/i.test(nom)) {
+    if (/COCHIN/i.test(nom)) return "Hôpital Cochin (AP-HP)";
+    const siteMatch = nom.match(/\bSITE\s+(.+)$/i);
+    if (siteMatch) {
+      return `Hôpital ${capitaliserAvecAccents(siteMatch[1])} (AP-HP)`;
+    }
+    const reste = nom
+      .replace(/\b(GHU\s+APHP|APHP|AP[- ]?HP)\b/gi, "")
+      .replace(/\bSORBONNE UNIVERSITE\b/gi, "")
+      .replace(/\bUNIVERSITE PARIS CITE\b/gi, "")
+      .replace(/\bCENTRE[- ]UNIVERSITE\b/gi, "")
+      .replace(/\b(USLD|SUN)\b/gi, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (reste.length >= 3) return `Hôpital ${capitaliserAvecAccents(reste)} (AP-HP)`;
+    return "AP-HP";
+  }
+
+  // 2. CHR / CHU (Centre Hospitalier Regional / Universitaire).
+  if (/CENTRE HOSPITALIER (REGIONAL )?UNIVERSITAIRE|C\.?H\.?R\.?U\.?|\bCHU\b/i.test(nom)) {
+    const reste = nom
+      .replace(/CENTRE HOSPITALIER REGIONAL UNIVERSITAIRE/gi, "")
+      .replace(/CENTRE HOSPITALIER UNIVERSITAIRE/gi, "")
+      .replace(/\bCHRU\b/gi, "")
+      .replace(/\bCHU\b/gi, "")
+      .replace(/^[\s,'-]+/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const corps = reste ? corpsApresPrefixe(reste) : "";
+    return ajouterVille(corps ? `CHU ${corps}` : "CHU");
+  }
+
+  // 3. CHR seul.
+  if (/CENTRE HOSPITALIER REGIONAL|\bCHR\b/i.test(nom)) {
+    const reste = nom
+      .replace(/CENTRE HOSPITALIER REGIONAL/gi, "")
+      .replace(/\bCHR\b/gi, "")
+      .replace(/^[\s,'-]+/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const corps = reste ? corpsApresPrefixe(reste) : "";
+    return ajouterVille(corps ? `CHR ${corps}` : "CHR");
+  }
+
+  // 4. Centre Hospitalier Specialise (psychiatrie).
+  if (/CENTRE HOSPITALIER SPECIALISE/i.test(nom)) {
+    const reste = nom
+      .replace(/CENTRE HOSPITALIER SPECIALISE/gi, "")
+      .replace(/^[\s,'-]+/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const corps = reste ? corpsApresPrefixe(reste) : "";
+    return ajouterVille(corps ? `CHS ${corps}` : "CHS");
+  }
+
+  // 5. Centre Hospitalier simple.
+  if (/^CENTRE HOSPITALIER\b/i.test(nom)) {
+    const reste = nom
+      .replace(/^CENTRE HOSPITALIER/i, "")
+      .replace(/^[\s,'-]+/, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    const corps = reste ? corpsApresPrefixe(reste) : "";
+    return corps ? `Centre Hospitalier ${corps}` : "Centre Hospitalier";
+  }
+
+  // 6. EHPAD : on conserve l'acronyme en majuscules.
+  if (/^EHPAD\b/i.test(nom)) {
+    const reste = nom.replace(/^EHPAD/i, "").replace(/^[\s,'-]+/, "").trim();
+    const corps = reste ? corpsApresPrefixe(reste) : "";
+    return corps ? `EHPAD ${corps}` : "EHPAD";
+  }
+
+  // 7. Defaut : capitalisation propre + accents connus.
+  return capitaliserAvecAccents(nom);
+}
+
+/**
+ * Genere une chaine d'alias de recherche (concatenee, separateur " | ").
+ * Contient : raison sociale, nom d'affichage, ville, leurs variantes sans
+ * accents, plus des alias semantiques ("chu caen", "ap-hp pitie", "pitie"...).
+ * Exploitee en ILIKE par /api/etablissements/search.
+ */
+export function genererSearchAliases(
+  raisonSociale: string,
+  nomAffichage: string,
+  ville: string | null
+): string {
+  const parts = new Set<string>();
+  const add = (v: string | null | undefined) => {
+    if (!v) return;
+    const t = v.toLowerCase().replace(/\s+/g, " ").trim();
+    if (!t) return;
+    parts.add(t);
+    parts.add(normalize(t));
+  };
+
+  add(raisonSociale);
+  add(nomAffichage);
+  add(ville);
+
+  const rsN = normalize(raisonSociale);
+  const villeN = ville ? normalize(ville) : "";
+
+  // Alias CHU / CHR bases sur la ville ("chu caen", "chu de caen", "chr caen").
+  if (/centre hospitalier (regional )?universitaire|chru|\bchu\b/.test(rsN) && villeN) {
+    add(`chu ${villeN}`);
+    add(`chu de ${villeN}`);
+  }
+  if (/centre hospitalier regional|\bchr\b/.test(rsN) && villeN) {
+    add(`chr ${villeN}`);
+  }
+
+  // Alias AP-HP par site ("ap-hp pitie salpetriere", "hopital cochin"...).
+  if (/aphp|ap[- ]?hp/.test(rsN)) {
+    const siteMatch = rsN.match(/\bsite\s+(.+)$/);
+    if (siteMatch) {
+      const site = siteMatch[1].trim();
+      add(`ap-hp ${site}`);
+      add(`aphp ${site}`);
+      add(`hopital ${site}`);
+    }
+  }
+
+  // Alias canoniques pour les sites emblematiques.
+  if (/pitie salpetriere/.test(rsN)) {
+    ["pitié", "pitie", "salpetriere", "salpêtrière", "pitié-salpêtrière", "pitie-salpetriere"].forEach(add);
+  }
+  if (/cochin/.test(rsN)) {
+    ["cochin", "hopital cochin", "hôpital cochin"].forEach(add);
+  }
+
+  return Array.from(parts).join(" | ");
+}
+
 /** Telecharge le CSV FINESS avec cache local 7 jours. */
 export async function telechargerCsv(forceRefresh = false): Promise<string> {
   if (!forceRefresh && fs.existsSync(CACHE_FILE)) {
@@ -250,17 +422,12 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
   const slugsVus = new Map<string, number>();
 
   for (const r of records) {
-    // On teste d'abord le code d'agregation (categagretab), puis, a defaut,
-    // le code categorie d'etablissement (categetab) plus fin. Le premier qui
-    // correspond a CATEGORIE_FINESS_MAP determine la categorie_simple.
-    const codeAgreg = (r.categagretab || r.categagr || "").trim();
+    // Filtrage STRICT par code categorie d'etablissement (categetab) : on ne
+    // conserve que les codes de la whitelist (7 familles transport CPAM). Tout
+    // autre code (pharmacie, labo, SSIAD, IME, ESAT, PMI, CMP, MECS...) est ignore.
     const codeCat = (r.categetab || r.categ || "").trim();
-    const codeMatch = CATEGORIE_FINESS_MAP[codeAgreg]
-      ? codeAgreg
-      : CATEGORIE_FINESS_MAP[codeCat]
-        ? codeCat
-        : "";
-    if (!codeMatch) continue;
+    if (!CATEGORIE_FINESS_MAP[codeCat]) continue;
+    const codeMatch = codeCat;
 
     const finessGeo = (r.nofiness || r.nofiness_et || "").trim();
     if (!finessGeo) continue;
@@ -302,15 +469,19 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
     const lat = parseFloat((r.coordy || r.latitude || "").replace(",", ".")) || null;
     const lng = parseFloat((r.coordx || r.longitude || "").replace(",", ".")) || null;
 
+    const nomAffichage = genererNomAffichage(raisonSociale, ville);
+    const searchAliases = genererSearchAliases(raisonSociale, nomAffichage, ville);
+
     retenus.push({
       finess_geo: finessGeo,
       finess_juri: (r.nofinessej || "").trim() || null,
       raison_sociale: raisonSociale,
       nom_court: genererNomCourt(raisonSociale),
+      nom_affichage: nomAffichage,
+      search_aliases: searchAliases,
       slug,
       categorie_finess_code: codeMatch,
       categorie_finess_libelle:
-        (r.libcategagretab || "").trim() ||
         (r.libcategetab || "").trim() ||
         CATEGORIE_FINESS_LIBELLE[codeMatch] ||
         null,

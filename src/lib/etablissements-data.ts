@@ -17,6 +17,7 @@ export type CategorieSimple =
   | "centre-oncologie"
   | "psychiatrie"
   | "rehabilitation"
+  | "maison-sante"
   | "autre";
 
 export type EtablissementPublic = {
@@ -49,8 +50,9 @@ export type TypeEtablissement = {
   description: string;
 };
 
-// Les 8 types navigables (psychiatrie incluse meme si l'import ne la remplit pas
-// encore : la page existe et restera vide tant que les codes psy ne sont pas mappes).
+// Types navigables. psychiatrie et centre-oncologie restent presents pour leurs
+// pages dediees meme si la whitelist FINESS stricte ne les alimente pas (codes psy
+// ranges sous "hopital", oncologie non mappee) : les pages existent et peuvent etre vides.
 export const TYPES_ETABLISSEMENT: TypeEtablissement[] = [
   {
     slug: "hopitaux",
@@ -106,7 +108,14 @@ export const TYPES_ETABLISSEMENT: TypeEtablissement[] = [
     categorie: "rehabilitation",
     label: "Centre de readaptation",
     labelPluriel: "Centres de readaptation",
-    description: "Etablissements de readaptation fonctionnelle et de soins de longue duree.",
+    description: "Etablissements de soins de suite et de readaptation (SSR).",
+  },
+  {
+    slug: "maisons-sante",
+    categorie: "maison-sante",
+    label: "Maison de sante",
+    labelPluriel: "Maisons de sante",
+    description: "Maisons de sante pluriprofessionnelles (L.6223-3).",
   },
 ];
 
