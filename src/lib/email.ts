@@ -21,6 +21,7 @@ export async function sendEmail(payload: {
   subject: string;
   html: string;
   reply_to?: string;
+  bcc?: string | string[];
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -43,6 +44,7 @@ export async function sendEmail(payload: {
         subject: payload.subject,
         html: payload.html,
         ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
+        ...(payload.bcc ? { bcc: payload.bcc } : {}),
       }),
     });
 
