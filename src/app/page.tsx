@@ -84,6 +84,7 @@ type HopitalPhare = {
   id: string;
   raison_sociale: string;
   nom_court: string | null;
+  nom_affichage: string | null;
   slug: string;
   ville: string | null;
   ville_slug: string | null;
@@ -98,7 +99,7 @@ async function getHopitauxPhares(): Promise<HopitalPhare[]> {
   );
   const { data } = await supabase
     .from("etablissements_sante_public")
-    .select("id, raison_sociale, nom_court, slug, ville, ville_slug, departement, capacite_lits")
+    .select("id, raison_sociale, nom_court, nom_affichage, slug, ville, ville_slug, departement, capacite_lits")
     .eq("categorie_simple", "hopital")
     .in("ville_slug", VILLES_HOPITAUX_PHARES)
     .order("capacite_lits", { ascending: false, nullsFirst: false })
@@ -283,7 +284,7 @@ export default async function HomePage() {
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {hopitauxPhares.map((h) => {
-                const nom = h.nom_court || h.raison_sociale;
+                const nom = h.nom_affichage || h.nom_court || h.raison_sociale;
                 return (
                   <div
                     key={h.id}

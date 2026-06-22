@@ -8,6 +8,7 @@ type Resultat = {
   id: string;
   slug: string;
   nom_court: string | null;
+  nom_affichage: string | null;
   raison_sociale: string;
   ville: string | null;
   departement: string | null;
@@ -157,7 +158,7 @@ export default function RechercheEtablissement({
                 >
                   <span className="min-w-0">
                     <span className="block font-semibold text-gray-900 truncate">
-                      {r.nom_court || r.raison_sociale}
+                      {r.nom_affichage || r.nom_court || r.raison_sociale}
                     </span>
                     <span className="flex items-center gap-1 text-xs text-gray-500">
                       <MapPin className="w-3 h-3" />

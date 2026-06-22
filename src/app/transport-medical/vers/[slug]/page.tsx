@@ -35,7 +35,7 @@ async function fetchAutresEtablissements(
   const supabase = getSupabaseEtab();
   const { data } = await supabase
     .from("etablissements_sante_public")
-    .select("id, raison_sociale, nom_court, slug, categorie_simple, ville")
+    .select("id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville")
     .eq("ville_slug", e.ville_slug)
     .neq("id", e.id)
     .order("capacite_lits", { ascending: false, nullsFirst: false })
@@ -51,7 +51,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const e = await getEtablissementBySlug(slug);
   if (!e) return { title: "Transport medical | RoullePro" };
-  const nom = e.nom_court || e.raison_sociale;
+  const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   return {
     title: `Taxi conventionne vers ${nom} — VSL et ambulance | RoullePro`,
     description: `Organisez votre transport medical conventionne vers ${nom}${
@@ -70,7 +70,7 @@ export default async function TransportVersPage({
   const e = await getEtablissementBySlug(slug);
   if (!e) notFound();
 
-  const nom = e.nom_court || e.raison_sociale;
+  const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   const autres = await fetchAutresEtablissements(e);
 
   const breadLd = buildBreadcrumbJsonLd([
@@ -192,7 +192,7 @@ export default async function TransportVersPage({
               </p>
               <ul className="space-y-3">
                 {autres.map((a) => {
-                  const nomAutre = a.nom_court || a.raison_sociale;
+                  const nomAutre = a.nom_affichage || a.nom_court || a.raison_sociale;
                   return (
                     <li
                       key={a.id}

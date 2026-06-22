@@ -140,7 +140,7 @@ export function getSupabaseEtab(): SupabaseClient {
 }
 
 const ETAB_SELECT =
-  "id, finess_geo, raison_sociale, nom_court, slug, categorie_simple, categorie_finess_libelle, adresse, code_postal, ville, ville_slug, departement, region, latitude, longitude, telephone, site_web, capacite_lits, source_updated_at";
+  "id, finess_geo, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, categorie_finess_libelle, adresse, code_postal, ville, ville_slug, departement, region, latitude, longitude, telephone, site_web, capacite_lits, source_updated_at";
 
 /** Recupere une fiche etablissement par slug (ou null si absente). */
 export async function getEtablissementBySlug(
