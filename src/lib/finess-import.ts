@@ -269,7 +269,20 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
     if (!raisonSociale) continue;
 
     const departement = (r.departement || "").trim() || null;
-    const ville = (r.commune || r.ligneacheminement || "").trim() || null;
+    // FINESS : la colonne "commune" contient le code commune INSEE local (3 chiffres),
+    // pas le nom de la ville. Le nom est dans ligneacheminement sous la forme
+    // "01440 VIRIAT" ou "06001 NICE CEDEX 1". On extrait la partie texte apres le CP.
+    const ligneAch = (r.ligneacheminement || "").trim();
+    const villeMatch = ligneAch.match(/^\d{5}\s+(.+?)(?:\s+CEDEX(?:\s+\d+)?)?$/i);
+    let ville: string | null = villeMatch ? villeMatch[1].trim() : null;
+    if (!ville && ligneAch) {
+      // Fallback : si pas de pattern "CP NOM", garder la ligne entiere sans CP.
+      ville = ligneAch.replace(/^\d{5}\s*/, "").trim() || null;
+    }
+    // Capitalisation propre : "NICE" -> "Nice", "SAINT-ETIENNE" -> "Saint-Etienne".
+    if (ville) {
+      ville = ville.toLowerCase().replace(/(^|[\s\-'])([a-zà-ÿ])/g, (_, sep, c) => sep + c.toUpperCase());
+    }
     const villeSlug = ville ? slugify(ville, { lower: true, strict: true, locale: "fr" }) : null;
 
     // Construction de l'adresse depuis les composants de voie FINESS.
