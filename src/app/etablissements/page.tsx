@@ -8,6 +8,7 @@ import {
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
 import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
+import { getEtablissementsCount } from "@/lib/stats";
 import { FinessFooter } from "./FinessFooter";
 
 export const revalidate = 86400;
@@ -34,9 +35,10 @@ async function fetchGrandsEtablissements(): Promise<EtablissementPublic[]> {
 }
 
 export default async function EtablissementsIndexPage() {
-  const [counts, grands] = await Promise.all([
+  const [counts, grands, totalEtablissements] = await Promise.all([
     countByCategorie(),
     fetchGrandsEtablissements(),
+    getEtablissementsCount(),
   ]);
 
   const breadLd = buildBreadcrumbJsonLd([
@@ -61,6 +63,11 @@ export default async function EtablissementsIndexPage() {
             etablissement et organisez votre transport medical conventionne (ambulance, VSL,
             taxi conventionne CPAM).
           </p>
+          {totalEtablissements > 0 && (
+            <p className="text-sm text-blue-200 mt-4">
+              {totalEtablissements.toLocaleString("fr-FR")} etablissements references (donnees FINESS).
+            </p>
+          )}
         </div>
       </section>
 

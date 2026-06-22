@@ -58,3 +58,19 @@ export const getProStats = unstable_cache(computeProStats, ["pro-stats"], {
   revalidate: 900,
   tags: ["pro-stats"],
 });
+
+// Nombre d'etablissements de sante actifs (referentiel FINESS). Comptage estime
+// (cf. note perf ci-dessus) et cache 1 h : la donnee ne bouge qu'au refresh mensuel.
+async function computeEtablissementsCount(): Promise<number> {
+  const supabase = supabaseClient();
+  const { count } = await supabase
+    .from("etablissements_sante_public")
+    .select("id", { count: "estimated", head: true });
+  return count ?? 0;
+}
+
+export const getEtablissementsCount = unstable_cache(
+  computeEtablissementsCount,
+  ["etablissements-count"],
+  { revalidate: 3600, tags: ["etablissements-count"] }
+);
