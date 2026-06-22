@@ -32,4 +32,4 @@ export const LIBELLE_TYPE_TRANSPORT: Record<TypeTransport, string> = {
 export const TYPES_TRANSPORT_DISPONIBLES: TypeTransport[] = ['taxi', 'vsl', 'ambulance'];
 
 /** Source-page du formulaire pour le tracking GA4 et analytics BDD. */
-export type SourcePage = 'home' | 'etablissement' | 'transport-vers' | 'fiche-pro' | 'preview_test';
+export type SourcePage = 'home' | 'etablissement' | 'fiche_etablissement' | 'transport-vers' | 'fiche-pro' | 'preview_test';
