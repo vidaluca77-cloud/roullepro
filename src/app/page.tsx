@@ -16,6 +16,7 @@ import {
   Heart,
 } from "lucide-react";
 import SearchHero from "@/components/sanitaire/SearchHero";
+import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getProStats } from "@/lib/stats";
 
@@ -148,6 +149,21 @@ export default async function HomePage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Formulaire de conversion : demande directe taxi/VSL/ambulance */}
+      <section className="max-w-6xl mx-auto px-4 -mt-10 sm:-mt-14 relative z-10">
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl p-6 sm:p-8 max-w-2xl mx-auto">
+          <div className="text-center mb-5">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+              Besoin d&apos;un transport maintenant ?
+            </h2>
+            <p className="text-sm text-gray-600">
+              Decrivez votre besoin, les transporteurs conventionnes proches de vous vous rappellent.
+            </p>
+          </div>
+          <DemandeTransportForm sourcePage="home" />
         </div>
       </section>
 
