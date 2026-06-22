@@ -37,7 +37,7 @@ async function fetchTop(categorie: string): Promise<EtablissementPublic[]> {
   const { data } = await supabase
     .from("etablissements_sante_public")
     .select(
-      "id, raison_sociale, nom_court, slug, categorie_simple, ville, ville_slug, departement, capacite_lits"
+      "id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville, ville_slug, departement, capacite_lits"
     )
     .eq("categorie_simple", categorie)
     .order("capacite_lits", { ascending: false, nullsFirst: false })
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const e = await getEtablissementBySlug(slug);
   if (!e) return {};
-  const nom = e.nom_court || e.raison_sociale;
+  const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   return {
     title: `${nom} — Taxi conventionne CPAM et VSL | RoullePro`,
     description: `${e.raison_sociale} a ${e.ville}. Adresse, telephone, transport medical conventionne CPAM (taxi, VSL, ambulance) vers cet etablissement.`,
@@ -101,7 +101,7 @@ export default async function EtablissementSlugPage({ params }: Props) {
         "@type": "ListItem",
         position: i + 1,
         url: `https://www.roullepro.com/etablissements/${e.slug}`,
-        name: e.nom_court || e.raison_sociale,
+        name: e.nom_affichage || e.nom_court || e.raison_sociale,
       })),
     };
 
@@ -171,7 +171,7 @@ export default async function EtablissementSlugPage({ params }: Props) {
                     <Building2 className="w-4 h-4 text-[#0066CC] mt-0.5 flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="font-medium text-gray-900 truncate">
-                        {e.nom_court || e.raison_sociale}
+                        {e.nom_affichage || e.nom_court || e.raison_sociale}
                       </div>
                       <div className="text-xs text-gray-500 flex items-center gap-1">
                         <MapPin className="w-3 h-3" />

@@ -45,7 +45,7 @@ async function fetchEtablissements(
   const { data } = await supabase
     .from("etablissements_sante_public")
     .select(
-      "id, raison_sociale, nom_court, slug, categorie_simple, adresse, code_postal, ville, ville_slug, departement, capacite_lits"
+      "id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, adresse, code_postal, ville, ville_slug, departement, capacite_lits"
     )
     .eq("categorie_simple", categorie)
     .eq("ville_slug", villeSlug)
@@ -95,7 +95,7 @@ export default async function TypeVillePage({ params }: Props) {
       "@type": "ListItem",
       position: i + 1,
       url: `https://www.roullepro.com/etablissements/${e.slug}`,
-      name: e.nom_court || e.raison_sociale,
+      name: e.nom_affichage || e.nom_court || e.raison_sociale,
     })),
   };
 
@@ -136,7 +136,7 @@ export default async function TypeVillePage({ params }: Props) {
       <section className="max-w-6xl mx-auto px-4 py-10">
         <div className="grid md:grid-cols-2 gap-3">
           {etablissements.map((e) => {
-            const nomEtab = e.nom_court || e.raison_sociale;
+            const nomEtab = e.nom_affichage || e.nom_court || e.raison_sociale;
             return (
               <div
                 key={e.id}

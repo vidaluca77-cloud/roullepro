@@ -27,7 +27,7 @@ async function fetchGrandsEtablissements(): Promise<EtablissementPublic[]> {
   const { data } = await supabase
     .from("etablissements_sante_public")
     .select(
-      "id, raison_sociale, nom_court, slug, categorie_simple, ville, departement, capacite_lits"
+      "id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville, departement, capacite_lits"
     )
     .in("categorie_simple", ["hopital", "clinique"])
     .order("capacite_lits", { ascending: false, nullsFirst: false })
@@ -115,7 +115,7 @@ export default async function EtablissementsIndexPage() {
               >
                 <div className="min-w-0">
                   <div className="font-medium text-gray-900 truncate">
-                    {e.nom_court || e.raison_sociale}
+                    {e.nom_affichage || e.nom_court || e.raison_sociale}
                   </div>
                   <div className="text-xs text-gray-500 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />

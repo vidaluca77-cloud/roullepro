@@ -25,6 +25,8 @@ export type EtablissementPublic = {
   finess_geo: string;
   raison_sociale: string;
   nom_court: string | null;
+  nom_affichage: string | null;
+  search_aliases: string | null;
   slug: string;
   categorie_simple: CategorieSimple;
   categorie_finess_libelle: string | null;

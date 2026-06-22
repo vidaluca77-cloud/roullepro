@@ -34,7 +34,7 @@ async function fetchSimilaires(
   const supabase = getSupabaseEtab();
   const { data } = await supabase
     .from("etablissements_sante_public")
-    .select("id, raison_sociale, nom_court, slug, categorie_simple, ville")
+    .select("id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville")
     .eq("ville_slug", e.ville_slug)
     .neq("id", e.id)
     .limit(6);
@@ -49,7 +49,7 @@ async function fetchMemeCategorieVille(
   const supabase = getSupabaseEtab();
   const { data } = await supabase
     .from("etablissements_sante_public")
-    .select("id, raison_sociale, nom_court, slug, categorie_simple, ville")
+    .select("id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville")
     .eq("ville_slug", e.ville_slug)
     .eq("categorie_simple", e.categorie_simple)
     .neq("id", e.id)
@@ -59,7 +59,7 @@ async function fetchMemeCategorieVille(
 
 export default async function FicheEtablissement({ e }: { e: EtablissementPublic }) {
   const t = getTypeByCategorie(e.categorie_simple);
-  const nom = e.nom_court || e.raison_sociale;
+  const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   const [similaires, memeCategorieVille] = await Promise.all([
     fetchSimilaires(e),
     fetchMemeCategorieVille(e),
@@ -345,7 +345,7 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
                     href={`/etablissements/${s.slug}`}
                     className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#0066CC] py-1.5 border-b border-gray-100 last:border-0"
                   >
-                    {s.nom_court || s.raison_sociale}
+                    {s.nom_affichage || s.nom_court || s.raison_sociale}
                     <ChevronRight className="w-4 h-4 flex-shrink-0" />
                   </Link>
                 ))}
@@ -385,7 +385,7 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
                     href={`/etablissements/${s.slug}`}
                     className="flex items-center justify-between gap-3 text-sm text-gray-700 hover:text-[#0066CC] py-1.5 border-b border-gray-100 last:border-0"
                   >
-                    {s.nom_court || s.raison_sociale}
+                    {s.nom_affichage || s.nom_court || s.raison_sociale}
                     <ChevronRight className="w-4 h-4 flex-shrink-0" />
                   </Link>
                 ))}
