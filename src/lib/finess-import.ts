@@ -221,10 +221,11 @@ export function parserEtFiltrer(csv: string, sourceDate: string): FinessRow[] {
 
     const codePostal = (r.ligneacheminement || "").match(/\b(\d{5})\b/)?.[1] || null;
 
-    let slug = genererSlug(raisonSociale, departement);
-    const collision = slugsVus.get(slug) || 0;
-    if (collision > 0) slug = `${slug}-${collision + 1}`;
-    slugsVus.set(slug, collision + 1);
+    const slugBase = genererSlug(raisonSociale, departement);
+    const collision = slugsVus.get(slugBase) || 0;
+    let slug = slugBase;
+    if (collision > 0) slug = `${slugBase}-${collision + 1}`;
+    slugsVus.set(slugBase, collision + 1);
 
     const lat = parseFloat((r.coordy || r.latitude || "").replace(",", ".")) || null;
     const lng = parseFloat((r.coordx || r.longitude || "").replace(",", ".")) || null;
