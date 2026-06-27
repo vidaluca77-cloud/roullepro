@@ -155,6 +155,35 @@ export async function getEtablissementBySlug(
   return (data as EtablissementPublic | null) ?? null;
 }
 
+// Champs minimaux pour les cartes/listes de maillage (hub + encarts blog).
+const ETAB_CARD_SELECT =
+  "id, raison_sociale, nom_court, nom_affichage, slug, categorie_simple, ville, ville_slug, departement, capacite_lits";
+
+/**
+ * Recupere les plus gros etablissements (par capacite de lits) pour une ou
+ * plusieurs categories. Sert au hub /etablissements et aux encarts de maillage
+ * interne : les slugs proviennent toujours de la BDD, jamais codes en dur.
+ */
+export async function fetchTopEtablissements(
+  categories: CategorieSimple[],
+  limit: number
+): Promise<EtablissementPublic[]> {
+  const supabase = getSupabaseEtab();
+  const { data } = await supabase
+    .from("etablissements_sante_public")
+    .select(ETAB_CARD_SELECT)
+    .in("categorie_simple", categories)
+    .order("capacite_lits", { ascending: false, nullsFirst: false })
+    .order("ville", { ascending: true })
+    .limit(limit);
+  return (data as EtablissementPublic[]) ?? [];
+}
+
+/** Nom d'affichage prioritaire d'une fiche (affichage > court > raison sociale). */
+export function nomEtablissement(e: EtablissementPublic): string {
+  return e.nom_affichage || e.nom_court || e.raison_sociale;
+}
+
 /** Compte les etablissements actifs par categorie_simple. */
 export async function countByCategorie(): Promise<Record<string, number>> {
   const supabase = getSupabaseEtab();

@@ -8,6 +8,7 @@ import CtaUpgrade from "../_components/CtaUpgrade";
 import FaqAccordion, { type FaqItem } from "../_components/FaqAccordion";
 import JsonLd from "../_components/JsonLd";
 import { getAlertsBySlug } from "../_lib/fetch-alerts";
+import MaillageTransporteurs from "@/components/etablissements/MaillageTransporteurs";
 
 export const revalidate = 3600;
 
@@ -277,6 +278,8 @@ export default async function HubPage() {
           <h2>Questions fréquentes</h2>
           <FaqAccordion items={FAQ} />
         </section>
+
+        <MaillageTransporteurs />
       </GuideLayout>
     </>
   );
