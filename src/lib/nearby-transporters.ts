@@ -94,10 +94,37 @@ function sortNearby(a: NearbyTransporter, b: NearbyTransporter): number {
   return a.distance_km - b.distance_km;
 }
 
+function mapRowToTransporter(
+  r: Row,
+  refLat: number | null,
+  refLng: number | null
+): NearbyTransporter {
+  const priorite = computePriorite(r.plan, r.claimed);
+  const hasGeo = r.latitude != null && r.longitude != null;
+  const hasRef = refLat != null && refLng != null;
+  const distance_km =
+    hasGeo && hasRef
+      ? Math.round(haversineKm(refLat, refLng, r.latitude as number, r.longitude as number) * 10) / 10
+      : 0;
+  return {
+    slug: r.slug as string,
+    nom: r.nom_commercial || r.raison_sociale,
+    ville: r.ville ?? "",
+    ville_slug: r.ville_slug as string,
+    categorie: r.categorie,
+    type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
+    distance_km,
+    priorite,
+    verifie: priorite < 2,
+  };
+}
+
 async function queryNearby(
   latitude: number,
   longitude: number,
-  limit: number
+  limit: number,
+  departement: string | null,
+  villeSlug: string | null
 ): Promise<NearbyTransporter[]> {
   // Bounding box ~30 km (1 deg lat ~= 111 km, 1 deg lng ~= 73 km a 45 deg N).
   const RAYON_KM = 30;
@@ -105,7 +132,9 @@ async function queryNearby(
   const dLng = RAYON_KM / 73;
 
   const supabase = getSupabaseEtab();
-  const { data } = await supabase
+
+  // Query A : pros dans la bounding box geographique (avec geoloc).
+  const queryGeo = supabase
     .from("pros_sanitaire")
     .select(SELECT_COLUMNS)
     .eq("actif", true)
@@ -120,23 +149,53 @@ async function queryNearby(
     .lte("longitude", longitude + dLng)
     .limit(1000);
 
-  const rows = (data ?? []) as Row[];
-  return rows
-    .filter((r) => r.slug && r.ville_slug && r.latitude != null && r.longitude != null)
-    .map<NearbyTransporter>((r) => {
-      const priorite = computePriorite(r.plan, r.claimed);
-      return {
-        slug: r.slug as string,
-        nom: r.nom_commercial || r.raison_sociale,
-        ville: r.ville ?? "",
-        ville_slug: r.ville_slug as string,
-        categorie: r.categorie,
-        type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
-        distance_km: Math.round(haversineKm(latitude, longitude, r.latitude as number, r.longitude as number) * 10) / 10,
-        priorite,
-        verifie: priorite < 2,
-      };
-    })
+  // Query B : TOUS les pros payants OU claimed du departement (meme sans geoloc).
+  // Garantit que les fiches reclamees / payantes du dept remontent toujours,
+  // meme si leur geoloc est absente ou hors bounding box 30 km.
+  const queryPrioritaires = departement
+    ? supabase
+        .from("pros_sanitaire")
+        .select(SELECT_COLUMNS)
+        .eq("actif", true)
+        .eq("suspendu", false)
+        .or(PUBLIC_TAXI_FILTER)
+        .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+        .eq("departement", departement)
+        .or("plan.neq.gratuit,claimed.eq.true")
+        .limit(200)
+    : null;
+
+  // Query C : pros payants OU claimed dans la meme ville (boost local).
+  const queryVille = villeSlug
+    ? supabase
+        .from("pros_sanitaire")
+        .select(SELECT_COLUMNS)
+        .eq("actif", true)
+        .eq("suspendu", false)
+        .or(PUBLIC_TAXI_FILTER)
+        .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+        .eq("ville_slug", villeSlug)
+        .limit(50)
+    : null;
+
+  const [geoRes, prioRes, villeRes] = await Promise.all([
+    queryGeo,
+    queryPrioritaires ?? Promise.resolve({ data: [] }),
+    queryVille ?? Promise.resolve({ data: [] }),
+  ]);
+
+  const rowsGeo = ((geoRes.data ?? []) as Row[]).filter((r) => r.slug && r.ville_slug);
+  const rowsPrio = ((prioRes.data ?? []) as Row[]).filter((r) => r.slug && r.ville_slug);
+  const rowsVille = ((villeRes.data ?? []) as Row[]).filter((r) => r.slug && r.ville_slug);
+
+  // Deduplication par slug (un pro peut etre dans plusieurs queries).
+  const dedup = new Map<string, Row>();
+  for (const r of [...rowsPrio, ...rowsVille, ...rowsGeo]) {
+    if (!dedup.has(r.slug as string)) dedup.set(r.slug as string, r);
+  }
+
+  return Array.from(dedup.values())
+    .map((r) => mapRowToTransporter(r, latitude, longitude))
     .sort(sortNearby)
     .slice(0, limit);
 }
@@ -194,7 +253,7 @@ async function queryFallbackVilleDept(
 /**
  * Retourne les transporteurs conventionnes proches d'un etablissement, tries
  * par priorisation business (payants > claimed > base) puis distance croissante.
- * Mise en cache 1 jour (cle nearby-transporters-v3:{slug}).
+ * Mise en cache 1 jour (cle nearby-transporters-v4:{slug}).
  *
  * Fallback : si l'etablissement n'a pas de geoloc (cas frequent sur le referentiel
  * FINESS importe sans lat/lng), on liste les transporteurs par ville_slug puis
@@ -212,12 +271,12 @@ export async function getNearbyTransporters(
   const load = unstable_cache(
     async () => {
       if (latitude != null && longitude != null) {
-        const nearby = await queryNearby(latitude, longitude, limit);
+        const nearby = await queryNearby(latitude, longitude, limit, departement, villeSlug);
         if (nearby.length > 0) return nearby;
       }
       return queryFallbackVilleDept(villeSlug, departement, limit);
     },
-    ["nearby-transporters-v3", etablissementSlug, String(limit)],
+    ["nearby-transporters-v4", etablissementSlug, String(limit)],
     { revalidate: 86400, tags: [`nearby-transporters:${etablissementSlug}`] }
   );
   return load();
