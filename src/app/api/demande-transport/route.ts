@@ -204,6 +204,8 @@ export async function POST(req: Request) {
           bonTransportMedical,
           sourceForm,
           typeTransport,
+          demandeId: demande.id,
+          proId: row.pro_id,
         }).catch(() => null);
         await supabase
           .from("demandes_transport_pros")

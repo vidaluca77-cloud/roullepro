@@ -11,6 +11,8 @@
  * Plus robuste sur Netlify Functions.
  */
 
+import { buildAccepterDirectUrl } from '@/lib/demande-accept-token';
+
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || 'RoullePro <onboarding@resend.dev>';
 
@@ -1269,9 +1271,15 @@ export async function sendDemandeTransportPro(p: {
   bonTransportMedical?: boolean;
   sourceForm?: string | null;
   typeTransport?: string | null;
+  demandeId?: string | null;
+  proId?: string | null;
 }): Promise<{ id: string | null } | null> {
   const dateStr = formatDateSouhaitee(p.dateSouhaitee);
   const dashboardUrl = `${APP_URL_DV}/dashboard/demandes`;
+  const accepterUrl =
+    p.demandeId && p.proId
+      ? buildAccepterDirectUrl(APP_URL_DV, p.demandeId, p.proId)
+      : null;
   const tauxStr = p.tauxPriseEnCharge
     ? p.tauxPriseEnCharge === 'autre'
       ? `Autre${p.tauxPriseEnChargeAutre ? ` (${escapeHtml(p.tauxPriseEnChargeAutre)} %)` : ''}`
@@ -1303,9 +1311,10 @@ export async function sendDemandeTransportPro(p: {
         </div>
         ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">
+          ${accepterUrl ? `${emailButton(accepterUrl, 'Accepter cette course', '#10b981')}<br><br>` : ''}
           <a href="${dashboardUrl}" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir + accepter</a>
         </div>
-        <p style="font-size:13px;color:#6b7280">Les coordonnees du demandeur vous seront communiquees des que vous aurez accepte la course.</p>
+        <p style="font-size:13px;color:#6b7280">${accepterUrl ? 'Le bouton « Accepter cette course » te permet de prendre la course en un clic (lien valable 48h). ' : ''}Les coordonnees du demandeur te seront communiquees des que tu auras accepte la course.</p>
         ${emailFooter()}
       </div>
     </div>
