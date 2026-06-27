@@ -25,6 +25,7 @@ import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
 import NearbyCities from "@/components/NearbyCities";
+import EtablissementsVille from "@/components/etablissements/EtablissementsVille";
 
 export const revalidate = 3600;
 
@@ -444,6 +445,8 @@ export default async function VillePage({ params, searchParams }: Props) {
       {villesVoisines.length === 0 && (
         <NearbyCities villeSlug={ville} nomVille={nomVille} />
       )}
+
+      <EtablissementsVille villeSlug={ville} nomVille={nomVille} />
 
       <section className="bg-gray-50 py-10 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 text-center">
