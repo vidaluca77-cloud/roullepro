@@ -15,8 +15,26 @@ export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.co
 // Supabase limite les reponses a 1000 lignes par defaut.
 export const CHUNK_SIZE = 1000;
 
-// 59 611 fiches actives / 1000 + grosse marge = 80 chunks (post Sprint 2.5 import SIRENE)
+// Borne haute de securite pour la pre-generation statique (generateStaticParams).
+// Le nombre REEL de chunks declares dans l'index est calcule dynamiquement par
+// countSanitaireFichesChunks() pour eviter de declarer des shards vides (mauvais SEO).
 export const SANITAIRE_FICHES_CHUNKS = 80;
+
+/**
+ * Nombre reel de chunks de fiches sanitaire a declarer dans l'index sitemap.
+ * Base sur le compte exact des fiches actives (et non sur une borne fixe), afin
+ * de ne jamais declarer de shard vide. Filtre qualite applique cote builder :
+ * un chunk peut contenir moins de 1000 URLs mais jamais zero tant qu'il existe
+ * des lignes brutes dans la tranche.
+ */
+export async function countSanitaireFichesChunks(): Promise<number> {
+  const supabase = getSupabase();
+  const { count } = await supabase
+    .from("pros_sanitaire_public")
+    .select("id", { count: "exact", head: true })
+    .eq("actif", true);
+  return Math.max(1, Math.ceil((count || 0) / CHUNK_SIZE));
+}
 
 type SitemapEntry = {
   url: string;
@@ -227,27 +245,47 @@ export async function countEtablissementsChunks(): Promise<number> {
   return Math.max(1, Math.ceil((count || 0) / ETAB_CHUNK_SIZE));
 }
 
+type EtabRow = { slug: string; source_updated_at: string | null };
+
+/**
+ * Lit un chunk complet d'etablissements actifs (jusqu'a ETAB_CHUNK_SIZE lignes).
+ * Supabase plafonne chaque reponse a 1000 lignes par defaut : on pagine donc en
+ * interne par lots de CHUNK_SIZE jusqu'a remplir la fenetre du chunk, sinon les
+ * shards ne contiendraient que 1000 URLs au lieu de 10 000.
+ */
+async function fetchEtablissementsChunk(chunkIndex: number): Promise<EtabRow[]> {
+  const supabase = getSupabase();
+  const windowStart = chunkIndex * ETAB_CHUNK_SIZE;
+  const windowEnd = windowStart + ETAB_CHUNK_SIZE; // exclusif
+  const rows: EtabRow[] = [];
+
+  for (let from = windowStart; from < windowEnd; from += CHUNK_SIZE) {
+    const to = Math.min(from + CHUNK_SIZE, windowEnd) - 1;
+    const { data } = await supabase
+      .from("etablissements_sante_public")
+      .select("slug, source_updated_at")
+      .order("slug", { ascending: true })
+      .range(from, to);
+    if (!data || data.length === 0) break;
+    rows.push(...(data as EtabRow[]));
+    if (data.length < CHUNK_SIZE) break; // plus de lignes disponibles
+  }
+
+  return rows.filter((e) => e.slug);
+}
+
 /**
  * Fiches etablissements FINESS, paginees par 10 000.
  * /etablissements/[slug]
  */
 export async function buildEtablissementsEntries(chunkIndex = 0): Promise<SitemapEntry[]> {
-  const supabase = getSupabase();
-  const offset = chunkIndex * ETAB_CHUNK_SIZE;
-  const { data } = await supabase
-    .from("etablissements_sante_public")
-    .select("slug, source_updated_at")
-    .order("slug", { ascending: true })
-    .range(offset, offset + ETAB_CHUNK_SIZE - 1);
-  if (!data) return [];
-  return (data as { slug: string; source_updated_at: string | null }[])
-    .filter((e) => e.slug)
-    .map((e) => ({
-      url: `${BASE_URL}/etablissements/${e.slug}`,
-      lastmod: e.source_updated_at || undefined,
-      changefreq: "monthly" as const,
-      priority: 0.6,
-    }));
+  const rows = await fetchEtablissementsChunk(chunkIndex);
+  return rows.map((e) => ({
+    url: `${BASE_URL}/etablissements/${e.slug}`,
+    lastmod: e.source_updated_at || undefined,
+    changefreq: "monthly" as const,
+    priority: 0.8,
+  }));
 }
 
 /**
@@ -255,22 +293,13 @@ export async function buildEtablissementsEntries(chunkIndex = 0): Promise<Sitema
  * /transport-medical/vers/[slug]
  */
 export async function buildTransportVersEntries(chunkIndex = 0): Promise<SitemapEntry[]> {
-  const supabase = getSupabase();
-  const offset = chunkIndex * ETAB_CHUNK_SIZE;
-  const { data } = await supabase
-    .from("etablissements_sante_public")
-    .select("slug, source_updated_at")
-    .order("slug", { ascending: true })
-    .range(offset, offset + ETAB_CHUNK_SIZE - 1);
-  if (!data) return [];
-  return (data as { slug: string; source_updated_at: string | null }[])
-    .filter((e) => e.slug)
-    .map((e) => ({
-      url: `${BASE_URL}/transport-medical/vers/${e.slug}`,
-      lastmod: e.source_updated_at || undefined,
-      changefreq: "weekly" as const,
-      priority: 0.7,
-    }));
+  const rows = await fetchEtablissementsChunk(chunkIndex);
+  return rows.map((e) => ({
+    url: `${BASE_URL}/transport-medical/vers/${e.slug}`,
+    lastmod: e.source_updated_at || undefined,
+    changefreq: "weekly" as const,
+    priority: 0.7,
+  }));
 }
 
 /** Guides SEO transport sanitaire (Phase 5). */
