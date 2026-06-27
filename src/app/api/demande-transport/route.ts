@@ -14,6 +14,7 @@ import {
   sendDemandeTransportFallback,
   sendAdminNouvelleDemande,
 } from "@/lib/email";
+import { geocodeAdresse } from "@/lib/geocode-adresse";
 
 const getAdminClient = () =>
   createClient(
@@ -62,6 +63,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+
+    // Lieu de depart obligatoire : sans ca on ne peut pas dispatcher la demande
+    // au bon pro (le trigger fait p.departement = NEW.departement_cible).
+    const lieuDepartRaw = (body.lieu_depart ?? "").toString().trim();
+    const lieuArriveeRaw = (body.lieu_arrivee ?? "").toString().trim();
+    if (!lieuDepartRaw) {
+      return NextResponse.json(
+        { error: "Le lieu de depart est obligatoire" },
+        { status: 400 }
+      );
+    }
     if (email) {
       const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRe.test(email)) {
@@ -105,6 +117,10 @@ export async function POST(req: Request) {
     const proIdCible = body.pro_id_cible || null;
     let departementCible: string | null = body.departement_cible || null;
     let villeCible: string | null = body.ville_cible || null;
+    const lieuDepartLat =
+      typeof body.lieu_depart_lat === "number" ? body.lieu_depart_lat : null;
+    const lieuDepartLng =
+      typeof body.lieu_depart_lng === "number" ? body.lieu_depart_lng : null;
 
     // Si on a un etablissement, on recupere dept/ville pour le fan-out departemental.
     if (etablissementId) {
@@ -119,6 +135,41 @@ export async function POST(req: Request) {
       }
     }
 
+    // Si pro_id_cible est fourni (formulaire fiche pro), on recupere son
+    // departement comme cible par defaut.
+    if (!departementCible && proIdCible) {
+      const { data: pro } = await supabase
+        .from("pros_sanitaire")
+        .select("departement, ville")
+        .eq("id", proIdCible)
+        .maybeSingle();
+      if (pro) {
+        departementCible = pro.departement || null;
+        villeCible = villeCible || pro.ville || null;
+      }
+    }
+
+    // Fallback : si le front n'a pas pu deriver le departement via Google Places
+    // (JS desactive, autocomplete pas declenche, etc.), on geocode le lieu de
+    // depart cote API via api-adresse.data.gouv.fr (gratuit, sans cle).
+    if (!departementCible && lieuDepartRaw) {
+      const geo = await geocodeAdresse(lieuDepartRaw);
+      if (geo) {
+        departementCible = geo.departement;
+        villeCible = villeCible || geo.ville;
+      }
+    }
+
+    if (!departementCible) {
+      return NextResponse.json(
+        {
+          error:
+            "Lieu de depart introuvable. Merci de selectionner une adresse dans la liste de suggestions.",
+        },
+        { status: 400 }
+      );
+    }
+
     // Insertion de la demande. Le trigger dispatch_demande_transport() fait le
     // fan-out RoullePro (demandes_transport_pros) + TCP (tcp.reservations).
     const { data: demande, error: insertErr } = await supabase
@@ -129,8 +180,10 @@ export async function POST(req: Request) {
         telephone,
         email: email || null,
         date_souhaitee: body.date_souhaitee || null,
-        lieu_depart: body.lieu_depart || null,
-        lieu_arrivee: body.lieu_arrivee || null,
+        lieu_depart: lieuDepartRaw,
+        lieu_arrivee: lieuArriveeRaw || null,
+        lieu_depart_lat: lieuDepartLat,
+        lieu_depart_lng: lieuDepartLng,
         aller_retour: !!body.aller_retour,
         mobilite: body.mobilite || null,
         precisions: body.precisions || null,
@@ -194,8 +247,8 @@ export async function POST(req: Request) {
           to,
           proNom: pro.nom_commercial || pro.raison_sociale || "Professionnel",
           typeLibelle: libelle,
-          lieuDepart: body.lieu_depart || null,
-          lieuArrivee: body.lieu_arrivee || villeCible || null,
+          lieuDepart: lieuDepartRaw,
+          lieuArrivee: lieuArriveeRaw || villeCible || null,
           dateSouhaitee: body.date_souhaitee || null,
           allerRetour: !!body.aller_retour,
           mobilite: body.mobilite || null,
@@ -232,8 +285,8 @@ export async function POST(req: Request) {
           email: email || null,
           departement: departementCible,
           ville: villeCible,
-          lieuDepart: body.lieu_depart || null,
-          lieuArrivee: body.lieu_arrivee || null,
+          lieuDepart: lieuDepartRaw,
+          lieuArrivee: lieuArriveeRaw || null,
           dateSouhaitee: body.date_souhaitee || null,
           precisions: body.precisions || null,
           demandeId: demande.id,
@@ -261,8 +314,8 @@ export async function POST(req: Request) {
         email: email || null,
         type_transport: typeTransport,
         date_souhaitee: body.date_souhaitee || null,
-        lieu_depart: body.lieu_depart || null,
-        lieu_arrivee: body.lieu_arrivee || null,
+        lieu_depart: lieuDepartRaw,
+        lieu_arrivee: lieuArriveeRaw || null,
         departement_cible: departementCible,
         ville_cible: villeCible,
         precisions: body.precisions || null,
