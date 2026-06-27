@@ -288,6 +288,14 @@ export default function Navbar() {
                           Admin réclamations sanitaire
                         </Link>
                         <Link
+                          href="/admin/transport-medical/demandes"
+                          className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Shield className="h-4 w-4 mr-2" />
+                          Demandes Transport
+                        </Link>
+                        <Link
                           href="/admin/partenaires"
                           className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold"
                           onClick={() => setUserMenuOpen(false)}
@@ -428,6 +436,9 @@ export default function Navbar() {
                     </Link>
                     <Link href="/admin/sanitaire/reclamations" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
                       <Shield className="h-4 w-4" /> Admin réclamations sanitaire
+                    </Link>
+                    <Link href="/admin/transport-medical/demandes" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                      <Shield className="h-4 w-4" /> Demandes Transport
                     </Link>
                     <Link href="/admin/partenaires" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
                       <Shield className="h-4 w-4" /> Admin partenaires
