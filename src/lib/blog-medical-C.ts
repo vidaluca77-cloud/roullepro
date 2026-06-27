@@ -5,10 +5,10 @@ export const ARTICLES: BlogPost[] = [
   // ============================================================
   {
     slug: "transport-medical-ald-droits",
-    title: "Transport médical ALD 2026 : droits, prise en charge 100 % et démarches",
+    title: "Transport médical ALD : vos droits — 100 % remboursé ?",
     h1: "Transport médical pour patients en ALD — Droits et prise en charge à 100 % en 2026",
     excerpt:
-      "Patients ALD : transport médical pris en charge à 100 % par la CPAM. Conditions, prescription, dispense d'avance des frais, contestation refus.",
+      "Transport médical en ALD : remboursement 100 %, conditions, démarches, taxi conventionné agréé. Le guide complet pour patients en affection longue durée 2026.",
     category: "Transport sanitaire",
     date: "2026-06-14",
     readingTime: 13,

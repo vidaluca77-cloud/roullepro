@@ -5,10 +5,10 @@ export const ARTICLES: BlogPost[] = [
   // ============================================================
   {
     slug: "remboursement-transport-medical",
-    title: "Remboursement transport médical CPAM 2026 : tarifs, conditions, démarches",
+    title: "Remboursement transport médical 2026 — Guide complet CPAM",
     h1: "Remboursement transport médical CPAM 2026 — Guide complet des taux, conditions et démarches",
     excerpt:
-      "Découvrez les conditions de remboursement transport médical par la CPAM en 2026 : taux ALD 100 %, tarif convention, prescription, démarches simplifiées.",
+      "Comment se faire rembourser un transport médical par la CPAM en 2026 ? Conditions, bon de transport, taxi/VSL/ambulance conventionnés. Guide complet et à jour.",
     category: "Transport sanitaire",
     date: "2026-06-14",
     readingTime: 13,

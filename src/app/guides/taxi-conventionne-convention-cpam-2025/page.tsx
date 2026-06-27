@@ -13,17 +13,18 @@ export const revalidate = 3600;
 
 const SLUG = "taxi-conventionne-convention-cpam-2025";
 const TITLE = "Taxi conventionné CPAM : nouvelle convention 2025-2027";
+const META_TITLE = "Taxi conventionné CPAM 2025 — Mise à jour 2026 incluse";
 const DESCRIPTION =
-  "Convention taxi CPAM 2025, nouvelle tarification, transport partagé obligatoire, SEFi 2027 : le guide complet pour les taxis conventionnés transport sanitaire.";
+  "Tout sur le taxi conventionné CPAM : convention 2025-2026, tarifs, remboursement, comment trouver un agréé. Guide actualisé avec les changements 2026.";
 const PUBLISHED_AT = "2026-05-18T08:00:00Z";
 const UPDATED_AT = "2026-05-18T08:00:00Z";
 
 export const metadata: Metadata = {
-  title: TITLE,
+  title: META_TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `/guides/${SLUG}` },
   openGraph: {
-    title: TITLE,
+    title: META_TITLE,
     description: DESCRIPTION,
     type: "article",
     publishedTime: PUBLISHED_AT,
