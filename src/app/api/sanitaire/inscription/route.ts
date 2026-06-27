@@ -441,6 +441,39 @@ export async function POST(req: Request) {
       throw new Error(`Erreur insertion fiche : ${proError?.message}`);
     }
 
+    // 11bis-zero. Geocodage best-effort (API Adresse FR + SIRENE fallback).
+    // Permet au pro de remonter immediatement dans les listes "transporteurs
+    // proches" sur les fiches etablissement. Non bloquant.
+    try {
+      const { geocodePro } = await import("@/lib/geocode-pro");
+      const geo = await geocodePro({
+        adresse: data.adresse,
+        code_postal: data.code_postal,
+        ville: data.ville,
+        siret: data.siret,
+      });
+      if (geo) {
+        await supabaseAdmin
+          .from("pros_sanitaire")
+          .update({ latitude: geo.latitude, longitude: geo.longitude })
+          .eq("id", proData.id);
+        // Invalide les listes "proches" du departement pour que le nouveau pro
+        // apparaisse immediatement sans attendre les 24h de cache.
+        try {
+          const { revalidateTag } = await import("next/cache");
+          revalidateTag(`nearby-transporters-dept:${departement}`);
+        } catch {}
+        console.log("[inscription] geocode OK:", { slug, source: geo.source, score: geo.score });
+      } else {
+        console.log("[inscription] geocode no result:", { slug, siret: data.siret });
+      }
+    } catch (err) {
+      console.warn(
+        "[inscription] geocode error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     // 11bis. Auto-inscription newsletter veille reglementaire (Phase 2a, opt-in)
     if (data.newsletter_optin !== false) {
       try {

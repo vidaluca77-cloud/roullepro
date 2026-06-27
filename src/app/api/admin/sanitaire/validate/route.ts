@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public, source, free_trial_ends_at")
+      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public, source, free_trial_ends_at, departement")
       .eq("id", pro_id)
       .maybeSingle();
     if (!pro) return NextResponse.json({ error: "Fiche introuvable" }, { status: 404 });
@@ -72,6 +72,14 @@ export async function POST(req: Request) {
         .update(updatePayload)
         .eq("id", pro_id);
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+      // Invalide le cache "transporteurs proches" du departement pour que la
+      // fiche nouvellement verifiee remonte immediatement.
+      try {
+        const { revalidateTag } = await import("next/cache");
+        const dept = (pro as typeof pro & { departement: string | null }).departement;
+        if (dept) revalidateTag(`nearby-transporters-dept:${dept}`);
+      } catch {}
 
       // Promouvoir le claimer en rôle 'pro' (sans rétrograder un admin)
       if (pro.claimed_by) {

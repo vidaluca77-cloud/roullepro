@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
       .select(
-        "id, raison_sociale, nom_commercial, ville, ville_slug, slug, categorie, email_public"
+        "id, raison_sociale, nom_commercial, ville, ville_slug, slug, categorie, email_public, adresse, code_postal, departement, siret, latitude, longitude"
       )
       .eq("id", claim.pro_id)
       .maybeSingle();
@@ -167,6 +167,47 @@ export async function POST(req: Request) {
       .from("sanitaire_claims")
       .update({ status: "verified", verified_at: new Date().toISOString(), user_id: userId })
       .eq("id", claim_id);
+
+    // Geocodage best-effort si la fiche n'a pas encore de coordonnees.
+    // Permet au pro reclame de remonter immediatement dans les listes
+    // "transporteurs proches" du departement et de la ville.
+    if (pro.latitude == null || pro.longitude == null) {
+      try {
+        const { geocodePro } = await import("@/lib/geocode-pro");
+        const geo = await geocodePro({
+          adresse: pro.adresse as string | null,
+          code_postal: pro.code_postal as string | null,
+          ville: pro.ville as string | null,
+          siret: pro.siret as string | null,
+        });
+        if (geo) {
+          await supabaseAdmin
+            .from("pros_sanitaire")
+            .update({ latitude: geo.latitude, longitude: geo.longitude })
+            .eq("id", claim.pro_id);
+          console.log("[claim/verify] geocode OK:", {
+            slug: pro.slug,
+            source: geo.source,
+            score: geo.score,
+          });
+        }
+      } catch (err) {
+        console.warn(
+          "[claim/verify] geocode error:",
+          err instanceof Error ? err.message : err
+        );
+      }
+    }
+
+    // Invalide les caches "transporteurs proches" du departement pour que
+    // ce pro nouvellement reclame apparaisse immediatement sur les fiches
+    // etablissement, sans attendre les 24h de cache.
+    try {
+      const { revalidateTag } = await import("next/cache");
+      if (pro.departement) {
+        revalidateTag(`nearby-transporters-dept:${pro.departement}`);
+      }
+    } catch {}
 
     // Auto-inscription newsletter veille reglementaire (best-effort, non bloquant)
     const newsletterEmail = accountEmail || pro.email_public || null;
