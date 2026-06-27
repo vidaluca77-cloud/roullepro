@@ -9,6 +9,15 @@ export const BASE_URL = "https://www.roullepro.com";
 
 export type BreadcrumbItem = { label: string; href: string };
 
+/**
+ * Sérialise un objet JSON-LD pour injection via dangerouslySetInnerHTML.
+ * Échappe `<` (et `>` par symétrie) pour empêcher toute fermeture prématurée
+ * de la balise <script> si un champ (ex nom_affichage) contient ces caractères.
+ */
+export function jsonLdHtml(obj: unknown): string {
+  return JSON.stringify(obj).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
+}
+
 /** Préfixe une URL relative avec BASE_URL ; laisse les URLs absolues intactes. */
 function toAbsolute(href: string): string {
   if (href.startsWith("http")) return href;
