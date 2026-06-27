@@ -9,6 +9,7 @@ import { LIBELLE_TYPE_TRANSPORT, type TypeTransport } from "@/lib/transport-type
 import {
   sendDemandeTransportAcceptationPro,
   sendDemandeTransportAcceptationClient,
+  sendDemandeTransportAutreAcceptee,
 } from "@/lib/email";
 
 type DemandeRow = {
@@ -99,4 +100,41 @@ export async function notifyDemandeAcceptee(
       bonTransportMedical: !!d.bon_transport_medical,
     }).catch(() => undefined);
   }
+
+  // GAP3 — info aux autres pros RoullePro repassés en 'autre_acceptee' par le trigger.
+  const { data: autres } = await admin
+    .from("demandes_transport_pros")
+    .select("pro_id, pros_sanitaire ( email_public, nom_commercial, raison_sociale )")
+    .eq("demande_id", demandeId)
+    .eq("statut", "autre_acceptee");
+
+  type AutreRow = {
+    pro_id: string;
+    pros_sanitaire: {
+      email_public: string | null;
+      nom_commercial: string | null;
+      raison_sociale: string | null;
+    } | null;
+  };
+  const autresRows = ((autres as AutreRow[] | null) || []).filter(
+    (r) => r.pro_id !== acceptedProId
+  );
+
+  await Promise.all(
+    autresRows.map((row) => {
+      const to = row.pros_sanitaire?.email_public;
+      if (!to) return Promise.resolve();
+      return sendDemandeTransportAutreAcceptee({
+        to,
+        proNom:
+          row.pros_sanitaire?.nom_commercial ||
+          row.pros_sanitaire?.raison_sociale ||
+          "Professionnel",
+        typeLibelle: libelle,
+        lieuDepart: d.lieu_depart,
+        lieuArrivee: d.lieu_arrivee,
+        dateSouhaitee: d.date_souhaitee,
+      }).catch(() => undefined);
+    })
+  );
 }

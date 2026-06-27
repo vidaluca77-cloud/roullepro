@@ -1551,3 +1551,43 @@ export async function sendDemandeTransportAcceptationClient(p: {
     ],
   });
 }
+
+/* ── 6. Acceptation : info aux autres pros (course prise par un autre) ── */
+export async function sendDemandeTransportAutreAcceptee(p: {
+  to: string;
+  proNom: string;
+  typeLibelle: string;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const trajet = [p.lieuDepart, p.lieuArrivee].filter(Boolean).join(' → ');
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader('Course attribuée à un autre professionnel')}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
+        <p style="font-size: 15px; color: #374151;">
+          La course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` du ${escapeHtml(dateStr)}` : ''}
+          vient d'être acceptée par un autre professionnel. Tu n'as donc rien à faire de ton côté.
+        </p>
+        <p style="font-size: 14px; color: #374151;">
+          Merci pour ta réactivité. D'autres demandes te seront proposées dès qu'une course correspondra à ton secteur.
+        </p>
+        <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Voir mes demandes')}</div>
+        ${signatureBloc()}
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: 'Course attribuée à un autre professionnel',
+    html,
+    replyTo: 'contact@roullepro.com',
+    tags: [
+      { name: 'category', value: 'demande_transport_autre_acceptee' },
+    ],
+  });
+}
