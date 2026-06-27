@@ -9,7 +9,7 @@ import {
   getSupabaseEtab,
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
-import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
+import { buildBreadcrumbJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import { FinessFooter } from "../FinessFooter";
 import FicheEtablissement from "./FicheEtablissement";
 
@@ -59,9 +59,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const e = await getEtablissementBySlug(slug);
   if (!e) return {};
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
+  const ville = e.ville ? ` ${e.ville}` : "";
+  const villeA = e.ville ? ` à ${e.ville}` : "";
+  const titleLong = `Transport médical vers ${nom}${ville} — Taxi / VSL / Ambulance conventionné`;
+  const titleCourt = `${nom}${ville} — Transport médical conventionné`;
   return {
-    title: `${nom} — Taxi conventionne CPAM et VSL | RoullePro`,
-    description: `${e.raison_sociale} a ${e.ville}. Adresse, telephone, transport medical conventionne CPAM (taxi, VSL, ambulance) vers cet etablissement.`,
+    title: titleLong.length > 60 ? titleCourt : titleLong,
+    description: `Trouvez un taxi conventionné CPAM, VSL ou ambulance agréé pour vous rendre à ${nom}${villeA}. Prise en charge CPAM disponible. Réservation 24/7.`,
     alternates: { canonical: `/etablissements/${e.slug}` },
   };
 }
@@ -109,11 +113,11 @@ export default async function EtablissementSlugPage({ params }: Props) {
       <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadLd) }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(itemListLd) }}
         />
 
         <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">

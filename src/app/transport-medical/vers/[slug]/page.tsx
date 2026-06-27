@@ -7,7 +7,7 @@ import {
   getSupabaseEtab,
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
-import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
+import { buildBreadcrumbJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
 
 export const revalidate = 86400;
@@ -50,13 +50,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const e = await getEtablissementBySlug(slug);
-  if (!e) return { title: "Transport medical | RoullePro" };
+  if (!e) return { title: "Transport médical" };
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
+  const ville = e.ville ? ` ${e.ville}` : "";
+  const villeA = e.ville ? ` à ${e.ville}` : "";
   return {
-    title: `Taxi conventionne vers ${nom} — VSL et ambulance | RoullePro`,
-    description: `Organisez votre transport medical conventionne vers ${nom}${
-      e.ville ? ` (${e.ville})` : ""
-    }. Taxi conventionne CPAM, VSL ou ambulance. Demande transmise aux professionnels de votre secteur.`,
+    title: `Taxi VSL ambulance pour ${nom}${ville} — Conventionné CPAM`,
+    description: `Réservez en ligne un taxi conventionné, VSL ou ambulance pour ${nom}${villeA}. Pris en charge CPAM, devis gratuit, professionnels agréés.`,
     alternates: { canonical: `/transport-medical/vers/${e.slug}` },
   };
 }
@@ -110,11 +110,11 @@ export default async function TransportVersPage({
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }}
       />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
@@ -127,7 +127,8 @@ export default async function TransportVersPage({
             <span className="text-white">Transport vers {nom}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Transport medical vers {nom}
+            Réserver un transport médical vers {nom}
+            {e.ville ? ` (${e.ville})` : ""}
           </h1>
           <p className="text-blue-100 max-w-2xl">
             Taxi conventionne CPAM, VSL ou ambulance vers {nom}

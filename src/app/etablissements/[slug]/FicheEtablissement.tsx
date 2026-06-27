@@ -16,14 +16,30 @@ import {
   formatSourceDate,
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
-import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
+import { buildBreadcrumbJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import MiniFormulaireReservation from "./MiniFormulaireReservation";
 
-// JSON-LD : Hospital / MedicalClinic / NursingHome selon la categorie.
+// JSON-LD : @type schema.org selon categorie_simple (cf. rapport SEO Action 4).
 function schemaType(categorie: string): string {
   if (categorie === "ehpad") return "NursingHome";
-  if (categorie === "clinique") return "MedicalClinic";
-  return "Hospital";
+  if (categorie === "hopital") return "Hospital";
+  if (
+    categorie === "clinique" ||
+    categorie === "centre-sante" ||
+    categorie === "maison-sante" ||
+    categorie === "centre-dialyse" ||
+    categorie === "rehabilitation"
+  ) {
+    return "MedicalClinic";
+  }
+  return "MedicalOrganization";
+}
+
+// Specialite medicale schema.org pour certaines categories.
+function medicalSpecialty(categorie: string): string | undefined {
+  if (categorie === "centre-dialyse") return "Nephrology";
+  if (categorie === "rehabilitation") return "PhysicalTherapy";
+  return undefined;
 }
 
 async function fetchSimilaires(
@@ -76,21 +92,23 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
   const labelPluriel = t?.labelPluriel ?? "Établissements";
   const labelPlurielLc = labelPluriel.toLowerCase();
 
+  const specialty = medicalSpecialty(e.categorie_simple);
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": schemaType(e.categorie_simple),
-    name: e.raison_sociale,
+    name: nom,
     url: `https://www.roullepro.com/etablissements/${e.slug}`,
-    telephone: e.telephone || undefined,
+    ...(e.telephone ? { telephone: e.telephone } : {}),
+    ...(specialty ? { medicalSpecialty: specialty } : {}),
     address: {
       "@type": "PostalAddress",
-      streetAddress: e.adresse || undefined,
-      postalCode: e.code_postal || undefined,
-      addressLocality: e.ville || undefined,
-      addressRegion: e.region || undefined,
+      ...(e.adresse ? { streetAddress: e.adresse } : {}),
+      ...(e.code_postal ? { postalCode: e.code_postal } : {}),
+      ...(e.ville ? { addressLocality: e.ville } : {}),
+      ...(e.region ? { addressRegion: e.region } : {}),
       addressCountry: "FR",
     },
-    ...(e.latitude && e.longitude
+    ...(e.latitude != null && e.longitude != null
       ? { geo: { "@type": "GeoCoordinates", latitude: e.latitude, longitude: e.longitude } }
       : {}),
   };
@@ -138,9 +156,9 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-12 grid md:grid-cols-[1.6fr_1fr] gap-8 items-start">
@@ -160,7 +178,10 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
               <ChevronRight className="w-3 h-3" />
               <span className="text-white">{nom}</span>
             </nav>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">{nom}</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold mb-2">
+              Transport médical conventionné pour {nom}
+              {e.ville ? `, ${e.ville}` : ""}
+            </h1>
             {t && <p className="text-blue-100">{e.categorie_finess_libelle || t.label}</p>}
             {e.ville && (
               <p className="text-sm text-blue-200 mt-1 flex items-center gap-1">
