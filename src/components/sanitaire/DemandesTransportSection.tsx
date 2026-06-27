@@ -136,7 +136,7 @@ function Trajet({ d }: { d: DemandeProRow }) {
 
 function CarteProposee({ d }: { d: DemandeProRow }) {
   const router = useRouter();
-  const [loading, setLoading] = useState<"accepter" | "decliner" | null>(null);
+  const [loading, setLoading] = useState<"accepter" | "refuser" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const Icon = (d.type_transport && d.type_transport in ICONES
     ? ICONES[d.type_transport as TypeTransport]
@@ -145,7 +145,7 @@ function CarteProposee({ d }: { d: DemandeProRow }) {
   const isNouvelle =
     !!d.proposee_at && Date.now() - new Date(d.proposee_at).getTime() < 24 * 60 * 60 * 1000;
 
-  const action = async (kind: "accepter" | "decliner") => {
+  const action = async (kind: "accepter" | "refuser") => {
     setError(null);
     setLoading(kind);
     try {
@@ -203,12 +203,12 @@ function CarteProposee({ d }: { d: DemandeProRow }) {
         </button>
         <button
           type="button"
-          onClick={() => action("decliner")}
+          onClick={() => action("refuser")}
           disabled={loading !== null}
           className="inline-flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-60 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition"
         >
-          {loading === "decliner" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          Décliner
+          {loading === "refuser" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+          Refuser
         </button>
       </div>
     </li>
@@ -328,8 +328,9 @@ export default function DemandesTransportSection({
 }) {
   const proposees = demandes.filter((d) => d.dtp_statut === "proposee");
   const acceptees = demandes.filter((d) => d.dtp_statut === "acceptee");
+  // 'declinee' exclu : apres refus, la carte disparait du tableau de bord du pro.
   const passees = demandes.filter(
-    (d) => !["proposee", "acceptee"].includes(d.dtp_statut)
+    (d) => !["proposee", "acceptee", "declinee"].includes(d.dtp_statut)
   );
 
   return (
