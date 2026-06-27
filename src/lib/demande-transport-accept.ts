@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { LIBELLE_TYPE_TRANSPORT, type TypeTransport } from "@/lib/transport-types";
 import {
   sendDemandeTransportAcceptationPro,
+  sendDemandeTransportAcceptationClient,
 } from "@/lib/email";
 
 type DemandeRow = {
@@ -78,6 +79,24 @@ export async function notifyDemandeAcceptee(
       tauxPriseEnChargeAutre: d.taux_prise_en_charge_autre,
       bonTransportMedical: !!d.bon_transport_medical,
       demandeId: d.id,
+    }).catch(() => undefined);
+  }
+
+  // GAP2 — email au client : le pro accepteur, son nom et son téléphone.
+  if (d.email) {
+    await sendDemandeTransportAcceptationClient({
+      to: d.email,
+      clientNom: d.nom,
+      proNom,
+      proTelephone: pro?.telephone_public || null,
+      typeLibelle: libelle,
+      lieuDepart: d.lieu_depart,
+      lieuArrivee: d.lieu_arrivee,
+      dateSouhaitee: d.date_souhaitee,
+      allerRetour: !!d.aller_retour,
+      tauxPriseEnCharge: d.taux_prise_en_charge,
+      tauxPriseEnChargeAutre: d.taux_prise_en_charge_autre,
+      bonTransportMedical: !!d.bon_transport_medical,
     }).catch(() => undefined);
   }
 }

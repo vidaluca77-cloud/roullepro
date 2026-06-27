@@ -1485,3 +1485,69 @@ export async function sendDemandeTransportAcceptationPro(p: {
     ],
   });
 }
+
+/* ── 5. Acceptation : email au client (nom + tel du pro accepteur) ── */
+export async function sendDemandeTransportAcceptationClient(p: {
+  to: string;
+  clientNom?: string | null;
+  proNom: string;
+  proTelephone?: string | null;
+  typeLibelle: string;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+  allerRetour?: boolean;
+  tauxPriseEnCharge?: string | null;
+  tauxPriseEnChargeAutre?: string | null;
+  bonTransportMedical?: boolean;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const tel = telHref(p.proTelephone);
+  const tauxStr = tauxLibelle(p.tauxPriseEnCharge, p.tauxPriseEnChargeAutre);
+  const bonStr = p.bonTransportMedical
+    ? 'Oui'
+    : 'Manquant (à fournir au professionnel)';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader('Un professionnel a accepté ta course')}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour ${escapeHtml(p.clientNom) || ''},</p>
+        <p style="font-size: 15px; color: #374151;">
+          Bonne nouvelle : un professionnel a accepté ta demande de transport <strong>${escapeHtml(p.typeLibelle)}</strong>.
+          Il va te contacter, mais tu peux aussi l'appeler directement.
+        </p>
+        <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:20px;margin:20px 0">
+          <p style="margin:0 0 6px;font-size:12px;color:#065f46;text-transform:uppercase;font-weight:600;letter-spacing:0.05em">Ton transporteur</p>
+          <p style="margin:0;font-weight:700;font-size:16px;color:#065f46">${escapeHtml(p.proNom)}</p>
+          ${p.proTelephone ? `<p style="margin:6px 0 0;font-size:15px">${tel ? `<a href="${tel}" style="color:#047857;font-weight:600">${escapeHtml(p.proTelephone)}</a>` : escapeHtml(p.proTelephone)}</p>` : ''}
+        </div>
+        ${tel ? `<div style="text-align:center;margin:24px 0">${emailButton(tel, 'Appeler le professionnel', '#10b981')}</div>` : ''}
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Type', escapeHtml(p.typeLibelle))}
+            ${ligneInfo('Départ', escapeHtml(p.lieuDepart))}
+            ${ligneInfo('Arrivée', escapeHtml(p.lieuArrivee))}
+            ${ligneInfo('Date souhaitée', escapeHtml(dateStr))}
+            ${p.allerRetour ? ligneInfo('Trajet', 'Aller-retour') : ''}
+            ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
+            ${ligneInfo('Bon de transport', bonStr)}
+          </table>
+        </div>
+        <p style="font-size:14px;color:#374151">
+          Le professionnel te recontactera pour confirmer les détails du trajet. Garde ton téléphone à portée de main.
+        </p>
+        ${signatureBloc()}
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: 'Ta course a été acceptée par un professionnel',
+    html,
+    replyTo: 'contact@roullepro.com',
+    tags: [
+      { name: 'category', value: 'demande_transport_acceptation_client' },
+    ],
+  });
+}
