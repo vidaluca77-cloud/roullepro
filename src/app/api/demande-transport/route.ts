@@ -12,6 +12,7 @@ import {
   sendDemandeTransportPro,
   sendDemandeTransportConfirmation,
   sendDemandeTransportFallback,
+  sendAdminNouvelleDemande,
 } from "@/lib/email";
 
 const getAdminClient = () =>
@@ -248,6 +249,34 @@ export async function POST(req: Request) {
         typeLibelle: libelle,
         nbPros: prosNotifies,
       }).catch(() => undefined);
+    }
+
+    // Notification admin (best-effort, non bloquante). Part meme si aucun pro
+    // n'a ete notifie pour que l'admin puisse traiter manuellement.
+    try {
+      await sendAdminNouvelleDemande({
+        id: demande.id,
+        nom,
+        telephone,
+        email: email || null,
+        type_transport: typeTransport,
+        date_souhaitee: body.date_souhaitee || null,
+        lieu_depart: body.lieu_depart || null,
+        lieu_arrivee: body.lieu_arrivee || null,
+        departement_cible: departementCible,
+        ville_cible: villeCible,
+        precisions: body.precisions || null,
+        taux_prise_en_charge: tauxPriseEnCharge,
+        taux_prise_en_charge_autre: tauxPriseEnChargeAutre,
+        source_form: sourceForm,
+        pros_notifies: prosNotifies,
+      });
+      await supabase
+        .from("demandes_transport")
+        .update({ admin_email_sent_at: new Date().toISOString() })
+        .eq("id", demande.id);
+    } catch (e) {
+      console.error("[admin notif] failed", e);
     }
 
     return NextResponse.json({ ok: true, pros_notifies: prosNotifies });
