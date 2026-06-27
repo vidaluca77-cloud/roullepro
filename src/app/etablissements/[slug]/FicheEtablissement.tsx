@@ -382,11 +382,21 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-gray-900">{tr.nom}</h3>
-                      {tr.distance_km > 0 ? (
-                        <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
-                          {tr.distance_km} km
-                        </span>
-                      ) : null}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {tr.verifie ? (
+                          <span
+                            className="text-xs rounded bg-emerald-50 px-2 py-1 text-emerald-700 border border-emerald-200"
+                            title="Transporteur vérifié par RoullePro"
+                          >
+                            Vérifié
+                          </span>
+                        ) : null}
+                        {tr.distance_km > 0 ? (
+                          <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700">
+                            {tr.distance_km} km
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                     <p className="text-sm text-slate-600 mt-1">
                       {tr.ville} — {typeLabel(tr.type)}
