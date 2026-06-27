@@ -12,6 +12,7 @@
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { notifyDemandeAcceptee } from "@/lib/demande-transport-accept";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -89,6 +90,11 @@ export async function POST(_req: Request, { params }: RouteParams) {
     )
     .eq("id", demandeId)
     .maybeSingle();
+
+  // Notifications post-acceptation (pro accepteur + client + autres pros). Best-effort.
+  await notifyDemandeAcceptee(admin, demandeId, ligne.pro_id, user.email).catch(
+    () => undefined
+  );
 
   return NextResponse.json({ ok: true, statut: "acceptee", demande });
 }

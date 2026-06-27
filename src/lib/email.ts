@@ -1207,12 +1207,47 @@ function formatDateSouhaitee(iso?: string | null): string | null {
   }).format(d);
 }
 
+/** Signature commerciale commune a tous les emails de transport (tutoiement). */
+function signatureBloc(): string {
+  return `
+    <p style="font-size:14px;color:#374151;margin:24px 0 0">
+      Lucas Horville<br>
+      <a href="tel:+33615472813" style="color:#2563eb;text-decoration:none">06 15 47 28 13</a><br>
+      <a href="mailto:contact@roullepro.com" style="color:#2563eb">contact@roullepro.com</a>
+    </p>
+  `;
+}
+
+/** Bouton d'action standard (CTA). */
+function emailButton(href: string, label: string, color = '#2563eb'): string {
+  return `<a href="${href}" style="background:${color};color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">${label}</a>`;
+}
+
+/** Construit un href tel: a partir d'un numero saisi librement. */
+function telHref(tel?: string | null): string | null {
+  if (!tel) return null;
+  const digits = String(tel).replace(/[^\d+]/g, '');
+  return digits ? `tel:${digits}` : null;
+}
+
+/** URL du dashboard pro ou les demandes acceptees sont gerees. */
+const DASHBOARD_PRO_URL = `${APP_URL_DV}/transport-medical/pro/dashboard`;
+
 /* ── 1. Notification au pro — nouvelle demande de transport ── */
 const TAUX_LIBELLE: Record<string, string> = {
   '100': '100 %',
   '65': '65 %',
   autre: 'Autre',
 };
+
+/** Libelle lisible du taux de prise en charge. */
+function tauxLibelle(taux?: string | null, autre?: string | null): string | null {
+  if (!taux) return null;
+  if (taux === 'autre') {
+    return `Autre${autre ? ` (${escapeHtml(autre)} %)` : ''}`;
+  }
+  return TAUX_LIBELLE[taux] || escapeHtml(taux);
+}
 
 /**
  * Email envoye aux pros notifies. NE CONTIENT PAS le nom/telephone/email du
@@ -1372,5 +1407,81 @@ export async function sendDemandeTransportFallback(p: {
     to: p.to,
     subject: `[RoullePro Interne] Demande transport ${p.typeLibelle} à traiter — ${p.ville || p.departement || ''}`,
     html,
+  });
+}
+
+/* ── 4. Acceptation : email au pro qui a pris la course (coords client) ── */
+export async function sendDemandeTransportAcceptationPro(p: {
+  to: string;
+  proNom: string;
+  clientNom?: string | null;
+  clientTelephone?: string | null;
+  clientEmail?: string | null;
+  typeLibelle: string;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+  allerRetour?: boolean;
+  mobilite?: string | null;
+  precisions?: string | null;
+  tauxPriseEnCharge?: string | null;
+  tauxPriseEnChargeAutre?: string | null;
+  bonTransportMedical?: boolean;
+  demandeId: string;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const tel = telHref(p.clientTelephone);
+  const tauxStr = tauxLibelle(p.tauxPriseEnCharge, p.tauxPriseEnChargeAutre);
+  const bonStr = p.bonTransportMedical
+    ? 'Oui'
+    : 'Manquant (le patient devra en fournir un)';
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader('Course acceptée — coordonnées du client')}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
+        <p style="font-size: 15px; color: #374151;">
+          Tu viens d'accepter cette course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>.
+          Elle t'est désormais attribuée. Voici les coordonnées du client pour le contacter et organiser le trajet.
+        </p>
+        <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:20px;margin:20px 0">
+          <p style="margin:0 0 10px;font-size:12px;color:#065f46;text-transform:uppercase;font-weight:600;letter-spacing:0.05em">Client</p>
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Nom', escapeHtml(p.clientNom))}
+            ${p.clientTelephone ? `<tr style="border-bottom:1px solid #d1fae5"><td style="padding:8px 0;color:#6b7280;width:140px">Téléphone</td><td style="padding:8px 0;font-weight:600">${tel ? `<a href="${tel}" style="color:#047857">${escapeHtml(p.clientTelephone)}</a>` : escapeHtml(p.clientTelephone)}</td></tr>` : ''}
+            ${p.clientEmail ? `<tr><td style="padding:8px 0;color:#6b7280;width:140px">Email</td><td style="padding:8px 0;font-weight:600"><a href="mailto:${escapeHtml(p.clientEmail)}" style="color:#047857">${escapeHtml(p.clientEmail)}</a></td></tr>` : ''}
+          </table>
+        </div>
+        ${tel ? `<div style="text-align:center;margin:24px 0">${emailButton(tel, 'Appeler le client', '#10b981')}</div>` : ''}
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Type', escapeHtml(p.typeLibelle))}
+            ${ligneInfo('Départ', escapeHtml(p.lieuDepart))}
+            ${ligneInfo('Arrivée', escapeHtml(p.lieuArrivee))}
+            ${ligneInfo('Date souhaitée', escapeHtml(dateStr))}
+            ${p.allerRetour ? ligneInfo('Trajet', 'Aller-retour') : ''}
+            ${ligneInfo('Mobilité', escapeHtml(p.mobilite))}
+            ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
+            ${ligneInfo('Bon de transport', bonStr)}
+          </table>
+        </div>
+        ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
+        <p style="font-size:14px;color:#374151">
+          Une fois le transport effectué, pense à marquer la course comme terminée depuis ton tableau de bord.
+        </p>
+        <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Ouvrir mon tableau de bord')}</div>
+        ${signatureBloc()}
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: 'Course acceptée — coordonnées client',
+    html,
+    replyTo: 'contact@roullepro.com',
+    tags: [
+      { name: 'category', value: 'demande_transport_acceptation_pro' },
+    ],
   });
 }
