@@ -158,15 +158,16 @@ export async function getEtablissementBySlug(
 /** Compte les etablissements actifs par categorie_simple. */
 export async function countByCategorie(): Promise<Record<string, number>> {
   const supabase = getSupabaseEtab();
-  const counts: Record<string, number> = {};
-  for (const t of TYPES_ETABLISSEMENT) {
-    const { count } = await supabase
-      .from("etablissements_sante_public")
-      .select("id", { count: "estimated", head: true })
-      .eq("categorie_simple", t.categorie);
-    counts[t.categorie] = count ?? 0;
-  }
-  return counts;
+  const results = await Promise.all(
+    TYPES_ETABLISSEMENT.map(async (t) => {
+      const { count } = await supabase
+        .from("etablissements_sante_public")
+        .select("id", { count: "estimated", head: true })
+        .eq("categorie_simple", t.categorie);
+      return [t.categorie, count ?? 0] as const;
+    })
+  );
+  return Object.fromEntries(results);
 }
 
 /** Libelle FINESS humain pour le footer Licence Ouverte. */

@@ -216,6 +216,18 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
 export const ETAB_CHUNK_SIZE = 10000;
 
 /**
+ * Nombre de chunks necessaires pour couvrir toutes les fiches etablissements.
+ * Avec ~18 900 fiches et un chunk de 10 000, retourne 2.
+ */
+export async function countEtablissementsChunks(): Promise<number> {
+  const supabase = getSupabase();
+  const { count } = await supabase
+    .from("etablissements_sante_public")
+    .select("slug", { count: "exact", head: true });
+  return Math.max(1, Math.ceil((count || 0) / ETAB_CHUNK_SIZE));
+}
+
+/**
  * Fiches etablissements FINESS, paginees par 10 000.
  * /etablissements/[slug]
  */

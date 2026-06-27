@@ -17,7 +17,6 @@ import {
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
 import { buildBreadcrumbJsonLd } from "@/lib/seo-schema";
-import { FinessFooter } from "../FinessFooter";
 import MiniFormulaireReservation from "./MiniFormulaireReservation";
 
 // JSON-LD : Hospital / MedicalClinic / NursingHome selon la categorie.
@@ -431,8 +430,6 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
           </a>
         </div>
       </section>
-
-      <FinessFooter />
     </main>
   );
 }

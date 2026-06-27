@@ -554,19 +554,45 @@ export async function runFinessImport(options?: { forceRefresh?: boolean }): Pro
   }
 
   // Desactivation des fiches dont le finess_geo n'apparait plus dans ce dump.
+  // On evite `.not("finess_geo","in",[milliers d'IDs])` qui fait exploser la
+  // taille de l'URL : on inverse le flag (tout -> actif=false) puis on
+  // reactive par lots les finess presents dans le dump.
   const finessVus = rows.map((r) => r.finess_geo);
   let desactives = 0;
   if (finessVus.length > 0) {
-    const { data, error } = await supabase
+    const nowIso = new Date().toISOString();
+
+    // 1. Compte les fiches actuellement actives (avant inversion).
+    const { count: actifsAvant } = await supabase
       .from("etablissements_sante")
-      .update({ actif: false, updated_at: new Date().toISOString() })
-      .eq("actif", true)
-      .not("finess_geo", "in", `(${finessVus.map((f) => `"${f}"`).join(",")})`)
-      .select("id");
-    if (error) {
-      log("Erreur desactivation des disparus :", error.message);
+      .select("id", { count: "exact", head: true })
+      .eq("actif", true);
+
+    // 2. Tout passer a actif=false.
+    const { error: errOff } = await supabase
+      .from("etablissements_sante")
+      .update({ actif: false, updated_at: nowIso })
+      .eq("actif", true);
+
+    if (errOff) {
+      log("Erreur desactivation globale :", errOff.message);
     } else {
-      desactives = data?.length ?? 0;
+      // 3. Reactiver par lots les finess vus dans ce dump.
+      let reactives = 0;
+      for (let i = 0; i < finessVus.length; i += LOT) {
+        const lot = finessVus.slice(i, i + LOT);
+        const { data, error } = await supabase
+          .from("etablissements_sante")
+          .update({ actif: true, updated_at: nowIso })
+          .in("finess_geo", lot)
+          .select("id");
+        if (error) {
+          log(`Erreur reactivation lot ${i / LOT} :`, error.message);
+        } else {
+          reactives += data?.length ?? 0;
+        }
+      }
+      desactives = Math.max(0, (actifsAvant ?? 0) - reactives);
     }
   }
 
