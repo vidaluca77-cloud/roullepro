@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
@@ -7,6 +8,18 @@ import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import GeolocBouton from "@/components/sanitaire/GeolocBouton";
 
 export const dynamic = "force-dynamic";
+
+// Page de recherche a facettes (?q, ?categorie, ?lat/lng, ?ameli...) : elle reproduit
+// le contenu des hubs canoniques (/transport-medical/[ville], /[ville]/[categorie]) et
+// genere une infinite d'URLs parametrees. On la place en noindex,follow pour eviter le
+// contenu duplique (cf. doublons /marseille/ambulance vs /recherche?q=Marseille) tout en
+// laissant Google suivre les liens vers les fiches et hubs reels.
+export const metadata: Metadata = {
+  title: "Rechercher un transport sanitaire près de chez vous",
+  description:
+    "Trouvez une ambulance, un VSL ou un taxi conventionné CPAM près de chez vous : recherche par ville, code postal ou géolocalisation.",
+  robots: { index: false, follow: true },
+};
 
 type Props = {
   searchParams: Promise<{
