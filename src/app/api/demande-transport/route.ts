@@ -64,6 +64,27 @@ export async function POST(req: Request) {
       );
     }
 
+    // Email obligatoire pour confirmer la prise en charge au client.
+    if (!email) {
+      return NextResponse.json(
+        { error: "L'email est obligatoire" },
+        { status: 400 }
+      );
+    }
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) {
+      return NextResponse.json({ error: "Email invalide" }, { status: 400 });
+    }
+
+    // Date souhaitee obligatoire pour planifier la course.
+    const dateSouhaiteeRaw = (body.date_souhaitee ?? "").toString().trim();
+    if (!dateSouhaiteeRaw) {
+      return NextResponse.json(
+        { error: "La date et heure souhaitees sont obligatoires" },
+        { status: 400 }
+      );
+    }
+
     // Lieu de depart obligatoire : sans ca on ne peut pas dispatcher la demande
     // au bon pro (le trigger fait p.departement = NEW.departement_cible).
     const lieuDepartRaw = (body.lieu_depart ?? "").toString().trim();
@@ -73,12 +94,6 @@ export async function POST(req: Request) {
         { error: "Le lieu de depart est obligatoire" },
         { status: 400 }
       );
-    }
-    if (email) {
-      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRe.test(email)) {
-        return NextResponse.json({ error: "Email invalide" }, { status: 400 });
-      }
     }
 
     // Taux de prise en charge (facultatif).

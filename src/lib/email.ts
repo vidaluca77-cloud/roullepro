@@ -541,20 +541,23 @@ export async function sendWelcomeEmail({
 
 const APP_URL_DV = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
-function emailHeader(title?: string) {
+function emailHeader(
+  title?: string,
+  tagline: string = 'Service dépôt-vente professionnel'
+) {
   return `
     <div style="background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%); padding: 28px 32px;">
       <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">RoullePro</h1>
-      <p style="color: rgba(255,255,255,0.75); margin: 4px 0 0; font-size: 13px;">Service dépôt-vente professionnel</p>
+      <p style="color: rgba(255,255,255,0.75); margin: 4px 0 0; font-size: 13px;">${tagline}</p>
       ${title ? `<p style="color: white; font-weight: 600; margin: 12px 0 0; font-size: 16px;">${title}</p>` : ''}
     </div>
   `;
 }
 
-function emailFooter() {
+function emailFooter(tagline: string = 'Service dépôt-vente') {
   return `
     <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0; border-top: 1px solid #f3f4f6; padding-top: 20px;">
-      RoullePro — Service dépôt-vente |
+      RoullePro — ${tagline} |
       <a href="${APP_URL_DV}" style="color: #6b7280;">roullepro.com</a>
     </p>
   `;
@@ -1290,7 +1293,7 @@ export async function sendDemandeTransportPro(p: {
     : 'Manquant (le patient devra en fournir un)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(p.typeLibelle)})`)}
+      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(p.typeLibelle)})`, 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
@@ -1315,7 +1318,7 @@ export async function sendDemandeTransportPro(p: {
           <a href="${dashboardUrl}" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir + accepter</a>
         </div>
         <p style="font-size:13px;color:#6b7280">${accepterUrl ? 'Le bouton « Accepter cette course » te permet de prendre la course en un clic (lien valable 48h). ' : ''}Les coordonnees du demandeur te seront communiquees des que tu auras accepte la course.</p>
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1346,7 +1349,7 @@ export async function sendDemandeTransportConfirmation(p: {
       : `Votre demande de transport <strong>${typeLibelle}</strong> a bien été enregistrée. Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement.`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Votre demande de transport est transmise')}
+      ${emailHeader('Votre demande de transport est transmise', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour ${escapeHtml(p.demandeurNom) || ''},</p>
         <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:14px 18px;margin:20px 0">
@@ -1359,7 +1362,7 @@ export async function sendDemandeTransportConfirmation(p: {
         <div style="text-align:center;margin:24px 0">
           <a href="${APP_URL_DV}/transport-medical" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir l'annuaire transport médical</a>
         </div>
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1388,7 +1391,7 @@ export async function sendDemandeTransportFallback(p: {
   const dateStr = formatDateSouhaitee(p.dateSouhaitee);
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader(`Demande sans pro joignable (${p.typeLibelle})`)}
+      ${emailHeader(`Demande sans pro joignable (${p.typeLibelle})`, 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:14px 18px;margin-bottom:20px">
           <p style="margin:0;color:#9a3412;font-weight:600;font-size:14px">Aucun professionnel avec email n'a pu être notifié automatiquement. À traiter manuellement.</p>
@@ -1408,7 +1411,7 @@ export async function sendDemandeTransportFallback(p: {
           </table>
         </div>
         ${p.precisions ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1446,7 +1449,7 @@ export async function sendDemandeTransportAcceptationPro(p: {
     : 'Manquant (le patient devra en fournir un)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Course acceptée — coordonnées du client')}
+      ${emailHeader('Course acceptée — coordonnées du client', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
@@ -1480,7 +1483,7 @@ export async function sendDemandeTransportAcceptationPro(p: {
         </p>
         <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Ouvrir mon tableau de bord')}</div>
         ${signatureBloc()}
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1518,7 +1521,7 @@ export async function sendDemandeTransportAcceptationClient(p: {
     : 'Manquant (à fournir au professionnel)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Un professionnel a accepté ta course')}
+      ${emailHeader('Un professionnel a accepté ta course', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour ${escapeHtml(p.clientNom) || ''},</p>
         <p style="font-size: 15px; color: #374151;">
@@ -1546,7 +1549,7 @@ export async function sendDemandeTransportAcceptationClient(p: {
           Le professionnel te recontactera pour confirmer les détails du trajet. Garde ton téléphone à portée de main.
         </p>
         ${signatureBloc()}
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1574,7 +1577,7 @@ export async function sendDemandeTransportAutreAcceptee(p: {
   const trajet = [p.lieuDepart, p.lieuArrivee].filter(Boolean).join(' → ');
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Course attribuée à un autre professionnel')}
+      ${emailHeader('Course attribuée à un autre professionnel', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
@@ -1586,7 +1589,7 @@ export async function sendDemandeTransportAutreAcceptee(p: {
         </p>
         <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Voir mes demandes')}</div>
         ${signatureBloc()}
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1645,7 +1648,7 @@ export async function sendAdminNouvelleDemande(demande: {
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(typeLib)})`)}
+      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(typeLib)})`, 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         ${nbPros === 0 ? `<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:14px 18px;margin-bottom:20px"><p style="margin:0;color:#9a3412;font-weight:600;font-size:14px">Aucun professionnel notifié automatiquement. À traiter manuellement.</p></div>` : ''}
         <p style="font-size:15px;color:#374151">Une nouvelle demande de transport vient d'être déposée sur RoullePro.</p>
@@ -1667,7 +1670,7 @@ export async function sendAdminNouvelleDemande(demande: {
         </div>
         ${demande.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(demande.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">${emailButton(adminUrl, 'Voir dans l\'admin')}</div>
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;
@@ -1742,7 +1745,7 @@ export async function sendAdminRecapQuotidien(stats: {
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader(`Récap demandes transport — ${dateFR}`)}
+      ${emailHeader(`Récap demandes transport — ${dateFR}`, 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size:15px;color:#374151"><strong>${stats.total}</strong> demande${stats.total > 1 ? 's' : ''} sur les dernières 24 heures.</p>
 
@@ -1777,7 +1780,7 @@ export async function sendAdminRecapQuotidien(stats: {
         </table>
 
         <div style="text-align:center;margin:28px 0">${emailButton(adminUrl, 'Ouvrir le module admin')}</div>
-        ${emailFooter()}
+        ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
   `;

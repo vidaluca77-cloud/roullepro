@@ -70,12 +70,20 @@ export default function FloatingReserveTaxi() {
       setError("Ton numéro de téléphone ne semble pas valide.");
       return;
     }
-    if (!lieuDepart.trim() || !lieuArrivee.trim()) {
-      setError("Merci d'indiquer ton lieu de départ et ton lieu d'arrivée.");
+    if (!email.trim()) {
+      setError("Merci d'indiquer ton email pour recevoir une confirmation.");
       return;
     }
-    if (email.trim() && !EMAIL_RE.test(email.trim())) {
+    if (!EMAIL_RE.test(email.trim())) {
       setError("Ton adresse email ne semble pas valide.");
+      return;
+    }
+    if (!dateSouhaitee) {
+      setError("Merci d'indiquer la date souhaitée du transport.");
+      return;
+    }
+    if (!lieuDepart.trim() || !lieuArrivee.trim()) {
+      setError("Merci d'indiquer ton lieu de départ et ton lieu d'arrivée.");
       return;
     }
     if (!taux) {
@@ -237,10 +245,11 @@ export default function FloatingReserveTaxi() {
                   />
                   <input
                     type="email"
-                    placeholder="Ton email (facultatif)"
+                    placeholder="Ton email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    aria-label="Ton email (facultatif)"
+                    required
+                    aria-label="Ton email"
                     className={inputCls}
                   />
                   <div className="grid sm:grid-cols-2 gap-3">
@@ -280,11 +289,12 @@ export default function FloatingReserveTaxi() {
                     </div>
                   </div>
                   <div>
-                    <label className={labelCls}>Date souhaitée (facultatif)</label>
+                    <label className={labelCls}>Date souhaitée</label>
                     <input
                       type="date"
                       value={dateSouhaitee}
                       onChange={(e) => setDateSouhaitee(e.target.value)}
+                      required
                       aria-label="Date souhaitée"
                       className={inputCls}
                     />
