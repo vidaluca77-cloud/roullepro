@@ -46,7 +46,7 @@ export function generateMetadata({
   const imageUrl = getPostImageUrl(post);
   const { alt } = getPostImage(post);
   return {
-    title: `${post.title} — RoullePro`,
+    title: post.title,
     description: post.excerpt,
     keywords: post.keywords,
     openGraph: {
