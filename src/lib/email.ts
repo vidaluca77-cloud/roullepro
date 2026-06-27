@@ -16,19 +16,38 @@ const FROM_EMAIL =
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://roullepro.com';
 
+/**
+ * Echappe les caracteres HTML dangereux dans les valeurs saisies par
+ * l'utilisateur avant interpolation dans un template email (anti-XSS).
+ */
+export function escapeHtml(s: string | null | undefined): string {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export async function sendEmail(payload: {
   to: string;
   subject: string;
   html: string;
   reply_to?: string;
+  /** Alias retro-compatible de reply_to (prioritaire si fourni). */
+  replyTo?: string;
   bcc?: string | string[];
-}) {
+  /** Tags Resend pour le filtrage dans le dashboard (category, source_form, ...). */
+  tags?: Array<{ name: string; value: string }>;
+}): Promise<{ id: string | null } | null> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.warn('[Resend] RESEND_API_KEY manquant — email non envoyé');
-    return;
+    return null;
   }
 
+  const replyTo = payload.replyTo || payload.reply_to;
   console.log('[Resend] Envoi email →', payload.to, '|', payload.subject, '| from:', FROM_EMAIL);
 
   try {
@@ -43,21 +62,24 @@ export async function sendEmail(payload: {
         to: payload.to,
         subject: payload.subject,
         html: payload.html,
-        ...(payload.reply_to ? { reply_to: payload.reply_to } : {}),
+        ...(replyTo ? { reply_to: replyTo } : {}),
         ...(payload.bcc ? { bcc: payload.bcc } : {}),
+        ...(payload.tags && payload.tags.length ? { tags: payload.tags } : {}),
       }),
     });
 
     if (!res.ok) {
       const body = await res.text();
       console.error('[Resend] HTTP', res.status, body);
-      return;
+      return null;
     }
 
     const data = await res.json().catch(() => null);
     console.log('[Resend] OK', data?.id);
+    return { id: data?.id ?? null };
   } catch (e) {
     console.error('[Resend] Exception:', e instanceof Error ? e.message : String(e));
+    return null;
   }
 }
 
@@ -1186,53 +1208,83 @@ function formatDateSouhaitee(iso?: string | null): string | null {
 }
 
 /* ── 1. Notification au pro — nouvelle demande de transport ── */
+const TAUX_LIBELLE: Record<string, string> = {
+  '100': '100 %',
+  '65': '65 %',
+  autre: 'Autre',
+};
+
+/**
+ * Email envoye aux pros notifies. NE CONTIENT PAS le nom/telephone/email du
+ * demandeur (masques jusqu'a acceptation, cf. chantier 7). Le pro accede aux
+ * coordonnees en cliquant "Voir + accepter" dans son dashboard.
+ */
 export async function sendDemandeTransportPro(p: {
   to: string;
   proNom: string;
   typeLibelle: string;
-  demandeurNom: string;
-  telephone: string;
-  email?: string | null;
   lieuDepart?: string | null;
   lieuArrivee?: string | null;
   dateSouhaitee?: string | null;
   allerRetour?: boolean;
   mobilite?: string | null;
   precisions?: string | null;
-}) {
+  tauxPriseEnCharge?: string | null;
+  tauxPriseEnChargeAutre?: string | null;
+  bonTransportMedical?: boolean;
+  sourceForm?: string | null;
+  typeTransport?: string | null;
+}): Promise<{ id: string | null } | null> {
   const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const dashboardUrl = `${APP_URL_DV}/dashboard/demandes`;
+  const tauxStr = p.tauxPriseEnCharge
+    ? p.tauxPriseEnCharge === 'autre'
+      ? `Autre${p.tauxPriseEnChargeAutre ? ` (${escapeHtml(p.tauxPriseEnChargeAutre)} %)` : ''}`
+      : TAUX_LIBELLE[p.tauxPriseEnCharge] || escapeHtml(p.tauxPriseEnCharge)
+    : null;
+  const bonStr = p.bonTransportMedical
+    ? 'Oui'
+    : 'Manquant (le patient devra en fournir un)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader(`Nouvelle demande de transport (${p.typeLibelle})`)}
+      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(p.typeLibelle)})`)}
       <div style="padding: 28px 32px;">
-        <p style="font-size: 15px;">Bonjour <strong>${p.proNom}</strong>,</p>
+        <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
-          Une personne recherche un transport <strong>${p.typeLibelle}</strong> via RoullePro et se trouve
-          dans votre zone. Contactez-la directement pour lui proposer une prise en charge.
+          Une personne recherche un transport <strong>${escapeHtml(p.typeLibelle)}</strong> dans votre departement
+          via RoullePro. Les premieres reponses sont prioritaires : la course est attribuee au premier pro qui accepte.
         </p>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
           <table style="width:100%;font-size:14px;border-collapse:collapse">
-            ${ligneInfo('Demandeur', p.demandeurNom)}
-            ${ligneInfo('Téléphone', `<a href="tel:${p.telephone}" style="color:#2563eb">${p.telephone}</a>`)}
-            ${p.email ? ligneInfo('Email', `<a href="mailto:${p.email}" style="color:#2563eb">${p.email}</a>`) : ''}
-            ${ligneInfo('Départ', p.lieuDepart)}
-            ${ligneInfo('Arrivée', p.lieuArrivee)}
-            ${ligneInfo('Date souhaitée', dateStr)}
+            ${ligneInfo('Type', escapeHtml(p.typeLibelle))}
+            ${ligneInfo('Départ', escapeHtml(p.lieuDepart))}
+            ${ligneInfo('Arrivée', escapeHtml(p.lieuArrivee))}
+            ${ligneInfo('Date souhaitée', escapeHtml(dateStr))}
             ${p.allerRetour ? ligneInfo('Trajet', 'Aller-retour') : ''}
-            ${ligneInfo('Mobilité', p.mobilite)}
+            ${ligneInfo('Mobilité', escapeHtml(p.mobilite))}
+            ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
+            ${ligneInfo('Bon de transport', bonStr)}
           </table>
         </div>
-        ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${p.precisions.replace(/\n/g, '<br>')}</p></div>` : ''}
-        <p style="font-size:13px;color:#6b7280">Astuce : rappelez rapidement, les patients contactent souvent plusieurs transporteurs.</p>
+        ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
+        <div style="text-align:center;margin:24px 0">
+          <a href="${dashboardUrl}" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir + accepter</a>
+        </div>
+        <p style="font-size:13px;color:#6b7280">Les coordonnees du demandeur vous seront communiquees des que vous aurez accepte la course.</p>
         ${emailFooter()}
       </div>
     </div>
   `;
-  await sendEmail({
+  return sendEmail({
     to: p.to,
-    subject: `[RoullePro] Demande de transport ${p.typeLibelle} — ${p.demandeurNom}`,
+    subject: `[RoullePro] Demande de transport ${p.typeLibelle} a prendre`,
     html,
-    reply_to: p.email || undefined,
+    replyTo: 'contact@roullepro.com',
+    tags: [
+      { name: 'category', value: 'demande_transport' },
+      ...(p.sourceForm ? [{ name: 'source_form', value: p.sourceForm }] : []),
+      ...(p.typeTransport ? [{ name: 'type_transport', value: p.typeTransport }] : []),
+    ],
   });
 }
 
@@ -1243,15 +1295,16 @@ export async function sendDemandeTransportConfirmation(p: {
   typeLibelle: string;
   nbPros: number;
 }) {
+  const typeLibelle = escapeHtml(p.typeLibelle);
   const corps =
     p.nbPros > 0
-      ? `Votre demande de transport <strong>${p.typeLibelle}</strong> a été transmise à ${p.nbPros} professionnel${p.nbPros > 1 ? 's' : ''} proche${p.nbPros > 1 ? 's' : ''} de vous. Ils vous recontacteront directement par téléphone.`
-      : `Votre demande de transport <strong>${p.typeLibelle}</strong> a bien été enregistrée. Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement.`;
+      ? `Votre demande de transport <strong>${typeLibelle}</strong> a été transmise à ${p.nbPros} professionnel${p.nbPros > 1 ? 's' : ''} proche${p.nbPros > 1 ? 's' : ''} de vous. Ils vous recontacteront directement par téléphone.`
+      : `Votre demande de transport <strong>${typeLibelle}</strong> a bien été enregistrée. Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement.`;
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
       ${emailHeader('Votre demande de transport est transmise')}
       <div style="padding: 28px 32px;">
-        <p style="font-size: 15px;">Bonjour ${p.demandeurNom || ''},</p>
+        <p style="font-size: 15px;">Bonjour ${escapeHtml(p.demandeurNom) || ''},</p>
         <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:14px 18px;margin:20px 0">
           <p style="margin:0;color:#1d4ed8;font-size:14px">${corps}</p>
         </div>
@@ -1298,19 +1351,19 @@ export async function sendDemandeTransportFallback(p: {
         </div>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
           <table style="width:100%;font-size:14px;border-collapse:collapse">
-            ${ligneInfo('Type', p.typeLibelle)}
-            ${ligneInfo('Demandeur', p.demandeurNom)}
-            ${ligneInfo('Téléphone', p.telephone)}
-            ${p.email ? ligneInfo('Email', p.email) : ''}
-            ${ligneInfo('Département', p.departement)}
-            ${ligneInfo('Ville', p.ville)}
-            ${ligneInfo('Départ', p.lieuDepart)}
-            ${ligneInfo('Arrivée', p.lieuArrivee)}
-            ${ligneInfo('Date souhaitée', dateStr)}
-            ${ligneInfo('ID demande', p.demandeId)}
+            ${ligneInfo('Type', escapeHtml(p.typeLibelle))}
+            ${ligneInfo('Demandeur', escapeHtml(p.demandeurNom))}
+            ${ligneInfo('Téléphone', escapeHtml(p.telephone))}
+            ${p.email ? ligneInfo('Email', escapeHtml(p.email)) : ''}
+            ${ligneInfo('Département', escapeHtml(p.departement))}
+            ${ligneInfo('Ville', escapeHtml(p.ville))}
+            ${ligneInfo('Départ', escapeHtml(p.lieuDepart))}
+            ${ligneInfo('Arrivée', escapeHtml(p.lieuArrivee))}
+            ${ligneInfo('Date souhaitée', escapeHtml(dateStr))}
+            ${ligneInfo('ID demande', escapeHtml(p.demandeId))}
           </table>
         </div>
-        ${p.precisions ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${p.precisions.replace(/\n/g, '<br>')}</p></div>` : ''}
+        ${p.precisions ? `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         ${emailFooter()}
       </div>
     </div>
