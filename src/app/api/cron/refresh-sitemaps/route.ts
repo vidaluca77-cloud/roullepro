@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
-import { SANITAIRE_FICHES_CHUNKS } from "@/lib/sitemap-builders";
+import {
+  SANITAIRE_FICHES_CHUNKS,
+  countEtablissementsChunks,
+} from "@/lib/sitemap-builders";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +44,16 @@ export async function GET(req: Request) {
     const id = 2 + i;
     revalidatePath(`/sitemaps/${id}`);
     revalidated.push(`/sitemaps/${id}`);
+  }
+
+  // Chunks etablissements FINESS + pages "transport vers" (declares directement
+  // dans l'index racine depuis le fix shards vides).
+  const etabChunks = await countEtablissementsChunks();
+  for (let i = 0; i < etabChunks; i += 1) {
+    revalidatePath(`/sitemaps/etablissements-${i}`);
+    revalidated.push(`/sitemaps/etablissements-${i}`);
+    revalidatePath(`/sitemaps/transport-vers-${i}`);
+    revalidated.push(`/sitemaps/transport-vers-${i}`);
   }
 
   return NextResponse.json({
