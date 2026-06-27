@@ -13,6 +13,7 @@ import { buildBreadcrumbJsonLd, jsonLdHtml, BASE_URL } from "@/lib/seo-schema";
 import { getEtablissementsCount } from "@/lib/stats";
 import RechercheEtablissement from "@/components/RechercheEtablissement";
 import { FinessFooter } from "./FinessFooter";
+import ChantierETiles from "@/components/etablissements/ChantierETiles";
 
 export const revalidate = 86400;
 
@@ -302,6 +303,9 @@ export default async function EtablissementsHubPage() {
           </div>
         </section>
       )}
+
+      {/* Pages thematiques par type x ville - Chantier E */}
+      <ChantierETiles />
 
       {/* CTA etablissements */}
       <section className="max-w-6xl mx-auto px-4 pb-14">

@@ -200,8 +200,9 @@ async function queryNearby(
     .slice(0, limit);
 }
 
-// Fallback : aucune geoloc dispo cote etablissement -> on liste les transporteurs
-// conventionnes par ville_slug, puis par departement, sans distance.
+// Fallback : aucune geoloc dispo cote etablissement -> on combine ville_slug,
+// departement (priorise les pros payants/claimed du dept, meme sans geoloc) et
+// renvoie un melange dedupe et trie par priorite.
 async function queryFallbackVilleDept(
   villeSlug: string | null,
   departement: string | null,
@@ -209,17 +210,7 @@ async function queryFallbackVilleDept(
 ): Promise<NearbyTransporter[]> {
   const supabase = getSupabaseEtab();
 
-  async function run(filterCol: "ville_slug" | "departement", filterVal: string) {
-    const { data } = await supabase
-      .from("pros_sanitaire")
-      .select(SELECT_COLUMNS)
-      .eq("actif", true)
-      .eq("suspendu", false)
-      .or(PUBLIC_TAXI_FILTER)
-      .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
-      .eq(filterCol, filterVal)
-      .limit(limit * 5);
-    const rows = (data ?? []) as Row[];
+  function mapRows(rows: Row[]): NearbyTransporter[] {
     return rows
       .filter((r) => r.slug && r.ville_slug)
       .map<NearbyTransporter>((r) => {
@@ -235,19 +226,69 @@ async function queryFallbackVilleDept(
           priorite,
           verifie: priorite < 2,
         };
-      })
-      .sort(sortNearby)
-      .slice(0, limit);
+      });
   }
 
-  if (villeSlug) {
-    const byVille = await run("ville_slug", villeSlug);
-    if (byVille.length > 0) return byVille;
+  // Query A : tous les pros de la meme ville (ambulances + VSL + taxis).
+  const queryVille = villeSlug
+    ? supabase
+        .from("pros_sanitaire")
+        .select(SELECT_COLUMNS)
+        .eq("actif", true)
+        .eq("suspendu", false)
+        .or(PUBLIC_TAXI_FILTER)
+        .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+        .eq("ville_slug", villeSlug)
+        .limit(limit * 5)
+    : null;
+
+  // Query B : TOUS les pros payants OU claimed du departement (meme sans geoloc).
+  // Garantit que les fiches reclamees / payantes du dept remontent toujours,
+  // meme quand l'etablissement n'a pas de coordonnees (cas frequent FINESS).
+  const queryPrioritairesDept = departement
+    ? supabase
+        .from("pros_sanitaire")
+        .select(SELECT_COLUMNS)
+        .eq("actif", true)
+        .eq("suspendu", false)
+        .or(PUBLIC_TAXI_FILTER)
+        .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+        .eq("departement", departement)
+        .or("plan.neq.gratuit,claimed.eq.true")
+        .limit(200)
+    : null;
+
+  const [villeRes, prioRes] = await Promise.all([
+    queryVille ?? Promise.resolve({ data: [] }),
+    queryPrioritairesDept ?? Promise.resolve({ data: [] }),
+  ]);
+
+  const rowsVille = (villeRes.data ?? []) as Row[];
+  const rowsPrio = (prioRes.data ?? []) as Row[];
+
+  // Deduplication par slug, priorite aux lignes prioritaires (payants/claimed).
+  const dedup = new Map<string, Row>();
+  for (const r of [...rowsPrio, ...rowsVille]) {
+    if (r.slug && !dedup.has(r.slug as string)) dedup.set(r.slug as string, r);
   }
-  if (departement) {
-    return await run("departement", departement);
+
+  let merged = mapRows(Array.from(dedup.values())).sort(sortNearby).slice(0, limit);
+
+  // Si rien dans ville ni prio dept, ultime fallback : tout le departement.
+  if (merged.length === 0 && departement) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select(SELECT_COLUMNS)
+      .eq("actif", true)
+      .eq("suspendu", false)
+      .or(PUBLIC_TAXI_FILTER)
+      .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+      .eq("departement", departement)
+      .limit(limit * 5);
+    merged = mapRows((data ?? []) as Row[]).sort(sortNearby).slice(0, limit);
   }
-  return [];
+
+  return merged;
 }
 
 /**
@@ -276,7 +317,7 @@ export async function getNearbyTransporters(
       }
       return queryFallbackVilleDept(villeSlug, departement, limit);
     },
-    ["nearby-transporters-v4", etablissementSlug, String(limit)],
+    ["nearby-transporters-v5", etablissementSlug, String(limit)],
     { revalidate: 86400, tags: [`nearby-transporters:${etablissementSlug}`] }
   );
   return load();
