@@ -17,6 +17,9 @@ export default function MiniFormulaireReservation({
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [dateSouhaitee, setDateSouhaitee] = useState("");
+  const [bonTransport, setBonTransport] = useState(false);
+  // Honeypot anti-bot : doit rester vide.
+  const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +42,13 @@ export default function MiniFormulaireReservation({
           telephone: telephone.trim(),
           date_souhaitee: dateSouhaitee || null,
           lieu_arrivee: lieuArrivee,
+          bon_transport_medical: bonTransport,
           etablissement_id: etablissementId,
           departement_cible: departementCible,
           ville_cible: villeCible,
           source_page: "fiche_etablissement",
+          source_form: "widget",
+          website,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -101,6 +107,26 @@ export default function MiniFormulaireReservation({
         onChange={(e) => setDateSouhaitee(e.target.value)}
         aria-label="Date souhaitée"
         className={inputCls}
+      />
+      <label className="flex items-center gap-2 text-sm text-white cursor-pointer">
+        <input
+          type="checkbox"
+          checked={bonTransport}
+          onChange={(e) => setBonTransport(e.target.checked)}
+          className="w-4 h-4 rounded border-white/40"
+        />
+        J&apos;ai un bon de transport médical
+      </label>
+      {/* Honeypot anti-bot : invisible. */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        style={{ display: "none" }}
       />
       {error && (
         <div className="text-xs text-white bg-red-500/30 border border-red-300/40 rounded-lg px-3 py-2">

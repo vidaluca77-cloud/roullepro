@@ -24,6 +24,15 @@ const ICONES: Record<TypeTransport, typeof Car> = {
   ambulance: Cross,
 };
 
+// Mapping de la source-page (analytics) vers le source_form attendu cote API.
+const SOURCE_PAGE_TO_FORM: Partial<Record<SourcePage, string>> = {
+  home: "home",
+  etablissement: "etablissement",
+  fiche_etablissement: "etablissement",
+  "transport-vers": "transport_vers",
+  "fiche-pro": "fiche_pro",
+};
+
 export type DemandeTransportFormProps = {
   sourcePage: SourcePage;
   etablissementId?: string | null;
@@ -55,6 +64,11 @@ export default function DemandeTransportForm({
   const [allerRetour, setAllerRetour] = useState(false);
   const [mobilite, setMobilite] = useState<Mobilite>("autonome");
   const [precisions, setPrecisions] = useState("");
+  const [tauxPriseEnCharge, setTauxPriseEnCharge] = useState<"" | "100" | "65" | "autre">("");
+  const [tauxAutre, setTauxAutre] = useState("");
+  const [bonTransport, setBonTransport] = useState(false);
+  // Honeypot anti-bot : doit rester vide.
+  const [website, setWebsite] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -86,7 +100,12 @@ export default function DemandeTransportForm({
           aller_retour: allerRetour,
           mobilite,
           precisions: precisions.trim() || null,
+          taux_prise_en_charge: tauxPriseEnCharge || null,
+          taux_prise_en_charge_autre: tauxPriseEnCharge === "autre" ? tauxAutre.trim() || null : null,
+          bon_transport_medical: bonTransport,
           source_page: sourcePage,
+          source_form: SOURCE_PAGE_TO_FORM[sourcePage] ?? null,
+          website,
           etablissement_id: etablissementId,
           pro_id_cible: proIdCible,
           departement_cible: departementCible,
@@ -258,6 +277,64 @@ export default function DemandeTransportForm({
           </div>
 
           <div>
+            <label className={labelCls}>Taux de prise en charge (facultatif)</label>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                ["100", "100 %"],
+                ["65", "65 %"],
+                ["autre", "Autre"],
+              ] as const).map(([val, lib]) => (
+                <label
+                  key={val}
+                  className={`flex items-center justify-center px-2 py-2 border rounded-xl cursor-pointer transition text-sm text-center ${
+                    tauxPriseEnCharge === val
+                      ? "border-[#0066CC] bg-blue-50 text-[#0066CC] font-medium"
+                      : "border-gray-200 text-gray-700 hover:border-gray-300"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="taux"
+                    value={val}
+                    checked={tauxPriseEnCharge === val}
+                    onChange={() => setTauxPriseEnCharge(val)}
+                    className="sr-only"
+                  />
+                  {lib}
+                </label>
+              ))}
+            </div>
+            {tauxPriseEnCharge === "autre" && (
+              <input
+                type="number"
+                min={0}
+                max={100}
+                placeholder="Taux en % (0 à 100)"
+                value={tauxAutre}
+                onChange={(e) => setTauxAutre(e.target.value)}
+                className={`${inputCls} mt-2`}
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={bonTransport}
+                onChange={(e) => setBonTransport(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-[#0066CC] focus:ring-[#0066CC]"
+              />
+              Je dispose d&apos;un bon de transport médical
+            </label>
+            {!bonTransport && (
+              <p className="text-xs text-gray-500 mt-1.5">
+                Sans bon de transport, certains pros peuvent ne pas pouvoir prendre votre course.
+              </p>
+            )}
+          </div>
+
+          <div>
             <label className={labelCls}>Précisions (facultatif)</label>
             <textarea
               placeholder="Toute information utile pour le professionnel (sans données médicales sensibles)"
@@ -269,6 +346,18 @@ export default function DemandeTransportForm({
           </div>
         </>
       )}
+
+      {/* Honeypot anti-bot : invisible, ne doit jamais etre rempli par un humain. */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        style={{ display: "none" }}
+      />
 
       {error && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -285,8 +374,8 @@ export default function DemandeTransportForm({
         Trouver un transport
       </button>
       <p className="text-[11px] text-gray-500 text-center">
-        Ne mentionnez pas de motif médical ou diagnostic. RoullePro ne stocke aucune donnée de santé.
-        Vos coordonnées ne sont transmises qu&apos;aux transporteurs proches de vous.
+        Vos données sont transmises uniquement aux professionnels susceptibles de répondre à votre demande.
+        Évitez d&apos;indiquer des données de santé dans les précisions.
       </p>
     </form>
   );
