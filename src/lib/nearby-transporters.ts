@@ -11,6 +11,10 @@
  * sont visibles que verifies ou reclames (conventionnes CPAM), ambulances et VSL
  * sont par nature conventionnables. Les fiches reclamees ne sont JAMAIS modifiees
  * ici : on ne fait que les lister.
+ *
+ * Priorisation business : les pros payants (plan != 'gratuit') sont mis en avant,
+ * suivis des fiches reclamees (claimed = true), puis du reste par distance/ville.
+ * Le champ priorite (0/1/2) sert a alimenter le badge "Verifie" dans l'UI.
  */
 
 import { unstable_cache } from "next/cache";
@@ -26,6 +30,10 @@ export type NearbyTransporter = {
   /** Segment d'URL de la categorie : "taxi-conventionne" | "vsl" | "ambulance". */
   type: string;
   distance_km: number;
+  /** 0 = pro payant, 1 = fiche reclamee (claimed), 2 = base sans abonnement ni reclamation. */
+  priorite: 0 | 1 | 2;
+  /** True si la fiche merite le badge "Verifie" (priorite < 2). */
+  verifie: boolean;
 };
 
 // categorie BDD -> segment d'URL (taxi_conventionne -> taxi-conventionne, etc.).
@@ -53,7 +61,18 @@ type Row = {
   categorie: CategorieSanitaire;
   latitude: number | null;
   longitude: number | null;
+  plan: string | null;
+  claimed: boolean | null;
 };
+
+const SELECT_COLUMNS =
+  "slug, raison_sociale, nom_commercial, ville, ville_slug, categorie, latitude, longitude, plan, claimed";
+
+function computePriorite(plan: string | null, claimed: boolean | null): 0 | 1 | 2 {
+  if (plan && plan !== "gratuit") return 0;
+  if (claimed === true) return 1;
+  return 2;
+}
 
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
@@ -69,6 +88,12 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
   return R * c;
 }
 
+/** Tri composite : priorite ASC (payants > claimed > base), puis distance ASC. */
+function sortNearby(a: NearbyTransporter, b: NearbyTransporter): number {
+  if (a.priorite !== b.priorite) return a.priorite - b.priorite;
+  return a.distance_km - b.distance_km;
+}
+
 async function queryNearby(
   latitude: number,
   longitude: number,
@@ -82,9 +107,7 @@ async function queryNearby(
   const supabase = getSupabaseEtab();
   const { data } = await supabase
     .from("pros_sanitaire")
-    .select(
-      "slug, raison_sociale, nom_commercial, ville, ville_slug, categorie, latitude, longitude"
-    )
+    .select(SELECT_COLUMNS)
     .eq("actif", true)
     .eq("suspendu", false)
     .or(PUBLIC_TAXI_FILTER)
@@ -100,16 +123,21 @@ async function queryNearby(
   const rows = (data ?? []) as Row[];
   return rows
     .filter((r) => r.slug && r.ville_slug && r.latitude != null && r.longitude != null)
-    .map((r) => ({
-      slug: r.slug as string,
-      nom: r.nom_commercial || r.raison_sociale,
-      ville: r.ville ?? "",
-      ville_slug: r.ville_slug as string,
-      categorie: r.categorie,
-      type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
-      distance_km: Math.round(haversineKm(latitude, longitude, r.latitude as number, r.longitude as number) * 10) / 10,
-    }))
-    .sort((a, b) => a.distance_km - b.distance_km)
+    .map<NearbyTransporter>((r) => {
+      const priorite = computePriorite(r.plan, r.claimed);
+      return {
+        slug: r.slug as string,
+        nom: r.nom_commercial || r.raison_sociale,
+        ville: r.ville ?? "",
+        ville_slug: r.ville_slug as string,
+        categorie: r.categorie,
+        type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
+        distance_km: Math.round(haversineKm(latitude, longitude, r.latitude as number, r.longitude as number) * 10) / 10,
+        priorite,
+        verifie: priorite < 2,
+      };
+    })
+    .sort(sortNearby)
     .slice(0, limit);
 }
 
@@ -121,31 +149,35 @@ async function queryFallbackVilleDept(
   limit: number
 ): Promise<NearbyTransporter[]> {
   const supabase = getSupabaseEtab();
-  const baseSelect =
-    "slug, raison_sociale, nom_commercial, ville, ville_slug, categorie, latitude, longitude";
 
   async function run(filterCol: "ville_slug" | "departement", filterVal: string) {
     const { data } = await supabase
       .from("pros_sanitaire")
-      .select(baseSelect)
+      .select(SELECT_COLUMNS)
       .eq("actif", true)
       .eq("suspendu", false)
       .or(PUBLIC_TAXI_FILTER)
       .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
       .eq(filterCol, filterVal)
-      .limit(limit * 3);
+      .limit(limit * 5);
     const rows = (data ?? []) as Row[];
     return rows
       .filter((r) => r.slug && r.ville_slug)
-      .map<NearbyTransporter>((r) => ({
-        slug: r.slug as string,
-        nom: r.nom_commercial || r.raison_sociale,
-        ville: r.ville ?? "",
-        ville_slug: r.ville_slug as string,
-        categorie: r.categorie,
-        type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
-        distance_km: 0,
-      }))
+      .map<NearbyTransporter>((r) => {
+        const priorite = computePriorite(r.plan, r.claimed);
+        return {
+          slug: r.slug as string,
+          nom: r.nom_commercial || r.raison_sociale,
+          ville: r.ville ?? "",
+          ville_slug: r.ville_slug as string,
+          categorie: r.categorie,
+          type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
+          distance_km: 0,
+          priorite,
+          verifie: priorite < 2,
+        };
+      })
+      .sort(sortNearby)
       .slice(0, limit);
   }
 
@@ -160,9 +192,9 @@ async function queryFallbackVilleDept(
 }
 
 /**
- * Retourne les transporteurs conventionnes proches d'un etablissement, tries par
- * distance croissante. Mise en cache 1 jour (cle nearby-transporters:{slug})
- * car la requete charge jusqu'a 1000 fiches puis trie en memoire.
+ * Retourne les transporteurs conventionnes proches d'un etablissement, tries
+ * par priorisation business (payants > claimed > base) puis distance croissante.
+ * Mise en cache 1 jour (cle nearby-transporters-v3:{slug}).
  *
  * Fallback : si l'etablissement n'a pas de geoloc (cas frequent sur le referentiel
  * FINESS importe sans lat/lng), on liste les transporteurs par ville_slug puis
@@ -185,7 +217,7 @@ export async function getNearbyTransporters(
       }
       return queryFallbackVilleDept(villeSlug, departement, limit);
     },
-    ["nearby-transporters-v2", etablissementSlug, String(limit)],
+    ["nearby-transporters-v3", etablissementSlug, String(limit)],
     { revalidate: 86400, tags: [`nearby-transporters:${etablissementSlug}`] }
   );
   return load();
