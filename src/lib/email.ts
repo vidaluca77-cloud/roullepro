@@ -1600,3 +1600,192 @@ export async function sendDemandeTransportAutreAcceptee(p: {
     ],
   });
 }
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS ADMIN — demandes de transport (module admin PR #29)
+═══════════════════════════════════════════════════════════ */
+
+/** Destinataire des notifications admin transport. */
+function adminNotificationEmail(): string {
+  return process.env.ADMIN_NOTIFICATION_EMAIL || 'contact@roullepro.com';
+}
+
+const LIBELLE_TYPE_ADMIN: Record<string, string> = {
+  taxi: 'Taxi conventionné',
+  vsl: 'VSL',
+  ambulance: 'Ambulance',
+};
+
+/* ── Admin : nouvelle demande de transport reçue ── */
+export async function sendAdminNouvelleDemande(demande: {
+  id: string;
+  nom?: string | null;
+  telephone?: string | null;
+  email?: string | null;
+  type_transport?: string | null;
+  date_souhaitee?: string | null;
+  lieu_depart?: string | null;
+  lieu_arrivee?: string | null;
+  departement_cible?: string | null;
+  ville_cible?: string | null;
+  precisions?: string | null;
+  taux_prise_en_charge?: string | null;
+  taux_prise_en_charge_autre?: string | null;
+  source_form?: string | null;
+  pros_notifies?: number;
+}): Promise<{ id: string | null } | null> {
+  const type = demande.type_transport || '';
+  const typeLib = LIBELLE_TYPE_ADMIN[type] || type || 'Transport';
+  const dpt = demande.departement_cible || '—';
+  const dateStr = formatDateSouhaitee(demande.date_souhaitee);
+  const tel = telHref(demande.telephone);
+  const tauxStr = tauxLibelle(demande.taux_prise_en_charge, demande.taux_prise_en_charge_autre);
+  const adminUrl = `${APP_URL}/admin/transport-medical/demandes/${demande.id}`;
+  const nbPros = demande.pros_notifies ?? 0;
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader(`Nouvelle demande de transport (${escapeHtml(typeLib)})`)}
+      <div style="padding: 28px 32px;">
+        ${nbPros === 0 ? `<div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:14px 18px;margin-bottom:20px"><p style="margin:0;color:#9a3412;font-weight:600;font-size:14px">Aucun professionnel notifié automatiquement. À traiter manuellement.</p></div>` : ''}
+        <p style="font-size:15px;color:#374151">Une nouvelle demande de transport vient d'être déposée sur RoullePro.</p>
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
+          <table style="width:100%;font-size:14px;border-collapse:collapse">
+            ${ligneInfo('Nom', escapeHtml(demande.nom))}
+            ${demande.telephone ? `<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:8px 0;color:#6b7280;width:140px">Téléphone</td><td style="padding:8px 0;font-weight:600">${tel ? `<a href="${tel}" style="color:#2563eb">${escapeHtml(demande.telephone)}</a>` : escapeHtml(demande.telephone)}</td></tr>` : ''}
+            ${demande.email ? `<tr style="border-bottom:1px solid #e5e7eb"><td style="padding:8px 0;color:#6b7280;width:140px">Email</td><td style="padding:8px 0;font-weight:600"><a href="mailto:${escapeHtml(demande.email)}" style="color:#2563eb">${escapeHtml(demande.email)}</a></td></tr>` : ''}
+            ${ligneInfo('Type', escapeHtml(typeLib))}
+            ${ligneInfo('Date souhaitée', escapeHtml(dateStr))}
+            ${ligneInfo('Départ', escapeHtml(demande.lieu_depart))}
+            ${ligneInfo('Arrivée', escapeHtml(demande.lieu_arrivee))}
+            ${ligneInfo('Département', escapeHtml(dpt))}
+            ${ligneInfo('Ville', escapeHtml(demande.ville_cible))}
+            ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
+            ${ligneInfo('Source formulaire', escapeHtml(demande.source_form))}
+            ${ligneInfo('Pros notifiés', String(nbPros))}
+          </table>
+        </div>
+        ${demande.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(demande.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
+        <div style="text-align:center;margin:24px 0">${emailButton(adminUrl, 'Voir dans l\'admin')}</div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: adminNotificationEmail(),
+    subject: `[RoullePro] Nouvelle demande ${type || 'transport'} dpt ${dpt} — ${demande.nom || ''}`.trim(),
+    html,
+    tags: [{ name: 'category', value: 'admin_nouvelle_demande_transport' }],
+  });
+}
+
+/* ── Admin : récap quotidien des demandes de transport ── */
+export async function sendAdminRecapQuotidien(stats: {
+  date: string;
+  total: number;
+  par_statut: { envoyee: number; acceptee: number; terminee: number; annulee: number };
+  par_type: { taxi: number; vsl: number; ambulance: number };
+  top_departements: Array<{ dpt: string; count: number }>;
+  demandes_du_jour: Array<{
+    id: string;
+    nom: string | null;
+    type: string | null;
+    dpt: string | null;
+    statut: string | null;
+    created_at: string | null;
+  }>;
+}): Promise<{ id: string | null } | null> {
+  const dateFR = (() => {
+    const d = new Date(stats.date);
+    if (Number.isNaN(d.getTime())) return stats.date;
+    return new Intl.DateTimeFormat('fr-FR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(d);
+  })();
+  const adminUrl = `${APP_URL}/admin/transport-medical/demandes`;
+
+  const carte = (label: string, valeur: number, color: string) => `
+    <td style="padding:6px">
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:${color}">${valeur}</div>
+        <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em;margin-top:4px">${label}</div>
+      </div>
+    </td>`;
+
+  const lignesDemandes = stats.demandes_du_jour
+    .map((d) => {
+      const heure = d.created_at
+        ? new Date(d.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        : '';
+      const typeLib = d.type ? LIBELLE_TYPE_ADMIN[d.type] || d.type : '—';
+      return `<tr style="border-bottom:1px solid #e5e7eb">
+        <td style="padding:8px 6px;color:#6b7280;font-size:12px">${escapeHtml(heure)}</td>
+        <td style="padding:8px 6px;font-size:13px">${escapeHtml(d.nom) || '—'}</td>
+        <td style="padding:8px 6px;font-size:13px">${escapeHtml(typeLib)}</td>
+        <td style="padding:8px 6px;font-size:13px">${escapeHtml(d.dpt) || '—'}</td>
+        <td style="padding:8px 6px;font-size:12px;color:#6b7280">${escapeHtml(d.statut) || '—'}</td>
+      </tr>`;
+    })
+    .join('');
+
+  const topDpt = stats.top_departements.length
+    ? stats.top_departements
+        .map(
+          (t) =>
+            `<span style="display:inline-block;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;margin:2px">${escapeHtml(t.dpt)} · ${t.count}</span>`
+        )
+        .join('')
+    : '<span style="color:#9ca3af;font-size:13px">Aucun</span>';
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader(`Récap demandes transport — ${dateFR}`)}
+      <div style="padding: 28px 32px;">
+        <p style="font-size:15px;color:#374151"><strong>${stats.total}</strong> demande${stats.total > 1 ? 's' : ''} sur les dernières 24 heures.</p>
+
+        <h3 style="font-size:14px;color:#111827;margin:24px 0 8px">Par statut</h3>
+        <table style="width:100%;border-collapse:collapse"><tr>
+          ${carte('Envoyées', stats.par_statut.envoyee, '#2563eb')}
+          ${carte('Acceptées', stats.par_statut.acceptee, '#16a34a')}
+          ${carte('Terminées', stats.par_statut.terminee, '#6b7280')}
+          ${carte('Annulées', stats.par_statut.annulee, '#dc2626')}
+        </tr></table>
+
+        <h3 style="font-size:14px;color:#111827;margin:24px 0 8px">Par catégorie</h3>
+        <table style="width:100%;border-collapse:collapse"><tr>
+          ${carte('Taxi', stats.par_type.taxi, '#2563eb')}
+          ${carte('VSL', stats.par_type.vsl, '#2563eb')}
+          ${carte('Ambulance', stats.par_type.ambulance, '#2563eb')}
+        </tr></table>
+
+        <h3 style="font-size:14px;color:#111827;margin:24px 0 8px">Top départements</h3>
+        <div>${topDpt}</div>
+
+        <h3 style="font-size:14px;color:#111827;margin:24px 0 8px">Demandes du jour</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <tr style="border-bottom:2px solid #e5e7eb">
+            <td style="padding:8px 6px;color:#6b7280;font-size:11px;text-transform:uppercase">Heure</td>
+            <td style="padding:8px 6px;color:#6b7280;font-size:11px;text-transform:uppercase">Patient</td>
+            <td style="padding:8px 6px;color:#6b7280;font-size:11px;text-transform:uppercase">Type</td>
+            <td style="padding:8px 6px;color:#6b7280;font-size:11px;text-transform:uppercase">Dpt</td>
+            <td style="padding:8px 6px;color:#6b7280;font-size:11px;text-transform:uppercase">Statut</td>
+          </tr>
+          ${lignesDemandes}
+        </table>
+
+        <div style="text-align:center;margin:28px 0">${emailButton(adminUrl, 'Ouvrir le module admin')}</div>
+        ${emailFooter()}
+      </div>
+    </div>
+  `;
+
+  return sendEmail({
+    to: adminNotificationEmail(),
+    subject: `[RoullePro] Récap demandes transport — ${dateFR}`,
+    html,
+    tags: [{ name: 'category', value: 'admin_recap_quotidien_transport' }],
+  });
+}
