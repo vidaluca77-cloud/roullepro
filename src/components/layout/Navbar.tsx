@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, User, LogOut, LayoutDashboard, Wrench, Shield, Cross } from 'lucide-react';
+import { Menu, X, User, LogOut, LayoutDashboard, Wrench, Shield, Cross, ChevronDown, Building2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -17,6 +17,8 @@ export default function Navbar() {
   const [garageDemandes, setGarageDemandes] = useState(0);
   const [hasSanitaire, setHasSanitaire] = useState(false);
   const [sanitaireUnread, setSanitaireUnread] = useState(0);
+  const [etabMenuOpen, setEtabMenuOpen] = useState(false);
+  const [etabMobileOpen, setEtabMobileOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
@@ -27,6 +29,15 @@ export default function Navbar() {
     { href: '/pro', label: 'Espace pro' },
     { href: '/partenaires/assurance-pro', label: 'Assurance pro' },
     { href: '/blog', label: 'Blog' },
+  ];
+
+  const etablissementsLinks = [
+    { href: '/etablissements/hopitaux', label: 'Hôpitaux' },
+    { href: '/etablissements/cliniques', label: 'Cliniques' },
+    { href: '/etablissements/ehpad', label: 'EHPAD' },
+    { href: '/etablissements/centres-sante', label: 'Centres de santé' },
+    { href: '/etablissements/centres-dialyse', label: 'Centres de dialyse' },
+    { href: '/etablissements/rehabilitation', label: 'Centres de réadaptation' },
   ];
 
   useEffect(() => {
@@ -153,6 +164,49 @@ export default function Navbar() {
               </Link>
             ))}
 
+            <div
+              className="relative"
+              onMouseEnter={() => setEtabMenuOpen(true)}
+              onMouseLeave={() => setEtabMenuOpen(false)}
+            >
+              <button
+                type="button"
+                onClick={() => setEtabMenuOpen((o) => !o)}
+                aria-haspopup="true"
+                aria-expanded={etabMenuOpen}
+                className={`flex items-center gap-1 text-sm font-medium transition-colors ${
+                  pathname.startsWith('/etablissements')
+                    ? 'text-blue-600'
+                    : 'text-gray-600 hover:text-blue-600'
+                }`}
+              >
+                Établissements
+                <ChevronDown className={`h-4 w-4 transition-transform ${etabMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {etabMenuOpen && (
+                <div className="absolute left-0 mt-2 w-60 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-100">
+                  {etablissementsLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                      onClick={() => setEtabMenuOpen(false)}
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/etablissements"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0066CC] hover:bg-blue-50 border-t border-gray-100"
+                    onClick={() => setEtabMenuOpen(false)}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    Voir tous les établissements
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {user ? (
               <div className="relative">
                 <button
@@ -234,6 +288,14 @@ export default function Navbar() {
                           Admin réclamations sanitaire
                         </Link>
                         <Link
+                          href="/admin/transport-medical/demandes"
+                          className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Shield className="h-4 w-4 mr-2" />
+                          Demandes Transport
+                        </Link>
+                        <Link
                           href="/admin/partenaires"
                           className="flex items-center px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-semibold"
                           onClick={() => setUserMenuOpen(false)}
@@ -300,6 +362,40 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <div>
+              <button
+                type="button"
+                onClick={() => setEtabMobileOpen((o) => !o)}
+                aria-expanded={etabMobileOpen}
+                className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-blue-600 py-1"
+              >
+                Établissements
+                <ChevronDown className={`h-4 w-4 transition-transform ${etabMobileOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {etabMobileOpen && (
+                <div className="pl-3 mt-1 space-y-1 border-l border-gray-100">
+                  {etablissementsLinks.map((l) => (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      onClick={() => setIsOpen(false)}
+                      className="block text-sm text-gray-600 hover:text-blue-600 py-1"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/etablissements"
+                    onClick={() => setIsOpen(false)}
+                    className="block text-sm font-semibold text-[#0066CC] py-1"
+                  >
+                    Voir tous les établissements
+                  </Link>
+                </div>
+              )}
+            </div>
+
             {user ? (
               <div className="border-t pt-2 space-y-2">
                 {hasSanitaire && (
@@ -340,6 +436,9 @@ export default function Navbar() {
                     </Link>
                     <Link href="/admin/sanitaire/reclamations" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
                       <Shield className="h-4 w-4" /> Admin réclamations sanitaire
+                    </Link>
+                    <Link href="/admin/transport-medical/demandes" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
+                      <Shield className="h-4 w-4" /> Demandes Transport
                     </Link>
                     <Link href="/admin/partenaires" className="flex items-center gap-1.5 text-sm text-amber-700 hover:text-amber-800 font-semibold py-1" onClick={() => setIsOpen(false)}>
                       <Shield className="h-4 w-4" /> Admin partenaires

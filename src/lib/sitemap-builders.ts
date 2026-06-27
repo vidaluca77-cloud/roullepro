@@ -212,6 +212,67 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
   ];
 }
 
+// Pagination des sitemaps FINESS : 10 000 URLs par page.
+export const ETAB_CHUNK_SIZE = 10000;
+
+/**
+ * Nombre de chunks necessaires pour couvrir toutes les fiches etablissements.
+ * Avec ~18 900 fiches et un chunk de 10 000, retourne 2.
+ */
+export async function countEtablissementsChunks(): Promise<number> {
+  const supabase = getSupabase();
+  const { count } = await supabase
+    .from("etablissements_sante_public")
+    .select("slug", { count: "exact", head: true });
+  return Math.max(1, Math.ceil((count || 0) / ETAB_CHUNK_SIZE));
+}
+
+/**
+ * Fiches etablissements FINESS, paginees par 10 000.
+ * /etablissements/[slug]
+ */
+export async function buildEtablissementsEntries(chunkIndex = 0): Promise<SitemapEntry[]> {
+  const supabase = getSupabase();
+  const offset = chunkIndex * ETAB_CHUNK_SIZE;
+  const { data } = await supabase
+    .from("etablissements_sante_public")
+    .select("slug, source_updated_at")
+    .order("slug", { ascending: true })
+    .range(offset, offset + ETAB_CHUNK_SIZE - 1);
+  if (!data) return [];
+  return (data as { slug: string; source_updated_at: string | null }[])
+    .filter((e) => e.slug)
+    .map((e) => ({
+      url: `${BASE_URL}/etablissements/${e.slug}`,
+      lastmod: e.source_updated_at || undefined,
+      changefreq: "monthly" as const,
+      priority: 0.6,
+    }));
+}
+
+/**
+ * Pages de conversion "transport vers [etablissement]", paginees par 10 000.
+ * /transport-medical/vers/[slug]
+ */
+export async function buildTransportVersEntries(chunkIndex = 0): Promise<SitemapEntry[]> {
+  const supabase = getSupabase();
+  const offset = chunkIndex * ETAB_CHUNK_SIZE;
+  const { data } = await supabase
+    .from("etablissements_sante_public")
+    .select("slug, source_updated_at")
+    .order("slug", { ascending: true })
+    .range(offset, offset + ETAB_CHUNK_SIZE - 1);
+  if (!data) return [];
+  return (data as { slug: string; source_updated_at: string | null }[])
+    .filter((e) => e.slug)
+    .map((e) => ({
+      url: `${BASE_URL}/transport-medical/vers/${e.slug}`,
+      lastmod: e.source_updated_at || undefined,
+      changefreq: "weekly" as const,
+      priority: 0.7,
+    }));
+}
+
 /** Guides SEO transport sanitaire (Phase 5). */
 export function buildGuidesSitemap(): SitemapEntry[] {
   const slugs = [

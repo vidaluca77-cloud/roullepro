@@ -15,13 +15,15 @@ import {
   Building2,
   Sparkles,
   PhoneCall,
-  Clock,
 } from "lucide-react";
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliStatusSection from "@/components/sanitaire/AmeliStatusSection";
 import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
+import DemandesTransportSection, {
+  type DemandeProRow,
+} from "@/components/sanitaire/DemandesTransportSection";
 import {
   fetchMatchedAlerts,
   getProgressByAlert,
@@ -182,18 +184,12 @@ export default async function ProDashboard({
     .eq("pro_id", fiche.id)
     .gte("created_at", since7d);
 
-  // Demandes de rappel récentes (10 dernières)
-  const { data: callbacks } = await supabase
-    .from("callback_requests")
-    .select("id, visitor_name, visitor_phone, visitor_message, preferred_slot, status, created_at")
-    .eq("pro_id", fiche.id)
-    .order("created_at", { ascending: false })
-    .limit(10);
-  const { count: callbacksNouveaux } = await supabase
-    .from("callback_requests")
-    .select("*", { count: "exact", head: true })
-    .eq("pro_id", fiche.id)
-    .eq("status", "nouveau");
+  // Demandes de transport ouvertes (RPC scopee sur auth.uid(), coords masquees
+  // tant que la proposition n'est pas acceptee). Remplace l'ancienne table
+  // callback_requests (deprecated).
+  const { data: demandesProRaw } = await supabase.rpc("demandes_pro_dashboard");
+  const demandesPro = (demandesProRaw || []) as DemandeProRow[];
+  const nouvellesDemandes = demandesPro.filter((d) => d.dtp_statut === "proposee").length;
 
   // Derniere demande de badge Ameli (workflow C5b) - on prend la plus recente
   // pour afficher le bon etat dans AmeliStatusSection (pending / need_info / rejected / aucune)
@@ -336,7 +332,7 @@ export default async function ProDashboard({
                 Ce que RoullePro vous a apporté
               </div>
               <p className="text-sm text-gray-700">
-                <strong>{(reveals30d ?? 0) + (callbacksNouveaux ?? 0) + (messagesCount ?? 0)}</strong>{" "}
+                <strong>{(reveals30d ?? 0) + nouvellesDemandes + (messagesCount ?? 0)}</strong>{" "}
                 intentions de contact ces 30 derniers jours
                 {(reveals7d ?? 0) > 0 && (
                   <> dont <strong>{reveals7d}</strong> sur les 7 derniers</>
@@ -362,10 +358,10 @@ export default async function ProDashboard({
           />
           <StatBox
             icon={<PhoneCall className="w-5 h-5" />}
-            label="Demandes de rappel"
-            value={callbacksNouveaux ?? 0}
-            sub={(callbacksNouveaux ?? 0) > 0 ? "à rappeler" : "aucune en attente"}
-            accent={(callbacksNouveaux ?? 0) > 0 ? "amber" : undefined}
+            label="Nouvelles demandes"
+            value={nouvellesDemandes}
+            sub={nouvellesDemandes > 0 ? "à traiter" : "aucune en attente"}
+            accent={nouvellesDemandes > 0 ? "amber" : undefined}
           />
           <StatBox
             icon={<MessageCircle className="w-5 h-5" />}
@@ -424,76 +420,8 @@ export default async function ProDashboard({
               proId={fiche.id}
             />
 
-            {/* Demandes de rappel */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4 text-[#0066CC]" />
-                  Demandes de rappel
-                </h3>
-                {(callbacksNouveaux ?? 0) > 0 && (
-                  <span className="text-[11px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
-                    {callbacksNouveaux} nouvelle{(callbacksNouveaux ?? 0) > 1 ? "s" : ""}
-                  </span>
-                )}
-              </div>
-              {!callbacks || callbacks.length === 0 ? (
-                <p className="text-xs text-gray-500">
-                  Aucune demande pour le moment. Les visiteurs peuvent vous demander un rappel
-                  directement depuis votre fiche.
-                </p>
-              ) : (
-                <ul className="space-y-3">
-                  {callbacks.slice(0, 5).map((c) => {
-                    const SLOT_LABELS: Record<string, string> = {
-                      asap: "Dès que possible",
-                      matin: "Matin",
-                      "apres-midi": "Après-midi",
-                      soir: "Soir",
-                    };
-                    const isNew = c.status === "nouveau";
-                    return (
-                      <li
-                        key={c.id}
-                        className={`p-3 rounded-xl border ${isNew ? "bg-amber-50 border-amber-200" : "bg-gray-50 border-gray-200"}`}
-                      >
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="font-semibold text-sm text-gray-900">{c.visitor_name}</div>
-                          {isNew && (
-                            <span className="text-[10px] font-bold uppercase bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded">
-                              Nouveau
-                            </span>
-                          )}
-                        </div>
-                        <a
-                          href={`tel:${c.visitor_phone.replace(/\s/g, "")}`}
-                          className="inline-flex items-center gap-1 text-sm font-semibold text-[#0066CC] hover:underline"
-                        >
-                          <Phone className="w-3.5 h-3.5" />
-                          {c.visitor_phone}
-                        </a>
-                        <div className="flex items-center gap-1 text-[11px] text-gray-500 mt-1">
-                          <Clock className="w-3 h-3" />
-                          {SLOT_LABELS[c.preferred_slot || "asap"] || c.preferred_slot}
-                          {" · "}
-                          {new Date(c.created_at).toLocaleDateString("fr-FR", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </div>
-                        {c.visitor_message && (
-                          <p className="text-xs text-gray-700 mt-2 whitespace-pre-line">
-                            {c.visitor_message}
-                          </p>
-                        )}
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
+            {/* Demandes de transport (RPC demandes_pro_dashboard) */}
+            <DemandesTransportSection demandes={demandesPro} />
 
             {/* Messagerie */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">

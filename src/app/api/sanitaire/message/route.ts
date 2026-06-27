@@ -3,7 +3,16 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import { sendEmail } from "@/lib/email";
+import {
+  sendEmail,
+  sendDemandeTransportPro,
+  sendDemandeTransportConfirmation,
+} from "@/lib/email";
+import {
+  CATEGORIE_TO_TYPE_TRANSPORT,
+  LIBELLE_TYPE_TRANSPORT,
+  type CategoriePro,
+} from "@/lib/transport-types";
 
 const getAdminClient = () =>
   createClient(
@@ -35,7 +44,7 @@ export async function POST(req: Request) {
 
     const { data: pro, error: proErr } = await supabase
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, email_public, plan, claimed_by, ville")
+      .select("id, raison_sociale, nom_commercial, email_public, plan, claimed_by, ville, categorie")
       .eq("id", pro_id)
       .maybeSingle();
 
@@ -100,6 +109,92 @@ ${sender_phone ? `<p style="margin:4px 0"><strong>Téléphone :</strong> <a href
 <p style="color:#9ca3af;font-size:11px;margin-top:24px">Si vous ne souhaitez plus recevoir ces notifications, <a href="${dashboardUrl}" style="color:#6b7280">gérez vos préférences</a>.</p>
 </div>`,
         }).catch(() => undefined);
+      }
+    }
+
+    // GAP5 — Bridge : un message sur une fiche pro de catégorie transport crée
+    // (via trigger SQL bridge_roulepro_to_tcp) une demandes_transport mère qui
+    // est fan-outée dans demandes_transport_pros. On envoie ici les emails de
+    // demande aux pros notifiés (le trigger ne le fait pas), en excluant le pro
+    // propriétaire de la fiche (déjà notifié par l'email ci-dessus).
+    const categorie = pro.categorie as CategoriePro | null;
+    const typeTransport = categorie ? CATEGORIE_TO_TYPE_TRANSPORT[categorie] : undefined;
+    if (typeTransport) {
+      // La demande vient d'être créée par le trigger dans la même transaction
+      // que l'insert du message : on récupère la plus récente ciblant ce pro.
+      const { data: demande } = await supabase
+        .from("demandes_transport")
+        .select(
+          "id, lieu_depart, lieu_arrivee, date_souhaitee, aller_retour, mobilite, precisions, taux_prise_en_charge, taux_prise_en_charge_autre, bon_transport_medical"
+        )
+        .eq("pro_id_cible", pro_id)
+        .eq("source_form", "fiche_pro")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (demande) {
+        const libelle = LIBELLE_TYPE_TRANSPORT[typeTransport];
+
+        const { data: dtpRows } = await supabase
+          .from("demandes_transport_pros")
+          .select(
+            "id, pro_id, pros_sanitaire ( email_public, nom_commercial, raison_sociale )"
+          )
+          .eq("demande_id", demande.id);
+
+        type DtpRow = {
+          id: string;
+          pro_id: string;
+          pros_sanitaire: {
+            email_public: string | null;
+            nom_commercial: string | null;
+            raison_sociale: string | null;
+          } | null;
+        };
+        const rows = (dtpRows as DtpRow[] | null) || [];
+
+        let prosNotifies = 0;
+        await Promise.all(
+          rows.map(async (row) => {
+            // Le propriétaire de la fiche a déjà reçu l'email de message ci-dessus.
+            if (row.pro_id === pro_id) return;
+            const to = row.pros_sanitaire?.email_public;
+            if (!to) return;
+            const sent = await sendDemandeTransportPro({
+              to,
+              proNom:
+                row.pros_sanitaire?.nom_commercial ||
+                row.pros_sanitaire?.raison_sociale ||
+                "Professionnel",
+              typeLibelle: libelle,
+              lieuDepart: demande.lieu_depart,
+              lieuArrivee: demande.lieu_arrivee,
+              dateSouhaitee: demande.date_souhaitee,
+              allerRetour: !!demande.aller_retour,
+              mobilite: demande.mobilite,
+              precisions: demande.precisions,
+              tauxPriseEnCharge: demande.taux_prise_en_charge,
+              tauxPriseEnChargeAutre: demande.taux_prise_en_charge_autre,
+              bonTransportMedical: !!demande.bon_transport_medical,
+              sourceForm: "fiche_pro",
+              typeTransport,
+              demandeId: demande.id,
+              proId: row.pro_id,
+            }).catch(() => null);
+            if (sent) prosNotifies += 1;
+          })
+        );
+
+        // Confirmation au demandeur (best-effort), seulement si des pros ont été notifiés.
+        if (prosNotifies > 0) {
+          await sendDemandeTransportConfirmation({
+            to: sender_email.trim().toLowerCase(),
+            demandeurNom: sender_name.trim(),
+            typeLibelle: libelle,
+            nbPros: prosNotifies,
+          }).catch(() => undefined);
+        }
       }
     }
 

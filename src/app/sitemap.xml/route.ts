@@ -26,6 +26,14 @@ export async function GET() {
     <loc>${BASE_URL}/sitemaps/guides.xml</loc>
     <lastmod>${lastmod}</lastmod>
   </sitemap>`,
+    `  <sitemap>
+    <loc>${BASE_URL}/sitemaps/etablissements.xml</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
+    `  <sitemap>
+    <loc>${BASE_URL}/sitemaps/transport-vers.xml</loc>
+    <lastmod>${lastmod}</lastmod>
+  </sitemap>`,
   ].join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

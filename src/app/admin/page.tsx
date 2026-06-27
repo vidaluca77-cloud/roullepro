@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Shield, Check, X, Eye, Clock, AlertCircle, Download, Trash2, Pause, Play, ShieldCheck } from 'lucide-react';
+import { Shield, Check, X, Eye, Clock, AlertCircle, Download, Trash2, Pause, Play, ShieldCheck, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
@@ -23,6 +23,7 @@ export default function AdminPage() {
   const [signalementsCount, setSignalementsCount] = useState(0);
   const [preInscriptionsCount, setPreInscriptionsCount] = useState(0);
   const [ameliRequestsCount, setAmeliRequestsCount] = useState(0);
+  const [demandesTransportEnAttenteCount, setDemandesTransportEnAttenteCount] = useState(0);
 
   useEffect(() => { init(); }, []);
 
@@ -71,6 +72,16 @@ export default function AdminPage() {
         .in('status', ['pending', 'need_info']);
       setAmeliRequestsCount(count || 0);
     } catch (e) { console.error('ameli requests load', e); }
+
+    // Compteur demandes transport medical envoyees (30 derniers jours)
+    try {
+      const { count } = await supabase
+        .from('admin_demandes_transport_overview')
+        .select('id', { count: 'exact', head: true })
+        .eq('statut', 'envoyee')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString());
+      setDemandesTransportEnAttenteCount(count || 0);
+    } catch (e) { console.error('demandes transport count', e); }
 
     setLoading(false);
   };
@@ -284,6 +295,18 @@ export default function AdminPage() {
             {ameliRequestsCount > 0 && (
               <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
                 {ameliRequestsCount}
+              </span>
+            )}
+          </Link>
+          <Link
+            href="/admin/transport-medical/demandes"
+            className="px-4 py-2 rounded-lg bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2"
+          >
+            <Truck size={16} />
+            Demandes Transport
+            {demandesTransportEnAttenteCount > 0 && (
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                {demandesTransportEnAttenteCount}
               </span>
             )}
           </Link>

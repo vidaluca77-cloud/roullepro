@@ -4,6 +4,8 @@ import {
   buildStaticEntries,
   buildSanitaireVillesEntries,
   buildSanitaireFichesEntries,
+  buildEtablissementsEntries,
+  buildTransportVersEntries,
   SANITAIRE_FICHES_CHUNKS,
 } from "@/lib/sitemap-builders";
 
@@ -16,6 +18,11 @@ export async function generateStaticParams() {
   for (let i = 0; i < SANITAIRE_FICHES_CHUNKS; i += 1) {
     ids.push(String(2 + i));
   }
+  // Chunks FINESS etablissements + transport-vers (marge de 4 chunks chacun).
+  for (let i = 0; i < 4; i += 1) {
+    ids.push(`etablissements-${i}`);
+    ids.push(`transport-vers-${i}`);
+  }
   return ids.map((id) => ({ id }));
 }
 
@@ -23,23 +30,31 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
   const { id: rawId } = await params;
-  // Accepte "0", "0.xml", "10.xml"
+  // Accepte "0", "0.xml", "etablissements-1.xml", "transport-vers-0.xml"
   const cleaned = rawId.replace(/\.xml$/i, "");
-  const id = Number.parseInt(cleaned, 10);
 
-  if (!Number.isFinite(id) || id < 0) {
-    return new NextResponse("Invalid sitemap id", { status: 404 });
-  }
+  const etabMatch = cleaned.match(/^etablissements-(\d+)$/);
+  const transMatch = cleaned.match(/^transport-vers-(\d+)$/);
 
   let entries;
-  if (id === 0) {
-    entries = await buildStaticEntries();
-  } else if (id === 1) {
-    entries = await buildSanitaireVillesEntries();
-  } else if (id >= 2 && id < 2 + SANITAIRE_FICHES_CHUNKS) {
-    entries = await buildSanitaireFichesEntries(id - 2);
+  if (etabMatch) {
+    entries = await buildEtablissementsEntries(Number.parseInt(etabMatch[1], 10));
+  } else if (transMatch) {
+    entries = await buildTransportVersEntries(Number.parseInt(transMatch[1], 10));
   } else {
-    return new NextResponse("Sitemap not found", { status: 404 });
+    const id = Number.parseInt(cleaned, 10);
+    if (!Number.isFinite(id) || id < 0) {
+      return new NextResponse("Invalid sitemap id", { status: 404 });
+    }
+    if (id === 0) {
+      entries = await buildStaticEntries();
+    } else if (id === 1) {
+      entries = await buildSanitaireVillesEntries();
+    } else if (id >= 2 && id < 2 + SANITAIRE_FICHES_CHUNKS) {
+      entries = await buildSanitaireFichesEntries(id - 2);
+    } else {
+      return new NextResponse("Sitemap not found", { status: 404 });
+    }
   }
 
   const xml = buildXml(entries);
