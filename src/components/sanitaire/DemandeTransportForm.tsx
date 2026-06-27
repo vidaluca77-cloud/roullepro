@@ -115,6 +115,14 @@ export default function DemandeTransportForm({
       setError("Merci d'indiquer votre nom et votre téléphone.");
       return;
     }
+    if (!email.trim()) {
+      setError("Merci d'indiquer votre email pour recevoir une confirmation.");
+      return;
+    }
+    if (!dateSouhaitee) {
+      setError("Merci d'indiquer la date et l'heure souhaitées du transport.");
+      return;
+    }
     if (!lieuDepart.trim() || !lieuArrivee.trim()) {
       setError("Merci de renseigner le lieu de départ et le lieu d'arrivée.");
       return;
@@ -254,9 +262,10 @@ export default function DemandeTransportForm({
       </div>
       <input
         type="email"
-        placeholder="Votre email (facultatif, pour recevoir une confirmation)"
+        placeholder="Votre email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
+        required
         className={inputCls}
       />
 
@@ -298,31 +307,33 @@ export default function DemandeTransportForm({
         </div>
       </div>
 
+      {/* Date obligatoire partout (meme en mode compact) */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>Date et heure souhaitées</label>
+          <input
+            type="datetime-local"
+            value={dateSouhaitee}
+            onChange={(e) => setDateSouhaitee(e.target.value)}
+            required
+            className={inputCls}
+          />
+        </div>
+        <div className="flex items-end pb-2">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allerRetour}
+              onChange={(e) => setAllerRetour(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-[#0066CC] focus:ring-[#0066CC]"
+            />
+            Aller-retour
+          </label>
+        </div>
+      </div>
+
       {!compact && (
         <>
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Date souhaitée (facultatif)</label>
-              <input
-                type="datetime-local"
-                value={dateSouhaitee}
-                onChange={(e) => setDateSouhaitee(e.target.value)}
-                className={inputCls}
-              />
-            </div>
-            <div className="flex items-end pb-2">
-              <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allerRetour}
-                  onChange={(e) => setAllerRetour(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-[#0066CC] focus:ring-[#0066CC]"
-                />
-                Aller-retour
-              </label>
-            </div>
-          </div>
-
           <div>
             <label className={labelCls}>Mobilité du bénéficiaire</label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
