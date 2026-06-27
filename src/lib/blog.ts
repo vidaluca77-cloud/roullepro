@@ -233,12 +233,26 @@ const SEO_VILLES_POSTS: BlogPost[] = (() => {
   }
 })();
 
+// Cluster transactionnel — vague juin 2026 (tarif VSL, VSL/ambulance autour de moi)
+const TRANSACTIONAL_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-transactional-posts");
+    return Array.isArray(mod?.TRANSACTIONAL_POSTS)
+      ? (mod.TRANSACTIONAL_POSTS as BlogPost[])
+      : [];
+  } catch {
+    return [];
+  }
+})();
+
 const ALL_POSTS: BlogPost[] = [
   ...POSTS,
   ...NEW_POSTS,
   ...SEO_POSTS,
   ...MEDICAL_POSTS,
   ...SEO_VILLES_POSTS,
+  ...TRANSACTIONAL_POSTS,
 ];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */
