@@ -50,12 +50,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const e = await getEtablissementBySlug(slug);
-  if (!e) return { title: "Transport medical | RoullePro" };
+  if (!e) return { title: "Transport médical" };
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   const ville = e.ville ? ` ${e.ville}` : "";
   const villeA = e.ville ? ` à ${e.ville}` : "";
   return {
-    title: `Taxi VSL ambulance pour ${nom}${ville} — Conventionné CPAM | RoullePro`,
+    title: `Taxi VSL ambulance pour ${nom}${ville} — Conventionné CPAM`,
     description: `Réservez en ligne un taxi conventionné, VSL ou ambulance pour ${nom}${villeA}. Pris en charge CPAM, devis gratuit, professionnels agréés.`,
     alternates: { canonical: `/transport-medical/vers/${e.slug}` },
   };

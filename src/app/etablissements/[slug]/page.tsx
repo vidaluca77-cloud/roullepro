@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   const ville = e.ville ? ` ${e.ville}` : "";
   const villeA = e.ville ? ` à ${e.ville}` : "";
-  const titleLong = `Transport médical vers ${nom}${ville} — Taxi / VSL / Ambulance conventionné | RoullePro`;
+  const titleLong = `Transport médical vers ${nom}${ville} — Taxi / VSL / Ambulance conventionné`;
   const titleCourt = `${nom}${ville} — Transport médical conventionné`;
   return {
     title: titleLong.length > 60 ? titleCourt : titleLong,
