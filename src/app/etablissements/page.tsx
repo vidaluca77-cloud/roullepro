@@ -58,7 +58,7 @@ export default async function EtablissementsHubPage() {
   for (const e of majeurs) pool.set(e.id, e);
 
   const byRegion = new Map<string, EtablissementPublic[]>();
-  for (const e of pool.values()) {
+  for (const e of Array.from(pool.values())) {
     const info = e.departement ? getDepartementByCode(e.departement) : null;
     if (!info) continue;
     const arr = byRegion.get(info.region) ?? [];

@@ -16,7 +16,8 @@ import {
   formatSourceDate,
   type EtablissementPublic,
 } from "@/lib/etablissements-data";
-import { buildBreadcrumbJsonLd, jsonLdHtml } from "@/lib/seo-schema";
+import { buildBreadcrumbJsonLd, jsonLdHtml, BASE_URL } from "@/lib/seo-schema";
+import { getNearbyTransporters, typeLabel } from "@/lib/nearby-transporters";
 import MiniFormulaireReservation from "./MiniFormulaireReservation";
 
 // JSON-LD : @type schema.org selon categorie_simple (cf. rapport SEO Action 4).
@@ -75,9 +76,10 @@ async function fetchMemeCategorieVille(
 export default async function FicheEtablissement({ e }: { e: EtablissementPublic }) {
   const t = getTypeByCategorie(e.categorie_simple);
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
-  const [similaires, memeCategorieVille] = await Promise.all([
+  const [similaires, memeCategorieVille, nearbyTransporters] = await Promise.all([
     fetchSimilaires(e),
     fetchMemeCategorieVille(e),
+    getNearbyTransporters(e.latitude, e.longitude, e.slug, 10, e.ville_slug ?? null, e.departement ?? null),
   ]);
 
   const adresseComplete = [e.adresse, [e.code_postal, e.ville].filter(Boolean).join(" ")]
@@ -154,11 +156,33 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
     })),
   };
 
+  // ItemList JSON-LD : transporteurs conventionnes proches (signal SEO maillage).
+  const transporteursLd =
+    nearbyTransporters.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: `Transporteurs conventionnés proches de ${nom}`,
+          itemListElement: nearbyTransporters.map((tr, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: `${BASE_URL}/transport-medical/${tr.ville_slug}/${tr.type}/${tr.slug}`,
+            name: tr.nom,
+          })),
+        }
+      : null;
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }} />
+      {transporteursLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(transporteursLd) }}
+        />
+      )}
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-12 grid md:grid-cols-[1.6fr_1fr] gap-8 items-start">
@@ -336,6 +360,64 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
               vous indiquer les conditions exactes applicables à votre transport.
             </p>
           </div>
+
+          {/* Transporteurs conventionnes proches (bloc differenciant — donnee geo) */}
+          {nearbyTransporters.length > 0 ? (
+            <section className="bg-white border border-gray-200 rounded-2xl p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Transporteurs conventionnés proches de {nom}
+              </h2>
+              <p className="text-slate-600 mb-6">
+                Voici les transporteurs sanitaires conventionnés CPAM les plus proches pour vous
+                rendre à {nom}
+                {e.ville ? `, ${e.ville}` : ""} — taxi conventionné, VSL ou ambulance selon votre
+                prescription médicale.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {nearbyTransporters.map((tr) => (
+                  <Link
+                    key={tr.slug}
+                    href={`/transport-medical/${tr.ville_slug}/${tr.type}/${tr.slug}`}
+                    className="block rounded-xl border border-gray-200 p-4 hover:shadow-md transition"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-gray-900">{tr.nom}</h3>
+                      {tr.distance_km > 0 ? (
+                        <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
+                          {tr.distance_km} km
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {tr.ville} — {typeLabel(tr.type)}
+                    </p>
+                    <span className="mt-3 inline-block text-sm text-blue-700">Voir la fiche →</span>
+                  </Link>
+                ))}
+              </div>
+              <p className="mt-6 text-sm text-slate-500">
+                Tous les transporteurs listés sont conventionnés avec l&apos;Assurance Maladie
+                (CPAM). Le tiers payant s&apos;applique sur présentation de votre prescription
+                médicale.
+              </p>
+            </section>
+          ) : (
+            <section className="rounded-xl border border-gray-200 bg-slate-50 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Trouver un transporteur conventionné pour {nom}
+              </h2>
+              <p className="text-slate-600 mb-4">
+                Aucun transporteur référencé dans notre annuaire à proximité immédiate. Consultez
+                notre annuaire complet par ville :
+              </p>
+              <Link
+                href="/transport-medical"
+                className="text-blue-700 font-medium hover:underline"
+              >
+                Voir tous les transporteurs →
+              </Link>
+            </section>
+          )}
 
           {/* FAQ structuree */}
           <div className="bg-white border border-gray-200 rounded-2xl p-6">
