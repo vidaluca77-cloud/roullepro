@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
+import { getDepartementByCode } from "@/lib/departements-fr";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
@@ -102,11 +103,24 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
 
   const faqQuestions = getVilleFaq(nomVille, pros.length);
   const faqLd = buildFaqJsonLd(faqQuestions);
-  const breadLd = buildBreadcrumbJsonLd([
+
+  // Fil d'Ariane hierarchique : Annuaire -> Departement -> Ville -> Categorie.
+  // Le niveau departement renforce le maillage interne vers les pages departementales.
+  const depInfo = departement ? getDepartementByCode(departement) : null;
+  const breadItems: { name: string; url: string }[] = [
     { name: "Annuaire", url: "/transport-medical" },
+  ];
+  if (depInfo) {
+    breadItems.push({
+      name: `${depInfo.nom} (${depInfo.code})`,
+      url: `/transport-medical/departement/${depInfo.code}`,
+    });
+  }
+  breadItems.push(
     { name: nomVille, url: `/transport-medical/${ville}` },
-    { name: cat.labelPluriel, url: `/transport-medical/${ville}/${categorie}` },
-  ]);
+    { name: cat.labelPluriel, url: `/transport-medical/${ville}/${categorie}` }
+  );
+  const breadLd = buildBreadcrumbJsonLd(breadItems);
 
   const seoContent = buildSeoContent(cat.key, nomVille, pros.length);
 
@@ -121,6 +135,17 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
           <nav className="flex items-center gap-2 text-xs text-blue-200 mb-4 flex-wrap">
             <Link href="/transport-medical" className="hover:text-white">Annuaire</Link>
             <ChevronRight className="w-3 h-3" />
+            {depInfo && (
+              <>
+                <Link
+                  href={`/transport-medical/departement/${depInfo.code}`}
+                  className="hover:text-white"
+                >
+                  {depInfo.nom} ({depInfo.code})
+                </Link>
+                <ChevronRight className="w-3 h-3" />
+              </>
+            )}
             <Link href={`/transport-medical/${ville}`} className="hover:text-white">{nomVille}</Link>
             <ChevronRight className="w-3 h-3" />
             <span className="text-white">{cat.labelPluriel}</span>

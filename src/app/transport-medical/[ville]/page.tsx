@@ -20,6 +20,7 @@ import {
   getVilleSeoOverride,
   buildVilleServiceJsonLd,
 } from "@/lib/sanitaire-ville-seo";
+import { getDepartementByCode } from "@/lib/departements-fr";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
@@ -218,18 +219,23 @@ export default async function VillePage({ params, searchParams }: Props) {
   const override = getVilleSeoOverride(ville);
   const faqQuestions = override ? override.faq : getVilleFaq(nomVille, pros.length);
   const faqLd = buildFaqJsonLd(faqQuestions);
-  const breadLd = buildBreadcrumbJsonLd(
-    override
-      ? [
-          { name: "Accueil", url: "/" },
-          { name: "Transport médical", url: "/transport-medical" },
-          { name: nomVille, url: `/transport-medical/${ville}` },
-        ]
-      : [
-          { name: "Annuaire", url: "/transport-medical" },
-          { name: nomVille, url: `/transport-medical/${ville}` },
-        ]
-  );
+
+  // Fil d'Ariane hierarchique ville -> departement -> region (maillage interne SEO).
+  // Le niveau departement est insere quand le code se resout, afin que Google decouvre
+  // les pages /transport-medical/departement/[code] depuis chaque hub ville.
+  const depCode = departement || override?.departement || "";
+  const depInfo = depCode ? getDepartementByCode(depCode) : null;
+  const breadItems: { name: string; url: string }[] = [
+    { name: "Annuaire", url: "/transport-medical" },
+  ];
+  if (depInfo) {
+    breadItems.push({
+      name: `${depInfo.nom} (${depInfo.code})`,
+      url: `/transport-medical/departement/${depInfo.code}`,
+    });
+  }
+  breadItems.push({ name: nomVille, url: `/transport-medical/${ville}` });
+  const breadLd = buildBreadcrumbJsonLd(breadItems);
   const serviceLd = override
     ? buildVilleServiceJsonLd(nomVille, ville, override.departement)
     : null;
@@ -264,11 +270,26 @@ export default async function VillePage({ params, searchParams }: Props) {
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-6xl mx-auto px-4 py-12">
-          <nav className="flex items-center gap-2 text-xs text-blue-200 mb-4">
+          <nav className="flex items-center gap-2 text-xs text-blue-200 mb-4 flex-wrap">
             <Link href="/transport-medical" className="hover:text-white">Annuaire</Link>
             <ChevronRight className="w-3 h-3" />
-            <span>{region}</span>
-            <ChevronRight className="w-3 h-3" />
+            {region && (
+              <>
+                <span>{region}</span>
+                <ChevronRight className="w-3 h-3" />
+              </>
+            )}
+            {depInfo && (
+              <>
+                <Link
+                  href={`/transport-medical/departement/${depInfo.code}`}
+                  className="hover:text-white"
+                >
+                  {depInfo.nom} ({depInfo.code})
+                </Link>
+                <ChevronRight className="w-3 h-3" />
+              </>
+            )}
             <span className="text-white">{nomVille}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
