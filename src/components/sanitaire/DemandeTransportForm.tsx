@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Send, Loader2, CheckCircle2, Car, Cross, Stethoscope } from "lucide-react";
 import {
   TYPES_TRANSPORT_DISPONIBLES,
@@ -8,6 +8,12 @@ import {
   type TypeTransport,
   type SourcePage,
 } from "@/lib/transport-types";
+import {
+  usePlacesAutocomplete,
+  extractDepartementFromComponents,
+  extractVilleFromComponents,
+  type PlaceSelection,
+} from "@/lib/use-places-autocomplete";
 
 type Mobilite = "autonome" | "aide_marche" | "fauteuil" | "brancard";
 
@@ -70,6 +76,32 @@ export default function DemandeTransportForm({
   // Honeypot anti-bot : doit rester vide.
   const [website, setWebsite] = useState("");
 
+  // Place selections (Google Places Autocomplete) — utilises pour deriver
+  // le departement et la ville cible cote front, et ainsi permettre au trigger
+  // dispatch_demande_transport() de fan-outer la demande au bon pro.
+  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(null);
+  const [arriveePlace, setArriveePlace] = useState<PlaceSelection | null>(null);
+
+  const lieuDepartRef = useRef<HTMLInputElement>(null);
+  const lieuArriveeRef = useRef<HTMLInputElement>(null);
+
+  usePlacesAutocomplete([
+    {
+      ref: lieuDepartRef,
+      onSelect: (p) => {
+        setLieuDepart(p.formattedAddress);
+        setDepartPlace(p);
+      },
+    },
+    {
+      ref: lieuArriveeRef,
+      onSelect: (p) => {
+        setLieuArrivee(p.formattedAddress);
+        setArriveePlace(p);
+      },
+    },
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [nbPros, setNbPros] = useState(0);
@@ -83,6 +115,30 @@ export default function DemandeTransportForm({
       setError("Merci d'indiquer votre nom et votre téléphone.");
       return;
     }
+    if (!lieuDepart.trim() || !lieuArrivee.trim()) {
+      setError("Merci de renseigner le lieu de départ et le lieu d'arrivée.");
+      return;
+    }
+
+    // Departement / ville cibles : on privilegie ce qui vient du parent
+    // (fiche etablissement, page pro deja localisee), sinon on derive du
+    // place Google de depart. L'API completera en fallback via API Adresse FR.
+    const departementFromDepart = departPlace
+      ? extractDepartementFromComponents(departPlace.components)
+      : null;
+    const villeFromDepart = departPlace
+      ? extractVilleFromComponents(departPlace.components)
+      : null;
+    const departementFromArrivee = arriveePlace
+      ? extractDepartementFromComponents(arriveePlace.components)
+      : null;
+    const villeFromArrivee = arriveePlace
+      ? extractVilleFromComponents(arriveePlace.components)
+      : null;
+
+    const departementResolved =
+      departementCible || departementFromDepart || departementFromArrivee;
+    const villeResolved = villeCible || villeFromDepart || villeFromArrivee;
 
     setLoading(true);
     try {
@@ -95,8 +151,10 @@ export default function DemandeTransportForm({
           telephone: telephone.trim(),
           email: email.trim() || null,
           date_souhaitee: dateSouhaitee || null,
-          lieu_depart: lieuDepart.trim() || null,
-          lieu_arrivee: lieuArrivee.trim() || null,
+          lieu_depart: lieuDepart.trim(),
+          lieu_arrivee: lieuArrivee.trim(),
+          lieu_depart_lat: departPlace?.lat ?? null,
+          lieu_depart_lng: departPlace?.lng ?? null,
           aller_retour: allerRetour,
           mobilite,
           precisions: precisions.trim() || null,
@@ -108,8 +166,8 @@ export default function DemandeTransportForm({
           website,
           etablissement_id: etablissementId,
           pro_id_cible: proIdCible,
-          departement_cible: departementCible,
-          ville_cible: villeCible,
+          departement_cible: departementResolved,
+          ville_cible: villeResolved,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -202,6 +260,44 @@ export default function DemandeTransportForm({
         className={inputCls}
       />
 
+      {/* Trajet : depart + arrivee obligatoires partout (meme en mode compact) */}
+      <div className="grid sm:grid-cols-2 gap-3">
+        <div>
+          <label className={labelCls}>Lieu de départ</label>
+          <input
+            ref={lieuDepartRef}
+            type="text"
+            placeholder="Adresse ou ville"
+            value={lieuDepart}
+            onChange={(e) => {
+              setLieuDepart(e.target.value);
+              // Si l'utilisateur retape, on invalide le place pour eviter
+              // un mismatch entre l'input et le departement deduit.
+              if (departPlace) setDepartPlace(null);
+            }}
+            required
+            autoComplete="off"
+            className={inputCls}
+          />
+        </div>
+        <div>
+          <label className={labelCls}>Lieu d&apos;arrivée</label>
+          <input
+            ref={lieuArriveeRef}
+            type="text"
+            placeholder="Adresse, hôpital ou ville"
+            value={lieuArrivee}
+            onChange={(e) => {
+              setLieuArrivee(e.target.value);
+              if (arriveePlace) setArriveePlace(null);
+            }}
+            required
+            autoComplete="off"
+            className={inputCls}
+          />
+        </div>
+      </div>
+
       {!compact && (
         <>
           <div className="grid sm:grid-cols-2 gap-3">
@@ -224,29 +320,6 @@ export default function DemandeTransportForm({
                 />
                 Aller-retour
               </label>
-            </div>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Lieu de départ (facultatif)</label>
-              <input
-                type="text"
-                placeholder="Ex : Domicile, ville"
-                value={lieuDepart}
-                onChange={(e) => setLieuDepart(e.target.value)}
-                className={inputCls}
-              />
-            </div>
-            <div>
-              <label className={labelCls}>Lieu d&apos;arrivée (facultatif)</label>
-              <input
-                type="text"
-                placeholder="Ex : Hôpital, centre de soins"
-                value={lieuArrivee}
-                onChange={(e) => setLieuArrivee(e.target.value)}
-                className={inputCls}
-              />
             </div>
           </div>
 

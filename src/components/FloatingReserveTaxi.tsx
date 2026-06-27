@@ -1,7 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Car, X, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  usePlacesAutocomplete,
+  extractDepartementFromComponents,
+  extractVilleFromComponents,
+  type PlaceSelection,
+} from "@/lib/use-places-autocomplete";
 
 type Taux = "" | "100" | "65" | "autre";
 
@@ -24,6 +30,29 @@ export default function FloatingReserveTaxi() {
   const [rgpd, setRgpd] = useState(false);
   // Honeypot anti-bot : doit rester vide.
   const [website, setWebsite] = useState("");
+
+  // Places Autocomplete : on stocke les selections pour deriver le departement.
+  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(null);
+  const [arriveePlace, setArriveePlace] = useState<PlaceSelection | null>(null);
+  const lieuDepartRef = useRef<HTMLInputElement>(null);
+  const lieuArriveeRef = useRef<HTMLInputElement>(null);
+
+  usePlacesAutocomplete([
+    {
+      ref: lieuDepartRef,
+      onSelect: (p) => {
+        setLieuDepart(p.formattedAddress);
+        setDepartPlace(p);
+      },
+    },
+    {
+      ref: lieuArriveeRef,
+      onSelect: (p) => {
+        setLieuArrivee(p.formattedAddress);
+        setArriveePlace(p);
+      },
+    },
+  ]);
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -65,6 +94,21 @@ export default function FloatingReserveTaxi() {
       return;
     }
 
+    // Departement / ville cibles derivees du place Google de depart (puis arrivee
+    // en fallback). L'API completera via API Adresse FR si rien n'est resolu cote front.
+    const depFromDepart = departPlace
+      ? extractDepartementFromComponents(departPlace.components)
+      : null;
+    const villeFromDepart = departPlace
+      ? extractVilleFromComponents(departPlace.components)
+      : null;
+    const depFromArrivee = arriveePlace
+      ? extractDepartementFromComponents(arriveePlace.components)
+      : null;
+    const villeFromArrivee = arriveePlace
+      ? extractVilleFromComponents(arriveePlace.components)
+      : null;
+
     setLoading(true);
     try {
       const res = await fetch("/api/demande-transport", {
@@ -78,6 +122,8 @@ export default function FloatingReserveTaxi() {
           date_souhaitee: dateSouhaitee || null,
           lieu_depart: lieuDepart.trim(),
           lieu_arrivee: lieuArrivee.trim(),
+          lieu_depart_lat: departPlace?.lat ?? null,
+          lieu_depart_lng: departPlace?.lng ?? null,
           mobilite: precisionsMobilite.trim() || null,
           taux_prise_en_charge: taux,
           taux_prise_en_charge_autre: taux === "autre" ? tauxAutre.trim() : null,
@@ -85,6 +131,8 @@ export default function FloatingReserveTaxi() {
           source_page: "widget",
           source_form: "widget",
           website,
+          departement_cible: depFromDepart || depFromArrivee,
+          ville_cible: villeFromDepart || villeFromArrivee,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -199,11 +247,16 @@ export default function FloatingReserveTaxi() {
                     <div>
                       <label className={labelCls}>Lieu de départ</label>
                       <input
+                        ref={lieuDepartRef}
                         type="text"
                         placeholder="Adresse ou ville"
                         value={lieuDepart}
-                        onChange={(e) => setLieuDepart(e.target.value)}
+                        onChange={(e) => {
+                          setLieuDepart(e.target.value);
+                          if (departPlace) setDepartPlace(null);
+                        }}
                         required
+                        autoComplete="off"
                         aria-label="Lieu de départ"
                         className={inputCls}
                       />
@@ -211,11 +264,16 @@ export default function FloatingReserveTaxi() {
                     <div>
                       <label className={labelCls}>Lieu d&apos;arrivée</label>
                       <input
+                        ref={lieuArriveeRef}
                         type="text"
                         placeholder="Adresse ou ville"
                         value={lieuArrivee}
-                        onChange={(e) => setLieuArrivee(e.target.value)}
+                        onChange={(e) => {
+                          setLieuArrivee(e.target.value);
+                          if (arriveePlace) setArriveePlace(null);
+                        }}
                         required
+                        autoComplete="off"
                         aria-label="Lieu d'arrivée"
                         className={inputCls}
                       />

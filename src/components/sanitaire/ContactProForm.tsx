@@ -2,32 +2,17 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, Loader2, CheckCircle2, Calendar, MapPin, Stethoscope, Accessibility } from "lucide-react";
+// Types Google Maps Places sont declares globalement dans @/lib/use-places-autocomplete.
+// On importe pour recuperer l'augmentation globale de Window.
+import "@/lib/use-places-autocomplete";
 
 type TypeTransport = "indifferent" | "ambulance" | "vsl" | "taxi_conventionne";
 type Mobilite = "autonome" | "aide_marche" | "fauteuil" | "brancard";
 
-// Types minimaux pour Google Maps Places (chargé dynamiquement, pas de npm package).
-interface GooglePlacesAutocomplete {
+type LocalAutocomplete = {
   addListener: (event: string, handler: () => void) => void;
   getPlace: () => { formatted_address?: string; name?: string };
-}
-interface GoogleMapsGlobal {
-  maps: {
-    places: {
-      Autocomplete: new (
-        input: HTMLInputElement,
-        opts?: { componentRestrictions?: { country: string }; fields?: string[] }
-      ) => GooglePlacesAutocomplete;
-    };
-    event: { clearInstanceListeners: (instance: object) => void };
-  };
-}
-declare global {
-  interface Window {
-    google?: GoogleMapsGlobal;
-    initGooglePlaces?: () => void;
-  }
-}
+};
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -56,8 +41,8 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
   // Google Places Autocomplete (chargement dynamique du script Maps)
   const lieuDepartRef = useRef<HTMLInputElement>(null);
   const lieuArriveeRef = useRef<HTMLInputElement>(null);
-  const departAutocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
-  const arriveeAutocompleteRef = useRef<GooglePlacesAutocomplete | null>(null);
+  const departAutocompleteRef = useRef<LocalAutocomplete | null>(null);
+  const arriveeAutocompleteRef = useRef<LocalAutocomplete | null>(null);
 
   useEffect(() => {
     if (!GOOGLE_MAPS_API_KEY) return;
