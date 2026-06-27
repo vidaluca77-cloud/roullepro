@@ -95,6 +95,7 @@ export default function Footer() {
             <h3 className="font-semibold mb-4">Annuaire transport sanitaire</h3>
             <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/transport-medical" className="hover:text-white transition">Annuaire complet</Link></li>
+              <li><Link href="/etablissements" className="hover:text-white transition">Annuaire des établissements</Link></li>
               <li><Link href="/transport-medical/recherche" className="hover:text-white transition">Rechercher par ville</Link></li>
               <li><Link href="/taxi-conventionne" className="hover:text-white transition">Guide taxi conventionné</Link></li>
               <li><Link href="/vsl" className="hover:text-white transition">Guide VSL</Link></li>

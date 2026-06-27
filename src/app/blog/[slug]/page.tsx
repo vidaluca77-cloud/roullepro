@@ -31,6 +31,17 @@ import {
 import { ArticleCard } from "@/components/blog/ArticleCard";
 import { NewsletterInline } from "@/components/blog/NewsletterInline";
 import { BlogCTA } from "@/components/blog/BlogCTA";
+import MaillageTransporteurs from "@/components/etablissements/MaillageTransporteurs";
+
+// Articles recevant l'encart de maillage interne vers les fiches etablissement.
+const MAILLAGE_SLUGS = new Set([
+  "remboursement-transport-medical",
+  "agrement-cpam-taxi-conventionne",
+  "transport-chimiotherapie-dialyse-radiotherapie",
+  "transport-medical-ald-droits",
+  "ambulance-ne-repond-pas-que-faire",
+  "transport-medical-partage-regles",
+]);
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -256,6 +267,17 @@ export default function BlogPostPage({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* Maillage interne : encart transporteurs conventionnes */}
+            {MAILLAGE_SLUGS.has(post.slug) && (
+              <MaillageTransporteurs
+                variant={
+                  post.slug === "transport-chimiotherapie-dialyse-radiotherapie"
+                    ? "dialyse"
+                    : "default"
+                }
+              />
             )}
 
             {/* CTA contextuel */}
