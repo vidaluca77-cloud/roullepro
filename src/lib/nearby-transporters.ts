@@ -318,7 +318,14 @@ export async function getNearbyTransporters(
       return queryFallbackVilleDept(villeSlug, departement, limit);
     },
     ["nearby-transporters-v5", etablissementSlug, String(limit)],
-    { revalidate: 86400, tags: [`nearby-transporters:${etablissementSlug}`] }
+    {
+      revalidate: 86400,
+      tags: [
+        `nearby-transporters:${etablissementSlug}`,
+        ...(departement ? [`nearby-transporters-dept:${departement}`] : []),
+        "nearby-transporters-all",
+      ],
+    }
   );
   return load();
 }
