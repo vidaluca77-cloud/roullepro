@@ -7,6 +7,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getAllPosts, CATEGORIES } from "./blog";
 import { CATEGORIES_SEO, VILLES_SEO } from "./seo-data";
 import { getAllDepartementCodes } from "./departements-fr";
+import { TYPES_ETABLISSEMENT } from "./etablissements-data";
 import { VSL_VILLES } from "../data/vsl-villes";
 import { DOM_TERRITOIRES } from "../data/dom-territoires";
 
@@ -205,6 +206,16 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     priority: 0.8,
   }));
 
+  // Hub annuaire etablissements + pages categorie (referentiel FINESS).
+  const etablissementsHub: SitemapEntry[] = [
+    { url: `${BASE_URL}/etablissements`, changefreq: "weekly", priority: 0.9 },
+    ...TYPES_ETABLISSEMENT.map((t) => ({
+      url: `${BASE_URL}/etablissements/${t.slug}`,
+      changefreq: "weekly" as const,
+      priority: 0.7,
+    })),
+  ];
+
   // Pages departement (101 entrees : metropole + outre-mer)
   const sanitaireDepartements: SitemapEntry[] = getAllDepartementCodes().map((code) => ({
     url: `${BASE_URL}/transport-medical/departement/${code}`,
@@ -224,6 +235,7 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     ...vehiculesProCatVillePages,
     ...sanitaireStatic,
     ...sanitaireHubs,
+    ...etablissementsHub,
     ...vslVilles,
     ...sanitaireDom,
     ...sanitaireDepartements,

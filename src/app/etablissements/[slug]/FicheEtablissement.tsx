@@ -79,7 +79,7 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
   const [similaires, memeCategorieVille, nearbyTransporters] = await Promise.all([
     fetchSimilaires(e),
     fetchMemeCategorieVille(e),
-    getNearbyTransporters(e.latitude, e.longitude, e.slug, 10),
+    getNearbyTransporters(e.latitude, e.longitude, e.slug, 10, e.ville_slug ?? null, e.departement ?? null),
   ]);
 
   const adresseComplete = [e.adresse, [e.code_postal, e.ville].filter(Boolean).join(" ")]
@@ -382,9 +382,11 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-gray-900">{tr.nom}</h3>
-                      <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
-                        {tr.distance_km} km
-                      </span>
+                      {tr.distance_km > 0 ? (
+                        <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
+                          {tr.distance_km} km
+                        </span>
+                      ) : null}
                     </div>
                     <p className="text-sm text-slate-600 mt-1">
                       {tr.ville} — {typeLabel(tr.type)}

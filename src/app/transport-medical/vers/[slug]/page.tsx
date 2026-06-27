@@ -74,7 +74,7 @@ export default async function TransportVersPage({
   const nom = e.nom_affichage || e.nom_court || e.raison_sociale;
   const [autres, nearbyTransporters] = await Promise.all([
     fetchAutresEtablissements(e),
-    getNearbyTransporters(e.latitude, e.longitude, e.slug, 10),
+    getNearbyTransporters(e.latitude, e.longitude, e.slug, 10, e.ville_slug ?? null, e.departement ?? null),
   ]);
 
   const breadLd = buildBreadcrumbJsonLd([
@@ -264,9 +264,11 @@ export default async function TransportVersPage({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-semibold text-gray-900">{tr.nom}</h3>
-                      <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
-                        {tr.distance_km} km
-                      </span>
+                      {tr.distance_km > 0 ? (
+                        <span className="text-xs rounded bg-blue-50 px-2 py-1 text-blue-700 flex-shrink-0">
+                          {tr.distance_km} km
+                        </span>
+                      ) : null}
                     </div>
                     <p className="text-sm text-slate-600 mt-1">
                       {tr.ville} — {typeLabel(tr.type)}

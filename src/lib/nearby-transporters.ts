@@ -113,21 +113,79 @@ async function queryNearby(
     .slice(0, limit);
 }
 
+// Fallback : aucune geoloc dispo cote etablissement -> on liste les transporteurs
+// conventionnes par ville_slug, puis par departement, sans distance.
+async function queryFallbackVilleDept(
+  villeSlug: string | null,
+  departement: string | null,
+  limit: number
+): Promise<NearbyTransporter[]> {
+  const supabase = getSupabaseEtab();
+  const baseSelect =
+    "slug, raison_sociale, nom_commercial, ville, ville_slug, categorie, latitude, longitude";
+
+  async function run(filterCol: "ville_slug" | "departement", filterVal: string) {
+    const { data } = await supabase
+      .from("pros_sanitaire")
+      .select(baseSelect)
+      .eq("actif", true)
+      .eq("suspendu", false)
+      .or(PUBLIC_TAXI_FILTER)
+      .in("categorie", ["taxi_conventionne", "vsl", "ambulance"])
+      .eq(filterCol, filterVal)
+      .limit(limit * 3);
+    const rows = (data ?? []) as Row[];
+    return rows
+      .filter((r) => r.slug && r.ville_slug)
+      .map<NearbyTransporter>((r) => ({
+        slug: r.slug as string,
+        nom: r.nom_commercial || r.raison_sociale,
+        ville: r.ville ?? "",
+        ville_slug: r.ville_slug as string,
+        categorie: r.categorie,
+        type: CATEGORIE_TO_URL_SLUG[r.categorie] ?? r.categorie,
+        distance_km: 0,
+      }))
+      .slice(0, limit);
+  }
+
+  if (villeSlug) {
+    const byVille = await run("ville_slug", villeSlug);
+    if (byVille.length > 0) return byVille;
+  }
+  if (departement) {
+    return await run("departement", departement);
+  }
+  return [];
+}
+
 /**
  * Retourne les transporteurs conventionnes proches d'un etablissement, tries par
  * distance croissante. Mise en cache 1 jour (cle nearby-transporters:{slug})
  * car la requete charge jusqu'a 1000 fiches puis trie en memoire.
+ *
+ * Fallback : si l'etablissement n'a pas de geoloc (cas frequent sur le referentiel
+ * FINESS importe sans lat/lng), on liste les transporteurs par ville_slug puis
+ * par departement. La distance est alors 0 (l'UI doit traiter ce cas en masquant
+ * la mention km).
  */
 export async function getNearbyTransporters(
   latitude: number | null,
   longitude: number | null,
   etablissementSlug: string,
-  limit = 10
+  limit = 10,
+  villeSlug: string | null = null,
+  departement: string | null = null
 ): Promise<NearbyTransporter[]> {
-  if (latitude == null || longitude == null) return [];
   const load = unstable_cache(
-    () => queryNearby(latitude, longitude, limit),
-    ["nearby-transporters", etablissementSlug, String(limit)],
+    async () => {
+      if (latitude != null && longitude != null) {
+        const nearby = await queryNearby(latitude, longitude, limit);
+        if (nearby.length > 0) return nearby;
+      }
+      return queryFallbackVilleDept(villeSlug, departement, limit);
+    },
+    ["nearby-transporters-v2", etablissementSlug, String(limit)],
     { revalidate: 86400, tags: [`nearby-transporters:${etablissementSlug}`] }
   );
   return load();
