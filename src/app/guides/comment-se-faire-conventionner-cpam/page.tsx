@@ -92,6 +92,8 @@ export default function ConventionnementCpamGuide() {
         breadcrumbLabel="Se faire conventionner CPAM"
         sections={SECTIONS}
         publishedDate="Juin 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <p>
           Se faire <strong>conventionner par la CPAM</strong> est une étape clé pour tout professionnel du transport de patients : taxi, VSL ou ambulance. Le conventionnement t&apos;autorise à transporter des assurés sur prescription médicale, à pratiquer le <strong>tiers payant</strong> et à être payé directement par l&apos;Assurance maladie. C&apos;est l&apos;accès à un marché stable et récurrent. Ce guide détaille pas à pas pourquoi et comment se conventionner, quelles conditions remplir, quels documents préparer et quelles erreurs éviter pour réussir du premier coup.

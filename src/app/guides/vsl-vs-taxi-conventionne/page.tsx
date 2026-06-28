@@ -90,6 +90,8 @@ export default function VslVsTaxiGuide() {
         breadcrumbLabel="VSL vs Taxi conventionné"
         sections={SECTIONS}
         publishedDate="Juin 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <p>
           Quand un médecin te prescrit un transport assis, deux modes principaux peuvent te conduire à ton rendez-vous médical et être remboursés par l&apos;Assurance maladie : le <strong>VSL</strong> et le <strong>taxi conventionné</strong>. Les deux transportent des patients assis, autonomes, sur prescription, et les deux pratiquent le tiers payant. Pourtant, ils ne relèvent pas du même cadre réglementaire, n&apos;emploient pas le même type de conducteur et ne sont pas tarifés de la même façon. Comprendre ces différences t&apos;aide à choisir le transport le plus adapté et à éviter les mauvaises surprises sur ton remboursement.

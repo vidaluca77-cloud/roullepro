@@ -29,10 +29,12 @@ import {
   getAutresProsMemeVille,
   getCategoriesByVille,
 } from "@/lib/sanitaire-seo";
+import { jsonLdHtml } from "@/lib/seo-schema";
 import ContactProForm from "@/components/sanitaire/ContactProForm";
 import TrackVue from "@/components/sanitaire/TrackVue";
 import OwnerBanner from "@/components/sanitaire/OwnerBanner";
 import SignalerFicheButton from "@/components/sanitaire/SignalerFicheButton";
+import SourcesBlock from "@/components/SourcesBlock";
 import PhoneReveal from "@/components/sanitaire/PhoneReveal";
 import CallbackButton from "@/components/sanitaire/CallbackButton";
 import FicheStatusBadge from "@/components/sanitaire/FicheStatusBadge";
@@ -151,7 +153,9 @@ export default async function FicheProPage({ params }: Props) {
   ]);
 
   const seoText = buildFicheSeoText(pro, villesVoisines);
-  const proLd = buildProJsonLd(pro, ville, categorie, slug, seoText.paragraphes.join(" "));
+  const proLdBase = buildProJsonLd(pro, ville, categorie, slug, seoText.paragraphes.join(" "));
+  // Ajouter dateModified basé sur updated_at de la fiche
+  const proLd = { ...proLdBase, dateModified: pro.updated_at };
   const faqQuestions = getFicheFaq(pro);
   const faqLd = buildFaqJsonLd(faqQuestions);
   const breadLd = buildBreadcrumbJsonLd([
@@ -164,11 +168,21 @@ export default async function FicheProPage({ params }: Props) {
     },
   ]);
 
+  const speakableLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".fiche-speakable"],
+    },
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(proLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(speakableLd) }} />
       <TrackVue proId={pro.id} />
       <OwnerBanner proId={pro.id} claimedBy={pro.claimed_by || null} />
 
@@ -234,7 +248,7 @@ export default async function FicheProPage({ params }: Props) {
           {pro.description ? (
             <article className="bg-white border border-gray-200 rounded-2xl p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <p className="fiche-speakable text-gray-700 leading-relaxed whitespace-pre-line">
                 {pro.description}
               </p>
             </article>
@@ -243,7 +257,7 @@ export default async function FicheProPage({ params }: Props) {
               <h2 className="text-lg font-bold text-gray-900 mb-3">{seoText.titre}</h2>
               <div className="space-y-3">
                 {seoText.paragraphes.map((p, i) => (
-                  <p key={i} className="text-gray-700 leading-relaxed">
+                  <p key={i} className={i === 0 ? "fiche-speakable text-gray-700 leading-relaxed" : "text-gray-700 leading-relaxed"}>
                     {p}
                   </p>
                 ))}
@@ -446,8 +460,9 @@ export default async function FicheProPage({ params }: Props) {
                   </div>
                 </a>
               )}
-              <div className="text-xs text-gray-400 pt-3 border-t border-gray-100">
-                SIRET : {pro.siret}
+              <div className="text-xs text-gray-400 pt-3 border-t border-gray-100 space-y-1">
+                <div>SIRET : {pro.siret}</div>
+                <div>Fiche mise à jour le {new Date(pro.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>
               </div>
             </div>
           </div>
@@ -662,6 +677,10 @@ export default async function FicheProPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      <section className="max-w-5xl mx-auto px-4 pb-10">
+        <SourcesBlock variant="pro" dateVerification={pro.updated_at} />
+      </section>
 
       <section className="max-w-5xl mx-auto px-4 pb-10">
         <div className="flex justify-end">

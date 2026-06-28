@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, BookOpen, ShieldCheck, ArrowRight } from "lucide-react";
+import AuthorBlock from "./AuthorBlock";
+import SourcesBlock from "@/components/SourcesBlock";
 
 export type SectionEntry = { id: string; label: string };
 
@@ -10,6 +12,8 @@ type Props = {
   sections: SectionEntry[];
   children: React.ReactNode;
   publishedDate: string; // affiché humain
+  publishedAt?: string;  // ISO pour AuthorBlock
+  updatedAt?: string;    // ISO pour AuthorBlock
 };
 
 export default function GuideLayout(props: Props) {
@@ -46,7 +50,13 @@ export default function GuideLayout(props: Props) {
           <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
             {props.title}
           </h1>
-          <p className="text-lg text-blue-50 max-w-3xl">{props.intro}</p>
+          <p className="guide-speakable text-lg text-blue-50 max-w-3xl">{props.intro}</p>
+          {props.updatedAt && (
+            <p className="mt-3 text-xs text-blue-200">
+              Dernière mise à jour :{" "}
+              {new Date(props.updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+            </p>
+          )}
         </div>
       </section>
 
@@ -109,6 +119,14 @@ export default function GuideLayout(props: Props) {
               </ul>
             </details>
 
+            {props.publishedAt && (
+              <AuthorBlock
+                authorKey="lucas-horville"
+                publishedAt={props.publishedAt}
+                updatedAt={props.updatedAt || props.publishedAt}
+              />
+            )}
+
             {props.children}
 
             <div className="mt-12 pt-6 border-t border-slate-200">
@@ -116,6 +134,8 @@ export default function GuideLayout(props: Props) {
                 Information à valeur indicative, ne se substitue pas à un avis juridique. Consultez les textes officiels et un conseil professionnel pour votre cas particulier.
               </p>
             </div>
+
+            <SourcesBlock variant="guide" />
           </article>
         </div>
       </section>

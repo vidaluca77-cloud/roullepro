@@ -27,6 +27,7 @@ import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
 import NearbyCities from "@/components/NearbyCities";
 import EtablissementsVille from "@/components/etablissements/EtablissementsVille";
 import TypesEtablissementsVille from "@/components/etablissements/TypesEtablissementsVille";
+import SourcesBlock from "@/components/SourcesBlock";
 
 export const revalidate = 3600;
 
@@ -195,6 +196,7 @@ export default async function VillePage({ params, searchParams }: Props) {
     name: `Transport sanitaire à ${nomVille}`,
     description: `Annuaire des ambulances, VSL et taxis conventionnés à ${nomVille}`,
     url: `https://roullepro.com/transport-medical/${ville}`,
+    dateModified: new Date().toISOString(),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: pros.length,
@@ -449,6 +451,10 @@ export default async function VillePage({ params, searchParams }: Props) {
 
       <EtablissementsVille villeSlug={ville} nomVille={nomVille} />
       <TypesEtablissementsVille villeSlug={ville} nomVille={nomVille} />
+
+      <section className="max-w-6xl mx-auto px-4 pb-8">
+        <SourcesBlock variant="ville" />
+      </section>
 
       <section className="bg-gray-50 py-10 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-4 text-center">

@@ -1,4 +1,5 @@
 import type { FaqItem } from "./FaqAccordion";
+import { AUTHORS } from "@/lib/authors";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -22,11 +23,7 @@ export default function JsonLd(props: Props) {
     description: props.description,
     datePublished: props.publishedAt,
     dateModified: props.updatedAt,
-    author: {
-      "@type": "Organization",
-      name: "RoullePro",
-      url: BASE_URL,
-    },
+    author: AUTHORS["lucas-horville"],
     publisher: {
       "@type": "Organization",
       name: "RoullePro",
@@ -38,6 +35,15 @@ export default function JsonLd(props: Props) {
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     image: `${BASE_URL}/logo-roullepro-horizontal.png`,
+  };
+
+  const speakable = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", ".guide-speakable"],
+    },
   };
 
   const breadcrumb = {
@@ -86,6 +92,10 @@ export default function JsonLd(props: Props) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(speakable) }}
       />
     </>
   );

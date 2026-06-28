@@ -137,6 +137,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Guides RoullePro — Transport sanitaire"
+          href="/feed/guides.xml"
+        />
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Veille réglementaire RoullePro"
+          href="/feed/veille.xml"
+        />
       </head>
       <body className={inter.className}>
         <GoogleAnalytics />

@@ -88,6 +88,8 @@ export default async function VslGuide() {
         breadcrumbLabel="VSL"
         sections={SECTIONS}
         publishedDate="Mai 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <section id="cadre">
           <h2>Cadre VSL et conventionnement</h2>

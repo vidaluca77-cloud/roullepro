@@ -90,6 +90,8 @@ export default async function TaxiGuide() {
         breadcrumbLabel="Taxi conventionné"
         sections={SECTIONS}
         publishedDate="Mai 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <section id="convention">
           <h2>Convention-cadre du 13 mai 2025</h2>

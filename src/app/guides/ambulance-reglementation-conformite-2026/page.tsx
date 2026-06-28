@@ -88,6 +88,8 @@ export default async function AmbulanceGuide() {
         breadcrumbLabel="Ambulance"
         sections={SECTIONS}
         publishedDate="Mai 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <section id="cadre">
           <h2>Cadre légal et catégories de véhicules</h2>
