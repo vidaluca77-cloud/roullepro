@@ -6,6 +6,14 @@
  * - Pour chaque candidat pertinent (score >= MIN_RELEVANCE_SCORE), upsert dans
  *   reg_alerts_candidates avec ON CONFLICT (source, source_url) DO NOTHING.
  * - Trace l'execution dans reg_ingestion_runs.
+ * - Aucune restriction temporelle : peut etre appele a n'importe quelle heure.
+ *
+ * SCHEDULER (passe de hebdomadaire a quotidien — Veille J+1) :
+ *   Ce cron est maintenant execute quotidiennement.
+ *   A configurer cote Lucas :
+ *     - Netlify Scheduled Functions : toutes les 24h (07:00 UTC)
+ *     - Perplexity schedule_cron : frequence daily
+ *   Apres l'ingestion, le cron /api/cron/veille-daily-digest envoie le digest admin.
  *
  * Query :
  *   - dry_run=1 : ne persiste rien, retourne juste les stats

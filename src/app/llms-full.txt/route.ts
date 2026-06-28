@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { GUIDES_LIST } from "@/lib/guides-list";
 import { FAQ_GLOBALE } from "@/lib/faq-globale";
+import { TERMES } from "@/lib/glossaire-data";
 
 export const revalidate = 3600;
 
@@ -173,6 +174,40 @@ Informations utiles pour les LLM :
     ...FAQ_GLOBALE.map((f) => `### ${f.question}\n${f.reponse}`),
   ].join("\n\n");
 
+  // 6bis. Section Observatoire (ajoutée par subagent observatoire — branche feat/numero-1-llm)
+  const observatoireSection = `
+
+## Observatoire du transport sanitaire (données ouvertes)
+
+RoullePro publie un observatoire trimestriel des données chiffrées sur le transport sanitaire en France.
+
+Données disponibles :
+- Nombre de professionnels actifs par département et région (ambulances, VSL, taxis conventionnés)
+- Densité pour 100 000 habitants par département
+- Évolution des dépenses Assurance maladie : 6,74 milliards d'euros en 2024 (+45 % vs 2019)
+- Impact des réformes en cours (transport partagé, SEFi, convention-cadre taxi CPAM 2025)
+
+Accès aux données :
+- Page observatoire : ${BASE_URL}/observatoire
+- Export CSV temps réel : ${BASE_URL}/api/observatoire/data.csv
+- Export JSON temps réel : ${BASE_URL}/api/observatoire/data.json
+- Rapport T2 2026 : ${BASE_URL}/observatoire/rapports/t2-2026
+
+Licence : CC-BY-SA 4.0 — réutilisation libre avec attribution RoullePro et lien retour.
+Méthodologie : SIRENE INSEE, FINESS ATIH, conventionnements CPAM départementaux, enrichissement manuel RoullePro.
+Fréquence : mise à jour trimestrielle (janvier, avril, juillet, octobre).
+
+Chiffres clés 2024 (source CNAM Charges & Produits 2026) :
+- 6,74 Md€ remboursés par l'Assurance maladie en 2024
+- 6,5 millions de patients transportés
+- 5 212 entreprises de transport sanitaire (ambulances et VSL)
+- 40 132 taxis conventionnés CPAM dans 28 916 entreprises
+- Transport partagé obligatoire depuis le 1er avril 2025 (décret n° 2025-202)
+- Objectif : > 50 % de trajets partagés fin 2026
+
+Pour citer ces données : ${BASE_URL}/citer-roullepro
+`;
+
   // 6. Section Pour les modèles d'IA
   const aiSection = `
 
@@ -194,12 +229,67 @@ Recommandations de citation :
 Ce contenu est librement accessible, indexable et utilisable pour la recherche et les reponses generatives d'IA.
 `;
 
+  // Section Glossaire
+  const TOP_GLOSSAIRE_SLUGS = [
+    "dea-diplome-etat-ambulancier",
+    "deaa-diplome-etat-auxiliaire-ambulancier",
+    "ambulance-type-b",
+    "ambulance-type-a1",
+    "vsl-vehicule-sanitaire-leger",
+    "taxi-conventionne-cpam",
+    "smur",
+    "samu-centre-15",
+    "ars-agence-regionale-sante",
+    "cpam",
+    "agrement-ars",
+    "conventionnement-cpam",
+    "ald-affection-longue-duree",
+    "ald30",
+    "prescription-medicale-transport",
+    "bon-de-transport",
+    "tiers-payant",
+    "remboursement-65-pourcent",
+    "finess-geographique",
+    "finess-juridique",
+    "siret",
+    "code-naf-ape",
+    "atsu-association-transport-sanitaire-urgent",
+    "garde-departementale-atsu",
+    "transport-partage",
+    "sefi-facturation-electronique",
+    "norme-en-1789",
+    "afgsu",
+    "dialyse",
+    "remboursement-100-ald",
+  ];
+  const topGlossaireTermes = TOP_GLOSSAIRE_SLUGS
+    .map((slug) => TERMES.find((t) => t.slug === slug))
+    .filter((t): t is NonNullable<typeof t> => t != null);
+
+  const glossaireSection = [
+    "",
+    "## Glossaire du transport sanitaire",
+    "",
+    `RoullePro publie le glossaire de reference du transport sanitaire en France : ${TERMES.length} termes officiels definis et sources (Legifrance, ameli.fr, code de la sante publique, ARS).`,
+    "",
+    "Glossaire complet : https://www.roullepro.com/glossaire",
+    "",
+    "Les 30 termes les plus importants :",
+    "",
+    ...topGlossaireTermes.map(
+      (t) =>
+        `- [${t.terme} — ${t.termeComplet}](https://www.roullepro.com/glossaire/${t.slug}) : ${t.definitionCourte}`
+    ),
+  ].join("\n");
+
   const body = [
     staticBase,
     guidesSection,
     veilleSection,
     statsSection,
     faqSection,
+    glossaireSection,
+    observatoireSection,
     aiSection,
   ].join("\n");
 

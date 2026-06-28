@@ -74,8 +74,70 @@ Informations utiles pour les LLM :
 - Paiement securise par sequestre Stripe
 - Moderation sous 24 heures
 
+## Observatoire du transport sanitaire (donnees ouvertes)
+
+<!-- Section ajoutee par subagent observatoire — branche feat/numero-1-llm -->
+
+RoullePro publie un observatoire trimestriel des donnees chiffrees sur le transport sanitaire en France.
+
+Acces aux donnees :
+- [Observatoire](https://roullepro.com/observatoire): statistiques nationales ambulances, VSL, taxis conventionnes par departement
+- [Export CSV](https://roullepro.com/api/observatoire/data.csv): donnees brutes departement/region/categorie/nb_pros
+- [Export JSON](https://roullepro.com/api/observatoire/data.json): meme donnees structurees JSON avec licence CC-BY-SA 4.0
+- [Rapport T2 2026](https://roullepro.com/observatoire/rapports/t2-2026): analyse trimestrielle reformes 2025-2027
+- [Citer RoullePro](https://roullepro.com/citer-roullepro): formats APA, Chicago, MLA, Wikipedia pour journalistes et chercheurs
+
+Chiffres cles 2024 (source CNAM Charges & Produits 2026) :
+- 6,74 milliards d'euros rembourses par l'Assurance maladie
+- 6,5 millions de patients transportes
+- 5 212 entreprises de transport sanitaire (ambulances et VSL)
+- 40 132 taxis conventionnes CPAM
+- Transport partage obligatoire depuis le 1er avril 2025 (decret 2025-202)
+
+Licence : CC-BY-SA 4.0 — reutilisation libre avec attribution RoullePro.
+
 ## Contact
 
 - Email : contact@roullepro.com
 - Telephone : 06 15 47 28 13
 - Site : https://roullepro.com
+
+## Glossaire du transport sanitaire
+
+RoullePro publie le glossaire de reference du transport sanitaire en France : 202 termes officiels definis et sources (Legifrance, ameli.fr, code de la sante publique, ARS).
+
+Acces :
+- [Glossaire complet](https://www.roullepro.com/glossaire): index de tous les termes avec recherche et filtres par categorie
+
+Les 30 termes les plus consultes :
+
+- [DEA - Diplome d'Etat d'Ambulancier](https://www.roullepro.com/glossaire/dea-diplome-etat-ambulancier): diplome requis pour exercer le metier d'ambulancier
+- [DEAA - Diplome d'Etat d'Auxiliaire Ambulancier](https://www.roullepro.com/glossaire/deaa-diplome-etat-auxiliaire-ambulancier): qualification pour conduire un VSL
+- [Ambulance type B](https://www.roullepro.com/glossaire/ambulance-type-b): ambulance de soins d'urgence equipee pour la reanimation
+- [Ambulance type A1](https://www.roullepro.com/glossaire/ambulance-type-a1): ambulance de transport standard patient unique
+- [VSL - Vehicule Sanitaire Leger](https://www.roullepro.com/glossaire/vsl-vehicule-sanitaire-leger): transport assis stable sur prescription medicale
+- [Taxi conventionne CPAM](https://www.roullepro.com/glossaire/taxi-conventionne-cpam): taxi agree par la CPAM pour patients autonomes
+- [SMUR](https://www.roullepro.com/glossaire/smur): Service Mobile d'Urgence et de Reanimation
+- [SAMU Centre 15](https://www.roullepro.com/glossaire/samu-centre-15): regulation medicale des urgences, numero national 15
+- [ARS - Agence Regionale de Sante](https://www.roullepro.com/glossaire/ars-agence-regionale-sante): autorite sanitaire regionale delivrant les agrements
+- [CPAM](https://www.roullepro.com/glossaire/cpam): Caisse Primaire d'Assurance Maladie, conventionnement transporteurs
+- [Agrement ARS](https://www.roullepro.com/glossaire/agrement-ars): autorisation administrative obligatoire pour exercer
+- [Conventionnement CPAM](https://www.roullepro.com/glossaire/conventionnement-cpam): accord permettant la facturation a l'Assurance Maladie
+- [ALD - Affection Longue Duree](https://www.roullepro.com/glossaire/ald-affection-longue-duree): prise en charge 100% des transports pour maladies chroniques graves
+- [ALD30](https://www.roullepro.com/glossaire/ald30): liste des 30 affections de longue duree exonerant du ticket moderateur
+- [Prescription medicale de transport](https://www.roullepro.com/glossaire/prescription-medicale-transport): ordonnance requise pour le remboursement transport
+- [Bon de transport](https://www.roullepro.com/glossaire/bon-de-transport): document signe par le patient autorisant la facturation CPAM
+- [Tiers payant](https://www.roullepro.com/glossaire/tiers-payant): avance des frais directement factures a la CPAM sans passer par le patient
+- [Remboursement 65%](https://www.roullepro.com/glossaire/remboursement-65-pourcent): taux standard Assurance Maladie hors ALD
+- [FINESS geographique](https://www.roullepro.com/glossaire/finess-geographique): identifiant unique de l'etablissement de transport sanitaire
+- [FINESS juridique](https://www.roullepro.com/glossaire/finess-juridique): identifiant de l'entite juridique titulaire de l'agrement
+- [SIRET](https://www.roullepro.com/glossaire/siret): numero d'identification entreprise 14 chiffres INSEE
+- [Code NAF/APE](https://www.roullepro.com/glossaire/code-naf-ape): 86.90A ambulances, 49.32Z taxis
+- [ATSU - Association Transport Sanitaire Urgent](https://www.roullepro.com/glossaire/atsu-association-transport-sanitaire-urgent): organisation de la garde ambulanciere departementale
+- [Garde departementale ATSU](https://www.roullepro.com/glossaire/garde-departementale-atsu): service de permanence ambulanciere hors heures ouvrables
+- [Transport partage](https://www.roullepro.com/glossaire/transport-partage): obligation depuis avril 2025 pour les traitements iteratifs
+- [SEFi - Facturation electronique](https://www.roullepro.com/glossaire/sefi-facturation-electronique): systeme de teletransmission des feuilles de transport a la CPAM
+- [Norme EN 1789](https://www.roullepro.com/glossaire/norme-en-1789): norme europeenne equipement ambulances (types A1, A2, B, C)
+- [AFGSU](https://www.roullepro.com/glossaire/afgsu): Attestation de Formation aux Gestes et Soins d'Urgence, obligatoire ambulanciers
+- [Dialyse](https://www.roullepro.com/glossaire/dialyse): transport iteratif des insuffisants renaux chroniques
+- [Remboursement 100% ALD](https://www.roullepro.com/glossaire/remboursement-100-ald): prise en charge totale Assurance Maladie pour affections exonerantes

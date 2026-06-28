@@ -42,6 +42,9 @@ export async function GET() {
   // Sitemaps nommes (contenu editorial : plats, pas d'index imbrique).
   locs.push(`${BASE_URL}/sitemaps/reg-alerts.xml`);
   locs.push(`${BASE_URL}/sitemaps/guides.xml`);
+  locs.push(`${BASE_URL}/sitemaps/glossaire.xml`);
+  // Observatoire du transport sanitaire (données ouvertes trimestrielles).
+  locs.push(`${BASE_URL}/sitemaps/observatoire.xml`);
 
   const items = locs
     .map(
