@@ -1,0 +1,56 @@
+-- Migration informative — Veille J+1 automatisee
+-- Cree le : 2026-06-28
+-- Auteur : subagent veille-j1
+-- Objet : Passer la veille de hebdomadaire a quotidienne + auto-publication brouillons
+--
+-- AUCUN ALTER TABLE REQUIS :
+--   Les tables reg_alerts_candidates et reg_alerts disposent deja de toutes
+--   les colonnes necessaires aux nouveaux crons :
+--
+--   reg_alerts_candidates :
+--     - id, source, source_url, title, summary
+--     - relevance_score        : score de pertinence (entier ~0-20)
+--     - status                 : 'pending' | 'promoted' | 'dismissed' | 'duplicate'
+--     - detected_at            : timestamp de detection (fenetre 24h pour digest)
+--     - promoted_alert_id      : FK vers reg_alerts.id apres promotion
+--     - promoted_at            : timestamp de promotion
+--     - promoted_by            : uuid utilisateur (null si auto-promotion)
+--     - dismissed_at, dismissed_by, dismissed_reason : colonnes de rejet
+--
+--   reg_alerts :
+--     - status : 'draft' | 'published' | 'archived'
+--       => les brouillons auto-crees ont status='draft' et restent invisibles
+--          jusqu'a validation manuelle par Lucas depuis /admin/veille/alertes
+--
+--   reg_ingestion_runs :
+--     - source : accepte desormais 'auto_publish' en plus de 'all', 'dila_jorf', etc.
+--       => pas de contrainte CHECK sur ce champ, pas de migration necessaire.
+--
+-- NOUVEAUX CRONS CREES (fichiers TypeScript) :
+--   1. src/app/api/cron/veille-daily-digest/route.ts
+--      - Tourne quotidiennement apres veille-ingest
+--      - Compte les candidates status=pending dans les 24h
+--      - Envoie un email digest a contact@roullepro.com si > 0
+--
+--   2. src/app/api/cron/veille-auto-publish/route.ts
+--      - Tourne quotidiennement (apres veille-ingest + 15 min)
+--      - Promeut automatiquement en BROUILLON les candidates score >= 17
+--      - Envoie un recap email a contact@roullepro.com avec liens 1-click publish
+--      - NE PUBLIE PAS automatiquement (status='draft' seulement)
+--
+-- FICHIERS MODIFIES :
+--   - src/app/api/cron/veille-ingest/route.ts (commentaire scheduler quotidien)
+--   - src/app/veille-reglementaire/page.tsx (JSON-LD Dataset, stats, sources)
+--   - src/app/veille-reglementaire/[slug]/page.tsx (NewsArticle LD, APA, maillage)
+--   - src/app/admin/veille/page.tsx (dashboard KPI + 1-click publish)
+--
+-- SCHEDULER A CONFIGURER COTE LUCAS :
+--   Ordre recommande des crons quotidiens (heure Paris) :
+--     07:00 UTC -> /api/cron/veille-ingest
+--     07:15 UTC -> /api/cron/veille-auto-publish
+--     07:30 UTC -> /api/cron/veille-daily-digest
+--   Options : Netlify Scheduled Functions ou Perplexity schedule_cron.
+--   Toujours passer le header : Authorization: Bearer $CRON_SECRET
+
+-- Pas de SQL a executer dans cette migration.
+SELECT 1; -- no-op pour validation Supabase CLI

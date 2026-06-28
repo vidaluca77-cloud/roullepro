@@ -474,6 +474,45 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Bloc Observatoire — données ouvertes (ajout subagent observatoire — feat/numero-1-llm) */}
+      <section className="border-t border-gray-200 bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-10 sm:py-12">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 bg-gradient-to-r from-green-50 to-white border border-green-100 rounded-2xl p-6 sm:p-8">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center">
+                <BadgeCheck className="w-6 h-6 text-green-700" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-1">
+                  Open Data — licence CC-BY-SA 4.0
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+                  Nos données ouvertes sur le transport sanitaire
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600 max-w-xl">
+                  Statistiques nationales par département, exports CSV et JSON, rapports trimestriels.
+                  Réutilisables librement par les journalistes, chercheurs et contributeurs Wikipédia.
+                </p>
+              </div>
+            </div>
+            <div className="flex-shrink-0 flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/observatoire"
+                className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-5 py-3 rounded-xl transition"
+              >
+                Accéder à l’Observatoire <ChevronRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/citer-roullepro"
+                className="inline-flex items-center gap-2 border border-green-300 text-green-800 hover:bg-green-50 font-semibold px-5 py-3 rounded-xl transition"
+              >
+                Citer nos données
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Bande prescripteurs */}
       <section className="border-t border-gray-200 bg-white">
         <div className="max-w-6xl mx-auto px-4 py-10 sm:py-12">
