@@ -90,6 +90,8 @@ export default function AmbulanceVsVslGuide() {
         breadcrumbLabel="Ambulance vs VSL"
         sections={SECTIONS}
         publishedDate="Juin 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <p>
           Lorsqu&apos;un transport vers des soins est nécessaire, deux solutions sanitaires reviennent souvent : l&apos;<strong>ambulance</strong> et le <strong>VSL</strong> (Véhicule Sanitaire Léger). Toutes deux sont des transports sanitaires agréés par l&apos;Agence Régionale de Santé, prescrits par un médecin et remboursés par l&apos;Assurance maladie. Mais elles répondent à des besoins très différents. L&apos;ambulance prend en charge les patients fragiles, allongés ou nécessitant une surveillance, tandis que le VSL convient aux patients assis et autonomes. Comprendre cette frontière t&apos;évite une prescription inadaptée et un remboursement réduit.

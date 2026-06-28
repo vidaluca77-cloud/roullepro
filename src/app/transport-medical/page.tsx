@@ -5,6 +5,7 @@ import { Cross, Car, MapPin, Search, Phone, Shield, Users, Clock, ChevronRight }
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import { getProStats } from "@/lib/stats";
+import { jsonLdHtml } from "@/lib/seo-schema";
 
 export const revalidate = 3600;
 
@@ -180,9 +181,34 @@ export default async function TransportMedicalHome() {
   }
   const sortedLetters = Array.from(villesByLetter.keys()).sort();
 
+  const datasetLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: "Annuaire national du transport sanitaire conventionné CPAM",
+    description: `Plus de ${stats.total.toLocaleString("fr-FR")} professionnels du transport sanitaire en France : ambulances, VSL et taxis conventionnés CPAM. Données issues du registre SIRENE (INSEE) et du référentiel FINESS (ATIH).`,
+    url: "https://roullepro.com/transport-medical",
+    keywords: ["transport sanitaire", "ambulance", "VSL", "taxi conventionné", "CPAM", "France"],
+    creator: { "@type": "Organization", name: "RoullePro", url: "https://roullepro.com" },
+    publisher: { "@type": "Organization", name: "RoullePro" },
+    license: "https://roullepro.com/mentions-legales",
+    isAccessibleForFree: true,
+    spatialCoverage: { "@type": "Country", name: "France" },
+    variableMeasured: ["raison sociale", "SIRET", "catégorie", "adresse", "téléphone", "conventionnement CPAM"],
+    distribution: [
+      { "@type": "DataDownload", encodingFormat: "text/html", contentUrl: "https://roullepro.com/transport-medical" },
+    ],
+    dateModified: new Date().toISOString(),
+    sourceOrganization: [
+      { "@type": "Organization", name: "INSEE SIRENE", url: "https://www.sirene.fr" },
+      { "@type": "Organization", name: "FINESS - ATIH", url: "https://finess.esante.gouv.fr" },
+      { "@type": "Organization", name: "Assurance Maladie", url: "https://www.ameli.fr" },
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/40 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListVillesLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(datasetLd) }} />
       <section className="relative overflow-hidden bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="absolute inset-0 opacity-10 pointer-events-none" aria-hidden>
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-white blur-3xl" />

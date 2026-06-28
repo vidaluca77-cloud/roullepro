@@ -97,6 +97,8 @@ export default async function HubPage() {
         breadcrumbLabel="Conformité 2026-2027"
         sections={SECTIONS}
         publishedDate="Mai 2026"
+        publishedAt={PUBLISHED_AT}
+        updatedAt={UPDATED_AT}
       >
         <section id="panorama">
           <h2>Panorama des évolutions 2025-2028</h2>
