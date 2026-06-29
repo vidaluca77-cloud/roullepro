@@ -131,6 +131,38 @@ export function extractFaq(content: string): FaqItem[] {
   return faq;
 }
 
+/**
+ * Retire la section « ## Questions frequentes » (ou « ## FAQ ») du contenu
+ * markdown jusqu'au prochain H2 ou la fin du document. Utilise pour eviter le
+ * doublon visuel lorsque la FAQ est rendue via le composant FaqAccordion.
+ */
+export function stripFaqSection(content: string): string {
+  const lines = content.split("\n");
+  const result: string[] = [];
+  let inFaq = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("## ")) {
+      const heading = trimmed
+        .slice(3)
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      if (heading.includes("questions frequentes") || heading.includes("faq")) {
+        inFaq = true;
+        continue;
+      }
+      // Sortie de la FAQ sur un nouveau H2
+      if (inFaq) {
+        inFaq = false;
+      }
+    }
+    if (!inFaq) result.push(line);
+  }
+  return result.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd();
+}
+
 /** Une étape extraite d'une section « Démarches en N étapes ». */
 export interface HowToStep {
   name: string;

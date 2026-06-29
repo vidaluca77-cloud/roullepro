@@ -23,6 +23,7 @@ import {
   buildFaqJsonLd,
   extractHowTo,
   buildHowToJsonLd,
+  stripFaqSection,
 } from "@/lib/blog-seo";
 import {
   MarkdownRenderer,
@@ -32,6 +33,14 @@ import { ArticleCard } from "@/components/blog/ArticleCard";
 import { NewsletterInline } from "@/components/blog/NewsletterInline";
 import { BlogCTA } from "@/components/blog/BlogCTA";
 import MaillageTransporteurs from "@/components/etablissements/MaillageTransporteurs";
+import { FaqAccordion } from "@/components/blog/FaqAccordion";
+import {
+  ConfidenceBlock,
+  DEFAULT_SOURCES_CPAM,
+  SOURCES_AGREMENT,
+  SOURCES_ALD_ONCO,
+  type ConfidenceSource,
+} from "@/components/blog/ConfidenceBlock";
 
 // Articles recevant l'encart de maillage interne vers les fiches etablissement.
 const MAILLAGE_SLUGS = new Set([
@@ -42,6 +51,26 @@ const MAILLAGE_SLUGS = new Set([
   "ambulance-ne-repond-pas-que-faire",
   "transport-medical-partage-regles",
 ]);
+
+// Articles strategiques SEO : reçoivent le bloc confiance (E-A-T) et la FAQ
+// rendue en accordion stylise pour activer les rich snippets Google.
+const SEO_BOOST_SLUGS = new Set([
+  "agrement-cpam-taxi-conventionne",
+  "remboursement-transport-medical",
+  "transport-chimiotherapie-dialyse-radiotherapie",
+]);
+
+/** Mapping slug -> sources officielles personnalisees pour le bloc confiance. */
+function getConfidenceSources(slug: string): ConfidenceSource[] {
+  switch (slug) {
+    case "agrement-cpam-taxi-conventionne":
+      return SOURCES_AGREMENT;
+    case "transport-chimiotherapie-dialyse-radiotherapie":
+      return SOURCES_ALD_ONCO;
+    default:
+      return DEFAULT_SOURCES_CPAM;
+  }
+}
 
 export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
@@ -98,9 +127,19 @@ export default function BlogPostPage({
   const wordCount = post.content.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.round(wordCount / 200));
 
+  const faqItems = extractFaq(post.content);
   const jsonLd = buildArticleJsonLd(post);
-  const faqLd = buildFaqJsonLd(extractFaq(post.content));
+  const faqLd = buildFaqJsonLd(faqItems);
   const howToLd = buildHowToJsonLd(extractHowTo(post.content));
+
+  // Sur les pages SEO_BOOST_SLUGS, on remplace la FAQ markdown plate par un
+  // accordion stylise rendu en bas d'article. Sur les autres pages, le contenu
+  // reste tel quel.
+  const isSeoBoosted = SEO_BOOST_SLUGS.has(post.slug);
+  const renderedContent =
+    isSeoBoosted && faqItems.length > 0
+      ? stripFaqSection(post.content)
+      : post.content;
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -127,11 +166,11 @@ export default function BlogPostPage({
   };
 
   // Séparation à ~45% pour insérer la newsletter au milieu
-  const splitPoint = Math.floor(post.content.length * 0.45);
-  const breakIndex = post.content.indexOf("\n## ", splitPoint);
+  const splitPoint = Math.floor(renderedContent.length * 0.45);
+  const breakIndex = renderedContent.indexOf("\n## ", splitPoint);
   const firstHalf =
-    breakIndex > 0 ? post.content.slice(0, breakIndex) : post.content;
-  const secondHalf = breakIndex > 0 ? post.content.slice(breakIndex) : "";
+    breakIndex > 0 ? renderedContent.slice(0, breakIndex) : renderedContent;
+  const secondHalf = breakIndex > 0 ? renderedContent.slice(breakIndex) : "";
 
   return (
     <article className="min-h-screen bg-white">
@@ -241,6 +280,15 @@ export default function BlogPostPage({
         <div className="grid lg:grid-cols-[1fr_240px] gap-10">
           {/* Contenu principal */}
           <div className="min-w-0">
+            {/* Bloc confiance E-A-T : auteur, sources officielles, mise a jour */}
+            {isSeoBoosted && (
+              <ConfidenceBlock
+                updatedAt={post.date}
+                readingMinutes={readingMinutes}
+                sources={getConfidenceSources(post.slug)}
+              />
+            )}
+
             <MarkdownRenderer content={firstHalf} />
 
             {secondHalf && (
@@ -267,6 +315,11 @@ export default function BlogPostPage({
                   ))}
                 </div>
               </div>
+            )}
+
+            {/* FAQ accordion stylisee (rich snippets) sur pages SEO boostees */}
+            {isSeoBoosted && faqItems.length > 0 && (
+              <FaqAccordion items={faqItems} />
             )}
 
             {/* Maillage interne : encart transporteurs conventionnes */}
