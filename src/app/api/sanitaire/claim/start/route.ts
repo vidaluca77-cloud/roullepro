@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { renderClaimOtp } from "@/lib/email-templates/sanitaire";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -101,12 +102,10 @@ export async function POST(req: Request) {
     if (method === "email_domaine") {
       await sendEmail({
         to: officialContact,
-        subject: `[RoullePro] Votre code de vérification de fiche`,
-        html: `<h2>Vérification de votre fiche</h2>
-<p>Voici votre code de vérification pour réclamer la fiche de <strong>${pro.nom_commercial || pro.raison_sociale}</strong> sur RoullePro Transport Médical :</p>
-<div style="font-size:32px;font-weight:bold;letter-spacing:8px;background:#f0f6ff;padding:20px;text-align:center;border-radius:12px;color:#0066CC;margin:20px 0">${code}</div>
-<p>Ce code expire dans 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
-<p style="font-size:12px;color:#6b7280;margin-top:24px">Après saisie du code, votre réclamation sera validée manuellement par notre équipe sous 24h ouvrées.</p>`,
+        ...renderClaimOtp({
+          code,
+          nomAffiche: pro.nom_commercial || pro.raison_sociale,
+        }),
       }).catch(() => undefined);
     } else {
       // SMS : pas de provider encore. On NE logge jamais le code OTP.

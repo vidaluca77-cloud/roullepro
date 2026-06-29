@@ -36,6 +36,8 @@ export async function sendEmail(payload: {
   to: string;
   subject: string;
   html: string;
+  /** Version texte brut de l'email (améliore le score anti-spam). Si absent, Resend utilise le HTML seul. */
+  text?: string;
   reply_to?: string;
   /** Alias retro-compatible de reply_to (prioritaire si fourni). */
   replyTo?: string;
@@ -64,6 +66,7 @@ export async function sendEmail(payload: {
         to: payload.to,
         subject: payload.subject,
         html: payload.html,
+        ...(payload.text ? { text: payload.text } : {}),
         ...(replyTo ? { reply_to: replyTo } : {}),
         ...(payload.bcc ? { bcc: payload.bcc } : {}),
         ...(payload.tags && payload.tags.length ? { tags: payload.tags } : {}),
