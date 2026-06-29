@@ -3,6 +3,11 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sendEmail } from "@/lib/email";
+import {
+  renderInscriptionAccuse,
+  renderInscriptionConfirmEmail,
+  renderInscriptionAdmin,
+} from "@/lib/email-templates/sanitaire";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { slugifyVille } from "@/lib/sanitaire-data";
 
@@ -546,43 +551,34 @@ export async function POST(req: Request) {
     const encodedEmail = encodeURIComponent(data.email);
     const nomAffiche = data.nom_commercial || data.raison_sociale;
 
-    // Email utilisateur
+    // Email utilisateur — accusé de réception
     await sendEmail({
       to: data.email,
-      subject: "Votre inscription RoullePro a bien été reçue",
-      html: `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
-  <h2 style="color:#0066CC">Inscription reçue — merci, ${data.prenom}&nbsp;!</h2>
-  <p>Nous avons bien reçu votre demande d'inscription pour <strong>${nomAffiche}</strong> sur RoullePro Transport Médical.</p>
-  <h3 style="color:#374151">Prochaines étapes</h3>
-  <ol>
-    <li><strong>Vérifiez votre email</strong> — un lien de confirmation vous a été envoyé séparément.</li>
-    <li><strong>Validation par notre équipe</strong> — votre fiche sera validée manuellement sous 24 à 48 h.</li>
-    <li><strong>Complétez votre fiche</strong> — après validation, ajoutez photos, horaires détaillés et description.</li>
-  </ol>
-  <p>Une fois validée, votre fiche sera visible publiquement dans notre annuaire Transport Médical.</p>
-  <p style="font-size:13px;color:#6b7280">Questions ? <a href="mailto:contact@roullepro.com">contact@roullepro.com</a></p>
-</div>`,
+      ...renderInscriptionAccuse({
+        prenom: data.prenom,
+        nom_commercial: data.nom_commercial,
+        raison_sociale: data.raison_sociale,
+        ville: data.ville,
+        categorie: data.categorie,
+        appUrl: APP_URL,
+      }),
     }).catch(() => undefined);
 
     // Email admin
     const adminEmail = process.env.ADMIN_EMAIL || "contact@roullepro.com";
     await sendEmail({
       to: adminEmail,
-      subject: `Nouvelle inscription : ${nomAffiche} (${data.ville})`,
-      html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
-  <h2>Nouvelle inscription pro</h2>
-  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
-    <tr><td style="padding:6px;color:#6b7280">Entreprise</td><td style="padding:6px;font-weight:600">${nomAffiche}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">SIRET</td><td style="padding:6px">${data.siret || "Non fourni"}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Catégorie</td><td style="padding:6px">${data.categorie}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Ville</td><td style="padding:6px">${data.ville} (${data.code_postal})</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Email</td><td style="padding:6px">${data.email}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Téléphone</td><td style="padding:6px">${data.telephone}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Gérant</td><td style="padding:6px">${fullName}</td></tr>
-    <tr><td style="padding:6px;color:#6b7280">Vérification</td><td style="padding:6px;color:#0066CC;font-weight:600">À valider manuellement (vérification SIRET dans l'admin)</td></tr>
-  </table>
-  <a href="${APP_URL}/admin/sanitaire/reclamations?tab=pending&source=self_registration" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Voir dans l'admin</a>
-</div>`,
+      ...renderInscriptionAdmin({
+        nomAffiche,
+        siret: data.siret || "",
+        categorie: data.categorie,
+        ville: data.ville,
+        code_postal: data.code_postal,
+        email: data.email,
+        telephone: data.telephone,
+        fullName,
+        appUrl: APP_URL,
+      }),
     }).catch(() => undefined);
 
     // 14. Email confirmation Supabase
@@ -599,16 +595,7 @@ export async function POST(req: Request) {
         const actionLink = linkData.properties.action_link;
         await sendEmail({
           to: data.email,
-          subject: "Confirmez votre adresse email — RoullePro",
-          html: `<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
-  <h2 style="color:#0066CC">Confirmez votre adresse email</h2>
-  <p>Cliquez sur le bouton ci-dessous pour confirmer votre email et activer votre compte RoullePro.</p>
-  <div style="text-align:center;margin:28px 0">
-    <a href="${actionLink}" style="display:inline-block;background:#0066CC;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px">Confirmer mon email</a>
-  </div>
-  <p style="font-size:12px;color:#9ca3af">Si le bouton ne fonctionne pas, copiez ce lien dans votre navigateur :<br>${actionLink}</p>
-  <p style="font-size:13px;color:#6b7280;margin-top:24px">Questions ? <a href="mailto:contact@roullepro.com">contact@roullepro.com</a></p>
-</div>`,
+          ...renderInscriptionConfirmEmail({ actionLink }),
         }).catch(() => undefined);
       }
     } catch {

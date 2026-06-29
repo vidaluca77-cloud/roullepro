@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
+import { renderClaimBienvenue, renderClaimAdmin } from "@/lib/email-templates/sanitaire";
 
 const getAdminClient = () =>
   createClient(
@@ -281,66 +282,15 @@ export async function POST(req: Request) {
     // Email de bienvenue
     if (accountEmail) {
       const nomAffiche = pro.nom_commercial || pro.raison_sociale;
-      const html = `
-<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
-  <div style="text-align:center;padding:24px 0;border-bottom:1px solid #e5e7eb">
-    <div style="font-size:24px;font-weight:700;color:#0066CC">RoullePro — Transport sanitaire</div>
-  </div>
-  <h2 style="color:#0066CC;margin-top:32px">Bienvenue ${nomAffiche}</h2>
-  <p>Votre réclamation de fiche est bien enregistrée et <strong>en attente de validation</strong> par notre équipe (généralement sous 24h ouvrées). Vous avez dès à présent accès à votre espace pro pour compléter votre fiche.</p>
-  <p>Une fois validée, votre fiche affichera le badge <strong>« Pro vérifié »</strong> visible de tous les patients.</p>
-
-  ${tempPassword ? `
-  <div style="background:#f0f6ff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin:24px 0">
-    <div style="font-size:13px;color:#0066CC;font-weight:600;margin-bottom:8px">VOS IDENTIFIANTS DE CONNEXION</div>
-    <div style="font-family:monospace;font-size:14px">
-      Email : <strong>${accountEmail}</strong><br/>
-      Mot de passe temporaire : <strong>${tempPassword}</strong>
-    </div>
-    <div style="font-size:12px;color:#6b7280;margin-top:10px">
-      Changez-le dès votre première connexion dans Mon profil.
-    </div>
-  </div>
-  ` : ""}
-
-  ${magicLink ? `
-  <div style="text-align:center;margin:32px 0">
-    <a href="${magicLink}" style="display:inline-block;background:#0066CC;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:600">
-      Accéder à mon espace pro
-    </a>
-    <div style="font-size:12px;color:#6b7280;margin-top:8px">Ce lien vous connecte automatiquement (valable 1 heure)</div>
-  </div>
-  ` : `
-  <div style="text-align:center;margin:32px 0">
-    <a href="${APP_URL}/auth/login" style="display:inline-block;background:#0066CC;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:600">
-      Me connecter
-    </a>
-  </div>
-  `}
-
-  <h3 style="margin-top:32px">Vos prochaines étapes</h3>
-  <ol style="line-height:1.8">
-    <li><strong>Complétez votre fiche</strong> — photos, horaires, description (5 minutes)</li>
-    <li><strong>Vérifiez vos coordonnées</strong> — téléphone public, email professionnel</li>
-    <li><strong>Activez le plan Pro (19,90€/mois)</strong> pour lire les messages patients et bénéficier d'une meilleure visibilité dans votre ville</li>
-  </ol>
-
-  <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:12px;padding:16px;margin:24px 0">
-    <div style="font-weight:600;color:#92400e;margin-bottom:6px">Important</div>
-    <div style="font-size:14px;color:#78350f">
-      L'annuaire RoullePro Transport Sanitaire est gratuit pour les patients. Votre fiche gratuite reste visible à vie. Les abonnements payants débloquent des fonctions supplémentaires (messagerie, mise en avant, statistiques).
-    </div>
-  </div>
-
-  <div style="margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;font-size:13px;color:#6b7280;text-align:center">
-    Besoin d'aide ? Écrivez à <a href="mailto:contact@roullepro.com" style="color:#0066CC">contact@roullepro.com</a> ou appelez le 06 15 47 28 13.
-  </div>
-</div>`;
-
       await sendEmail({
         to: accountEmail,
-        subject: `Bienvenue sur RoullePro — Réclamation de ${nomAffiche} en cours de validation`,
-        html,
+        ...renderClaimBienvenue({
+          nomAffiche,
+          accountEmail,
+          tempPassword,
+          magicLink,
+          appUrl: APP_URL,
+        }),
       }).catch(() => undefined);
     }
 
@@ -348,27 +298,16 @@ export async function POST(req: Request) {
     try {
       const nomAffiche = pro.nom_commercial || pro.raison_sociale;
       const adminUrl = `${APP_URL}/admin/sanitaire/reclamations`;
-      const adminHtml = `
-<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111827">
-  <h2 style="color:#0066CC">Nouvelle réclamation à valider</h2>
-  <div style="background:#f0f6ff;border:1px solid #cfe3ff;border-radius:12px;padding:16px;margin:16px 0">
-    <div><strong>Fiche :</strong> ${nomAffiche}</div>
-    <div><strong>Ville :</strong> ${pro.ville}</div>
-    <div><strong>Catégorie :</strong> ${pro.categorie}</div>
-    <div><strong>Email réclamant :</strong> ${accountEmail}</div>
-    <div><strong>Méthode :</strong> ${claim.method}</div>
-  </div>
-  <p>Réclamation à valider manuellement — vérifiez la cohérence SIRET / email réclamant / nom de l'entreprise avant d'approuver.</p>
-  <div style="text-align:center;margin:24px 0">
-    <a href="${adminUrl}" style="display:inline-block;background:#0066CC;color:#fff;padding:12px 24px;border-radius:10px;text-decoration:none;font-weight:600">
-      Ouvrir la file d'attente
-    </a>
-  </div>
-</div>`;
       await sendEmail({
         to: "contact@roullepro.com",
-        subject: `[RoullePro Admin] Réclamation en attente : ${nomAffiche}`,
-        html: adminHtml,
+        ...renderClaimAdmin({
+          nomAffiche,
+          ville: pro.ville as string,
+          categorie: pro.categorie as string,
+          accountEmail: accountEmail ?? "",
+          method: claim.method,
+          adminUrl,
+        }),
       }).catch(() => undefined);
     } catch {}
 
