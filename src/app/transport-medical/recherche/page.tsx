@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
-import { CATEGORIES_SANITAIRE, getCategorieBySlug, slugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
+import { CATEGORIES_SANITAIRE, getCategorieBySlug, getCategorieByKey, slugifyVille, REGIONS_FR_SEO, type ProSanitaire } from "@/lib/sanitaire-data";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import GeolocBouton from "@/components/sanitaire/GeolocBouton";
@@ -49,7 +50,56 @@ function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): nu
 export default async function RecherchePage({ searchParams }: Props) {
   const { q, categorie, ameli, lat, lng, radius } = await searchParams;
   const queryVille = (q || "").trim();
-  const cat = categorie ? getCategorieBySlug(categorie) : null;
+
+  // ---------------------------------------------------------------------------
+  // Redirections 301 SEO : si la requete correspond a une page canonique
+  // (hub categorie nationale, hub region, hub ville, hub ville+categorie),
+  // on redirige vers l'URL canonique pour eviter le contenu duplique et
+  // concentrer le jus SEO. On NE redirige PAS si une geolocalisation est
+  // active (lat/lng) car c'est une vraie recherche dynamique.
+  // ---------------------------------------------------------------------------
+  if (!lat && !lng) {
+    // 1. Normaliser le slug de categorie : accepte "taxi-conventionne" (slug)
+    // ou "taxi_conventionne" (key) en provenance d'anciens liens.
+    const categorieParam = categorie ? categorie.trim() : "";
+    const catSlugNormalized = categorieParam.replace(/_/g, "-");
+    const catFromSlug = catSlugNormalized ? getCategorieBySlug(catSlugNormalized) : null;
+    const catFromKey = categorieParam ? getCategorieByKey(categorieParam) : null;
+    const matchedCat = catFromSlug || catFromKey;
+
+    // 2. Si q correspond a une region FR connue -> hub region.
+    if (queryVille) {
+      const qSlug = slugifyVille(queryVille);
+      const matchedRegionSeo = REGIONS_FR_SEO.find((r) => r.slug === qSlug);
+      if (matchedRegionSeo) {
+        redirect(`/transport-medical/region/${matchedRegionSeo.slug}`);
+      }
+
+      // 3. Si q correspond a une ville connue en base -> hub ville (eventuellement +categorie).
+      const supabaseRedirect = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: villeMatch } = await supabaseRedirect
+        .from("pros_sanitaire_public")
+        .select("ville_slug")
+        .eq("ville_slug", qSlug)
+        .eq("actif", true)
+        .limit(1);
+      if (villeMatch && villeMatch.length > 0) {
+        if (matchedCat) {
+          redirect(`/transport-medical/${qSlug}/${matchedCat.slug}`);
+        }
+        redirect(`/transport-medical/${qSlug}`);
+      }
+    } else if (matchedCat) {
+      // 4. Categorie seule (sans q) -> hub categorie nationale.
+      redirect(`/transport-medical/categorie/${matchedCat.slug}`);
+    }
+  }
+  // ---------------------------------------------------------------------------
+
+  const cat = categorie ? getCategorieBySlug(categorie) || getCategorieByKey(categorie) : null;
   const villeSlug = slugifyVille(queryVille);
   // Filtre conventionne Ameli : OFF par defaut (inclusivite). Active via ?ameli=1
   const ameliOnly = ameli === "1";
