@@ -54,6 +54,119 @@ export const REGIONS_MVP = [
   },
 ];
 
+/**
+ * 18 regions francaises (13 metropole + 5 DOM) avec leurs codes departements,
+ * utilisees pour generer les hubs SEO `/transport-medical/region/[slug]`.
+ */
+export const REGIONS_FR_SEO: {
+  slug: string;
+  nom: string;
+  departements: string[];
+  // libelle court pour H1 et meta ("Bretagne", "Ile-de-France")
+  shortName?: string;
+}[] = [
+  {
+    slug: "auvergne-rhone-alpes",
+    nom: "Auvergne-Rhône-Alpes",
+    departements: ["01", "03", "07", "15", "26", "38", "42", "43", "63", "69", "73", "74"],
+  },
+  {
+    slug: "bourgogne-franche-comte",
+    nom: "Bourgogne-Franche-Comté",
+    departements: ["21", "25", "39", "58", "70", "71", "89", "90"],
+  },
+  {
+    slug: "bretagne",
+    nom: "Bretagne",
+    departements: ["22", "29", "35", "56"],
+  },
+  {
+    slug: "centre-val-de-loire",
+    nom: "Centre-Val de Loire",
+    departements: ["18", "28", "36", "37", "41", "45"],
+  },
+  {
+    slug: "corse",
+    nom: "Corse",
+    departements: ["2A", "2B"],
+  },
+  {
+    slug: "grand-est",
+    nom: "Grand Est",
+    departements: ["08", "10", "51", "52", "54", "55", "57", "67", "68", "88"],
+  },
+  {
+    slug: "hauts-de-france",
+    nom: "Hauts-de-France",
+    departements: ["02", "59", "60", "62", "80"],
+  },
+  {
+    slug: "ile-de-france",
+    nom: "Île-de-France",
+    departements: ["75", "77", "78", "91", "92", "93", "94", "95"],
+  },
+  {
+    slug: "normandie",
+    nom: "Normandie",
+    departements: ["14", "27", "50", "61", "76"],
+  },
+  {
+    slug: "nouvelle-aquitaine",
+    nom: "Nouvelle-Aquitaine",
+    departements: ["16", "17", "19", "23", "24", "33", "40", "47", "64", "79", "86", "87"],
+  },
+  {
+    slug: "occitanie",
+    nom: "Occitanie",
+    departements: ["09", "11", "12", "30", "31", "32", "34", "46", "48", "65", "66", "81", "82"],
+  },
+  {
+    slug: "pays-de-la-loire",
+    nom: "Pays de la Loire",
+    departements: ["44", "49", "53", "72", "85"],
+  },
+  {
+    slug: "provence-alpes-cote-d-azur",
+    nom: "Provence-Alpes-Côte d'Azur",
+    departements: ["04", "05", "06", "13", "83", "84"],
+  },
+  {
+    slug: "guadeloupe",
+    nom: "Guadeloupe",
+    departements: ["971"],
+  },
+  {
+    slug: "martinique",
+    nom: "Martinique",
+    departements: ["972"],
+  },
+  {
+    slug: "guyane",
+    nom: "Guyane",
+    departements: ["973"],
+  },
+  {
+    slug: "la-reunion",
+    nom: "La Réunion",
+    departements: ["974"],
+  },
+  {
+    slug: "mayotte",
+    nom: "Mayotte",
+    departements: ["976"],
+  },
+];
+
+export function getRegionBySlug(slug: string) {
+  return REGIONS_FR_SEO.find((r) => r.slug === slug);
+}
+
+/** Renvoie le slug region pour un code departement donne ("06" -> "provence-alpes-cote-d-azur"). */
+export function getRegionSlugByDepartement(dep: string): string | null {
+  const r = REGIONS_FR_SEO.find((reg) => reg.departements.includes(dep));
+  return r?.slug || null;
+}
+
 export const PLANS_SANITAIRE = [
   {
     key: "gratuit",

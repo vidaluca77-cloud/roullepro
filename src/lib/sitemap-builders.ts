@@ -10,6 +10,7 @@ import { getAllDepartementCodes } from "./departements-fr";
 import { TYPES_ETABLISSEMENT } from "./etablissements-data";
 import { VSL_VILLES } from "../data/vsl-villes";
 import { DOM_TERRITOIRES } from "../data/dom-territoires";
+import { CATEGORIES_SANITAIRE, REGIONS_FR_SEO } from "./sanitaire-data";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -223,6 +224,25 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     priority: 0.75,
   }));
 
+  // Hubs categorie nationale (ambulance, vsl, taxi-conventionne) - Phase 3 SEO.
+  // Concentrent le trafic des recherches generiques sans ville (ex: "ambulance",
+  // "taxi conventionne", "vsl") au lieu d'envoyer les utilisateurs sur des pages
+  // a facettes (anciens /recherche?categorie=...).
+  const sanitaireCategoriesNationales: SitemapEntry[] = CATEGORIES_SANITAIRE.map((c) => ({
+    url: `${BASE_URL}/transport-medical/categorie/${c.slug}`,
+    changefreq: "weekly",
+    priority: 0.9,
+  }));
+
+  // Hubs region (18 regions FR + DOM) - Phase 3 SEO.
+  // Captent les recherches geographiques larges ("transport medical Bretagne",
+  // "ambulance Ile-de-France") au lieu d'envoyer sur /recherche?q=Bretagne.
+  const sanitaireRegions: SitemapEntry[] = REGIONS_FR_SEO.map((r) => ({
+    url: `${BASE_URL}/transport-medical/region/${r.slug}`,
+    changefreq: "weekly",
+    priority: 0.85,
+  }));
+
   return [
     ...staticPages,
     ...depotVillePages,
@@ -239,6 +259,8 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     ...vslVilles,
     ...sanitaireDom,
     ...sanitaireDepartements,
+    ...sanitaireCategoriesNationales,
+    ...sanitaireRegions,
   ];
 }
 
