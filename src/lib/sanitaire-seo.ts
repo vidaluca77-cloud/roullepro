@@ -102,6 +102,18 @@ export function buildProJsonLd(
       ? `https://www.google.com/maps/search/?api=1&query=${pro.latitude},${pro.longitude}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${pro.raison_sociale} ${pro.ville}`)}`,
     openingHoursSpecification: openingHours || undefined,
+    // aggregateRating : etoiles en SERP. Uniquement si un VRAI avis existe
+    // (rating_value + review_count>0). Aucune note inventee (conforme aux regles Google).
+    aggregateRating:
+      pro.rating_value && pro.review_count && pro.review_count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: pro.rating_value,
+            reviewCount: pro.review_count,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
     knowsLanguage: ["fr", "fr-FR"],
     knowsAbout: [
       "Transport sanitaire",
