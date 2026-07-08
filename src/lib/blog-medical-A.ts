@@ -5,7 +5,7 @@ export const ARTICLES: BlogPost[] = [
   // ============================================================
   {
     slug: "remboursement-transport-medical",
-    title: "Remboursement transport médical 2026 — Guide complet CPAM",
+    title: "Remboursement transport médical 2026 : taux, conditions et démarches CPAM",
     h1: "Remboursement transport médical CPAM 2026 — Guide complet des taux, conditions et démarches",
     excerpt:
       "Comment se faire rembourser un transport médical par la CPAM en 2026 ? Conditions, bon de transport, taxi/VSL/ambulance conventionnés. Guide complet et à jour.",

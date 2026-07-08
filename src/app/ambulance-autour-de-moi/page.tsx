@@ -195,8 +195,9 @@ export default function AmbulanceAutourDeMoiPage() {
             programmé, lui, concerne un patient dont l'état est connu et stable : retour d'hospitalisation,
             transfert pour examen, consultation spécialisée, séance de soins. Il nécessite une prescription
             médicale et se réserve à l'avance auprès d'une ambulance, d'un VSL ou d'un taxi conventionné selon
-            l'état du patient. Pour comparer ces modes, consultez notre{" "}
-            <Link href="/transport-medical">guide du transport médical</Link>.
+            l'état du patient. Pour un transport assis, trouvez un{" "}
+            <Link href="/taxi-vsl-autour-de-moi">taxi conventionné ou un VSL autour de vous</Link> ; pour comparer
+            tous les modes, consultez notre <Link href="/transport-medical">guide du transport médical</Link>.
           </p>
         </section>
 
@@ -210,7 +211,7 @@ export default function AmbulanceAutourDeMoiPage() {
             {VILLES.map((v) => (
               <Link
                 key={v.slug}
-                href={`/transport-medical/${v.slug}`}
+                href={`/transport-medical/${v.slug}/ambulance`}
                 className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
               >
                 Ambulance {v.nom}
