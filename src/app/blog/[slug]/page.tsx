@@ -25,6 +25,7 @@ import {
   buildHowToJsonLd,
   stripFaqSection,
 } from "@/lib/blog-seo";
+import { jsonLdHtml } from "@/lib/seo-schema";
 import {
   MarkdownRenderer,
   extractHeadings,
@@ -132,14 +133,13 @@ export default function BlogPostPage({
   const faqLd = buildFaqJsonLd(faqItems);
   const howToLd = buildHowToJsonLd(extractHowTo(post.content));
 
-  // Sur les pages SEO_BOOST_SLUGS, on remplace la FAQ markdown plate par un
-  // accordion stylise rendu en bas d'article. Sur les autres pages, le contenu
-  // reste tel quel.
+  // Des qu'un article contient une FAQ, on la rend en accordion stylise (h3 +
+  // details/summary) et on retire la section markdown plate pour eviter le doublon.
+  // Generalise a TOUS les articles (et plus seulement SEO_BOOST_SLUGS) : chaque
+  // FAQ devient citable par les AI Overviews via le JSON-LD FAQPage + le rendu h3.
   const isSeoBoosted = SEO_BOOST_SLUGS.has(post.slug);
-  const renderedContent =
-    isSeoBoosted && faqItems.length > 0
-      ? stripFaqSection(post.content)
-      : post.content;
+  const hasFaq = faqItems.length > 0;
+  const renderedContent = hasFaq ? stripFaqSection(post.content) : post.content;
 
   const breadcrumbLd = {
     "@context": "https://schema.org",
@@ -176,22 +176,22 @@ export default function BlogPostPage({
     <article className="min-h-screen bg-white">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadcrumbLd) }}
       />
       {faqLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }}
         />
       )}
       {howToLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(howToLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(howToLd) }}
         />
       )}
 
@@ -317,10 +317,9 @@ export default function BlogPostPage({
               </div>
             )}
 
-            {/* FAQ accordion stylisee (rich snippets) sur pages SEO boostees */}
-            {isSeoBoosted && faqItems.length > 0 && (
-              <FaqAccordion items={faqItems} />
-            )}
+            {/* FAQ accordion stylisee (rich snippets + citabilite AI Overviews)
+                sur tous les articles disposant d'une section FAQ. */}
+            {hasFaq && <FaqAccordion items={faqItems} />}
 
             {/* Maillage interne : encart transporteurs conventionnes */}
             {MAILLAGE_SLUGS.has(post.slug) && (

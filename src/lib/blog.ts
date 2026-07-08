@@ -73,6 +73,20 @@ La vente d'un utilitaire entre professionnels est soumise à la TVA si vous ête
 
 ## Passez Pro pour vendre plus vite
 Le plan Pro (19 €/mois) vous donne 5 annonces simultanées, une mise en avant mensuelle et un badge vendeur Pro qui inspire confiance.
+
+## Questions fréquentes
+
+### Faut-il un contrôle technique pour vendre un utilitaire à un professionnel ?
+Oui. La vente d'un véhicule utilitaire de plus de 4 ans exige un contrôle technique de moins de 6 mois au moment de la cession, même entre professionnels. Seul un acheteur qui revend sans immatriculer à son nom (marchand de biens) peut en être dispensé.
+
+### La TVA s'applique-t-elle à la vente entre professionnels ?
+Oui, si le vendeur est assujetti à la TVA. La vente se fait alors HT + TVA, et l'acheteur professionnel récupère cette TVA. C'est ce qui rend le prix HT plus attractif qu'une vente à un particulier.
+
+### Combien de temps faut-il pour vendre un utilitaire entre pros ?
+Entre professionnels, la vente est généralement plus rapide qu'auprès d'un particulier : quelques jours à deux semaines pour un modèle courant bien positionné en prix, contre plusieurs semaines sur les plateformes grand public.
+
+### Quels documents remettre à l'acheteur ?
+La carte grise barrée avec mention « vendu le [date] », le certificat de cession (Cerfa 15776), un certificat de non-gage de moins de 15 jours, le contrôle technique en cours de validité et, idéalement, les factures d'entretien.
 `,
   },
   {
@@ -127,6 +141,20 @@ Carte grise, contrôle technique, historique ATP, factures d'entretien du groupe
 
 ## Astuce RoullePro
 Activez une alerte sur la catégorie "Utilitaire" avec filtre "Frigorifique" pour être notifié dès qu'une annonce correspond à votre budget.
+
+## Questions fréquentes
+
+### Qu'est-ce que l'attestation ATP et est-elle obligatoire ?
+L'attestation ATP (Accord relatif aux Transports internationaux de denrées Périssables) certifie que la caisse frigorifique respecte les normes d'isolation et de froid. Elle est obligatoire pour transporter des denrées périssables sous température dirigée. Sa validité est de 6 ans à la première mise en service, puis renouvelable par périodes de 3 ans après contrôle.
+
+### Combien d'heures dure un groupe froid d'occasion ?
+Un groupe froid (Thermo King, Carrier, Zanotti, Frigoblock) a une durée de vie moyenne de 15 000 à 20 000 heures de fonctionnement. Avant d'acheter, demandez le compteur horaire et l'historique des révisions : au-delà de 15 000 heures, prévoyez un budget de remise en état.
+
+### Quel est le prix d'un camion frigorifique d'occasion en 2026 ?
+En 2026, un fourgon frigo 3,5 t d'occasion se négocie entre 18 000 € et 45 000 €, un porteur 7,5 t entre 35 000 € et 70 000 €, et un porteur 19 t multitempérature entre 60 000 € et 120 000 €, selon l'âge, le kilométrage et l'état du groupe froid.
+
+### Que signifie la valeur K pour l'isolation ?
+La valeur K mesure la performance d'isolation de la caisse en W/m²·K : plus elle est basse, meilleure est l'isolation. Pour transporter des produits surgelés (classe F), la valeur K doit être inférieure ou égale à 0,40.
 `,
   },
   {
@@ -181,6 +209,20 @@ Achat d'un fourgon 30 000 € HT :
 
 ## Avertissement
 Cette page a une valeur informative. Consultez votre expert-comptable pour votre situation spécifique.
+
+## Questions fréquentes
+
+### Peut-on récupérer 100 % de la TVA sur un utilitaire ?
+Oui. La TVA à l'achat d'un véhicule utilitaire (catégorie N1 "Camion" ou "CTTE" sur la carte grise) est récupérable à 100 % s'il est affecté à l'activité professionnelle. La TVA sur l'entretien, les pièces et les péages est également récupérable à 100 %, et celle sur le gazole à 80 % (100 % pour les VU exclusivement professionnels).
+
+### Les utilitaires sont-ils soumis à la TVS en 2026 ?
+Non. Les véhicules utilitaires de catégorie N1 sont exonérés des deux taxes qui ont remplacé la TVS depuis 2023 : la TAVS (taxe annuelle sur les émissions de CO₂) et la TAVP (taxe sur l'ancienneté des véhicules polluants). Ces taxes ne concernent que les véhicules de tourisme (M1).
+
+### Sur combien d'années amortir un utilitaire professionnel ?
+La durée classique d'amortissement d'un utilitaire est de 5 ans en linéaire (20 % par an). Contrairement aux véhicules de tourisme (plafonnés à 18 300 € ou 9 900 €), les utilitaires ne subissent aucun plafond de déduction sur l'amortissement.
+
+### Un utilitaire avec banquette arrière perd-il ses avantages fiscaux ?
+Oui, potentiellement. Si l'utilitaire dispose d'une banquette arrière, il peut être requalifié en véhicule particulier (VP), entraînant la perte des avantages TVA et l'assujettissement aux taxes. Vérifiez la mention "CTTE" ou "CAMION" sur la carte grise pour conserver le régime fiscal favorable.
 `,
   },
 ];

@@ -20,6 +20,7 @@ import RechercheEtablissement from "@/components/RechercheEtablissement";
 import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getProStats } from "@/lib/stats";
+import { jsonLdHtml } from "@/lib/seo-schema";
 
 export const revalidate = 3600;
 
@@ -160,11 +161,52 @@ export default async function HomePage() {
       "query-input": "required name=search_term_string",
     },
   };
+  // JSON-LD : FAQPage — questions factuelles sur le transport sanitaire conventionné,
+  // pour maximiser la citabilité dans les AI Overviews de Google.
+  const faqLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Qu'est-ce qu'un taxi conventionné CPAM ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Un taxi conventionné est un taxi agréé par la CPAM pour transporter des patients sur prescription médicale. Le transport est pris en charge par la Sécurité sociale, avec application du tiers payant : le patient n'avance pas les frais lorsque le transport est prescrit et remboursable.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Quelle est la différence entre une ambulance, un VSL et un taxi conventionné ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "L'ambulance assure un transport allongé et médicalisé avec un équipage diplômé et du matériel à bord. Le VSL (Véhicule Sanitaire Léger) transporte en position assise jusqu'à trois patients sur prescription. Le taxi conventionné transporte aussi en position assise mais relève d'un chauffeur de taxi agréé par la CPAM. Le mode de transport est déterminé par le médecin selon l'état du patient.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Le transport sanitaire est-il remboursé par la Sécurité sociale ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Oui. Sur prescription médicale, le transport en ambulance, VSL ou taxi conventionné est pris en charge par l'Assurance maladie, généralement à 65 % (100 % dans certains cas : ALD, accident du travail, maternité). Avec un professionnel conventionné, le tiers payant évite l'avance de frais.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "RoullePro est-il gratuit pour trouver un transporteur sanitaire ?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Oui. RoullePro est un annuaire national gratuit du transport sanitaire : ambulances, VSL et taxis conventionnés CPAM avec numéro de téléphone direct. Aucune inscription ni commission n'est demandée aux patients.",
+        },
+      },
+    ],
+  };
 
   return (
     <main className="min-h-screen bg-white">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(orgLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(websiteLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }} />
       <section className="relative bg-gradient-to-br from-[#0B1120] via-[#0f2048] to-[#0066CC] text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10" aria-hidden="true">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">

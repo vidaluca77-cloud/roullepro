@@ -128,9 +128,11 @@ export function FaqAccordion({
               className="group rounded-xl border border-gray-200 bg-white hover:border-blue-200 transition open:border-blue-300 open:shadow-sm"
             >
               <summary className="flex items-start justify-between gap-4 cursor-pointer list-none px-5 py-4 select-none">
-                <span className="flex-1 text-base md:text-lg font-semibold text-gray-900 leading-snug group-open:text-blue-700">
+                {/* Question en <h3> (et non <span>) pour un parsing AEO / AI Overviews
+                    optimal et une coherence avec le JSON-LD FAQPage. */}
+                <h3 className="m-0 flex-1 text-base md:text-lg font-semibold text-gray-900 leading-snug group-open:text-blue-700">
                   {item.question}
-                </span>
+                </h3>
                 <ChevronDown
                   size={20}
                   className="flex-shrink-0 text-gray-400 mt-1 transition-transform duration-200 group-open:rotate-180 group-open:text-blue-600"

@@ -1,5 +1,6 @@
 import type { FaqItem } from "./FaqAccordion";
 import { AUTHORS } from "@/lib/authors";
+import { jsonLdHtml } from "@/lib/seo-schema";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -83,19 +84,19 @@ export default function JsonLd(props: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(article) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(article) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(breadcrumb) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(faqLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(speakable) }}
+        dangerouslySetInnerHTML={{ __html: jsonLdHtml(speakable) }}
       />
     </>
   );
