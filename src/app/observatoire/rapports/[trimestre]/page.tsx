@@ -57,7 +57,7 @@ const RAPPORTS: Record<string, RapportData> = {
       },
       {
         label: "RoullePro — Guide conformité transport sanitaire 2026-2027",
-        url: "https://www.roullepro.com/guides/transport-sanitaire-conformite-2026-2027",
+        url: "https://roullepro.com/guides/transport-sanitaire-conformite-2026-2027",
       },
     ],
     contenu: null,
@@ -77,10 +77,10 @@ export async function generateMetadata({
   const { trimestre } = await params;
   const rapport = RAPPORTS[trimestre];
   if (!rapport) {
-    return { title: "Rapport introuvable | RoullePro" };
+    return { title: "Rapport introuvable" };
   }
   return {
-    title: `${rapport.titre} | RoullePro`,
+    title: `${rapport.titre}`,
     description: rapport.resume,
     alternates: { canonical: `/observatoire/rapports/${trimestre}` },
     openGraph: {

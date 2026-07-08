@@ -12,7 +12,7 @@ import {
 import PrescripteurForm from "./PrescripteurForm";
 
 export const metadata: Metadata = {
-  title: "Accès pilote prescripteurs — RoullePro",
+  title: "Accès pilote prescripteurs",
   description:
     "Trouvez un transport sanitaire disponible pour votre patient en 30 secondes. Accès gratuit pendant 3 mois, sans engagement. Pour cabinets médicaux, hôpitaux, EHPAD et centres de dialyse.",
   alternates: { canonical: "https://roullepro.com/prescripteurs" },

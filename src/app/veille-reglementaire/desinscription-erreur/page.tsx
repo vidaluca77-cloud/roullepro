@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, Mail } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Token invalide — Veille RoullePro",
+  title: "Token invalide",
   description: "Le token de désinscription est invalide.",
   robots: { index: false, follow: false },
 };

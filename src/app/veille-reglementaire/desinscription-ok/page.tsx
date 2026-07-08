@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, Home } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Désinscription confirmée — Veille RoullePro",
+  title: "Désinscription confirmée",
   description: "Vous êtes désinscrit de la veille réglementaire RoullePro.",
   robots: { index: false, follow: false },
 };

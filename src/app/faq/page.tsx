@@ -7,7 +7,7 @@ import { jsonLdHtml } from "@/lib/seo-schema";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "FAQ transport sanitaire — Tout ce qu'il faut savoir | RoullePro",
+  title: "FAQ transport sanitaire — Tout ce qu'il faut savoir",
   description:
     "Toutes vos questions sur l'ambulance, le VSL et le taxi conventionné CPAM : remboursement, prescription, conventionnement, transport partagé 2025, agréments ARS. Réponses claires et officielles.",
   alternates: { canonical: "/faq" },

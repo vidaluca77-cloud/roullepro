@@ -104,7 +104,7 @@ export default async function EtablissementSlugPage({ params }: Props) {
       itemListElement: etablissements.map((e, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        url: `https://www.roullepro.com/etablissements/${e.slug}`,
+        url: `https://roullepro.com/etablissements/${e.slug}`,
         name: e.nom_affichage || e.nom_court || e.raison_sociale,
       })),
     };

@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Notre engagement — RoullePro Transport Médical",
+  title: "Notre engagement",
   description:
     "RoullePro n'est pas une plateforme VTC pour le transport sanitaire. Pas d'algorithme, pas de notation publique, pas de commission. Vous gardez vos patients et votre liberté.",
   alternates: { canonical: "/transport-medical/notre-engagement" },

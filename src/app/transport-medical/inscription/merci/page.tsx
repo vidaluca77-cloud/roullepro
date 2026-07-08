@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, Mail, Clock, FileText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Inscription reçue — RoullePro",
+  title: "Inscription reçue",
   description: "Votre demande d'inscription a bien été reçue. Validation sous 24-48h.",
   robots: { index: false, follow: false },
 };

@@ -99,7 +99,7 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
     "@context": "https://schema.org",
     "@type": schemaType(e.categorie_simple),
     name: nom,
-    url: `https://www.roullepro.com/etablissements/${e.slug}`,
+    url: `https://roullepro.com/etablissements/${e.slug}`,
     ...(e.telephone ? { telephone: e.telephone } : {}),
     ...(specialty ? { medicalSpecialty: specialty } : {}),
     address: {

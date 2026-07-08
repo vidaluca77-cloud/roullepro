@@ -11,6 +11,7 @@ import { TYPES_ETABLISSEMENT } from "./etablissements-data";
 import { VSL_VILLES } from "../data/vsl-villes";
 import { DOM_TERRITOIRES } from "../data/dom-territoires";
 import { CATEGORIES_SANITAIRE, REGIONS_FR_SEO } from "./sanitaire-data";
+import { getVilleSeoOverride } from "./sanitaire-ville-seo";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -408,11 +409,14 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
   const villesAll: string[] = [];
   let from = 0;
   const size = 1000;
-  for (let i = 0; i < 25; i += 1) {
+  // Borne large : > 25 000 pros actifs -> 40 pages de 1000 evitent toute troncature
+  // (un comptage tronque fausserait le seuil de qualite ci-dessous).
+  for (let i = 0; i < 40; i += 1) {
     const { data } = await supabase
       .from("pros_sanitaire_public")
       .select("ville_slug")
       .eq("actif", true)
+      .eq("suspendu", false)
       .range(from, from + size - 1);
     if (!data || data.length === 0) break;
     villesAll.push(
@@ -421,7 +425,23 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
     if (data.length < size) break;
     from += size;
   }
-  const villesUniques = Array.from(new Set(villesAll));
+
+  // Comptage des professionnels par ville pour appliquer le seuil de qualite.
+  const countParVille = new Map<string, number>();
+  for (const slug of villesAll) {
+    countParVille.set(slug, (countParVille.get(slug) ?? 0) + 1);
+  }
+
+  // Seuil anti "scaled/thin content" : le sitemap ne declare que les villes qui
+  // recensent au moins SEUIL_INDEX_VILLE professionnels reels, ou qui beneficient
+  // d'un contenu editorial unique (override). Coherent avec le robots noindex applique
+  // aux pages ville sous le seuil (transport-medical/[ville]/page.tsx).
+  const SEUIL_INDEX_VILLE = 3;
+  const villesUniques = Array.from(new Set(villesAll)).filter(
+    (slug) =>
+      (countParVille.get(slug) ?? 0) >= SEUIL_INDEX_VILLE ||
+      getVilleSeoOverride(slug) !== null
+  );
 
   // Top villes FR à fort volume de recherche : priority surélevée pour signaler
   // à Google les pages stratégiques (données DataForSEO Search Volume).

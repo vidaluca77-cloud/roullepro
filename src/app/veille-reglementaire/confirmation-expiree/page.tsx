@@ -3,7 +3,7 @@ import Link from "next/link";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Lien expiré — Veille RoullePro",
+  title: "Lien expiré",
   description: "Le lien de confirmation est expiré ou invalide.",
   robots: { index: false, follow: false },
 };

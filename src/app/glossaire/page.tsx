@@ -8,7 +8,7 @@ import GlossaireClient from "./GlossaireClient";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Glossaire complet du transport sanitaire — 200+ définitions | RoullePro",
+  title: "Glossaire complet du transport sanitaire — 200+ définitions",
   description:
     "Encyclopédie du transport sanitaire conventionné CPAM en France : tous les termes officiels (DEA, ARS, FINESS, ALD, T2A...) expliqués avec sources Légifrance.",
   alternates: { canonical: "/glossaire" },

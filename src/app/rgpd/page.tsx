@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ShieldCheck, Mail, FileText, Trash2, Edit, Eye } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Politique RGPD et droits des personnes | RoullePro",
+  title: "Politique RGPD et droits des personnes",
   description:
     "Comment exercer vos droits RGPD sur RoullePro : accès, rectification, suppression de fiche, opposition. Procédure et délais.",
   robots: { index: true, follow: true },

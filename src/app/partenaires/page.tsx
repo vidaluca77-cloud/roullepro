@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Mail, Users, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Programme partenaire — RoullePro",
+  title: "Programme partenaire",
   description:
     "Programme partenaire RoullePro pour assureurs, fournisseurs d'équipement, logiciels métier et centres de formation pour ambulanciers et taxis conventionnés.",
   alternates: { canonical: "https://roullepro.com/partenaires" },
