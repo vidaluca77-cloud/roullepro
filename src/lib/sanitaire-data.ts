@@ -341,6 +341,12 @@ export type ProSanitaire = {
   // Convention Ameli (annuaire CNAM) — informatif, mis a jour mensuellement par cron
   ameli_conventionne: boolean | null;
   ameli_last_seen: string | null;
+  // Avis / notes — alimente aggregateRating JSON-LD (etoiles SERP). N'affiche des
+  // etoiles QUE si rating_value ET review_count>0 sont presents (conforme Google).
+  rating_value: number | null;
+  review_count: number | null;
+  rating_source: string | null;
+  rating_updated_at: string | null;
   created_at: string;
   updated_at: string;
 };
