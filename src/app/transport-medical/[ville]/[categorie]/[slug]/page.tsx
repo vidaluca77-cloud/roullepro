@@ -82,8 +82,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${catLabel} à ${pro.ville} : ${nom}.${convention}${tel} Devis gratuit.`.slice(0, 160)
     : baseDesc;
 
-  // Title optimisé : nom + catégorie + ville + signal qualité court
-  const metaTitle = `${nom} — ${catLabel} ${pro.ville} | Conventionné CPAM`;
+  // Title optimisé : nom + catégorie + ville + signal qualité.
+  // Google tronque ~60 caractères → on protège le cœur (nom + catégorie + ville,
+  // essentiel pour les requêtes de marque locale) en raccourcissant le suffixe si besoin.
+  const titleCore = `${nom} — ${catLabel} ${pro.ville}`;
+  const suffix = titleCore.length > 45 ? " | CPAM" : " | Conventionné CPAM";
+  const metaTitle = `${titleCore}${suffix}`;
 
   return {
     title: metaTitle,
@@ -546,6 +550,21 @@ export default async function FicheProPage({ params }: Props) {
               </Link>
             </div>
           </div>
+        </section>
+      )}
+
+      {pro.categorie === "ambulance" && (
+        <section className="max-w-5xl mx-auto px-4 pb-10">
+          <Link
+            href="/ambulance-autour-de-moi"
+            className="flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-5 transition hover:border-[#0066CC] hover:bg-blue-100/60"
+          >
+            <MapPin className="h-5 w-5 shrink-0 text-[#0066CC]" />
+            <span className="text-sm text-gray-700">
+              Vous cherchez une <strong>ambulance autour de vous&nbsp;?</strong> Trouvez une{" "}
+              <span className="font-semibold text-[#0066CC]">ambulance proche de chez vous</span>, partout en France.
+            </span>
+          </Link>
         </section>
       )}
 

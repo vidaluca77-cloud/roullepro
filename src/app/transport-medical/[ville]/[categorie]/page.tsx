@@ -187,6 +187,19 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
             ))}
           </div>
         )}
+
+        {cat.key === "ambulance" && (
+          <Link
+            href="/ambulance-autour-de-moi"
+            className="mt-8 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-5 transition hover:border-[#0066CC] hover:bg-blue-100/60"
+          >
+            <MapPin className="h-5 w-5 shrink-0 text-[#0066CC]" />
+            <span className="text-sm text-gray-700">
+              Besoin d&apos;une <strong>ambulance dans une autre ville&nbsp;?</strong> Trouvez une{" "}
+              <span className="font-semibold text-[#0066CC]">ambulance autour de vous</span>, partout en France.
+            </span>
+          </Link>
+        )}
       </section>
     </main>
   );
