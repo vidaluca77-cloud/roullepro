@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { Cross, Car, MapPin, Search, Phone, Shield, Users, Clock, ChevronRight } from "lucide-react";
+import { Cross, Car, MapPin, Search, Phone, Shield, Users, Clock, ChevronRight, LocateFixed } from "lucide-react";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import { getProStats } from "@/lib/stats";
@@ -248,6 +248,14 @@ export default async function TransportMedicalHome() {
               Rechercher
             </button>
           </form>
+
+          <Link
+            href="/transport-medical/autour-de-moi"
+            className="inline-flex items-center gap-2 mt-4 text-sm text-white/90 hover:text-white underline underline-offset-2"
+          >
+            <LocateFixed className="w-4 h-4" />
+            Trouver les transports sanitaires autour de moi
+          </Link>
 
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl">
             <Stat label="Professionnels référencés" value={stats.total.toLocaleString("fr-FR")} />
