@@ -19,7 +19,7 @@ import { getProStats } from "@/lib/stats";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Espace professionnels — Ambulances, VSL, Taxis conventionnés | RoullePro",
+  title: "Espace professionnels — Ambulances, VSL, Taxis conventionnés",
   description:
     "Réclamez gratuitement votre fiche sur RoullePro. Augmentez votre visibilité, recevez des demandes directement, gérez votre présence en ligne. Inscription SIRET vérifiée.",
   alternates: { canonical: "/pro" },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation – RoullePro",
+  title: "Conditions Générales d'Utilisation",
   description:
     "Consultez les Conditions Générales d'Utilisation de RoullePro, la marketplace B2B dédiée aux professionnels du transport routier (VTC, taxi, ambulance, TPMR, navette, utilitaires). Accès réservé aux entreprises immatriculées.",
 };

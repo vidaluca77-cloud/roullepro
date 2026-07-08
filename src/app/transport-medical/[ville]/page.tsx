@@ -74,6 +74,13 @@ async function countProsForVille(villeSlug: string): Promise<number> {
   return count ?? 0;
 }
 
+// Seuil de qualite anti-"scaled/thin content" : une page ville non-editorialisee
+// n'est mise en index que si elle recense au moins ce nombre de professionnels reels.
+// En-dessous, on emet robots noindex,follow (la page reste accessible et transmet le
+// jus de lien via son maillage, mais n'entre pas dans l'index Google). Les villes
+// prioritaires (override editorial) sont toujours indexees car leur contenu est unique.
+const SEUIL_INDEX_VILLE = 3;
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { ville } = await params;
   const nomVille = deslugifyVille(ville);
@@ -102,10 +109,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const pros = await fetchProsForVille(ville);
 
   if (pros.length === 0) {
+    // Ville sans aucun professionnel : contenu vide -> noindex (evite le thin content indexe).
     return {
-      title: `Transport sanitaire à ${nomVille} | RoullePro`,
+      title: `Transport sanitaire à ${nomVille}`,
       description: `Ambulances, VSL et taxis conventionnés à ${nomVille}. Annuaire gratuit, téléphone direct, remboursement Sécurité sociale.`,
       alternates: { canonical: `/transport-medical/${ville}` },
+      robots: { index: false, follow: true },
     };
   }
 
@@ -118,13 +127,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     nbTaxi > 0 ? `${nbTaxi} taxis conventionnés` : null,
   ].filter(Boolean).join(", ");
 
-  const title = `Transport sanitaire à ${nomVille} : ${pros.length} pros conventionnés CPAM | RoullePro`;
+  const title = pros.length > 1
+    ? `Transport sanitaire à ${nomVille} : ${pros.length} pros conventionnés CPAM`
+    : `Transport sanitaire à ${nomVille} : 1 pro conventionné CPAM`;
   const description = `${breakdown} à ${nomVille}. Téléphone direct, tarif Sécurité sociale, tiers payant. Réservation gratuite en ligne 24h/24.`.slice(0, 160);
+
+  // Seuil qualite : une ville non-editorialisee sous le seuil reste accessible mais
+  // n'est pas mise en index (anti scaled/thin content). Les overrides sont geres plus haut.
+  const sousSeuil = pros.length < SEUIL_INDEX_VILLE;
 
   return {
     title,
     description,
     alternates: { canonical: `/transport-medical/${ville}` },
+    ...(sousSeuil ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       title: `Transport sanitaire à ${nomVille} — ${pros.length} professionnels`,
       description,
@@ -300,7 +316,7 @@ export default async function VillePage({ params, searchParams }: Props) {
             {override ? override.h1 : `Transport sanitaire à ${nomVille}`}
           </h1>
           <p className="text-blue-100">
-            {totalCount} professionnels référencés · Département {departement} · {region}
+            {totalCount} {totalCount > 1 ? "professionnels référencés" : "professionnel référencé"} · Département {departement} · {region}
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {CATEGORIES_SANITAIRE.map((cat) => {
@@ -338,7 +354,7 @@ export default async function VillePage({ params, searchParams }: Props) {
         <div className="prose prose-sm max-w-none text-gray-700 mb-8">
           {override && <p className="leading-relaxed mb-3">{override.intro}</p>}
           <p className="leading-relaxed">
-            L'annuaire RoullePro recense <strong>{pros.length} professionnels du transport sanitaire
+            L'annuaire RoullePro recense <strong>{pros.length} {pros.length > 1 ? "professionnels" : "professionnel"} du transport sanitaire
             à {nomVille}</strong> ({departement}, {region}) : {grouped.ambulance.length} ambulance{grouped.ambulance.length > 1 ? "s" : ""},{" "}
             {grouped.vsl.length} VSL et {grouped.taxi_conventionne.length} taxi{grouped.taxi_conventionne.length > 1 ? "s" : ""} conventionné{grouped.taxi_conventionne.length > 1 ? "s" : ""}.
             Chaque fiche est identifiée par un numéro SIRET officiel. Les transports en ambulance, VSL et

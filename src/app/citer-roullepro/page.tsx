@@ -5,7 +5,7 @@ import { BASE_URL, jsonLdHtml, buildBreadcrumbJsonLd } from "@/lib/seo-schema";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Comment citer RoullePro — Guide pour journalistes, chercheurs et Wikipédia | RoullePro",
+  title: "Comment citer RoullePro — Guide pour journalistes, chercheurs et Wikipédia",
   description:
     "Formats de citation APA, Chicago, MLA et Wikipédia pour les données de l'Observatoire RoullePro, les fiches professionnelles, les guides et les alertes réglementaires. Licence CC-BY-SA 4.0.",
   alternates: { canonical: "/citer-roullepro" },

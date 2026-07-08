@@ -8,7 +8,7 @@ import FaqAccordion from './FaqAccordion';
 import { FAQ_ITEMS } from './faq-data';
 
 export const metadata: Metadata = {
-  title: 'Comment ca marche — RoullePro',
+  title: 'Comment ca marche',
   description: 'Decouvrez comment fonctionne RoullePro, la marketplace B2B pour les professionnels du transport routier.',
 };
 

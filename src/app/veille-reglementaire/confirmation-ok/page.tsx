@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Inscription confirmée — Veille RoullePro",
+  title: "Inscription confirmée",
   description: "Votre inscription à la veille réglementaire RoullePro est confirmée.",
   robots: { index: false, follow: false },
 };

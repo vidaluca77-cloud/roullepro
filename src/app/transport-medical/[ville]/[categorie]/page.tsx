@@ -46,10 +46,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nb = pros.length;
   const conventionnes = pros.filter((p) => p.ameli_conventionne).length;
 
-  // Title : action + nombre = signal d'utilité + AI search
-  const title = nb > 0
-    ? `${cat.labelPluriel} à ${nomVille} : ${nb} pros conventionnés CPAM | RoullePro`
-    : `${cat.labelPluriel} à ${nomVille} | RoullePro`;
+  // Title : action + nombre = signal d'utilité + AI search.
+  // Le suffixe " | RoullePro" est ajouté automatiquement par title.template (layout).
+  const title = nb > 1
+    ? `${cat.labelPluriel} à ${nomVille} : ${nb} pros conventionnés CPAM`
+    : nb === 1
+      ? `${cat.labelPluriel} à ${nomVille} : 1 pro conventionné CPAM`
+      : `${cat.labelPluriel} à ${nomVille}`;
 
   // Description : nombre pros, % conventionnés, tiers payant, devis gratuit
   const description = nb > 0

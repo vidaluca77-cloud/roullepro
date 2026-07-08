@@ -27,10 +27,10 @@ async function getGarage(id: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const g = await getGarage(params.id);
-  if (!g) return { title: "Garage introuvable — RoullePro" };
+  if (!g) return { title: "Garage introuvable" };
   const ville = g.ville ?? "France";
   return {
-    title: `Dépôt-vente utilitaire ${ville} — Partenaire vérifié | RoullePro`,
+    title: `Dépôt-vente utilitaire ${ville} — Partenaire vérifié`,
     description: `Confiez votre véhicule à un garage partenaire RoullePro vérifié à ${ville}. Photos HD, visibilité premium, paiement sécurisé. Récupération à domicile possible.`,
     alternates: { canonical: `https://roullepro.com/depot-vente/garages/${params.id}` },
   };

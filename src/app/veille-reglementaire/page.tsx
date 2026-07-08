@@ -30,7 +30,7 @@ export const revalidate = 3600;
 const BASE_URL = "https://www.roullepro.com";
 
 export const metadata: Metadata = {
-  title: "Veille réglementaire transport sanitaire — RoullePro",
+  title: "Veille réglementaire transport sanitaire",
   description:
     "Ce qui change pour les ambulances, VSL et taxis conventionnés. Sources officielles surveillées quotidiennement : DILA JORF, Légifrance, ARS, CPAM.",
   alternates: {

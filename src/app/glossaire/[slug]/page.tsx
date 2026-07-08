@@ -21,8 +21,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!terme) return {};
 
   const title = terme.abreviation
-    ? `${terme.termeComplet} (${terme.abreviation}) : définition transport sanitaire | RoullePro`
-    : `${terme.termeComplet} : définition transport sanitaire | RoullePro`;
+    ? `${terme.termeComplet} (${terme.abreviation}) : définition transport sanitaire`
+    : `${terme.termeComplet} : définition transport sanitaire`;
 
   return {
     title,

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import SignalerForm from "./SignalerForm";
 
 export const metadata: Metadata = {
-  title: "Signaler un problème sur une fiche | RoullePro",
+  title: "Signaler un problème sur une fiche",
   description:
     "Signaler une erreur de numéro, une activité cessée, demander la suppression d'une fiche ou tout autre problème sur l'annuaire RoullePro du transport sanitaire.",
   robots: { index: true, follow: true },

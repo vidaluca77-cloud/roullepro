@@ -61,7 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const etabs = await fetchEtablissements(t.categorie, ville);
   const nomVille = etabs[0]?.ville || ville;
   return {
-    title: `${t.labelPluriel} a ${nomVille} — Taxi conventionne et VSL | RoullePro`,
+    title: `${t.labelPluriel} a ${nomVille} — Taxi conventionne et VSL`,
     description: `${t.labelPluriel} a ${nomVille} (donnees FINESS). Adresse, capacite, et organisation du transport medical conventionne CPAM (taxi, VSL, ambulance).`,
     alternates: { canonical: `/etablissements/${t.slug}/${ville}` },
   };
@@ -94,7 +94,7 @@ export default async function TypeVillePage({ params }: Props) {
     itemListElement: etablissements.map((e, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      url: `https://www.roullepro.com/etablissements/${e.slug}`,
+      url: `https://roullepro.com/etablissements/${e.slug}`,
       name: e.nom_affichage || e.nom_court || e.raison_sociale,
     })),
   };

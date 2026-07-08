@@ -4,7 +4,7 @@ import { Mail, Clock, AlertTriangle, UserCheck, MessageCircle } from 'lucide-rea
 import ContactForm from './ContactForm';
 
 export const metadata: Metadata = {
-  title: 'Contact — RoullePro',
+  title: 'Contact',
   description:
     'Contactez l\'équipe RoullePro pour toute question, signalement ou demande de partenariat. Réponse sous 24h.',
 };

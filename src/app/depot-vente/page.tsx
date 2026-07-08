@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: "Dépôt-vente véhicule professionnel — RoullePro",
+  title: "Dépôt-vente véhicule professionnel",
   description:
     "Confiez la vente de votre véhicule professionnel à RoullePro. Estimation gratuite, garage partenaire certifié, paiement sécurisé. 88% du prix de vente reversé.",
   alternates: { canonical: 'https://roullepro.com/depot-vente' },

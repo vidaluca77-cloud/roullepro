@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import InscriptionForm from "@/components/sanitaire/InscriptionForm";
 
 export const metadata: Metadata = {
-  title: "Inscrire mon entreprise de transport sanitaire — RoullePro",
+  title: "Inscrire mon entreprise de transport sanitaire",
   description:
     "Ambulances, VSL, taxis conventionnés : créez votre fiche gratuitement en 3 minutes. Sans carte bancaire.",
   alternates: {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "FAQ Dépôt-vente | RoullePro",
+  title: "FAQ Dépôt-vente",
   description:
     "Questions fréquentes sur le dépôt-vente de véhicules professionnels : fonctionnement, délais, commissions, récupération à domicile, fiscalité.",
   alternates: { canonical: "https://roullepro.com/depot-vente/faq" },

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Mentions légales | RoullePro",
+  title: "Mentions légales",
   description:
     "Mentions légales de RoullePro, marketplace B2B de véhicules professionnels pour le transport routier. Informations éditeur, hébergement, RGPD et cookies.",
   robots: { index: true, follow: true },

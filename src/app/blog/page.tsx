@@ -10,7 +10,7 @@ import { ArticleCard } from "@/components/blog/ArticleCard";
 import { NewsletterInline } from "@/components/blog/NewsletterInline";
 
 export const metadata: Metadata = {
-  title: "Blog du transport sanitaire conventionné — Guides, réglementation et conseils | RoullePro",
+  title: "Blog du transport sanitaire conventionné — Guides, réglementation et conseils",
   description:
     "Actualités, conseils et guides pour les pros du transport médical : ambulances, VSL et taxis conventionnés CPAM. Réglementation, conventionnement, fiscalité et financement.",
   openGraph: {

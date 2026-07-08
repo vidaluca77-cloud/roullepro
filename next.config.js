@@ -87,6 +87,16 @@ const nextConfig = {
   },
   async redirects() {
     return [
+      // Canonicalisation du domaine : redirection 301 www -> non-www (roullepro.com).
+      // Unifie l'autorite du domaine et supprime les signaux divergents entre
+      // les versions www / non-www (essentiel pour l'indexation et la citation IA).
+      // La version non-www est la version canonique retenue (majoritaire dans le code).
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'www.roullepro.com' }],
+        destination: 'https://roullepro.com/:path*',
+        permanent: true,
+      },
       // Fusion 301 : suppression du doublon /blog/transport-medical-nice qui
       // cannibalise le hub ville /transport-medical/nice (cannibalisation GSC).
       {

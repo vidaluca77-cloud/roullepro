@@ -1,11 +1,13 @@
 /**
- * Helpers SEO partagés (Phase A) : URL canonique avec www + JSON-LD réutilisables.
+ * Helpers SEO partagés (Phase A) : URL canonique non-www + JSON-LD réutilisables.
  *
- * BASE_URL est figé sur le domaine canonique avec www (cohérent avec le sitemap
- * et les pages villes), distinct de NEXT_PUBLIC_APP_URL qui peut varier en preview.
+ * BASE_URL est figé sur le domaine canonique NON-www (roullepro.com), cohérent
+ * avec le sitemap, les pages villes, llms-full.txt et la redirection 301
+ * www -> non-www definie dans next.config.js. Distinct de NEXT_PUBLIC_APP_URL
+ * qui peut varier en preview.
  */
 
-export const BASE_URL = "https://www.roullepro.com";
+export const BASE_URL = "https://roullepro.com";
 
 export type BreadcrumbItem = { label: string; href: string };
 

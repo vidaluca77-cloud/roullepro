@@ -15,7 +15,7 @@ import CheckoutButton from "@/components/sanitaire/CheckoutButton";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Tarifs — RoullePro Transport Médical",
+  title: "Tarifs",
   description:
     "Une seule offre simple et honnête : Plan Pro à 19,90€/mois pour activer la messagerie patients et la visibilité. Pas de commission, pas d'algorithme, sans engagement.",
   alternates: { canonical: "/transport-medical/tarifs" },

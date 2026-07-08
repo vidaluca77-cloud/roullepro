@@ -4,7 +4,7 @@ import { Search, BadgeCheck, MessageCircle, BarChart3, Star, Shield } from "luci
 import ReclamerRechercheForm from "@/components/sanitaire/ReclamerRechercheForm";
 
 export const metadata: Metadata = {
-  title: "Espace pros ambulanciers, VSL et taxis conventionnés — Réclamer ma fiche gratuitement | RoullePro",
+  title: "Espace pros ambulanciers, VSL et taxis conventionnés — Réclamer ma fiche gratuitement",
   description:
     "Ambulancier, VSL ou taxi conventionné CPAM ? Votre fiche est déjà créée sur le 1er annuaire du transport sanitaire en France (26 000+ pros). Réclamez-la gratuitement, recevez les demandes patients en direct, sans commission. Badge Pro vérifié, statistiques, veille réglementaire à partir de 19,90€/mois.",
   keywords: [

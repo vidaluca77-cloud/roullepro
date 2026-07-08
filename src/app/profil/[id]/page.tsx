@@ -73,14 +73,14 @@ export async function generateMetadata({
     .single();
 
   if (!profile) {
-    return { title: 'Vendeur introuvable | RoullePro' };
+    return { title: 'Vendeur introuvable' };
   }
 
   const nom = profile.company_name || profile.full_name || 'Vendeur professionnel';
   const description = `Profil vendeur de ${nom}${profile.city ? ` — ${profile.city}` : ''}${profile.is_verified ? ' — Compte vérifié RoullePro' : ''}.`;
 
   return {
-    title: `${nom} | RoullePro`,
+    title: `${nom}`,
     description,
     openGraph: {
       title: `${nom} | RoullePro`,

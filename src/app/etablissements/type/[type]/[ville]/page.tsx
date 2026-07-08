@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!typeMeta || !combo) return { title: "Page introuvable" };
   const title = `Transport medical ${typeMeta.libellePluriel} ${combo.villeNom} | Taxi VSL Ambulance CPAM | RoullePro`;
   const description = typeMeta.metaDescriptionTemplate.replace("{ville}", combo.villeNom);
-  const canonical = `https://www.roullepro.com/etablissements/type/${type}/${ville}/`;
+  const canonical = `https://roullepro.com/etablissements/type/${type}/${ville}/`;
   return {
     title,
     description,
@@ -116,18 +116,18 @@ export default async function Page({ params }: Props) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://www.roullepro.com/" },
+      { "@type": "ListItem", position: 1, name: "Accueil", item: "https://roullepro.com/" },
       {
         "@type": "ListItem",
         position: 2,
         name: "Etablissements de sante",
-        item: "https://www.roullepro.com/etablissements/",
+        item: "https://roullepro.com/etablissements/",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: `${typeMeta.libellePluriel} ${villeNom}`,
-        item: `https://www.roullepro.com/etablissements/type/${type}/${ville}/`,
+        item: `https://roullepro.com/etablissements/type/${type}/${ville}/`,
       },
     ],
   };

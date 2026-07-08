@@ -23,7 +23,7 @@ export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const cat = getCategoryBySlug(params.slug);
-  if (!cat) return { title: "Catégorie introuvable — RoullePro" };
+  if (!cat) return { title: "Catégorie introuvable" };
 
   const url = `https://roullepro.com/blog/categorie/${cat.slug}`;
   const image = `https://roullepro.com/blog/categories/${cat.slug}.svg`;

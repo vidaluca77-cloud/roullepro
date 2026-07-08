@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, Mail, Clock, Search } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Demande reçue — RoullePro",
+  title: "Demande reçue",
   description:
     "Votre demande d'accès pilote a bien été reçue. Réponse sous 48h ouvrées.",
   robots: { index: false, follow: false },
