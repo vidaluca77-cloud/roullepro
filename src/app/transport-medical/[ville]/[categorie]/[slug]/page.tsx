@@ -82,8 +82,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? `${catLabel} à ${pro.ville} : ${nom}.${convention}${tel} Devis gratuit.`.slice(0, 160)
     : baseDesc;
 
-  // Title optimisé : nom + catégorie + ville + signal qualité court
-  const metaTitle = `${nom} — ${catLabel} ${pro.ville} | Conventionné CPAM`;
+  // Title optimisé : nom + catégorie + ville + signal qualité court (suffixe adaptatif pour éviter la troncature Google)
+  const titleCore = `${nom} — ${catLabel} ${pro.ville}`;
+  const suffix = titleCore.length > 45 ? " | CPAM" : " | Conventionné CPAM";
+  const metaTitle = `${titleCore}${suffix}`;
 
   return {
     title: metaTitle,
@@ -545,6 +547,24 @@ export default async function FicheProPage({ params }: Props) {
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
+          </div>
+        </section>
+      )}
+
+      {pro.categorie === "ambulance" && (
+        <section className="max-w-5xl mx-auto px-4 pb-10">
+          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Besoin d&apos;une ambulance ailleurs&nbsp;?</h2>
+            <p className="text-sm text-gray-700 mb-3">
+              Utilisez notre outil de géolocalisation pour trouver une ambulance disponible autour de vous, partout en France.
+            </p>
+            <Link
+              href="/ambulance-autour-de-moi"
+              className="inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+            >
+              Trouver une ambulance autour de moi
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
         </section>
       )}

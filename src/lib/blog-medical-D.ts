@@ -209,7 +209,7 @@ Essai 14 jours sans carte bancaire, à partir de 14,90 €/mois.
   // ============================================================
   {
     slug: "agrement-cpam-taxi-conventionne",
-    title: "Agrément CPAM taxi conventionné — Comment vérifier en 1 min ?",
+    title: "Agrément CPAM taxi conventionné 2026 : conditions, démarches et vérification",
     h1: "Agrément CPAM taxi conventionné — Conditions, démarches et formulaire 2026",
     excerpt:
       "Vérifiez en 1 minute si un taxi est conventionné CPAM. Liste officielle, contrôle agrément, droits patient. Tout savoir pour ne pas avancer les frais.",

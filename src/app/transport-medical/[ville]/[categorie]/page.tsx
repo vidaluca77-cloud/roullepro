@@ -187,6 +187,21 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
             ))}
           </div>
         )}
+
+        {categorie === "ambulance" && (
+          <div className="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-5">
+            <p className="text-sm text-gray-700">
+              Besoin d&apos;une ambulance rapidement, où que vous soyez ?
+            </p>
+            <Link
+              href="/ambulance-autour-de-moi"
+              className="mt-2 inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+            >
+              Trouver une ambulance autour de moi
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </section>
     </main>
   );

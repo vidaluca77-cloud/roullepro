@@ -316,9 +316,16 @@ export default async function FicheEtablissement({ e }: { e: EtablissementPublic
                   <Cross className="w-5 h-5" />
                   <h3 className="font-semibold text-gray-900">Ambulance</h3>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 mb-3">
                   Transport allongé pour patients ne pouvant pas se déplacer.
                 </p>
+                <Link
+                  href="/ambulance-autour-de-moi"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] hover:gap-2 transition-all"
+                >
+                  Trouver une ambulance autour de moi
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
               <div className="border border-gray-100 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-1.5 text-[#0066CC]">

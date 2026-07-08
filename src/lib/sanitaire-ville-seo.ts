@@ -402,6 +402,51 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     }),
     departement: "76",
   },
+  "clermont-ferrand": {
+    title: "Taxi conventionné Clermont-Ferrand 63 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire des taxis conventionnés CPAM à Clermont-Ferrand (63) : 45 taxis agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
+    h1: "Taxi conventionné Clermont-Ferrand — Transport médical CPAM dans le Puy-de-Dôme",
+    intro:
+      "À Clermont-Ferrand et dans le Puy-de-Dôme, plus de 45 taxis conventionnés CPAM assurent le transport médical des patients sur prescription, avec une prise en charge pouvant atteindre 100 % par la Sécurité sociale. Que ce soit pour des séances de dialyse ou de chimiothérapie au CHU de Clermont-Ferrand (Hôpital Gabriel-Montpied, Hôpital Estaing), pour un traitement au Centre Jean Perrin (cancérologie), ou pour un retour d'hospitalisation, RoullePro centralise les coordonnées officielles et agréments de chaque entreprise. Chaque fiche précise le numéro d'agrément CPAM du Puy-de-Dôme (63), les modes de paiement (tiers payant, dispense d'avance des frais), les véhicules adaptés (PMR, brancard) et la zone d'intervention dans l'agglomération clermontoise (Clermont-Ferrand intra-muros, Chamalières, Aubière, Cournon-d'Auvergne, Riom, Beaumont, Cébazat). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en affection longue durée (ALD). Pour les soins programmés et réguliers, réservez 48 h à l'avance auprès d'une compagnie disposant d'un standard 24/7. Consultez ci-dessous la liste des taxis conventionnés à Clermont-Ferrand, ou utilisez la recherche par adresse pour trouver immédiatement le transport médical le plus proche.",
+    faq: buildVilleFaq({
+      nom: "Clermont-Ferrand",
+      codeDepartement: "63",
+      cpamLibelle: "CPAM du Puy-de-Dôme",
+      etablissements: "le CHU Gabriel-Montpied, l'Hôpital Estaing ou le Centre Jean Perrin",
+    }),
+    departement: "63",
+  },
+  brest: {
+    title: "Taxi conventionné Brest 29 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire des taxis conventionnés CPAM à Brest (29) : taxis et ambulances agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
+    h1: "Taxi conventionné Brest — Transport médical CPAM dans le Finistère",
+    intro:
+      "À Brest et dans le Finistère, les taxis conventionnés CPAM assurent le transport médical des patients sur prescription, avec une prise en charge pouvant atteindre 100 % par la Sécurité sociale. Que ce soit pour des séances de dialyse ou de chimiothérapie au CHRU de Brest (Hôpital de la Cavale Blanche, Hôpital Morvan), pour une consultation à l'Hôpital d'Instruction des Armées Clermont-Tonnerre, ou pour un retour d'hospitalisation, RoullePro centralise les coordonnées officielles et agréments de chaque entreprise. Chaque fiche précise le numéro d'agrément CPAM du Finistère (29), les modes de paiement (tiers payant, dispense d'avance des frais), les véhicules adaptés (PMR, brancard) et la zone d'intervention dans le pays de Brest (Brest intra-muros, Guipavas, Le Relecq-Kerhuon, Plougastel-Daoulas, Gouesnou, Bohars). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en affection longue durée (ALD). Pour les soins programmés et réguliers, réservez 48 h à l'avance auprès d'une compagnie disposant d'un standard 24/7. Consultez ci-dessous la liste des taxis conventionnés à Brest, ou utilisez la recherche par adresse pour trouver immédiatement le transport médical le plus proche.",
+    faq: buildVilleFaq({
+      nom: "Brest",
+      codeDepartement: "29",
+      cpamLibelle: "CPAM du Finistère",
+      etablissements: "le CHRU de Brest (Hôpital de la Cavale Blanche, Hôpital Morvan)",
+    }),
+    departement: "29",
+  },
+  amiens: {
+    title: "Taxi conventionné Amiens 80 | Transport médical CPAM | RoullePro",
+    description:
+      "Annuaire des taxis conventionnés CPAM à Amiens (80) : 61 taxis agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
+    h1: "Taxi conventionné Amiens — Transport médical CPAM dans la Somme",
+    intro:
+      "À Amiens et dans la Somme, plus de 61 taxis conventionnés CPAM assurent le transport médical des patients sur prescription, avec une prise en charge pouvant atteindre 100 % par la Sécurité sociale. Que ce soit pour des séances de dialyse ou de chimiothérapie au CHU Amiens-Picardie, pour une consultation dans un cabinet spécialisé, ou pour un retour d'hospitalisation, RoullePro centralise les coordonnées officielles et agréments de chaque entreprise. Chaque fiche précise le numéro d'agrément CPAM de la Somme (80), les modes de paiement (tiers payant, dispense d'avance des frais), les véhicules adaptés (PMR, brancard) et la zone d'intervention dans l'agglomération amiénoise (Amiens intra-muros, Longueau, Camon, Rivery, Dury, Salouël, Pont-de-Metz). Le tarif suit la convention CPAM 2025-2026 et la prise en charge atteint 100 % sur prescription pour les patients en affection longue durée (ALD). Pour les soins programmés et réguliers, réservez 48 h à l'avance auprès d'une compagnie disposant d'un standard 24/7. Consultez ci-dessous la liste des taxis conventionnés à Amiens, ou utilisez la recherche par adresse pour trouver immédiatement le transport médical le plus proche.",
+    faq: buildVilleFaq({
+      nom: "Amiens",
+      codeDepartement: "80",
+      cpamLibelle: "CPAM de la Somme",
+      etablissements: "le CHU Amiens-Picardie",
+    }),
+    departement: "80",
+  },
   grenoble: {
     title: "Taxi conventionné Grenoble 38 | Transport médical CPAM | RoullePro",
     description:

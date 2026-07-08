@@ -65,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const titleCourt = `${nom}${ville} — Transport médical conventionné`;
   return {
     title: titleLong.length > 60 ? titleCourt : titleLong,
-    description: `Trouvez un taxi conventionné CPAM, VSL ou ambulance agréé pour vous rendre à ${nom}${villeA}. Prise en charge CPAM disponible. Réservation 24/7.`,
+    description: `Organisez votre transport conventionné (taxi CPAM, VSL) pour vous rendre à ${nom}${villeA}. Prise en charge CPAM, tiers payant, réservation en ligne.`,
     alternates: { canonical: `/etablissements/${e.slug}` },
   };
 }
