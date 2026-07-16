@@ -63,7 +63,7 @@ const proPageJsonLd = {
           priceCurrency: "EUR",
           unitText: "MONTH",
         },
-        description: "Badge Pro vérifié, messagerie patients, équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…), forum entre pros vérifiés, veille réglementaire, statistiques",
+        description: "Badge Pro vérifié, messagerie patients, demandes de transport de votre département reçues par email, équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…), forum entre pros vérifiés, veille réglementaire, statistiques",
       },
     ],
   },
@@ -106,8 +106,8 @@ export default function EspacePro() {
           />
           <Feature
             icon={<MessageCircle className="w-6 h-6 text-[#0066CC]" />}
-            title="Demandes directes"
-            desc="Recevez téléphone et messages de patients qui cherchent vos services — sans intermédiaire."
+            title="Demandes de votre département"
+            desc="Les demandes de transport de votre département vous parviennent directement par email — sans commission ni intermédiaire."
           />
           <Feature
             icon={<BarChart3 className="w-6 h-6 text-[#0066CC]" />}
@@ -202,6 +202,7 @@ export default function EspacePro() {
                 "Galerie de 5 photos, description étendue",
                 "Veille réglementaire métier (alertes email)",
                 "Tableau de bord conformité",
+                "Demandes de transport de votre département reçues par email",
                 "Statistiques de vues et notifications email",
               ]}
               cta="Activer le plan Pro"

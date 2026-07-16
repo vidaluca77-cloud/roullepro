@@ -1,33 +1,37 @@
 /**
  * GET|POST /api/cron/drip-essential
  *
- * Séquence drip de conversion Essential pour les pros sanitaire en essai :
- *   - J+3  après plan_offer_granted_at  → email "3 actions pour booster"
- *   - J+7  après plan_offer_granted_at  → email "vos premiers résultats" + push conversion
- *   - J-13 / J-7 avant plan_expires_at  → email "urgence fin d'essai"
+ * Séquence drip de conversion Essential pour les pros sanitaire en essai (7 jours) :
+ *   - J+2  après plan_offer_granted_at  → email "bien démarrer" (fiche + experts IA + forum)
+ *   - J+5  après plan_offer_granted_at  → email "votre essai se termine bientôt" + push conversion
+ *
+ * Le calendrier est calé sur l'essai 7 jours. Le rappel « fin d'essai » côté Stripe
+ * (customer.subscription.trial_will_end, ~J-3) ne concerne QUE les pros ayant activé
+ * un abonnement (carte enregistrée → stripe_subscription_id présent). Pour éviter un
+ * doublon, l'email J+5 n'est envoyé qu'aux pros SANS stripe_subscription_id (essai
+ * auto, sans carte) : eux seuls ne reçoivent pas l'email Stripe.
  *
  * Sécurité : Authorization: Bearer ${CRON_SECRET}
  * Idempotent : chaque envoi marque drip_*_sent_at (jamais re-envoyé).
  * Volume max : 100 emails par tour (sécurité). Tourner quotidiennement.
  *
- * Sources d'octroi ciblées (plan_offer_source) :
+ * Sources d'octroi ciblées (plan_offer_source, valeurs historiques en base) :
  *   - auto_trial_2months
  *   - auto_trial_2months_recovery
  *   - welcome_50_first
  *
- * Stats envoyées dans les emails J+7 / J+13 :
- *   - vues : depuis pros_sanitaire.views_total (ou 0 si colonne absente)
+ * Stats envoyées dans l'email J+5 :
  *   - reveals : count(phone_reveals WHERE pro_id=... AND created_at >= since)
  *   - messages : count(sanitaire_messages WHERE pro_id=... AND created_at >= since)
+ *   - vues : proxy dérivé (pas de table dédiée)
  */
 
 import { NextResponse } from "next/server";
 import { getAdminServiceClient } from "@/lib/admin-guard";
 import { sendEmail } from "@/lib/email";
 import {
-  renderDripJ3Essai,
-  renderDripJ7Resultats,
-  renderDripJ13PreExpire,
+  renderDripJ2Demarrage,
+  renderDripJ5FinEssai,
 } from "@/lib/email-templates/sanitaire";
 
 export const dynamic = "force-dynamic";
@@ -58,9 +62,11 @@ type Pro = {
   plan_offer_source: string | null;
   plan_offer_granted_at: string | null;
   plan_expires_at: string | null;
+  stripe_subscription_id: string | null;
+  // drip_j3_sent_at : réutilisé pour l'email J+2 « bien démarrer »
   drip_j3_sent_at: string | null;
+  // drip_j7_sent_at : réutilisé pour l'email J+5 « fin d'essai bientôt »
   drip_j7_sent_at: string | null;
-  drip_j13_pre_expire_sent_at: string | null;
 };
 
 function ficheUrlFor(p: Pro): string | null {
@@ -106,7 +112,7 @@ async function handle(req: Request) {
   const { data: pros, error } = await admin
     .from("pros_sanitaire")
     .select(
-      "id,raison_sociale,nom_commercial,email_public,ville,ville_slug,departement,slug,categorie,plan,plan_offer_source,plan_offer_granted_at,plan_expires_at,drip_j3_sent_at,drip_j7_sent_at,drip_j13_pre_expire_sent_at",
+      "id,raison_sociale,nom_commercial,email_public,ville,ville_slug,departement,slug,categorie,plan,plan_offer_source,plan_offer_granted_at,plan_expires_at,stripe_subscription_id,drip_j3_sent_at,drip_j7_sent_at",
     )
     .eq("plan", "essential")
     .eq("claimed", true)
@@ -122,9 +128,8 @@ async function handle(req: Request) {
   const rows = (pros as Pro[] | null) || [];
   const stats = {
     scanned: rows.length,
-    sent_j3: 0,
-    sent_j7: 0,
-    sent_j13: 0,
+    sent_j2: 0,
+    sent_j5: 0,
     skipped_no_email: 0,
     errors: 0,
   };
@@ -145,14 +150,14 @@ async function handle(req: Request) {
     const daysSinceGrant = daysBetween(now, granted);
     const daysUntilExpire = daysBetween(expires, now);
 
-    // ─── J+3 ───
+    // ─── J+2 « bien démarrer » (fiche + experts IA + forum) ───
     if (
       !pro.drip_j3_sent_at &&
-      daysSinceGrant >= 3 &&
-      daysSinceGrant <= 5 // fenêtre 3 jours pour rattraper si cron raté
+      daysSinceGrant >= 2 &&
+      daysSinceGrant <= 3 // fenêtre courte : l'essai ne dure que 7 jours
     ) {
       try {
-        const tpl = renderDripJ3Essai({
+        const tpl = renderDripJ2Demarrage({
           nomAffiche: nomAffiche(pro),
           ville: pro.ville,
           dashboardUrl: DASHBOARD_URL,
@@ -165,47 +170,54 @@ async function handle(req: Request) {
           text: tpl.text,
           tags: [
             { name: "category", value: "drip_essential" },
-            { name: "step", value: "j3" },
+            { name: "step", value: "j2" },
           ],
         });
         await admin
           .from("pros_sanitaire")
           .update({ drip_j3_sent_at: now.toISOString() })
           .eq("id", pro.id);
-        stats.sent_j3 += 1;
+        stats.sent_j2 += 1;
         budget -= 1;
       } catch (e) {
         stats.errors += 1;
         errorsLog.push({
           pro_id: pro.id,
-          step: "j3",
+          step: "j2",
           error: e instanceof Error ? e.message : String(e),
         });
       }
       continue; // on n'envoie qu'1 drip par jour par pro
     }
 
-    // ─── J+7 ───
+    // ─── J+5 « votre essai se termine bientôt » ───
+    // Uniquement pour les essais AUTO (sans carte) : les pros ayant activé un
+    // abonnement Stripe reçoivent déjà le rappel Stripe trial_will_end (~J-3),
+    // on évite ainsi un doublon quasi identique à 1 jour d'écart.
     if (
       !pro.drip_j7_sent_at &&
-      daysSinceGrant >= 7 &&
-      daysSinceGrant <= 10
+      !pro.stripe_subscription_id &&
+      daysSinceGrant >= 5 &&
+      daysSinceGrant <= 6
     ) {
       try {
-        const sinceIso = new Date(now.getTime() - 7 * 86400000).toISOString();
-        const [reveals7d, messages7d] = await Promise.all([
+        const sinceIso = pro.plan_offer_granted_at!;
+        const [revealsTotal, messagesTotal] = await Promise.all([
           countSince(admin, "phone_reveals", pro.id, sinceIso),
           countSince(admin, "sanitaire_messages", pro.id, sinceIso),
         ]);
-        // views7d : pas de table dédiée, on utilise reveals * 4 comme proxy raisonnable
-        const views7d = Math.max(reveals7d * 4, reveals7d + messages7d * 2);
+        // Pas de table de vues dédiée : proxy raisonnable dérivé des signaux.
+        const viewsTotal = Math.max(revealsTotal * 4, revealsTotal + messagesTotal * 2);
+        const joursRestants = Math.max(1, daysUntilExpire);
 
-        const tpl = renderDripJ7Resultats({
+        const tpl = renderDripJ5FinEssai({
           nomAffiche: nomAffiche(pro),
           ville: pro.ville,
-          views7d,
-          reveals7d,
-          messages7d,
+          joursRestants,
+          expiresAt: pro.plan_expires_at,
+          viewsTotal,
+          revealsTotal,
+          messagesTotal,
           dashboardUrl: DASHBOARD_URL,
           upgradeUrl: UPGRADE_URL,
         });
@@ -216,71 +228,20 @@ async function handle(req: Request) {
           text: tpl.text,
           tags: [
             { name: "category", value: "drip_essential" },
-            { name: "step", value: "j7" },
+            { name: "step", value: "j5" },
           ],
         });
         await admin
           .from("pros_sanitaire")
           .update({ drip_j7_sent_at: now.toISOString() })
           .eq("id", pro.id);
-        stats.sent_j7 += 1;
+        stats.sent_j5 += 1;
         budget -= 1;
       } catch (e) {
         stats.errors += 1;
         errorsLog.push({
           pro_id: pro.id,
-          step: "j7",
-          error: e instanceof Error ? e.message : String(e),
-        });
-      }
-      continue;
-    }
-
-    // ─── J-13 (i.e. 13 jours AVANT plan_expires_at, fenêtre 13→7) ───
-    if (
-      !pro.drip_j13_pre_expire_sent_at &&
-      daysUntilExpire >= 7 &&
-      daysUntilExpire <= 13
-    ) {
-      try {
-        const [revealsTotal, messagesTotal] = await Promise.all([
-          countSince(admin, "phone_reveals", pro.id, pro.plan_offer_granted_at!),
-          countSince(admin, "sanitaire_messages", pro.id, pro.plan_offer_granted_at!),
-        ]);
-        const viewsTotal = Math.max(revealsTotal * 4, revealsTotal + messagesTotal * 2);
-
-        const tpl = renderDripJ13PreExpire({
-          nomAffiche: nomAffiche(pro),
-          ville: pro.ville,
-          joursRestants: daysUntilExpire,
-          expiresAt: pro.plan_expires_at,
-          viewsTotal,
-          revealsTotal,
-          messagesTotal,
-          upgradeUrl: UPGRADE_URL,
-          dashboardUrl: DASHBOARD_URL,
-        });
-        await sendEmail({
-          to: pro.email_public,
-          subject: tpl.subject,
-          html: tpl.html,
-          text: tpl.text,
-          tags: [
-            { name: "category", value: "drip_essential" },
-            { name: "step", value: "j13_pre_expire" },
-          ],
-        });
-        await admin
-          .from("pros_sanitaire")
-          .update({ drip_j13_pre_expire_sent_at: now.toISOString() })
-          .eq("id", pro.id);
-        stats.sent_j13 += 1;
-        budget -= 1;
-      } catch (e) {
-        stats.errors += 1;
-        errorsLog.push({
-          pro_id: pro.id,
-          step: "j13",
+          step: "j5",
           error: e instanceof Error ? e.message : String(e),
         });
       }

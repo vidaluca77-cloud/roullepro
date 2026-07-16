@@ -48,9 +48,10 @@ export function renderInscriptionAccuse(p: InscriptionAccuseParams): {
       </div>
       <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6">
         Votre essai Essential de 7 jours est activé automatiquement.
-        Vous bénéficiez dès maintenant de la visibilité optimisée,
-        des coordonnées affichées en premier dans votre département
-        et de la réception de demandes de transport.
+        Vous bénéficiez dès maintenant de la visibilité optimisée, des coordonnées
+        affichées en premier dans votre département, de la réception par email des
+        demandes de transport de votre département, de l'équipe de 6 experts IA du
+        transport sanitaire (réponses sourcées) et du forum entre pros vérifiés.
       </p>
     </div>
 
@@ -83,7 +84,7 @@ export function renderInscriptionAccuse(p: InscriptionAccuseParams): {
     `Nous avons bien enregistré votre demande d'inscription pour ${p.nom_commercial || p.raison_sociale} sur l'annuaire RoullePro Transport Sanitaire.`,
     "",
     "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
-    `Votre essai Essential de 7 jours est activé automatiquement. Vous bénéficiez dès maintenant de la visibilité optimisée, des coordonnées affichées en premier dans votre département et de la réception de demandes de transport.`,
+    `Votre essai Essential de 7 jours est activé automatiquement. Vous bénéficiez dès maintenant de la visibilité optimisée, des coordonnées affichées en premier dans votre département, de la réception par email des demandes de transport de votre département, de l'équipe de 6 experts IA du transport sanitaire (réponses sourcées) et du forum entre pros vérifiés.`,
     "",
     "PROCHAINES ÉTAPES",
     "1. Confirmez votre adresse e-mail — un second e-mail vous a été envoyé.",

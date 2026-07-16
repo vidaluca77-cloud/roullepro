@@ -3,10 +3,9 @@
  * Planification : tous les jours a 09:00 UTC (definie dans netlify.toml).
  *
  * Appelle l'endpoint interne /api/cron/drip-essential protege par CRON_SECRET.
- * Sends:
- *   - J+3  apres octroi essai     -> rappel valeur + 3 actions
- *   - J+7  apres octroi essai     -> stats 7d + push conversion
- *   - J-13 a J-7 avant expiration -> urgence fin d'essai
+ * Sends (essai 7 jours) :
+ *   - J+2 apres octroi essai -> bien demarrer (fiche + experts IA + forum)
+ *   - J+5 apres octroi essai -> essai se termine bientot + push conversion
  */
 export default async () => {
   const baseUrl = process.env.URL || "https://roullepro.com";

@@ -161,7 +161,7 @@ export default async function ProPage() {
               "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
               "Meilleure visibilité dans votre ville",
               "Statistiques détaillées",
-              "Notifications email à chaque demande",
+              "Recevez par email les demandes de transport de votre département",
               "Résiliation en un clic",
             ]}
           />
