@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Car, ChevronRight, Shield, Search, MapPin } from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
+import { DEPARTEMENTS_FR } from "@/lib/departements-fr";
 
 export const revalidate = 3600;
 
 const TITLE =
   "Taxi conventionné CPAM 2026 — Annuaire, tarifs, prescription et remboursement";
 const DESCRIPTION =
-  "Tout savoir sur le taxi conventionné CPAM : tarif convention 2026, prescription, prise en charge ALD, agrément. Annuaire France entière par ville.";
+  "Liste des taxis conventionnés CPAM par département et par ville. Tarif convention 2026, prescription, prise en charge ALD, agrément Assurance Maladie. Annuaire France entière.";
 const H1 =
   "Taxi conventionné — Tarifs, remboursement et annuaire CPAM France entière";
 
@@ -350,6 +351,27 @@ export default function TaxiConventionnePage() {
                 className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
               >
                 Taxi conventionné {v.nom}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section id="departements">
+          <h2>Liste des taxis conventionnés CPAM par département</h2>
+          <p>
+            Consultez la liste des taxis conventionnés CPAM de votre département. Chaque page départementale recense
+            les taxis conventionnés agréés par l&apos;Assurance Maladie, aux côtés des ambulances et VSL, avec le
+            détail par commune et le téléphone direct.
+          </p>
+          <div className="not-prose grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 my-6">
+            {Object.values(DEPARTEMENTS_FR).map((d) => (
+              <Link
+                key={d.code}
+                href={`/transport-medical/departement/${d.code}`}
+                title={`Taxis conventionnés CPAM ${d.code} — ${d.nom}`}
+                className="bg-gray-50 hover:bg-blue-50 hover:text-[#0066CC] border border-gray-100 rounded-lg px-2.5 py-2 text-xs font-medium text-gray-800 transition truncate"
+              >
+                <span className="font-semibold">{d.code}</span> {d.nom}
               </Link>
             ))}
           </div>
