@@ -45,6 +45,8 @@ export async function GET() {
   locs.push(`${BASE_URL}/sitemaps/glossaire.xml`);
   // Observatoire du transport sanitaire (données ouvertes trimestrielles).
   locs.push(`${BASE_URL}/sitemaps/observatoire.xml`);
+  // Forum entre pros (catégories + fils de discussion).
+  locs.push(`${BASE_URL}/sitemaps/forum.xml`);
 
   const items = locs
     .map(

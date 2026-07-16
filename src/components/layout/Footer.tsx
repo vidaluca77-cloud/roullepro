@@ -181,6 +181,7 @@ export default function Footer() {
           </p>
           <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500">
             <Link href="/contact" className="hover:text-white transition">Contact</Link>
+            <Link href="/forum" className="hover:text-white transition">Forum</Link>
             <Link href="/signaler" className="hover:text-white transition">Signaler une fiche</Link>
             <Link href="/partenaires" className="hover:text-white transition">Partenaires</Link>
             <Link href="/partenaires/assurance-pro" className="hover:text-white transition">Assurance pro</Link>
