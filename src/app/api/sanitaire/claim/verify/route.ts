@@ -250,7 +250,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Octroi essai Pro 2 mois (best-effort, non bloquant)
+    // Octroi essai Pro gratuit (7 jours par défaut, best-effort, non bloquant)
     try {
       const { grantAutoTrial } = await import("@/lib/sanitaire-auto-trial");
       const trial = await grantAutoTrial(claim.pro_id);

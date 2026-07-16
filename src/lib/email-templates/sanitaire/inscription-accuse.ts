@@ -44,10 +44,10 @@ export function renderInscriptionAccuse(p: InscriptionAccuseParams): {
     <!-- Bloc essai -->
     <div style="background:#ecfdf5;border:1px solid ${RP_COLOR_SUCCESS};border-radius:12px;padding:16px 20px;margin:0 0 24px">
       <div style="font-size:13px;font-weight:700;color:${RP_COLOR_SUCCESS};margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">
-        Bonne nouvelle — Essai Essential 2 mois activé
+        Bonne nouvelle — Essai Essential 7 jours activé
       </div>
       <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6">
-        Votre essai Essential 2 mois est activé automatiquement.
+        Votre essai Essential de 7 jours est activé automatiquement.
         Vous bénéficiez dès maintenant de la visibilité optimisée,
         des coordonnées affichées en premier dans votre département
         et de la réception de demandes de transport.
@@ -82,8 +82,8 @@ export function renderInscriptionAccuse(p: InscriptionAccuseParams): {
     "",
     `Nous avons bien enregistré votre demande d'inscription pour ${p.nom_commercial || p.raison_sociale} sur l'annuaire RoullePro Transport Sanitaire.`,
     "",
-    "ESSAI ESSENTIAL 2 MOIS ACTIVÉ",
-    `Votre essai Essential 2 mois est activé automatiquement. Vous bénéficiez dès maintenant de la visibilité optimisée, des coordonnées affichées en premier dans votre département et de la réception de demandes de transport.`,
+    "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
+    `Votre essai Essential de 7 jours est activé automatiquement. Vous bénéficiez dès maintenant de la visibilité optimisée, des coordonnées affichées en premier dans votre département et de la réception de demandes de transport.`,
     "",
     "PROCHAINES ÉTAPES",
     "1. Confirmez votre adresse e-mail — un second e-mail vous a été envoyé.",
@@ -104,7 +104,7 @@ export function renderInscriptionAccuse(p: InscriptionAccuseParams): {
   ].join("\n");
 
   const { html, text } = buildSanitaireEmail({
-    preheader: `Votre essai Essential 2 mois est activé. Notre équipe valide votre fiche sous 24 h.`,
+    preheader: `Votre essai Essential de 7 jours est activé. Notre équipe valide votre fiche sous 24 h.`,
     title: `Bienvenue ${prenom}, votre demande est bien reçue`,
     bodyHtml,
     ctaLabel: "Accéder à mon espace pro",

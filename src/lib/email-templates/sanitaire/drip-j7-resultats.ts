@@ -97,7 +97,7 @@ export function renderDripJ7Resultats(p: DripJ7Params): {
 
     <div style="background:#ecfdf5;border:1px solid ${RP_COLOR_SUCCESS};border-radius:12px;padding:14px 20px;margin:0 0 8px">
       <div style="font-size:13px;color:#14532d;line-height:1.6">
-        <strong>Votre essai</strong> est valable encore 50+ jours.
+        <strong>Votre essai gratuit</strong> est toujours en cours.
         Le passage à l'offre Essential se fait à tout moment pour
         <strong>${PRICE_ESSENTIAL_DISPLAY}</strong>, sans engagement &mdash; résiliable en 1 clic.
       </div>
@@ -121,7 +121,7 @@ export function renderDripJ7Resultats(p: DripJ7Params): {
       ? "Continuez : chaque vue est un patient potentiel, chaque numéro révélé un appel probable dans les 48 h."
       : "Le démarrage est calme — c'est normal sur les 10 premiers jours. 2 leviers : ajoutez photos + description, et vérifiez vos horaires (surtout urgences nuit/week-end).",
     "",
-    `Votre essai est valable encore 50+ jours. Le passage à Essential se fait à tout moment pour ${PRICE_ESSENTIAL_DISPLAY}, sans engagement — résiliable en 1 clic.`,
+    `Votre essai gratuit est toujours en cours. Le passage à Essential se fait à tout moment pour ${PRICE_ESSENTIAL_DISPLAY}, sans engagement — résiliable en 1 clic.`,
     "",
     `→ Voir mon tableau de bord : ${p.dashboardUrl}`,
     `→ Passer à Essential maintenant : ${p.upgradeUrl}`,

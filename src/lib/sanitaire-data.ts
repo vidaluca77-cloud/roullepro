@@ -323,7 +323,7 @@ export type ProSanitaire = {
   claimed_at: string | null;
   plan: "gratuit" | "essential" | "premium" | "pro_plus";
   plan_active_until: string | null;
-  // Marqueurs auto-trial (offre 2 mois Pro a l'inscription/claim)
+  // Marqueurs auto-trial (essai gratuit Pro a l'inscription/claim, 7 jours par defaut)
   // — clears par le webhook Stripe a la conversion payante
   plan_offer_source: string | null;
   plan_offer_granted_at: string | null;

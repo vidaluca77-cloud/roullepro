@@ -71,10 +71,10 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
     <!-- Bloc essai -->
     <div style="background:#ecfdf5;border:1px solid ${RP_COLOR_SUCCESS};border-radius:12px;padding:16px 20px;margin:0 0 24px">
       <div style="font-size:12px;font-weight:700;color:${RP_COLOR_SUCCESS};margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">
-        Essai Essential 2 mois activé
+        Essai Essential 7 jours activé
       </div>
       <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6">
-        Votre essai Essential 2 mois est activé. Vous bénéficiez de la visibilité optimisée
+        Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée
         et de la réception des demandes de transport.
         À l'issue de l'essai, l'abonnement Essential continue à ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)} (sans engagement).
       </p>
@@ -133,8 +133,8 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
     credText,
     magicText,
     "",
-    "ESSAI ESSENTIAL 2 MOIS ACTIVÉ",
-    `Votre essai Essential 2 mois est activé. À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
+    "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
+    `Votre essai Essential de 7 jours est activé. À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
     "",
     "PROCHAINES ÉTAPES",
     `1. Complétez votre fiche — photos, horaires détaillés, description (5 minutes).`,
@@ -154,7 +154,7 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
   ].join("\n");
 
   const { html } = buildSanitaireEmail({
-    preheader: `Votre essai Essential 2 mois est activé. Connectez-vous pour compléter votre fiche.`,
+    preheader: `Votre essai Essential de 7 jours est activé. Connectez-vous pour compléter votre fiche.`,
     title: `Bienvenue ${nomAffiche}`,
     bodyHtml,
     plainText,
