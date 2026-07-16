@@ -14,7 +14,7 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
   // RLS garantit que l'utilisateur ne lit que ses propres conversations/messages.
   const { data: conversation } = await supabase
     .from("ia_conversations")
-    .select("id, titre, created_at, updated_at, is_archived")
+    .select("id, titre, created_at, updated_at, is_archived, agent_slug")
     .eq("id", params.id)
     .maybeSingle();
   if (!conversation) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
@@ -58,7 +58,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     .from("ia_conversations")
     .update(patch)
     .eq("id", params.id)
-    .select("id, titre, created_at, updated_at, is_archived")
+    .select("id, titre, created_at, updated_at, is_archived, agent_slug")
     .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

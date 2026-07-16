@@ -20,7 +20,7 @@ export async function GET() {
   const [{ data: conversations }, { data: usage }] = await Promise.all([
     supabase
       .from("ia_conversations")
-      .select("id, titre, created_at, updated_at, is_archived")
+      .select("id, titre, created_at, updated_at, is_archived, agent_slug")
       .eq("is_archived", false)
       .order("updated_at", { ascending: false }),
     supabase
@@ -46,10 +46,14 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   let titre = "Nouvelle conversation";
+  let agentSlug = "general";
   try {
     const body = await req.json();
     if (typeof body?.titre === "string" && body.titre.trim()) {
       titre = body.titre.trim().slice(0, 120);
+    }
+    if (typeof body?.agent_slug === "string" && body.agent_slug.trim()) {
+      agentSlug = body.agent_slug.trim();
     }
   } catch {
     // corps optionnel
@@ -57,8 +61,8 @@ export async function POST(req: Request) {
 
   const { data, error } = await supabase
     .from("ia_conversations")
-    .insert({ user_id: user.id, titre })
-    .select("id, titre, created_at, updated_at, is_archived")
+    .insert({ user_id: user.id, titre, agent_slug: agentSlug })
+    .select("id, titre, created_at, updated_at, is_archived, agent_slug")
     .single();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
