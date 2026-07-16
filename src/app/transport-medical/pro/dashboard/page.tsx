@@ -437,7 +437,9 @@ export default async function ProDashboard({
             />
 
             {/* Demandes de transport (RPC demandes_pro_dashboard) */}
-            <DemandesTransportSection demandes={demandesPro} />
+            <div id="demandes-transport" className="scroll-mt-20">
+              <DemandesTransportSection demandes={demandesPro} />
+            </div>
 
             {/* Messagerie */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
