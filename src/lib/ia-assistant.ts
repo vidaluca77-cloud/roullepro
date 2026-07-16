@@ -106,6 +106,7 @@ export type Agent = {
   couleur: string;
   ordre: number;
   actif: boolean;
+  questions_suggerees: string[];
 };
 
 export type AgentAvecPrompt = Agent & { system_prompt: string };
@@ -117,7 +118,7 @@ export type AgentAvecPrompt = Agent & { system_prompt: string };
 export async function listerAgents(client: SupabaseClient): Promise<Agent[]> {
   const { data } = await client
     .from("ia_agents")
-    .select("slug, nom, description, icone, couleur, ordre, actif")
+    .select("slug, nom, description, icone, couleur, ordre, actif, questions_suggerees")
     .eq("actif", true)
     .order("ordre", { ascending: true });
   return (data || []) as Agent[];
