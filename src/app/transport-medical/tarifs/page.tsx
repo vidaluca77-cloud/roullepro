@@ -17,7 +17,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = {
   title: "Tarifs",
   description:
-    "Une seule offre simple et honnête : Plan Pro à 19,90€/mois pour activer la messagerie patients et la visibilité. Pas de commission, pas d'algorithme, sans engagement.",
+    "Une seule offre simple et honnête : Plan Pro à 19,90€/mois pour activer la messagerie patients, l'équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…) et la visibilité. Forum entre pros vérifiés inclus. Pas de commission, sans engagement.",
   alternates: { canonical: "/transport-medical/tarifs" },
 };
 
@@ -104,6 +104,7 @@ export default async function TarifsPage() {
                 "Bouton WhatsApp et appel direct",
                 "Badge « Pro vérifié » après contrôle SIRET",
                 "Réception des appels téléphoniques directs",
+                "Forum entre pros : lecture libre, écriture réservée aux pros vérifiés",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
@@ -140,6 +141,7 @@ export default async function TarifsPage() {
               {[
                 "Tout ce qui est inclus dans la fiche gratuite",
                 "Messagerie patients activée",
+                "Équipe de 6 experts IA du transport sanitaire, réponses sourcées (ameli.fr, Légifrance…)",
                 "Lecture et réponse aux demandes structurées",
                 "Meilleure visibilité dans votre ville",
                 "Veille réglementaire métier incluse (alertes par email)",
@@ -316,6 +318,21 @@ export default async function TarifsPage() {
             locale ont un coût technique réel. 19,90€/mois c&apos;est ce qu&apos;il faut pour faire vivre le
             service correctement, sans pub ni revente de données. C&apos;est aussi un prix juste comparé aux
             plateformes de courses qui prennent 20% à 30% par trajet.
+          </Faq>
+          <Faq q="Qu'est-ce que l'équipe d'experts IA incluse dans le plan Pro ?">
+            Le plan Pro débloque une équipe de 6 assistants IA spécialisés dans le transport sanitaire :
+            un Assistant général, un Expert Réglementaire, un Expert Facturation, un Conseiller Commercial,
+            un Conseiller RH et un Conseiller Gestion. Ils répondent à vos questions métier (conventionnement
+            CPAM, facturation SEFi/B2, tarifs, réglementation, marchés publics, paie…) en s&apos;appuyant sur
+            une base documentaire de sources officielles (ameli.fr, Légifrance, service-public.fr, URSSAF…),
+            avec citations cliquables et mémoire de vos conversations. Un quota mensuel de messages est inclus.
+          </Faq>
+          <Faq q="Comment fonctionne le forum entre professionnels ?">
+            Le forum est organisé en 7 catégories métier (conventionnement CPAM, facturation &amp; rejets,
+            réglementation, matériel &amp; véhicules, emploi &amp; RH, entraide entre confrères, annonces &amp;
+            divers). La lecture est ouverte à tous ; publier et répondre est réservé aux professionnels vérifiés
+            (au moins une fiche réclamée et validée). C&apos;est un espace d&apos;entraide entre confrères,
+            accessible dès la fiche gratuite une fois votre statut vérifié.
           </Faq>
           <Faq q="Puis-je résilier à tout moment ?">
             Oui, en un clic depuis votre espace pro. Aucune pénalité, aucun frais. Votre fiche reste visible en

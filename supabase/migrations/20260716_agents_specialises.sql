@@ -1,8 +1,10 @@
 -- Équipe d'agents IA spécialisés + base documentaire sourcée.
 -- Étend l'assistant IA métier (voir 20260716_ia_assistant.sql) avec :
 --   1. ia_agents      : catalogue des agents (slug, prompt système, présentation UI).
---   2. ia_conversations.agent_slug : agent rattaché à une conversation.
---   3. ia_documents   : base documentaire par agent, indexée en full-text français,
+--   2. seed des 6 agents (posé AVANT l'ajout de la colonne agent_slug pour que le
+--                       default 'general' à clé étrangère trouve sa ligne cible).
+--   4. ia_conversations.agent_slug : agent rattaché à une conversation.
+--   5. ia_documents   : base documentaire par agent, indexée en full-text français,
 --                       lisible uniquement via le service_role côté API.
 -- RLS : lecture publique authentifiée sur ia_agents ; aucune lecture client sur
 -- ia_documents (recherche effectuée par le backend en service_role).
@@ -35,91 +37,10 @@ begin
 end$$;
 
 -- ─────────────────────────────────────────────────────────────
--- 2. ia_conversations.agent_slug : agent rattaché à la conversation
--- ─────────────────────────────────────────────────────────────
-alter table public.ia_conversations
-  add column if not exists agent_slug text
-    references public.ia_agents(slug)
-    default 'general';
-
-create index if not exists idx_ia_conversations_agent_slug
-  on public.ia_conversations (agent_slug);
-
--- ─────────────────────────────────────────────────────────────
--- 3. ia_documents : base documentaire sourcée par agent
--- ─────────────────────────────────────────────────────────────
-create table if not exists public.ia_documents (
-  id                uuid primary key default gen_random_uuid(),
-  agent_slug        text not null references public.ia_agents(slug) on delete cascade,
-  titre             text not null default '',
-  contenu           text not null default '',
-  source_nom        text,
-  source_url        text,
-  mots_cles         text[],
-  date_verification date,
-  created_at        timestamptz not null default now(),
-  recherche         tsvector generated always as (
-    to_tsvector('french', coalesce(titre, '') || ' ' || coalesce(contenu, ''))
-  ) stored
-);
-
-create index if not exists idx_ia_documents_recherche
-  on public.ia_documents using gin (recherche);
-
-create index if not exists idx_ia_documents_agent_slug
-  on public.ia_documents (agent_slug);
-
--- RLS activée SANS policy de lecture : aucun accès client. La recherche
--- documentaire est effectuée exclusivement par le backend via le service_role
--- (qui contourne la RLS).
-alter table public.ia_documents enable row level security;
-
--- ─────────────────────────────────────────────────────────────
--- 3bis. Recherche documentaire classée (ts_rank)
--- Appelée par le backend en service_role. Utilise websearch_to_tsquery et
--- retombe sur plainto_tsquery si la première requête ne renvoie rien.
--- p_agent_slug = 'general' → recherche dans TOUS les agents.
--- ─────────────────────────────────────────────────────────────
-create or replace function public.ia_rechercher_documents(
-  p_agent_slug text,
-  p_query text,
-  p_limite integer default 5
-)
-returns table (
-  titre text,
-  contenu text,
-  source_nom text,
-  source_url text,
-  rang real
-)
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  v_query tsquery;
-begin
-  v_query := websearch_to_tsquery('french', coalesce(p_query, ''));
-  if v_query is null or numnode(v_query) = 0 then
-    v_query := plainto_tsquery('french', coalesce(p_query, ''));
-  end if;
-  if v_query is null or numnode(v_query) = 0 then
-    return;
-  end if;
-
-  return query
-    select d.titre, d.contenu, d.source_nom, d.source_url,
-           ts_rank(d.recherche, v_query) as rang
-    from public.ia_documents d
-    where d.recherche @@ v_query
-      and (p_agent_slug = 'general' or d.agent_slug = p_agent_slug)
-    order by rang desc
-    limit greatest(1, coalesce(p_limite, 5));
-end;
-$$;
-
--- ─────────────────────────────────────────────────────────────
--- 4. Seed des 6 agents spécialisés
+-- 2. Seed des 6 agents spécialisés
+-- Placé AVANT l'ajout de ia_conversations.agent_slug : la colonne pose un
+-- default 'general' avec clé étrangère vers ia_agents(slug). La ligne 'general'
+-- doit donc exister avant l'ALTER, sinon la contrainte de clé étrangère échoue.
 -- ─────────────────────────────────────────────────────────────
 insert into public.ia_agents (slug, nom, description, icone, couleur, ordre, system_prompt) values
 (
@@ -275,3 +196,87 @@ APPUI DOCUMENTAIRE ET CITATIONS (CRITIQUE) :
 - Si une donnée sensible (taux de TVA, règle fiscale, durée d'amortissement, plafond) n'est pas dans les extraits, dis-le et recommande de vérifier auprès de la source officielle (impots.gouv.fr, service-public.fr, expert-comptable). N'invente jamais un taux ni une règle fiscale.$prompt$
 )
 on conflict (slug) do nothing;
+
+-- ─────────────────────────────────────────────────────────────
+-- 4. ia_conversations.agent_slug : agent rattaché à la conversation
+-- ─────────────────────────────────────────────────────────────
+alter table public.ia_conversations
+  add column if not exists agent_slug text
+    references public.ia_agents(slug)
+    default 'general';
+
+create index if not exists idx_ia_conversations_agent_slug
+  on public.ia_conversations (agent_slug);
+
+-- ─────────────────────────────────────────────────────────────
+-- 5. ia_documents : base documentaire sourcée par agent
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.ia_documents (
+  id                uuid primary key default gen_random_uuid(),
+  agent_slug        text not null references public.ia_agents(slug) on delete cascade,
+  titre             text not null default '',
+  contenu           text not null default '',
+  source_nom        text,
+  source_url        text,
+  mots_cles         text[],
+  date_verification date,
+  created_at        timestamptz not null default now(),
+  recherche         tsvector generated always as (
+    to_tsvector('french', coalesce(titre, '') || ' ' || coalesce(contenu, ''))
+  ) stored
+);
+
+create index if not exists idx_ia_documents_recherche
+  on public.ia_documents using gin (recherche);
+
+create index if not exists idx_ia_documents_agent_slug
+  on public.ia_documents (agent_slug);
+
+-- RLS activée SANS policy de lecture : aucun accès client. La recherche
+-- documentaire est effectuée exclusivement par le backend via le service_role
+-- (qui contourne la RLS).
+alter table public.ia_documents enable row level security;
+
+-- ─────────────────────────────────────────────────────────────
+-- 5bis. Recherche documentaire classée (ts_rank)
+-- Appelée par le backend en service_role. Utilise websearch_to_tsquery et
+-- retombe sur plainto_tsquery si la première requête ne renvoie rien.
+-- p_agent_slug = 'general' → recherche dans TOUS les agents.
+-- ─────────────────────────────────────────────────────────────
+create or replace function public.ia_rechercher_documents(
+  p_agent_slug text,
+  p_query text,
+  p_limite integer default 5
+)
+returns table (
+  titre text,
+  contenu text,
+  source_nom text,
+  source_url text,
+  rang real
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_query tsquery;
+begin
+  v_query := websearch_to_tsquery('french', coalesce(p_query, ''));
+  if v_query is null or numnode(v_query) = 0 then
+    v_query := plainto_tsquery('french', coalesce(p_query, ''));
+  end if;
+  if v_query is null or numnode(v_query) = 0 then
+    return;
+  end if;
+
+  return query
+    select d.titre, d.contenu, d.source_nom, d.source_url,
+           ts_rank(d.recherche, v_query) as rang
+    from public.ia_documents d
+    where d.recherche @@ v_query
+      and (p_agent_slug = 'general' or d.agent_slug = p_agent_slug)
+    order by rang desc
+    limit greatest(1, coalesce(p_limite, 5));
+end;
+$$;

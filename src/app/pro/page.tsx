@@ -21,7 +21,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Espace professionnels — Ambulances, VSL, Taxis conventionnés",
   description:
-    "Réclamez gratuitement votre fiche sur RoullePro. Augmentez votre visibilité, recevez des demandes directement, gérez votre présence en ligne. Inscription SIRET vérifiée.",
+    "Réclamez gratuitement votre fiche sur RoullePro. Augmentez votre visibilité, recevez des demandes directement, échangez sur le forum entre pros vérifiés et profitez d'une équipe de 6 experts IA du transport sanitaire (plan Pro). Inscription SIRET vérifiée.",
   alternates: { canonical: "/pro" },
 };
 
@@ -145,6 +145,7 @@ export default async function ProPage() {
               "Description, photos, horaires",
               "Bouton WhatsApp et appel direct",
               "Badge Pro vérifié après contrôle SIRET",
+              "Forum entre pros (écriture pour pros vérifiés)",
             ]}
           />
           <PlanCard
@@ -157,6 +158,7 @@ export default async function ProPage() {
             avantages={[
               "Tout ce qui est inclus dans la fiche gratuite",
               "Messagerie patients activée",
+              "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
               "Meilleure visibilité dans votre ville",
               "Statistiques détaillées",
               "Notifications email à chaque demande",

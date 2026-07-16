@@ -10,9 +10,9 @@ import AssistantChat from "@/components/sanitaire/AssistantChat";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Assistant IA métier — RoullePro",
+  title: "Équipe d'experts IA métier — RoullePro",
   description:
-    "Votre assistant IA expert du transport sanitaire : conventionnement CPAM, facturation SEFi/B2, tarifs, réglementation. Réservé aux abonnés Pro.",
+    "Votre équipe de 6 experts IA du transport sanitaire (réglementaire, facturation, commercial, RH, gestion) avec réponses sourcées (ameli.fr, Légifrance…). Réservé aux abonnés Pro.",
   robots: { index: false, follow: false },
 };
 
@@ -71,11 +71,12 @@ function AssistantPresentation() {
             <Sparkles className="w-4 h-4" /> Nouveau — réservé aux abonnés Pro
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">
-            Votre assistant IA métier du transport sanitaire
+            Votre équipe de 6 experts IA du transport sanitaire
           </h1>
           <p className="text-blue-100 max-w-2xl mx-auto">
-            Posez vos questions sur le conventionnement CPAM, la facturation SEFi/B2, les tarifs
-            préfectoraux ou la réglementation. Des réponses concrètes, disponibles 24h/24.
+            Assistant général, Expert Réglementaire, Expert Facturation, Conseiller Commercial, Conseiller RH et
+            Conseiller Gestion. Des réponses concrètes appuyées sur des sources officielles (ameli.fr, Légifrance,
+            service-public.fr, URSSAF…) avec citations cliquables, disponibles 24h/24.
           </p>
         </div>
       </section>
@@ -96,8 +97,8 @@ function AssistantPresentation() {
             <h2 className="text-lg font-bold text-gray-900">Débloquez l&apos;assistant IA</h2>
           </div>
           <p className="text-sm text-gray-600 mb-5 max-w-lg mx-auto">
-            L&apos;assistant IA métier est inclus dans l&apos;abonnement Pro, avec la messagerie
-            patients, la veille réglementaire et le tableau de bord conformité.
+            L&apos;équipe de 6 experts IA est incluse dans l&apos;abonnement Pro, avec la messagerie
+            patients, le forum entre pros vérifiés, la veille réglementaire et le tableau de bord conformité.
           </p>
           <Link
             href="/transport-medical/tarifs"
