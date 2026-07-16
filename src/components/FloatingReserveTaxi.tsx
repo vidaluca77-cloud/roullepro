@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Car, X, Loader2, CheckCircle2 } from "lucide-react";
 import {
   usePlacesAutocomplete,
@@ -11,11 +12,24 @@ import {
 
 type Taux = "" | "100" | "65" | "autre";
 
+// Ce widget s'adresse aux PATIENTS : on le masque dans l'espace professionnel et
+// les zones connectées, où il chevaucherait la barre d'onglets pro et n'a aucun sens.
+const HIDDEN_PATH_PREFIXES = [
+  "/transport-medical/pro",
+  "/transport-medical/inscription",
+  "/dashboard",
+  "/garage/dashboard",
+  "/garage/inscription",
+  "/admin",
+  "/auth",
+];
+
 // Téléphone fixe ou mobile français, tolérant aux espaces, points et tirets.
 const PHONE_FR_RE = /^(?:(?:\+|00)33|0)\s*[1-9](?:[\s.\-]?\d{2}){4}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function FloatingReserveTaxi() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
@@ -57,6 +71,12 @@ export default function FloatingReserveTaxi() {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isHiddenRoute =
+    !!pathname &&
+    HIDDEN_PATH_PREFIXES.some(
+      (prefix) => pathname === prefix || pathname.startsWith(prefix + "/"),
+    );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +190,8 @@ export default function FloatingReserveTaxi() {
         ? "bg-[#0066CC] text-white border-[#0066CC] font-semibold"
         : "bg-white text-gray-700 border-gray-300 hover:border-[#0066CC]"
     }`;
+
+  if (isHiddenRoute) return null;
 
   return (
     <>
