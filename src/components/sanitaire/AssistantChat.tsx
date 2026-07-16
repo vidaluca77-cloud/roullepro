@@ -15,6 +15,7 @@ import {
   Loader2,
   Check,
   ArrowLeft,
+  ArrowDown,
   Scale,
   Receipt,
   Briefcase,
@@ -32,6 +33,7 @@ type Agent = {
   couleur: string;
   ordre: number;
   actif: boolean;
+  questions_suggerees?: string[];
 };
 
 type Conversation = {
@@ -73,8 +75,10 @@ const AGENT_DEFAUT: Agent = {
   couleur: "#0066CC",
   ordre: 1,
   actif: true,
+  questions_suggerees: [],
 };
 
+// Fallback statique si l'agent n'a pas de questions suggérées en base.
 const SUGGESTIONS = [
   "Comment gérer un rejet de facturation B2 (code erreur) ?",
   "Quelles sont les conditions du conventionnement CPAM pour un VSL ?",
@@ -101,9 +105,12 @@ export default function AssistantChat({
   const [erreur, setErreur] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [afficherBoutonBas, setAfficherBoutonBas] = useState(false);
 
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Suivi auto du bas activé tant que l'utilisateur ne remonte pas manuellement.
+  const suivreBasRef = useRef(true);
 
   const agentPour = useCallback(
     (slug: string | null | undefined): Agent =>
@@ -114,9 +121,45 @@ export default function AssistantChat({
 
   const activeAgent = activeAgentSlug ? agentPour(activeAgentSlug) : null;
 
-  const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Questions suggérées de l'agent actif ; fallback statique si la base est vide.
+  const suggestions =
+    activeAgent?.questions_suggerees && activeAgent.questions_suggerees.length > 0
+      ? activeAgent.questions_suggerees
+      : SUGGESTIONS;
+
+  const estProcheDuBas = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
   }, []);
+
+  const scrollVersBas = useCallback((smooth: boolean) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+  }, []);
+
+  // Réactive le suivi et redescend en bas (bouton flottant ou nouvel envoi).
+  const reprendreSuivi = useCallback(() => {
+    suivreBasRef.current = true;
+    setAfficherBoutonBas(false);
+    scrollVersBas(true);
+  }, [scrollVersBas]);
+
+  // L'utilisateur remonte manuellement → on coupe le suivi auto.
+  const onIntentionScroll = useCallback(() => {
+    if (!estProcheDuBas()) {
+      suivreBasRef.current = false;
+      setAfficherBoutonBas(true);
+    }
+  }, [estProcheDuBas]);
+
+  // Scroll du conteneur : recalcule la proximité du bas.
+  const onScrollMessages = useCallback(() => {
+    const proche = estProcheDuBas();
+    suivreBasRef.current = proche;
+    setAfficherBoutonBas(!proche);
+  }, [estProcheDuBas]);
 
   const chargerAgents = useCallback(async () => {
     try {
@@ -149,14 +192,18 @@ export default function AssistantChat({
   }, [chargerAgents, chargerConversations]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    if (!suivreBasRef.current) return;
+    const id = requestAnimationFrame(() => scrollVersBas(false));
+    return () => cancelAnimationFrame(id);
+  }, [messages, scrollVersBas]);
 
   const ouvrirConversation = useCallback(async (c: Conversation) => {
     setActiveId(c.id);
     setActiveAgentSlug(c.agent_slug || "general");
     setSidebarOpen(false);
     setErreur(null);
+    suivreBasRef.current = true;
+    setAfficherBoutonBas(false);
     try {
       const res = await fetch(`/api/assistant/conversations/${c.id}`);
       if (!res.ok) return;
@@ -229,6 +276,10 @@ export default function AssistantChat({
       setErreur(null);
       setInput("");
       setStreaming(true);
+
+      // À chaque envoi, on suit de nouveau la génération jusqu'en bas.
+      suivreBasRef.current = true;
+      setAfficherBoutonBas(false);
 
       const userMsg: Message = { role: "user", contenu };
       setMessages((prev) => [...prev, userMsg, { role: "assistant", contenu: "" }]);
@@ -521,7 +572,14 @@ export default function AssistantChat({
         ) : (
           <>
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="relative flex-1 min-h-0">
+              <div
+                ref={scrollRef}
+                onScroll={onScrollMessages}
+                onWheel={onIntentionScroll}
+                onTouchMove={onIntentionScroll}
+                className="h-full overflow-y-auto px-4 py-6"
+              >
               <div className="max-w-3xl mx-auto space-y-5">
                 {!configured && (
                   <Banner
@@ -552,7 +610,7 @@ export default function AssistantChat({
                       {activeAgent.description}
                     </p>
                     <div className="grid sm:grid-cols-2 gap-2 max-w-2xl mx-auto">
-                      {SUGGESTIONS.map((s) => (
+                      {suggestions.map((s) => (
                         <button
                           key={s}
                           onClick={() => envoyer(s)}
@@ -577,9 +635,18 @@ export default function AssistantChat({
                 {erreur && (
                   <Banner tone="red" icon={<AlertTriangle className="w-4 h-4" />} text={erreur} />
                 )}
-
-                <div ref={bottomRef} />
               </div>
+              </div>
+
+              {afficherBoutonBas && (
+                <button
+                  onClick={reprendreSuivi}
+                  aria-label="Revenir en bas"
+                  className="absolute bottom-4 right-4 z-10 w-10 h-10 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center text-gray-600 hover:text-[#0066CC] hover:border-[#0066CC] transition"
+                >
+                  <ArrowDown className="w-5 h-5" />
+                </button>
+              )}
             </div>
 
             {/* Saisie */}
