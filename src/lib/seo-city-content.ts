@@ -13,6 +13,8 @@
  * /transport-medical/[ville]/[categorie].
  */
 
+import { buildGeneratedCityContent } from "@/lib/seo-city-data";
+
 export type CityCategoryContent = {
   /** Paragraphes d'introduction editoriale (rendu <p>). */
   intro: string[];
@@ -317,6 +319,12 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
 
 /**
  * Recupere le contenu editorial enrichi pour un couple ville/categorie, s'il existe.
+ *
+ * Priorite aux entrees redactionnelles statiques (SEO_CITY_CONTENT), puis fallback
+ * sur le generateur industrialise (VILLE_DATA / buildGeneratedCityContent) qui couvre
+ * les ~155 combinaisons ville×categorie prioritaires. Renvoie null si aucune des deux
+ * sources ne couvre le couple demande (la page utilise alors son fallback generique).
+ *
  * @param villeSlug slug de la ville (param `ville` de la route)
  * @param categorieSlug slug de la categorie (param `categorie` : "ambulance", "vsl", "taxi-conventionne")
  */
@@ -324,5 +332,8 @@ export function getCityCategoryContent(
   villeSlug: string,
   categorieSlug: string
 ): CityCategoryContent | null {
-  return SEO_CITY_CONTENT[`${villeSlug}/${categorieSlug}`] ?? null;
+  return (
+    SEO_CITY_CONTENT[`${villeSlug}/${categorieSlug}`] ??
+    buildGeneratedCityContent(villeSlug, categorieSlug)
+  );
 }
