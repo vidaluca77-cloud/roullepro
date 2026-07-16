@@ -74,8 +74,9 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
         Essai Essential 7 jours activé
       </div>
       <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6">
-        Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée
-        et de la réception des demandes de transport.
+        Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée,
+        de la réception par email des demandes de transport de votre département, de l'équipe de
+        6 experts IA du transport sanitaire (réponses sourcées) et du forum entre pros vérifiés.
         À l'issue de l'essai, l'abonnement Essential continue à ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)} (sans engagement).
       </p>
     </div>
@@ -134,7 +135,7 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
     magicText,
     "",
     "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
-    `Votre essai Essential de 7 jours est activé. À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
+    `Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée, de la réception par email des demandes de transport de votre département, de l'équipe de 6 experts IA du transport sanitaire (réponses sourcées) et du forum entre pros vérifiés. À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
     "",
     "PROCHAINES ÉTAPES",
     `1. Complétez votre fiche — photos, horaires détaillés, description (5 minutes).`,

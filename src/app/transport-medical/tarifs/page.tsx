@@ -144,7 +144,7 @@ export default async function TarifsPage() {
                 "Veille réglementaire métier incluse (alertes par email)",
                 "Tableau de bord conformité (checklist obligations légales)",
                 "Statistiques détaillées (vues, appels, messages)",
-                "Notifications email à chaque demande",
+                "Recevez par email les demandes de transport de votre département",
                 "Résiliation en un clic, sans frais",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
@@ -274,6 +274,14 @@ export default async function TarifsPage() {
             CPAM, facturation SEFi/B2, tarifs, réglementation, marchés publics, paie…) en s&apos;appuyant sur
             une base documentaire de sources officielles (ameli.fr, Légifrance, service-public.fr, URSSAF…),
             avec citations cliquables et mémoire de vos conversations. Un quota mensuel de messages est inclus.
+          </Faq>
+          <Faq q="Comment fonctionnent les demandes de transport ?">
+            Quand un patient, une famille ou un établissement remplit le formulaire de demande sur
+            RoullePro, la demande est envoyée par email aux professionnels vérifiés (fiche réclamée et
+            validée) du département de départ, selon le type de transport recherché (taxi conventionné,
+            VSL ou ambulance). Vous recevez ainsi directement, sur l&apos;email de votre fiche, les
+            demandes de votre département — sans commission et sans intermédiaire. Vous restez libre de
+            recontacter le demandeur ou non.
           </Faq>
           <Faq q="Comment fonctionne le forum entre professionnels ?">
             Le forum est organisé en 7 catégories métier (conventionnement CPAM, facturation &amp; rejets,

@@ -1,18 +1,21 @@
 /**
- * Drip 3 — J-13 avant la fin de l'essai (fenêtre configurable avant plan_expires_at).
- * Objectif : pousser la conversion Essential 19,90 €/mois — message urgence + récap valeur.
+ * Drip 2 — J+5 après octroi de l'essai Essential (essai 7 jours).
+ * Objectif : rappeler que l'essai se termine bientôt + récap valeur + conversion.
+ *
+ * Envoyé uniquement aux essais AUTO (sans carte enregistrée). Les pros ayant activé
+ * un abonnement Stripe reçoivent le rappel Stripe trial_will_end (~J-3) ; le cron ne
+ * leur envoie donc pas cet email (voir drip-essential/route.ts) pour éviter un doublon.
  */
 
 import {
   buildSanitaireEmail,
   escapeHtml,
   PRICE_ESSENTIAL_DISPLAY,
-  RP_COLOR_DANGER,
   RP_COLOR_PRIMARY,
   RP_COLOR_SUCCESS,
 } from "@/lib/email-templates/sanitaire-base";
 
-export interface DripJ13PreExpireParams {
+export interface DripJ5Params {
   nomAffiche: string;
   ville: string | null;
   joursRestants: number;
@@ -20,14 +23,13 @@ export interface DripJ13PreExpireParams {
   viewsTotal: number;
   revealsTotal: number;
   messagesTotal: number;
-  upgradeUrl: string;
   dashboardUrl: string;
+  upgradeUrl: string;
 }
 
 function formatDateFR(iso: string): string {
   try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("fr-FR", {
+    return new Date(iso).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -37,24 +39,22 @@ function formatDateFR(iso: string): string {
   }
 }
 
-export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
+export function renderDripJ5FinEssai(p: DripJ5Params): {
   subject: string;
   html: string;
   text: string;
 } {
   const nomAffiche = escapeHtml(p.nomAffiche);
   const ville = p.ville ? escapeHtml(p.ville) : null;
-  const dateFin = formatDateFR(p.expiresAt);
-
   const jours = p.joursRestants;
-  const urgent = jours <= 7;
-
+  const joursLabel = `${jours} jour${jours > 1 ? "s" : ""}`;
+  const dateFin = formatDateFR(p.expiresAt);
   const totalSignaux = p.viewsTotal + p.revealsTotal + p.messagesTotal;
 
   const headerBadge = `
-    <div style="background:${urgent ? "#fef2f2" : "#fffbeb"};border:1px solid ${urgent ? "#fecaca" : "#fde68a"};border-radius:12px;padding:14px 20px;margin:0 0 24px;text-align:center">
-      <div style="font-size:13px;font-weight:700;color:${urgent ? RP_COLOR_DANGER : "#92400e"};text-transform:uppercase;letter-spacing:.5px">
-        Votre essai expire dans ${jours} jour${jours > 1 ? "s" : ""} &mdash; le ${dateFin}
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:14px 20px;margin:0 0 24px;text-align:center">
+      <div style="font-size:13px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px">
+        Votre essai gratuit se termine dans ${joursLabel} &mdash; le ${dateFin}
       </div>
     </div>
   `;
@@ -88,37 +88,34 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
   const valueProps = `
     <div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin:0 0 24px">
       <div style="font-size:13px;font-weight:700;color:${RP_COLOR_SUCCESS};margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px">
-        En continuant avec Essential — ${PRICE_ESSENTIAL_DISPLAY}
+        En continuant avec le plan Pro — ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)}
       </div>
       <ul style="margin:0;padding-left:20px;color:#374151;line-height:1.8;font-size:14px">
-        <li>Coordonnées affichées <strong>en premier</strong> dans votre département</li>
-        <li>Badge <strong>Pro vérifié</strong> conservé sur votre fiche</li>
-        <li>Réception illimitée des demandes de transport sur votre zone</li>
-        <li>Statistiques détaillées (vues, reveals, messages)</li>
+        <li>Demandes de transport de votre département reçues <strong>par email</strong></li>
+        <li>Badge <strong>Pro vérifié</strong> conservé et fiche affichée en premier</li>
+        <li>Équipe de <strong>6 experts IA</strong> du transport sanitaire (réponses sourcées)</li>
+        <li>Forum entre pros vérifiés et statistiques détaillées</li>
         <li>Sans engagement &mdash; <strong>résiliable en 1 clic</strong> à tout moment</li>
       </ul>
     </div>
   `;
 
-  const downgrade = `
-    <p style="margin:0 0 8px;color:#6b7280;line-height:1.6;font-size:13px">
-      Si vous ne souhaitez pas continuer, votre fiche restera visible en mode gratuit
-      mais perdra le badge Pro vérifié et passera après les pros Essential dans les résultats
-      de votre département.
+  const intro = `
+    <p style="margin:0 0 16px;color:#374151;line-height:1.6">Bonjour ${nomAffiche},</p>
+    <p style="margin:0 0 16px;color:#374151;line-height:1.6">
+      Votre essai gratuit du plan Pro${ville ? ` sur <strong>${ville}</strong>` : ""} se termine dans
+      <strong>${joursLabel}</strong>, le <strong>${dateFin}</strong>.
+      Pour continuer à recevoir les demandes de transport de votre département et garder votre
+      visibilité, activez votre abonnement dès maintenant.
     </p>
   `;
 
-  const intro = ville
-    ? `<p style="margin:0 0 16px;color:#374151;line-height:1.6">Bonjour ${nomAffiche},</p>
-       <p style="margin:0 0 16px;color:#374151;line-height:1.6">
-         Votre essai Essential gratuit sur ${ville} se termine dans <strong>${jours} jours</strong>,
-         le <strong>${dateFin}</strong>.
-       </p>`
-    : `<p style="margin:0 0 16px;color:#374151;line-height:1.6">Bonjour ${nomAffiche},</p>
-       <p style="margin:0 0 16px;color:#374151;line-height:1.6">
-         Votre essai Essential gratuit se termine dans <strong>${jours} jours</strong>,
-         le <strong>${dateFin}</strong>.
-       </p>`;
+  const downgrade = `
+    <p style="margin:0 0 8px;color:#6b7280;line-height:1.6;font-size:13px">
+      Si vous ne souhaitez pas continuer, votre fiche restera visible en mode gratuit mais perdra
+      le badge Pro vérifié et passera après les pros abonnés dans les résultats de votre département.
+    </p>
+  `;
 
   const bodyHtml = `
     ${headerBadge}
@@ -129,12 +126,12 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
   `;
 
   const plainText = [
-    `Votre essai expire dans ${jours} jour${jours > 1 ? "s" : ""} — RoullePro`,
+    `Votre essai se termine dans ${joursLabel} — RoullePro`,
     "─".repeat(60),
     "",
     `Bonjour ${p.nomAffiche},`,
     "",
-    `Votre essai Essential gratuit${ville ? ` sur ${p.ville}` : ""} se termine dans ${jours} jours, le ${dateFin}.`,
+    `Votre essai gratuit du plan Pro${ville ? ` sur ${p.ville}` : ""} se termine dans ${joursLabel}, le ${dateFin}. Pour continuer à recevoir les demandes de transport de votre département et garder votre visibilité, activez votre abonnement dès maintenant.`,
     "",
     ...(totalSignaux > 0 ? [
       "CE QUE VOUS A APPORTÉ L'ESSAI",
@@ -143,16 +140,16 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
       `- ${p.messagesTotal} messages`,
       "",
     ] : []),
-    `EN CONTINUANT AVEC ESSENTIAL — ${PRICE_ESSENTIAL_DISPLAY}`,
-    "- Coordonnées affichées EN PREMIER dans votre département",
-    "- Badge Pro vérifié conservé",
-    "- Réception illimitée des demandes de transport sur votre zone",
-    "- Statistiques détaillées (vues, reveals, messages)",
+    `EN CONTINUANT AVEC LE PLAN PRO — ${PRICE_ESSENTIAL_DISPLAY}`,
+    "- Demandes de transport de votre département reçues par email",
+    "- Badge Pro vérifié conservé et fiche affichée en premier",
+    "- Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
+    "- Forum entre pros vérifiés et statistiques détaillées",
     "- Sans engagement — résiliable en 1 clic à tout moment",
     "",
-    "Si vous ne souhaitez pas continuer, votre fiche restera visible en mode gratuit mais perdra le badge Pro vérifié et passera après les pros Essential dans les résultats.",
+    "Si vous ne souhaitez pas continuer, votre fiche restera visible en mode gratuit mais perdra le badge Pro vérifié et passera après les pros abonnés dans les résultats.",
     "",
-    `→ Passer à Essential — ${PRICE_ESSENTIAL_DISPLAY} : ${p.upgradeUrl}`,
+    `→ Continuer avec le plan Pro — ${PRICE_ESSENTIAL_DISPLAY} : ${p.upgradeUrl}`,
     `→ Mon tableau de bord : ${p.dashboardUrl}`,
     "",
     "─".repeat(60),
@@ -165,21 +162,17 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
   ].join("\n");
 
   const { html } = buildSanitaireEmail({
-    preheader: `Plus que ${jours} jour${jours > 1 ? "s" : ""} pour continuer votre fiche RoullePro Essential.`,
-    title: urgent
-      ? `Plus que ${jours} jour${jours > 1 ? "s" : ""} avant la fin de votre essai`
-      : "Votre essai Essential expire bientôt",
+    preheader: `Plus que ${joursLabel} pour continuer votre plan Pro RoullePro.`,
+    title: `Votre essai se termine dans ${joursLabel}`,
     bodyHtml,
-    ctaLabel: `Passer à Essential — ${PRICE_ESSENTIAL_DISPLAY}`,
+    ctaLabel: `Continuer avec le plan Pro — ${PRICE_ESSENTIAL_DISPLAY}`,
     ctaUrl: p.upgradeUrl,
-    accentColor: urgent ? RP_COLOR_DANGER : RP_COLOR_SUCCESS,
+    accentColor: RP_COLOR_SUCCESS,
     plainText,
   });
 
   return {
-    subject: urgent
-      ? `Plus que ${jours} jour${jours > 1 ? "s" : ""} : continuez votre fiche pour ${PRICE_ESSENTIAL_DISPLAY}`
-      : `Votre essai expire bientôt — continuez pour ${PRICE_ESSENTIAL_DISPLAY}`,
+    subject: `Votre essai RoullePro se termine dans ${joursLabel}`,
     html,
     text: plainText,
   };

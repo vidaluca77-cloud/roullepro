@@ -32,7 +32,7 @@
 [functions."etab-refresh-finess"]
   schedule = "0 4 1 * *"
 
-# Scheduled function : drip de conversion Essential (J+3 / J+7 / J-13), tous les jours a 09:00 UTC (11h Paris ete)
+# Scheduled function : drip de conversion Essential (J+2 / J+5, essai 7 jours), tous les jours a 09:00 UTC (11h Paris ete)
 [functions."drip-essential"]
   schedule = "0 9 * * *"
 
