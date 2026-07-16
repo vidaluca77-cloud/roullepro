@@ -421,7 +421,7 @@ export default async function TransportMedicalHome() {
           </div>
           <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 space-y-4">
             <Benefit icon={<Phone className="w-5 h-5 text-[#0066CC]" />} title="Recevez les appels patients">
-              Numéro cliquable, messagerie interne (Premium), statistiques précises.
+              Numéro cliquable, messagerie interne (plan Pro), statistiques précises.
             </Benefit>
             <Benefit icon={<Clock className="w-5 h-5 text-[#0066CC]" />} title="Mise en ligne instantanée">
               Réclamez par email de votre domaine ou SMS sur votre numéro public.

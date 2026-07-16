@@ -167,23 +167,6 @@ export default async function ProPage() {
           />
         </div>
 
-        <div className="mt-8 max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 sm:p-6 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-blue-100">
-            <Building2 className="w-5 h-5 text-[#0066CC]" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="font-bold text-gray-900">Plan Établissements — ~49 €/mois</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-[#0066CC] px-2 py-0.5 rounded-full">
-                À venir
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Pour recevoir les demandes des EHPAD, cabinets médicaux et hôpitaux. Multi-utilisateurs flotte, support dédié. Lancement prévu courant 2026.
-            </p>
-          </div>
-        </div>
-
         <div className="text-center mt-8">
           <Link
             href="/transport-medical/tarifs"

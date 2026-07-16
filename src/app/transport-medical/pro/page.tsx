@@ -54,7 +54,7 @@ const proPageJsonLd = {
       },
       {
         "@type": "Offer",
-        name: "Essential",
+        name: "Pro",
         price: "19.90",
         priceCurrency: "EUR",
         priceSpecification: {
@@ -63,20 +63,7 @@ const proPageJsonLd = {
           priceCurrency: "EUR",
           unitText: "MONTH",
         },
-        description: "Badge Pro vérifié, équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…), galerie photos, veille réglementaire, statistiques",
-      },
-      {
-        "@type": "Offer",
-        name: "Premium",
-        price: "39",
-        priceCurrency: "EUR",
-        priceSpecification: {
-          "@type": "UnitPriceSpecification",
-          price: "39",
-          priceCurrency: "EUR",
-          unitText: "MONTH",
-        },
-        description: "Top 3 ville, messagerie patients, équipe d'experts IA sourcée, badge Recommandé, 20 photos + vidéo",
+        description: "Badge Pro vérifié, messagerie patients, équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…), forum entre pros vérifiés, veille réglementaire, statistiques",
       },
     ],
   },
@@ -189,7 +176,7 @@ export default function EspacePro() {
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">Nos abonnements pro</h2>
           <p className="text-gray-600 text-center mb-8">Sans engagement, résiliable en 1 clic. Fiche de base gratuite.</p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <PlanCard
               name="Fiche gratuite"
               price="0 €"
@@ -198,46 +185,30 @@ export default function EspacePro() {
                 "Téléphone cliquable",
                 "Horaires + adresse",
                 "Mention « Non vérifié »",
+                "Forum entre pros (écriture pour pros vérifiés)",
               ]}
               cta="Déjà actif"
               disabled
             />
             <PlanCard
-              name="Essential"
+              name="Plan Pro"
               price="19,90 €/mois"
               features={[
+                "2 mois d'essai offerts",
                 "Badge Pro vérifié",
+                "Messagerie patients activée",
                 "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
-                "Galerie de 5 photos",
-                "Description étendue",
+                "Forum entre pros vérifiés (écriture)",
+                "Galerie de 5 photos, description étendue",
                 "Veille réglementaire métier (alertes email)",
                 "Tableau de bord conformité",
-                "Statistiques de vues",
-                "Lien site web cliquable",
+                "Statistiques de vues et notifications email",
               ]}
-              cta="Commencer Essential"
-              href="/transport-medical/tarifs"
-            />
-            <PlanCard
-              name="Premium"
-              price="39 €/mois"
-              features={[
-                "Tout Essential inclus",
-                "Top 3 des résultats de ville",
-                "Messagerie patients activée",
-                "Badge Recommandé",
-                "20 photos + vidéo",
-                "Notifications temps réel",
-              ]}
-              cta="Commencer Premium"
+              cta="Activer le plan Pro"
               href="/transport-medical/tarifs"
               popular
             />
           </div>
-          <p className="text-xs text-gray-500 text-center mt-6">
-            Besoin du plan Pro+ (flotte multi-utilisateurs, API) ?{" "}
-            <Link href="/contact" className="text-[#0066CC] hover:underline">Contactez-nous</Link>.
-          </p>
         </div>
       </section>
     </main>

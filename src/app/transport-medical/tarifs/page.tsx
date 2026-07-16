@@ -3,13 +3,10 @@ import Link from "next/link";
 import {
   Heart,
   CheckCircle2,
-  Shield,
   Sparkles,
-  Wallet,
   XCircle,
   ArrowRight,
   MessageCircle,
-  Building2,
 } from "lucide-react";
 import CheckoutButton from "@/components/sanitaire/CheckoutButton";
 import { createClient } from "@/lib/supabase/server";
@@ -183,55 +180,6 @@ export default async function TarifsPage() {
         </div>
       </section>
 
-      {/* Plan établissements à venir */}
-      <section className="max-w-5xl mx-auto px-4 pb-14">
-        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-3xl p-8 sm:p-10 relative overflow-hidden">
-          <div className="absolute top-6 right-6 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-white text-[#0066CC] px-3 py-1 rounded-full border border-blue-200 shadow-sm">
-            À venir
-          </div>
-          <div className="flex items-start gap-4 max-w-3xl">
-            <div className="w-12 h-12 rounded-2xl bg-white flex items-center justify-center flex-shrink-0 border border-blue-100">
-              <Building2 className="w-6 h-6 text-[#0066CC]" />
-            </div>
-            <div>
-              <div className="text-xs font-semibold uppercase tracking-wide text-[#0066CC] mb-1">
-                Plan Établissements
-              </div>
-              <div className="text-2xl font-bold text-gray-900 mb-2">~49 € /mois TTC</div>
-              <p className="text-gray-700 leading-relaxed mb-5">
-                Pour les sociétés qui travaillent avec EHPAD, cabinets et hôpitaux : recevoir les demandes
-                récurrentes de prescripteurs B2B, gestion multi-utilisateurs pour la flotte, et un canal direct
-                avec les établissements partenaires.
-              </p>
-              <div className="grid sm:grid-cols-2 gap-2 mb-5">
-                {[
-                  "Demandes des prescripteurs (EHPAD, dialyse, hôpitaux)",
-                  "Multi-utilisateurs pour gérer la flotte",
-                  "Canal direct avec les établissements",
-                  "Support dédié par téléphone",
-                ].map((f) => (
-                  <div key={f} className="flex items-start gap-2 text-sm text-gray-700">
-                    <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
-                    {f}
-                  </div>
-                ))}
-              </div>
-              <div className="bg-white/80 border border-blue-100 rounded-xl p-3 text-xs text-gray-600">
-                <Shield className="w-3.5 h-3.5 inline mr-1 text-[#0066CC]" />
-                Lancement prévu courant 2026. Vous êtes EHPAD, cabinet ou hôpital ?{" "}
-                <Link
-                  href="mailto:contact@roullepro.com?subject=Phase%20pilote%20%C3%A9tablissement"
-                  className="text-[#0066CC] font-semibold hover:underline"
-                >
-                  Rejoignez la phase pilote gratuite
-                </Link>
-                .
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Ce qu'on ne fera jamais */}
       <section className="max-w-5xl mx-auto px-4 pb-14">
         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">
@@ -342,11 +290,6 @@ export default async function TarifsPage() {
             Parce que le transport sanitaire ne fonctionne pas comme une course Uber. Un patient stressé, une
             famille dépassée, un délai serré : le contexte rend les avis injustes. Nous préférons un système de
             confiance basé sur la vérification SIRET, l&apos;ancienneté et l&apos;échange direct.
-          </Faq>
-          <Faq q="Le plan Établissements, c'est pour quand ?">
-            Courant 2026. Si vous travaillez dans un EHPAD, un cabinet médical ou un hôpital et souhaitez
-            participer à la phase pilote (gratuite), écrivez-nous à contact@roullepro.com. Vos retours nous
-            aideront à construire l&apos;outil dont vous avez vraiment besoin.
           </Faq>
           <Faq q="Ma fiche est déjà en ligne, dois-je faire quelque chose ?">
             Oui : la réclamer. Cela ne coûte rien et vous donne le contrôle (modification, photos, horaires,
