@@ -101,6 +101,7 @@ export default function Footer() {
               <li><Link href="/vsl" className="hover:text-white transition">Guide VSL</Link></li>
               <li><Link href="/transport-sanitaire" className="hover:text-white transition">Guide transport sanitaire</Link></li>
               <li><Link href="/ambulance-autour-de-moi" className="hover:text-white transition">Ambulance autour de moi</Link></li>
+              <li><Link href="/vsl-autour-de-moi" className="hover:text-white transition">VSL autour de moi</Link></li>
               <li><Link href="/taxi-vsl-autour-de-moi" className="hover:text-white transition">Taxi conventionné et VSL autour de moi</Link></li>
               <li><Link href="/transport-medical/notre-engagement" className="hover:text-white transition">Notre engagement</Link></li>
               <li><Link href="/transport-medical/pro" className="hover:text-white transition">Espace professionnel</Link></li>

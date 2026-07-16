@@ -59,10 +59,10 @@ const DEP_06_FAQ: DepartementFaqItem[] = [
 
 const DEPARTEMENT_SEO_OVERRIDES: Record<string, DepartementSeoOverride> = {
   "06": {
-    title: "Transport médical Alpes-Maritimes (06) — Annuaire CPAM | RoullePro",
+    title: "Liste des taxis conventionnés CPAM 06 (Alpes-Maritimes)",
     description:
-      "Annuaire complet des ambulances, VSL et taxis conventionnés CPAM dans les Alpes-Maritimes (06) : Nice, Cannes, Antibes, Grasse, Menton.",
-    h1: "Transport médical dans les Alpes-Maritimes — Annuaire CPAM 06",
+      "Liste des taxis conventionnés CPAM 06 (Alpes-Maritimes) agréés Assurance Maladie : Nice, Cannes, Antibes, Grasse, Menton. Ambulances et VSL, tiers payant.",
+    h1: "Liste des taxis conventionnés CPAM 06 — Alpes-Maritimes",
     intro:
       "Les Alpes-Maritimes (06) figurent parmi les départements français où la demande de transport médical est la plus forte, en raison du vieillissement de la population du littoral et de la densité d'établissements de soins. De Nice à Menton, en passant par Cannes, Antibes, Grasse, Cagnes-sur-Mer, Vence et Saint-Laurent-du-Var, RoullePro centralise les coordonnées officielles des ambulances, VSL et taxis conventionnés agréés par la CPAM 06. Que vous ayez besoin d'un transport pour des séances de dialyse ou de chimiothérapie au CHU de Nice (hôpitaux Pasteur 2, l'Archet, Cimiez), d'un retour d'hospitalisation depuis le centre hospitalier de Cannes ou d'Antibes, ou d'une consultation programmée à Grasse, vous trouverez ici le professionnel adapté. Chaque fiche précise l'agrément, les véhicules disponibles (PMR, brancard) et la dispense d'avance des frais. Le transport prescrit est remboursé à 100 % en cas d'ALD. Sélectionnez votre commune pour accéder immédiatement aux transporteurs conventionnés les plus proches.",
     faq: DEP_06_FAQ,

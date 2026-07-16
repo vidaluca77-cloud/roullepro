@@ -102,9 +102,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const data = await fetchDepartementData(dep.code);
-  const total = data?.counts.total || 0;
-  const titre = `Transport medical ${dep.nom} (${dep.code}) — Ambulances, VSL et taxis conventionnes`;
-  const description = `Annuaire complet des transports sanitaires dans le ${dep.nom} (${dep.code}) : ${total > 0 ? total + " professionnels" : "ambulances, VSL et taxis"} agrees ARS et conventionnes CPAM. Recherche par ville, telephone direct.`;
+  const nbTaxi = data?.counts.taxi_conventionne || 0;
+  const titre = `Liste des taxis conventionnés CPAM ${dep.code} (${dep.nom})`;
+  const description = `Liste des taxis conventionnés CPAM ${dep.code} (${dep.nom}) agréés Assurance Maladie : ${nbTaxi > 0 ? nbTaxi + " taxis conventionnés" : "taxis conventionnés"}, ambulances et VSL. Téléphone direct, tiers payant, remboursement sur prescription.`.slice(0, 160);
   return {
     title: titre,
     description,
@@ -165,7 +165,22 @@ export default async function DepartementPage({ params }: Props) {
       answer: `La prefecture du departement ${dep.code} (${dep.nom}) est ${dep.prefecture}, en region ${dep.region}.`,
     },
   ];
-  const faqs = seoOverride ? seoOverride.faq : genericFaqs;
+  // Questions ciblees "liste taxi conventionne cpam [dept]" ajoutees a toutes les pages departement.
+  const taxiListeFaqs = [
+    {
+      question: `Où trouver la liste des taxis conventionnés CPAM ${dep.code} (${dep.nom}) ?`,
+      answer: `La liste des taxis conventionnés CPAM du ${dep.nom} (${dep.code}) est disponible sur RoullePro : ${counts.taxi_conventionne > 0 ? `${counts.taxi_conventionne} taxis conventionnés` : "les taxis conventionnés"} agréés par l'Assurance Maladie sont référencés par commune, avec téléphone direct et conventionnement vérifié. Sélectionnez votre ville dans la liste ci-dessous pour les afficher.`,
+    },
+    {
+      question: `Comment être remboursé d'un taxi conventionné dans le ${dep.nom} ?`,
+      answer: `Pour être remboursé, présentez au taxi conventionné votre prescription médicale de transport (bon de transport CERFA 11574) et votre carte Vitale. La CPAM ${dep.code} rembourse alors la course à 55 % du tarif conventionné, ou 100 % en cas d'ALD, accident du travail, maternité ou hospitalisation. Le tiers payant vous évite d'avancer les frais.`,
+    },
+    {
+      question: `Comment savoir si un taxi est conventionné CPAM ?`,
+      answer: `Un taxi conventionné CPAM affiche un autocollant "conventionné Assurance Maladie" et figure sur la liste des taxis conventionnés de sa caisse départementale. Sur RoullePro, chaque fiche du ${dep.nom} indique le statut de conventionnement, vérifié auprès des données publiques Ameli. En cas de doute, demandez au chauffeur son numéro de convention avant la course.`,
+    },
+  ];
+  const faqs = [...taxiListeFaqs, ...(seoOverride ? seoOverride.faq : genericFaqs)];
   const faqLd = buildFaqJsonLd(faqs);
 
   // ItemList JSON-LD pour les villes
@@ -197,10 +212,10 @@ export default async function DepartementPage({ params }: Props) {
             <span className="text-white">{dep.nom} ({dep.code})</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {seoOverride ? seoOverride.h1 : `Transport sanitaire dans le ${dep.nom} (${dep.code})`}
+            {seoOverride ? seoOverride.h1 : `Liste des taxis conventionnés CPAM ${dep.code} — ${dep.nom}`}
           </h1>
           <p className="text-blue-100 max-w-3xl">
-            Annuaire des ambulances, VSL et taxis conventionnes du departement {dep.code}, en region {dep.region}. Prefecture : {dep.prefecture}.
+            Taxis conventionnés CPAM, ambulances et VSL agréés Assurance Maladie dans le {dep.nom} ({dep.code}), en region {dep.region}. Prefecture : {dep.prefecture}.
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 rounded-full text-sm">
@@ -218,8 +233,16 @@ export default async function DepartementPage({ params }: Props) {
 
       <section className="max-w-5xl mx-auto px-4 py-8">
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">A propos du transport sanitaire dans le {dep.nom}</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Liste des taxis conventionnés CPAM dans le {dep.nom} ({dep.code})</h2>
           <div className="space-y-3 text-gray-700 leading-relaxed">
+            <p>
+              Vous cherchez la <strong>liste des taxis conventionnés CPAM {dep.code}</strong> ({dep.nom}) ? RoullePro recense
+              {" "}{counts.taxi_conventionne > 0 ? `${counts.taxi_conventionne} taxis conventionnés` : "les taxis conventionnés"}{" "}
+              agréés par l&apos;Assurance Maladie (Ameli) dans le département, aux côtés des ambulances et des VSL. Un taxi conventionné
+              est un taxi ayant signé une convention avec la CPAM {dep.code} : sur prescription médicale (bon de transport), vos trajets
+              vers un soin ou une consultation sont remboursés par la Sécurité sociale, avec dispense d&apos;avance des frais (tiers payant).
+              Sélectionnez votre commune ci-dessous pour afficher les taxis conventionnés les plus proches, avec téléphone direct.
+            </p>
             {seoOverride && <p>{seoOverride.intro}</p>}
             <p>
               Le departement du {dep.nom} ({dep.code}) compte {counts.total} professionnels du transport sanitaire reference sur RoullePro :

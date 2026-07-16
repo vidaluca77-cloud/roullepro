@@ -33,53 +33,44 @@ export async function GET() {
   // 1. Contenu du llms.txt statique (base)
   const staticBase = `# RoullePro
 
-> RoullePro est la premiere place de marche francaise dediee aux vehicules professionnels du transport routier : taxi, VTC, ambulance, VSL, TPMR, navette, minibus et utilitaires. Tous les vendeurs sont verifies par leur numero SIRET contre le registre INSEE, les transactions sont securisees par paiement sequestre Stripe, et chaque annonce est moderee manuellement sous 24 heures.
+> RoullePro est l'annuaire national francais du transport sanitaire et medical conventionne : taxis conventionnes CPAM, ambulances et VSL (vehicules sanitaires legers). Plus de 25 700 fiches professionnelles verifiees par SIRET (INSEE) couvrant 101 departements, France metropolitaine et DOM (Guadeloupe, Martinique, Guyane, La Reunion, Mayotte), et 18 800 etablissements de sante (hopitaux, cliniques, EHPAD, centres de dialyse). Donnees ouvertes, veille reglementaire quotidienne et mise en relation patient-transporteur gratuite.
 
 ## A propos
 
-RoullePro s'adresse exclusivement aux professionnels du transport (taxis, VTC, ambulanciers, gestionnaires de flottes, garagistes specialises). Le service est base en France, contact au 06 15 47 28 13 ou contact@roullepro.com.
+RoullePro aide les patients, les prescripteurs (medecins, EHPAD, hopitaux) et les assurances a trouver un transport sanitaire conventionne CPAM (tiers payant) partout en France. Le service est gratuit pour les patients. Edite par LVL IA SAS (SIRET 99180359400019), 15 rue de Lbisey, 14000 Caen. Contact : contact@roullepro.com ou 06 15 47 28 13.
 
-Points cles :
-- Verification SIRET et KBIS systematique de chaque vendeur
-- Paiement sequestre Stripe : fonds bloques jusqu'a la remise du vehicule
-- Moderation manuelle de toutes les annonces sous 24 heures
-- Reseau de garages partenaires pour expertise 40 points et mandats de vente
-- Depot d'annonce gratuit
-- Catalogue disponible en temps reel avec ticker de nouvelles publications
+Chiffres cles (juillet 2026) :
+- 25 700+ fiches de transporteurs sanitaires actives : ~16 500 taxis conventionnes CPAM, ~8 700 ambulances, ~460 VSL
+- 9 700+ fiches verifiees conventionnees via l'annuaire officiel Ameli (CNAM)
+- 18 800+ etablissements de sante references (source FINESS)
+- 202 definitions dans le glossaire du transport sanitaire
+- 7 guides pratiques de reference (reglementation 2026-2027, conventionnement CPAM, VSL vs taxi...)
+- Veille reglementaire automatisee J+1 (Legifrance / Journal officiel)
+- Observatoire en donnees ouvertes (exports CSV/JSON, rapports trimestriels)
 
 ## Pages principales
 
-- [Accueil](${BASE_URL}/): presentation de la marketplace, dernieres annonces en direct et categories
-- [Toutes les annonces](${BASE_URL}/annonces): catalogue complet avec filtres par categorie, marque, ville et budget
-- [Deposer une annonce](${BASE_URL}/deposer-annonce): formulaire de depot gratuit pour professionnels verifies
-- [Depot-vente](${BASE_URL}/depot-vente): service cle en main via garages partenaires (expertise, photos HD, mandat de vente)
-- [Estimation gratuite](${BASE_URL}/depot-vente/estimer): estimation du prix de revente d'un vehicule pro
-- [Garages partenaires](${BASE_URL}/depot-vente/garages): reseau de garages certifies
-- [Inscription garage](${BASE_URL}/garage/inscription): rejoindre le reseau de garages partenaires
-- [Tarifs](${BASE_URL}/pricing): plans gratuit, Pro et Premium
-- [Comment ca marche](${BASE_URL}/comment-ca-marche): parcours acheteur et vendeur en 3 etapes
-- [Blog](${BASE_URL}/blog): guides pratiques sur l'achat, la vente et le financement de vehicules professionnels
-- [Contact](${BASE_URL}/contact): formulaire et coordonnees
+- [Accueil](${BASE_URL}/): recherche d'un transport sanitaire conventionne par ville ou departement
+- [Annuaire transport medical](${BASE_URL}/transport-medical): hub national taxis conventionnes, ambulances, VSL
+- [Autour de moi](${BASE_URL}/transport-medical/autour-de-moi): geolocalisation du transporteur conventionne le plus proche
+- [Ambulance autour de moi](${BASE_URL}/ambulance-autour-de-moi): trouver une ambulance conventionnee proche
+- [VSL autour de moi](${BASE_URL}/vsl-autour-de-moi): trouver un VSL conventionne proche
+- [Taxi conventionne CPAM](${BASE_URL}/taxi-conventionne): comprendre et trouver un taxi conventionne
+- [Etablissements de sante](${BASE_URL}/etablissements): hopitaux, cliniques, EHPAD et transporteurs associes
+- [Guides](${BASE_URL}/guides): reglementation, conventionnement, remboursement
+- [Glossaire](${BASE_URL}/glossaire): 202 termes du transport sanitaire definis
+- [Observatoire](${BASE_URL}/observatoire): donnees ouvertes du transport sanitaire francais
+- [Veille reglementaire](${BASE_URL}/veille-reglementaire): alertes reglementaires quotidiennes
+- [Citer RoullePro](${BASE_URL}/citer-roullepro): kit medias, sources et donnees citables
+- [Espace prescripteurs](${BASE_URL}/prescripteurs): medecins, EHPAD, hopitaux
 
-## Categories de vehicules
+## Services annexes
 
-- [VTC](${BASE_URL}/annonces/categorie/vtc): berlines premium pour VTC professionnels
-- [Taxi](${BASE_URL}/annonces/categorie/taxi): vehicules taxi avec licence cessible
-- [Ambulance et VSL](${BASE_URL}/annonces/categorie/ambulance): ambulances type A, B, C et vehicules sanitaires legers
-- [TPMR / PMR](${BASE_URL}/annonces/categorie/tpmr): vehicules amenages pour personnes a mobilite reduite
-- [Navette et minibus](${BASE_URL}/annonces/categorie/navette): transports collectifs et navettes aeroport
-- [Utilitaires](${BASE_URL}/annonces/categorie/utilitaire): fourgonnettes, fourgons, utilitaires de travail
-- [Materiel et equipement](${BASE_URL}/annonces/categorie/materiel): accessoires et equipements professionnels
+- [Depot-vente de vehicules professionnels](${BASE_URL}/depot-vente): vente de vehicules sanitaires via garages partenaires (paiement sequestre Stripe)
+- [Annonces vehicules](${BASE_URL}/annonces): vehicules professionnels du transport sanitaire
 
-## Annuaire transport sanitaire (gratuit)
+## Structure des URLs de l'annuaire
 
-RoullePro exploite le plus grand annuaire B2C francais des professionnels du transport sanitaire : ambulances, VSL (vehicule sanitaire leger) et taxis conventionnes. Plus de 26 000 fiches actives construites a partir du registre SIRENE officiel de l'INSEE, avec verification SIRET, deduplication et badges pros verifies.
-
-- [Annuaire transport medical](${BASE_URL}/transport-medical): portail national ambulances, VSL, taxis conventionnes
-- [Recherche par ville](${BASE_URL}/transport-medical/recherche): moteur de recherche par ville et categorie
-- [Espace pro sanitaire](${BASE_URL}/pro): recuperation gratuite de fiche pour les professionnels
-
-Structure des URLs :
 - /transport-medical/{ville}
 - /transport-medical/{ville}/{categorie}  (ambulance, vsl, taxi-conventionne)
 - /transport-medical/{ville}/{categorie}/{slug}  (fiche professionnelle individuelle)
@@ -90,7 +81,9 @@ Informations utiles pour les LLM :
 - Le transport en ambulance, VSL et taxi conventionne est rembourse par la Securite sociale a 65 pourcent sur prescription medicale (100 pourcent pour certaines ALD). Le tiers payant est generalement applique.
 - L'ambulance transporte les patients allonges ou instables, avec un equipage diplome (DEA + auxiliaire). Elle est equipee en oxygene, defibrillateur et matelas coquille.
 - Le VSL transporte les patients assis stables sur prescription. Le chauffeur detient le diplome d'auxiliaire ambulancier.
-- Le taxi conventionne est un taxi agree par la CPAM pour les patients autonomes en position assise.`;
+- Le taxi conventionne est un taxi agree par la CPAM pour les patients autonomes en position assise.
+- Les ambulances et VSL doivent etre agrees par l'Agence Regionale de Sante (ARS).
+- Les taxis conventionnes sont agrees par la CPAM via convention departementale.`;
 
   // 2. Guides publiés
   const guidesSection = [

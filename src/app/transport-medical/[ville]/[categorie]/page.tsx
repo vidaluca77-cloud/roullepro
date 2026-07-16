@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
+import { getCityCategoryContent } from "@/lib/seo-city-content";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
@@ -104,8 +105,12 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
     })),
   };
 
-  const faqQuestions = getVilleFaq(nomVille, pros.length);
-  const faqLd = buildFaqJsonLd(faqQuestions);
+  // Contenu editorial enrichi pour les pages hub prioritaires (striking distance).
+  const enriched = getCityCategoryContent(ville, categorie);
+
+  const villeFaq = getVilleFaq(nomVille, pros.length);
+  const localFaq = enriched?.faq ?? [];
+  const faqLd = buildFaqJsonLd([...localFaq, ...villeFaq]);
 
   // Fil d'Ariane hierarchique : Annuaire -> Departement -> Ville -> Categorie.
   // Le niveau departement renforce le maillage interne vers les pages departementales.
@@ -125,7 +130,7 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   );
   const breadLd = buildBreadcrumbJsonLd(breadItems);
 
-  const seoContent = buildSeoContent(cat.key, nomVille, pros.length);
+  const seoContent = enriched?.intro ?? buildSeoContent(cat.key, nomVille, pros.length);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
@@ -203,6 +208,44 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
               Trouver une ambulance autour de moi
               <ChevronRight className="w-4 h-4" />
             </Link>
+          </div>
+        )}
+
+        {enriched && enriched.voisines.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
+              {cat.labelPluriel} dans les villes voisines
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Étendez votre recherche aux communes proches de {nomVille}, dans le même département.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {enriched.voisines.map((v) => (
+                <Link
+                  key={v.slug}
+                  href={`/transport-medical/${v.slug}/${categorie}`}
+                  className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
+                >
+                  {cat.label} {v.nom}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {localFaq.length > 0 && (
+          <div className="mt-10 bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">
+              Questions fréquentes — {cat.labelPluriel.toLowerCase()} à {nomVille}
+            </h2>
+            <div className="space-y-4">
+              {localFaq.map((q, i) => (
+                <div key={i}>
+                  <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
+                  <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </section>
