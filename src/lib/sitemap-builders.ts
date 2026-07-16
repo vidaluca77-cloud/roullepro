@@ -193,6 +193,7 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/taxi-conventionne`, changefreq: "weekly", priority: 0.9 },
     { url: `${BASE_URL}/transport-sanitaire`, changefreq: "weekly", priority: 0.8 },
     { url: `${BASE_URL}/ambulance-autour-de-moi`, changefreq: "daily", priority: 0.9 },
+    { url: `${BASE_URL}/vsl-autour-de-moi`, changefreq: "daily", priority: 0.9 },
     { url: `${BASE_URL}/taxi-vsl-autour-de-moi`, changefreq: "daily", priority: 0.9 },
   ];
 

@@ -196,7 +196,8 @@ export default function AmbulanceAutourDeMoiPage() {
             transfert pour examen, consultation spécialisée, séance de soins. Il nécessite une prescription
             médicale et se réserve à l'avance auprès d'une ambulance, d'un VSL ou d'un taxi conventionné selon
             l'état du patient. Pour un transport assis, trouvez un{" "}
-            <Link href="/taxi-vsl-autour-de-moi">taxi conventionné ou un VSL autour de vous</Link> ; pour comparer
+            <Link href="/taxi-vsl-autour-de-moi">taxi conventionné ou un VSL autour de vous</Link> — ou plus
+            précisément un <Link href="/vsl-autour-de-moi">VSL autour de moi</Link> ; pour comparer
             tous les modes, consultez notre <Link href="/transport-medical">guide du transport médical</Link>.
           </p>
         </section>

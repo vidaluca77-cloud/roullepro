@@ -127,6 +127,9 @@ export default function AutourDeMoiPage() {
               Besoin d'un type de transport précis ? Accédez directement à nos pages dédiées :{" "}
               <Link href="/ambulance-autour-de-moi" className="text-[#0066CC] underline">
                 ambulance autour de moi
+              </Link>,{" "}
+              <Link href="/vsl-autour-de-moi" className="text-[#0066CC] underline">
+                VSL autour de moi
               </Link>{" "}
               ou{" "}
               <Link href="/taxi-vsl-autour-de-moi" className="text-[#0066CC] underline">

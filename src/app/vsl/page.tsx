@@ -359,7 +359,8 @@ export default async function VslPage() {
           <p>
             Consultez les sociétés de VSL agréées et conventionnées CPAM ville par ville. RoullePro référence
             actuellement {stats.byCategory.vsl.toLocaleString("fr-FR")} VSL en France, intégrés au même annuaire que
-            les ambulances et taxis conventionnés.
+            les ambulances et taxis conventionnés. Pour une recherche géolocalisée immédiate, utilisez la page{" "}
+            <Link href="/vsl-autour-de-moi">VSL autour de moi</Link>.
           </p>
         </section>
       </article>

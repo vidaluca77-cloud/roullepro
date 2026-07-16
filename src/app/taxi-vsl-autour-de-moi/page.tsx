@@ -173,7 +173,8 @@ export default function TaxiVslAutourDeMoiPage() {
             <strong> remboursés à l&apos;identique</strong> par la Sécurité sociale sur prescription médicale. Le choix
             dépend de votre autonomie, de la nature du soin et de l&apos;offre disponible près de chez vous. Pour un
             transport allongé ou sous surveillance, il faut en revanche une{" "}
-            <Link href="/ambulance-autour-de-moi">ambulance</Link>.
+            <Link href="/ambulance-autour-de-moi">ambulance</Link>. Pour cibler uniquement un véhicule sanitaire léger,
+            consultez notre page dédiée <Link href="/vsl-autour-de-moi">VSL autour de moi</Link>.
           </p>
         </section>
 
