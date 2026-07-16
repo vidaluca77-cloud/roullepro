@@ -95,11 +95,115 @@ AVERTISSEMENT OBLIGATOIRE :
 - Pour tout point réglementaire, tarifaire ou juridique sensible, rappelle systématiquement de vérifier auprès des sources officielles (ameli.fr, legifrance.gouv.fr, la CPAM ou la préfecture du département concerné), car la réglementation évolue et varie localement.
 - N'invente jamais un montant, un article de loi ou une référence. En cas de doute, dis-le et oriente vers la source officielle.`;
 
+// ── Agents spécialisés ───────────────────────────────────────
+export const DEFAULT_AGENT_SLUG = "general";
+
+export type Agent = {
+  slug: string;
+  nom: string;
+  description: string;
+  icone: string;
+  couleur: string;
+  ordre: number;
+  actif: boolean;
+};
+
+export type AgentAvecPrompt = Agent & { system_prompt: string };
+
+/**
+ * Liste des agents actifs, triés par `ordre`. Utilise le client fourni
+ * (lecture publique authentifiée via RLS). Renvoie [] en cas d'échec.
+ */
+export async function listerAgents(client: SupabaseClient): Promise<Agent[]> {
+  const { data } = await client
+    .from("ia_agents")
+    .select("slug, nom, description, icone, couleur, ordre, actif")
+    .eq("actif", true)
+    .order("ordre", { ascending: true });
+  return (data || []) as Agent[];
+}
+
+/**
+ * Charge un agent (avec son system_prompt) par slug. Renvoie null si introuvable
+ * ou inactif. Utilise le client admin (service_role) pour lire le prompt.
+ */
+export async function getAgent(
+  admin: SupabaseClient,
+  slug: string
+): Promise<AgentAvecPrompt | null> {
+  const { data } = await admin
+    .from("ia_agents")
+    .select("slug, nom, description, icone, couleur, ordre, actif, system_prompt")
+    .eq("slug", slug)
+    .eq("actif", true)
+    .maybeSingle();
+  return (data as AgentAvecPrompt | null) || null;
+}
+
+// ── Recherche documentaire (base sourcée) ────────────────────
+export type DocumentExtrait = {
+  titre: string | null;
+  contenu: string | null;
+  source_nom: string | null;
+  source_url: string | null;
+};
+
+export const DOC_RECHERCHE_LIMIT = 5;
+
+/**
+ * Full-text search classée (ts_rank) dans ia_documents pour l'agent donné (ou
+ * tous les agents si agentSlug vaut 'general'). S'appuie sur la fonction SQL
+ * ia_rechercher_documents (websearch_to_tsquery + fallback plainto_tsquery),
+ * appelée en service_role : aucune lecture RLS. Renvoie [] en cas d'échec.
+ */
+export async function rechercheDocuments(
+  admin: SupabaseClient,
+  agentSlug: string,
+  requete: string
+): Promise<DocumentExtrait[]> {
+  const q = (requete || "").trim().slice(0, 500);
+  if (q.length < 2) return [];
+
+  try {
+    const { data, error } = await admin.rpc("ia_rechercher_documents", {
+      p_agent_slug: agentSlug || DEFAULT_AGENT_SLUG,
+      p_query: q,
+      p_limite: DOC_RECHERCHE_LIMIT,
+    });
+    if (error) return [];
+    return (data || []) as DocumentExtrait[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Formate les extraits documentaires en bloc système, avec consigne de citation.
+ * Renvoie "" s'il n'y a aucun extrait (l'agent répond alors avec sa prudence).
+ */
+export function construireBlocDocuments(docs: DocumentExtrait[]): string {
+  if (!docs || docs.length === 0) return "";
+  const extraits = docs
+    .map((d, i) => {
+      const source = d.source_nom
+        ? `${d.source_nom}${d.source_url ? ` (${d.source_url})` : ""}`
+        : "Source non précisée";
+      return `[Extrait ${i + 1}] ${d.titre || "Sans titre"}\n${(d.contenu || "").trim()}\nSource : ${source}`;
+    })
+    .join("\n\n");
+  return `\nEXTRAITS DOCUMENTAIRES DE RÉFÉRENCE (base documentaire RoullePro, à privilégier) :\n${extraits}\n\nCONSIGNE : appuie-toi en priorité sur ces extraits pour répondre et CITE la source concernée au format markdown [Nom de la source](url). Si la réponse n'est pas couverte par ces extraits, ne l'invente pas : indique-le et renvoie vers la source officielle.`;
+}
+
 export function construireSystemPrompt(
   pro: ProContexte | null,
-  memoire: string | null
+  memoire: string | null,
+  promptAgent?: string | null,
+  docs?: DocumentExtrait[]
 ): string {
-  const parts = [SYSTEM_PROMPT_BASE];
+  const parts = [promptAgent?.trim() || SYSTEM_PROMPT_BASE];
+
+  const blocDocs = construireBlocDocuments(docs || []);
+  if (blocDocs) parts.push(blocDocs);
 
   if (pro) {
     const nom = pro.nom_commercial || pro.raison_sociale || "Non précisé";

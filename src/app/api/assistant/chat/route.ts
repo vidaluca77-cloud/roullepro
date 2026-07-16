@@ -10,6 +10,9 @@ import {
   construireSystemPrompt,
   majMemoire,
   estimerTokens,
+  getAgent,
+  rechercheDocuments,
+  DEFAULT_AGENT_SLUG,
   QUOTA_MENSUEL,
   MISTRAL_API_URL,
   MISTRAL_MODEL,
@@ -56,12 +59,16 @@ export async function POST(req: Request) {
   }
 
   // 4. Validation de l'entrée
-  let body: { conversationId?: string; message?: string };
+  let body: { conversationId?: string; message?: string; agent_slug?: string };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "Requête invalide" }, { status: 400 });
   }
+  const agentSlugDemande =
+    typeof body.agent_slug === "string" && body.agent_slug.trim()
+      ? body.agent_slug.trim()
+      : DEFAULT_AGENT_SLUG;
   const message = (body.message || "").trim();
   if (message.length < 2) {
     return NextResponse.json({ error: "Message vide" }, { status: 400 });
@@ -89,20 +96,23 @@ export async function POST(req: Request) {
 
   // 6. Conversation (création ou vérification d'appartenance)
   let conversationId = body.conversationId;
+  let agentSlug = agentSlugDemande;
   if (conversationId) {
     const { data: conv } = await admin
       .from("ia_conversations")
-      .select("id, user_id")
+      .select("id, user_id, agent_slug")
       .eq("id", conversationId)
       .maybeSingle();
     if (!conv || conv.user_id !== user.id) {
       return NextResponse.json({ error: "Conversation introuvable" }, { status: 404 });
     }
+    // L'agent est fixé à la création : on conserve celui de la conversation.
+    agentSlug = conv.agent_slug || DEFAULT_AGENT_SLUG;
   } else {
     const titre = message.length > 60 ? message.slice(0, 57) + "…" : message;
     const { data: nouvelleConv, error: convErr } = await admin
       .from("ia_conversations")
-      .insert({ user_id: user.id, titre })
+      .insert({ user_id: user.id, titre, agent_slug: agentSlug })
       .select("id")
       .single();
     if (convErr || !nouvelleConv) {
@@ -110,6 +120,11 @@ export async function POST(req: Request) {
     }
     conversationId = nouvelleConv.id;
   }
+
+  // 6bis. Agent spécialisé + recherche documentaire sourcée
+  const agent = await getAgent(admin, agentSlug);
+  const promptAgent = agent?.system_prompt ?? null;
+  const documents = await rechercheDocuments(admin, agentSlug, message);
 
   // 7. Historique de la conversation
   const { data: historiqueRows } = await admin
@@ -128,8 +143,8 @@ export async function POST(req: Request) {
     .maybeSingle();
   const memoire = memoireRow?.contenu ?? "";
 
-  // 9. Construction du prompt Mistral
-  const systemPrompt = construireSystemPrompt(pro, memoire);
+  // 9. Construction du prompt Mistral (prompt de l'agent + extraits sourcés)
+  const systemPrompt = construireSystemPrompt(pro, memoire, promptAgent, documents);
   const messagesMistral: ChatMessage[] = [
     { role: "system", content: systemPrompt },
     ...historique.slice(-HISTORIQUE_MAX).map((m) => ({ role: m.role, content: m.contenu })),
@@ -186,7 +201,7 @@ export async function POST(req: Request) {
     async start(controller) {
       // Prévenir le client de l'id de conversation utilisé
       controller.enqueue(
-        encoder.encode(`event: meta\ndata: ${JSON.stringify({ conversationId: finalConversationId })}\n\n`)
+        encoder.encode(`event: meta\ndata: ${JSON.stringify({ conversationId: finalConversationId, agentSlug })}\n\n`)
       );
 
       let complet = "";
