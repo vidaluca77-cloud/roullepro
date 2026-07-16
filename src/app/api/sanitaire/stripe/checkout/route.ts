@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
+import { SANITAIRE_TRIAL_DAYS } from "@/lib/sanitaire-trial";
 import { createClient } from "@supabase/supabase-js";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 
@@ -54,10 +55,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Non autorisé" }, { status: 403 });
     }
 
-    // Calcul du trial Stripe : si le pro est déjà en essai gratuit (auto-trial 2 mois ou offre),
-    // on aligne le premier débit sur la fin de son essai actuel — pas de 14j de bonus supplémentaire.
+    // Calcul du trial Stripe : si le pro est déjà en essai gratuit (auto-trial ou offre),
+    // on aligne le premier débit sur la fin de son essai actuel — pas de bonus supplémentaire.
     let trialBehavior: { trial_period_days: number } | { trial_end: number } = {
-      trial_period_days: 14,
+      trial_period_days: SANITAIRE_TRIAL_DAYS,
     };
     const planExpiresAt = pro.plan_expires_at ? new Date(pro.plan_expires_at).getTime() : 0;
     const isOnFreeTrial = !pro.stripe_subscription_id && !!pro.plan_offer_source;

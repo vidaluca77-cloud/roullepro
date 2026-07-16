@@ -1,5 +1,5 @@
 /**
- * Drip 3 — J-13 avant la fin de l'essai (≈ J+47 après octroi pour essai 2 mois).
+ * Drip 3 — J-13 avant la fin de l'essai (fenêtre configurable avant plan_expires_at).
  * Objectif : pousser la conversion Essential 19,90 €/mois — message urgence + récap valeur.
  */
 
@@ -111,12 +111,12 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
   const intro = ville
     ? `<p style="margin:0 0 16px;color:#374151;line-height:1.6">Bonjour ${nomAffiche},</p>
        <p style="margin:0 0 16px;color:#374151;line-height:1.6">
-         Votre essai Essential 2 mois sur ${ville} se termine dans <strong>${jours} jours</strong>,
+         Votre essai Essential gratuit sur ${ville} se termine dans <strong>${jours} jours</strong>,
          le <strong>${dateFin}</strong>.
        </p>`
     : `<p style="margin:0 0 16px;color:#374151;line-height:1.6">Bonjour ${nomAffiche},</p>
        <p style="margin:0 0 16px;color:#374151;line-height:1.6">
-         Votre essai Essential 2 mois se termine dans <strong>${jours} jours</strong>,
+         Votre essai Essential gratuit se termine dans <strong>${jours} jours</strong>,
          le <strong>${dateFin}</strong>.
        </p>`;
 
@@ -134,7 +134,7 @@ export function renderDripJ13PreExpire(p: DripJ13PreExpireParams): {
     "",
     `Bonjour ${p.nomAffiche},`,
     "",
-    `Votre essai Essential 2 mois${ville ? ` sur ${p.ville}` : ""} se termine dans ${jours} jours, le ${dateFin}.`,
+    `Votre essai Essential gratuit${ville ? ` sur ${p.ville}` : ""} se termine dans ${jours} jours, le ${dateFin}.`,
     "",
     ...(totalSignaux > 0 ? [
       "CE QUE VOUS A APPORTÉ L'ESSAI",

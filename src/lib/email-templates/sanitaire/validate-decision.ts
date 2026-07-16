@@ -117,7 +117,7 @@ export function renderValidateDecision(p: ValidateDecisionParams): {
       </div>
 
       <p style="margin:0 0 8px;color:#374151;line-height:1.6">
-        Votre essai Essential 2 mois reste actif. Connectez-vous à votre espace pro
+        Votre essai Essential gratuit reste actif. Connectez-vous à votre espace pro
         pour suivre vos statistiques (vues, appels, demandes).
       </p>
     `;
@@ -130,7 +130,7 @@ export function renderValidateDecision(p: ValidateDecisionParams): {
       "",
       `Votre fiche : ${p.ficheUrl}`,
       "",
-      "Votre essai Essential 2 mois reste actif. Connectez-vous à votre espace pro pour suivre vos statistiques (vues, appels, demandes).",
+      "Votre essai Essential gratuit reste actif. Connectez-vous à votre espace pro pour suivre vos statistiques (vues, appels, demandes).",
       "",
       `→ Accéder à mon espace pro : ${dashUrl}`,
       "",
@@ -167,7 +167,7 @@ export function renderValidateDecision(p: ValidateDecisionParams): {
       </p>
 
       <p style="margin:0 0 20px;color:#374151;line-height:1.6">
-        Votre essai Essential 2 mois reste actif. Profitez-en pour compléter vos photos, horaires et description.
+        Votre essai Essential gratuit reste actif. Profitez-en pour compléter vos photos, horaires et description.
       </p>
     `;
 
@@ -177,7 +177,7 @@ export function renderValidateDecision(p: ValidateDecisionParams): {
       "",
       `Bonne nouvelle, la fiche ${p.nomAffiche} est désormais certifiée sur RoullePro. Elle affiche le badge « Pro vérifié » visible de tous les patients.`,
       "",
-      "Votre essai Essential 2 mois reste actif. Profitez-en pour compléter vos photos, horaires et description.",
+      "Votre essai Essential gratuit reste actif. Profitez-en pour compléter vos photos, horaires et description.",
       "",
       `→ Accéder à mon espace pro : ${dashUrl}`,
       "",

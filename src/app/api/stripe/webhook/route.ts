@@ -10,6 +10,7 @@
  *        - customer.subscription.created
  *        - customer.subscription.updated
  *        - customer.subscription.deleted
+ *        - customer.subscription.trial_will_end  (rappel fin d'essai sanitaire, 3 j avant)
  *   3. Copier la signing secret (whsec_...) dans STRIPE_WEBHOOK_SECRET
  *
  * La route exige les bytes bruts (raw body) pour vérifier la signature.
@@ -19,7 +20,8 @@ import { NextResponse } from 'next/server';
 import { createClient as createAdminClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/stripe';
 import { planFromPriceId, type PlanId } from '@/lib/plans';
-import { sendEscrowSellerFundsHeld } from '@/lib/email';
+import { sendEscrowSellerFundsHeld, sendEmail } from '@/lib/email';
+import { renderTrialWillEnd } from '@/lib/email-templates/sanitaire';
 import { notifyUser } from '@/lib/notify';
 import Stripe from 'stripe';
 
@@ -289,7 +291,7 @@ async function handleSanitaireSubscription(sub: Stripe.Subscription, session: St
 
   // Quand l'abonnement Stripe devient actif (ou trialing payant), on nettoie
   // les marqueurs d'auto-trial pour empecher le cron expire_pro_plans_daily
-  // de redescendre la fiche en gratuit a la fin des 2 mois offerts.
+  // de redescendre la fiche en gratuit a la fin de l'essai gratuit offert.
   const updatePayload: Record<string, unknown> = {
     plan: planToSet,
     plan_active_until: activeUntil,
@@ -352,6 +354,57 @@ async function handleSanitaireSubscription(sub: Stripe.Subscription, session: St
       );
     }
   }
+}
+
+/**
+ * Handler trial_will_end (sanitaire) : Stripe envoie cet événement 3 jours avant la fin
+ * de l'essai gratuit. On prévient le pro par email (rappel de valeur, non anxiogène).
+ * Uniquement pour les abonnements annuaire sanitaire (metadata.pro_id présent).
+ */
+async function handleSanitaireTrialWillEnd(sub: Stripe.Subscription) {
+  const proId = sub.metadata?.pro_id;
+  if (!proId) return; // pas une souscription sanitaire
+
+  const db = admin();
+  const { data: pro } = await db
+    .from('pros_sanitaire')
+    .select('id, email_public, nom_commercial, raison_sociale')
+    .eq('id', proId)
+    .maybeSingle();
+
+  const email = (pro as { email_public?: string } | null)?.email_public;
+  if (!email) {
+    console.warn('[sanitaire webhook] trial_will_end sans email_public', proId);
+    return;
+  }
+
+  const nomAffiche =
+    (pro as { nom_commercial?: string; raison_sociale?: string } | null)?.nom_commercial?.trim() ||
+    (pro as { raison_sociale?: string } | null)?.raison_sociale?.trim() ||
+    'RoullePro';
+
+  const joursRestants = sub.trial_end
+    ? Math.max(1, Math.ceil((sub.trial_end * 1000 - Date.now()) / 86400000))
+    : 3;
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.roullepro.com';
+  const tpl = renderTrialWillEnd({
+    nomAffiche,
+    joursRestants,
+    upgradeUrl: `${appUrl}/transport-medical/tarifs`,
+    dashboardUrl: `${appUrl}/transport-medical/pro/dashboard`,
+  });
+
+  await sendEmail({
+    to: email,
+    subject: tpl.subject,
+    html: tpl.html,
+    text: tpl.text,
+    tags: [
+      { name: 'category', value: 'sanitaire_trial' },
+      { name: 'step', value: 'trial_will_end' },
+    ],
+  });
 }
 
 export async function POST(request: Request) {
@@ -429,6 +482,14 @@ export async function POST(request: Request) {
           break;
         }
         await syncSubscription(sub);
+        break;
+      }
+      case 'customer.subscription.trial_will_end': {
+        // Rappel fin d'essai (3 j avant) — uniquement pour l'annuaire sanitaire.
+        const sub = event.data.object as Stripe.Subscription;
+        if (sub.metadata?.pro_id) {
+          await handleSanitaireTrialWillEnd(sub);
+        }
         break;
       }
       case 'charge.refunded':

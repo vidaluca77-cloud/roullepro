@@ -1,12 +1,14 @@
 /**
- * Helper : octroi automatique d'un essai Pro 2 mois a chaque nouvelle fiche
- * (inscription ou claim valide). Best-effort, non bloquant pour la reponse.
+ * Helper : octroi automatique d'un essai Pro gratuit a chaque nouvelle fiche
+ * (inscription ou claim valide). Duree = SANITAIRE_TRIAL_DAYS (7 jours par defaut,
+ * surchargeable via STRIPE_TRIAL_JOURS). Best-effort, non bloquant pour la reponse.
  *
  * Garde-fou : ne grant pas si le pro a deja recu une offre (plan_offer_source
  * non null).
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { SANITAIRE_TRIAL_DAYS } from "@/lib/sanitaire-trial";
 
 export type GrantResult =
   | { granted: true; expires_at: string }
@@ -43,7 +45,7 @@ export async function grantAutoTrial(proId: string): Promise<GrantResult> {
 
   const now = new Date();
   const expiresAt = new Date(now);
-  expiresAt.setMonth(expiresAt.getMonth() + 2);
+  expiresAt.setDate(expiresAt.getDate() + SANITAIRE_TRIAL_DAYS);
 
   const { error: updErr } = await supabase
     .from("pros_sanitaire")

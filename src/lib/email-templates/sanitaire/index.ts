@@ -13,6 +13,7 @@ export { renderNewsletterBlogBienvenue } from "./newsletter-blog-bienvenue";
 export { renderDripJ3Essai }         from "./drip-j3-essai";
 export { renderDripJ7Resultats }     from "./drip-j7-resultats";
 export { renderDripJ13PreExpire }    from "./drip-j13-pre-expire";
+export { renderTrialWillEnd }        from "./trial-will-end";
 
 // Types publics
 export type { InscriptionAccuseParams }       from "./inscription-accuse";
@@ -26,3 +27,4 @@ export type { NewsletterBlogBienvenueParams } from "./newsletter-blog-bienvenue"
 export type { DripJ3Params }                  from "./drip-j3-essai";
 export type { DripJ7Params }                  from "./drip-j7-resultats";
 export type { DripJ13PreExpireParams }        from "./drip-j13-pre-expire";
+export type { TrialWillEndParams }            from "./trial-will-end";

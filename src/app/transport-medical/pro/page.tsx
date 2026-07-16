@@ -194,7 +194,7 @@ export default function EspacePro() {
               name="Plan Pro"
               price="19,90 €/mois"
               features={[
-                "2 mois d'essai offerts",
+                "7 jours d'essai gratuit, sans engagement",
                 "Badge Pro vérifié",
                 "Messagerie patients activée",
                 "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",

@@ -37,7 +37,7 @@ export function renderDripJ3Essai(p: DripJ3Params): {
     </p>
 
     <p style="margin:0 0 16px;color:#374151;line-height:1.6">
-      Cela fait 3 jours que votre essai Essential 2 mois est actif sur RoullePro.
+      Cela fait 3 jours que votre essai Essential gratuit est actif sur RoullePro.
       ${ville ? `Votre fiche est en ligne pour la zone <strong>${ville}</strong>` : "Votre fiche est en ligne"}
       et reçoit déjà ses premières visites.
     </p>
@@ -62,7 +62,7 @@ export function renderDripJ3Essai(p: DripJ3Params): {
 
     <div style="background:#ecfdf5;border:1px solid ${RP_COLOR_SUCCESS};border-radius:12px;padding:14px 20px;margin:0 0 24px">
       <div style="font-size:13px;color:#14532d;line-height:1.6">
-        <strong>Rappel</strong> : votre essai Essential 2 mois est gratuit jusqu'à expiration &mdash;
+        <strong>Rappel</strong> : votre essai Essential est gratuit jusqu'à expiration &mdash;
         aucun paiement requis pendant cette période, aucun engagement.
       </div>
     </div>
@@ -74,7 +74,7 @@ export function renderDripJ3Essai(p: DripJ3Params): {
     "",
     `Bonjour ${p.nomAffiche},`,
     "",
-    `Cela fait 3 jours que votre essai Essential 2 mois est actif sur RoullePro.${ville ? ` Votre fiche est en ligne pour la zone ${p.ville}` : " Votre fiche est en ligne"} et reçoit déjà ses premières visites.`,
+    `Cela fait 3 jours que votre essai Essential gratuit est actif sur RoullePro.${ville ? ` Votre fiche est en ligne pour la zone ${p.ville}` : " Votre fiche est en ligne"} et reçoit déjà ses premières visites.`,
     "",
     ...(p.ficheUrl ? [`Votre fiche publique : ${p.ficheUrl}`, ""] : []),
     "3 ACTIONS POUR MULTIPLIER VOS APPELS X2",
@@ -84,7 +84,7 @@ export function renderDripJ3Essai(p: DripJ3Params): {
     "",
     "Tout se fait en 5 minutes depuis votre espace pro. Plus votre fiche est complète, plus elle remonte dans l'annuaire de votre département.",
     "",
-    "Rappel : votre essai Essential 2 mois est gratuit jusqu'à expiration — aucun paiement requis pendant cette période, aucun engagement.",
+    "Rappel : votre essai Essential est gratuit jusqu'à expiration — aucun paiement requis pendant cette période, aucun engagement.",
     "",
     `→ Compléter ma fiche : ${p.dashboardUrl}`,
     "",
