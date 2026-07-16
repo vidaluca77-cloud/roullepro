@@ -21,7 +21,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Espace professionnels — Ambulances, VSL, Taxis conventionnés",
   description:
-    "Réclamez gratuitement votre fiche sur RoullePro. Augmentez votre visibilité, recevez des demandes directement, gérez votre présence en ligne. Inscription SIRET vérifiée.",
+    "Réclamez gratuitement votre fiche sur RoullePro. Augmentez votre visibilité, recevez des demandes directement, échangez sur le forum entre pros vérifiés et profitez d'une équipe de 6 experts IA du transport sanitaire (plan Pro). Inscription SIRET vérifiée.",
   alternates: { canonical: "/pro" },
 };
 
@@ -145,6 +145,7 @@ export default async function ProPage() {
               "Description, photos, horaires",
               "Bouton WhatsApp et appel direct",
               "Badge Pro vérifié après contrôle SIRET",
+              "Forum entre pros (écriture pour pros vérifiés)",
             ]}
           />
           <PlanCard
@@ -157,29 +158,13 @@ export default async function ProPage() {
             avantages={[
               "Tout ce qui est inclus dans la fiche gratuite",
               "Messagerie patients activée",
+              "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
               "Meilleure visibilité dans votre ville",
               "Statistiques détaillées",
               "Notifications email à chaque demande",
               "Résiliation en un clic",
             ]}
           />
-        </div>
-
-        <div className="mt-8 max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5 sm:p-6 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center flex-shrink-0 border border-blue-100">
-            <Building2 className="w-5 h-5 text-[#0066CC]" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="font-bold text-gray-900">Plan Établissements — ~49 €/mois</span>
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-[#0066CC] px-2 py-0.5 rounded-full">
-                À venir
-              </span>
-            </div>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Pour recevoir les demandes des EHPAD, cabinets médicaux et hôpitaux. Multi-utilisateurs flotte, support dédié. Lancement prévu courant 2026.
-            </p>
-          </div>
         </div>
 
         <div className="text-center mt-8">

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, BadgeCheck, MessageCircle, BarChart3, Star, Shield } from "lucide-react";
+import { Search, BadgeCheck, MessageCircle, BarChart3, Star, Shield, Sparkles, Users, CheckCircle2 } from "lucide-react";
 import ReclamerRechercheForm from "@/components/sanitaire/ReclamerRechercheForm";
 
 export const metadata: Metadata = {
   title: "Espace pros ambulanciers, VSL et taxis conventionnés — Réclamer ma fiche gratuitement",
   description:
-    "Ambulancier, VSL ou taxi conventionné CPAM ? Votre fiche est déjà créée sur le 1er annuaire du transport sanitaire en France (26 000+ pros). Réclamez-la gratuitement, recevez les demandes patients en direct, sans commission. Badge Pro vérifié, statistiques, veille réglementaire à partir de 19,90€/mois.",
+    "Ambulancier, VSL ou taxi conventionné CPAM ? Votre fiche est déjà créée sur le 1er annuaire du transport sanitaire en France (26 000+ pros). Réclamez-la gratuitement, recevez les demandes patients en direct, sans commission. Forum entre pros vérifiés. Badge Pro vérifié, statistiques, veille réglementaire et équipe de 6 experts IA sourcés à partir de 19,90€/mois.",
   keywords: [
     "annuaire ambulancier",
     "annuaire VSL",
@@ -54,7 +54,7 @@ const proPageJsonLd = {
       },
       {
         "@type": "Offer",
-        name: "Essential",
+        name: "Pro",
         price: "19.90",
         priceCurrency: "EUR",
         priceSpecification: {
@@ -63,20 +63,7 @@ const proPageJsonLd = {
           priceCurrency: "EUR",
           unitText: "MONTH",
         },
-        description: "Badge Pro vérifié, galerie photos, veille réglementaire, statistiques",
-      },
-      {
-        "@type": "Offer",
-        name: "Premium",
-        price: "39",
-        priceCurrency: "EUR",
-        priceSpecification: {
-          "@type": "UnitPriceSpecification",
-          price: "39",
-          priceCurrency: "EUR",
-          unitText: "MONTH",
-        },
-        description: "Top 3 ville, messagerie patients, badge Recommandé, 20 photos + vidéo",
+        description: "Badge Pro vérifié, messagerie patients, équipe de 6 experts IA du transport sanitaire (réponses sourcées ameli.fr, Légifrance…), forum entre pros vérifiés, veille réglementaire, statistiques",
       },
     ],
   },
@@ -130,11 +117,66 @@ export default function EspacePro() {
         </div>
       </section>
 
+      {/* Nouveautés : équipe d'experts IA + forum */}
+      <section className="max-w-5xl mx-auto px-4 pb-4">
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="rounded-3xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-white p-7">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full mb-3">
+              <Sparkles className="w-3.5 h-3.5" /> Inclus dans le plan Pro
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Une équipe de 6 experts IA dédiés</h3>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+              Assistant général, Expert Réglementaire, Expert Facturation, Conseiller Commercial, Conseiller RH et
+              Conseiller Gestion : des réponses concrètes à vos questions métier, appuyées sur des sources
+              officielles (ameli.fr, Légifrance, service-public.fr, URSSAF…) avec citations cliquables et mémoire
+              de vos conversations.
+            </p>
+            <ul className="space-y-2">
+              {[
+                "Conventionnement CPAM, agréments ARS, cartes pro",
+                "Facturation SEFi/B2, rejets NOEMIE, tarifs et majorations",
+                "Marchés publics, RH ambulancier, fiscalité et gestion",
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-3xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-7">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-[#0066CC] bg-blue-100 px-3 py-1 rounded-full mb-3">
+              <Users className="w-3.5 h-3.5" /> Réservé aux pros vérifiés
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Le forum entre professionnels</h3>
+            <p className="text-sm text-gray-600 leading-relaxed mb-4">
+              Échangez entre confrères du transport sanitaire dans 7 catégories métier. La lecture est ouverte à
+              tous ; publier et répondre est réservé aux professionnels vérifiés (fiche réclamée et validée).
+            </p>
+            <ul className="space-y-2">
+              {[
+                "Conventionnement, facturation, réglementation",
+                "Matériel & véhicules, emploi & RH",
+                "Entraide entre confrères et retours d'expérience",
+              ].map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-gray-700">
+                  <CheckCircle2 className="w-4 h-4 text-[#0066CC] flex-shrink-0 mt-0.5" />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/forum" className="inline-flex items-center gap-1 text-sm font-semibold text-[#0066CC] hover:underline mt-4">
+              Découvrir le forum
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-gray-50 py-16">
         <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">Nos abonnements pro</h2>
           <p className="text-gray-600 text-center mb-8">Sans engagement, résiliable en 1 clic. Fiche de base gratuite.</p>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             <PlanCard
               name="Fiche gratuite"
               price="0 €"
@@ -143,45 +185,30 @@ export default function EspacePro() {
                 "Téléphone cliquable",
                 "Horaires + adresse",
                 "Mention « Non vérifié »",
+                "Forum entre pros (écriture pour pros vérifiés)",
               ]}
               cta="Déjà actif"
               disabled
             />
             <PlanCard
-              name="Essential"
+              name="Plan Pro"
               price="19,90 €/mois"
               features={[
+                "2 mois d'essai offerts",
                 "Badge Pro vérifié",
-                "Galerie de 5 photos",
-                "Description étendue",
+                "Messagerie patients activée",
+                "Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
+                "Forum entre pros vérifiés (écriture)",
+                "Galerie de 5 photos, description étendue",
                 "Veille réglementaire métier (alertes email)",
                 "Tableau de bord conformité",
-                "Statistiques de vues",
-                "Lien site web cliquable",
+                "Statistiques de vues et notifications email",
               ]}
-              cta="Commencer Essential"
-              href="/transport-medical/tarifs"
-            />
-            <PlanCard
-              name="Premium"
-              price="39 €/mois"
-              features={[
-                "Tout Essential inclus",
-                "Top 3 des résultats de ville",
-                "Messagerie patients activée",
-                "Badge Recommandé",
-                "20 photos + vidéo",
-                "Notifications temps réel",
-              ]}
-              cta="Commencer Premium"
+              cta="Activer le plan Pro"
               href="/transport-medical/tarifs"
               popular
             />
           </div>
-          <p className="text-xs text-gray-500 text-center mt-6">
-            Besoin du plan Pro+ (flotte multi-utilisateurs, API) ?{" "}
-            <Link href="/contact" className="text-[#0066CC] hover:underline">Contactez-nous</Link>.
-          </p>
         </div>
       </section>
     </main>

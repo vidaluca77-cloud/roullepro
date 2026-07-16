@@ -12,7 +12,6 @@ import {
   Lock,
   BarChart3,
   Pencil,
-  Building2,
   Sparkles,
   PhoneCall,
 } from "lucide-react";
@@ -555,28 +554,6 @@ export default async function ProDashboard({
               <p className="text-[11px] text-gray-500 mt-2">
                 Lien partenaire — voir mentions légales.
               </p>
-            </div>
-
-            {/* Plan Établissements à venir */}
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <Building2 className="w-4 h-4 text-[#0066CC]" />
-                <h3 className="font-semibold text-gray-900">Plan Établissements</h3>
-                <span className="ml-auto text-[10px] font-bold uppercase tracking-wide bg-blue-100 text-[#0066CC] px-2 py-0.5 rounded-full">
-                  À venir
-                </span>
-              </div>
-              <div className="flex items-baseline gap-1 mb-3">
-                <div className="text-xl font-bold text-gray-900">~49 €</div>
-                <div className="text-xs text-gray-500">/mois TTC</div>
-              </div>
-              <p className="text-xs text-gray-600 mb-3 leading-relaxed">
-                Pour recevoir les demandes de transport des EHPAD, cabinets médicaux et hôpitaux partenaires.
-                Multi-utilisateurs flotte, support dédié.
-              </p>
-              <div className="text-xs text-gray-500 italic">
-                Lancement prévu en 2026. Aucune action requise pour le moment.
-              </div>
             </div>
           </aside>
         </div>
