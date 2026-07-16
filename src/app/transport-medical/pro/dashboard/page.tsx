@@ -403,6 +403,22 @@ export default async function ProDashboard({
           </div>
 
           <aside className="space-y-4">
+            {/* Assistant IA métier (réservé aux plans payants) */}
+            {isPro && (
+              <Link
+                href="/transport-medical/pro/assistant"
+                className="block bg-gradient-to-br from-[#0066CC] to-[#0f1d3a] text-white rounded-2xl p-5 hover:opacity-95 transition"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <Sparkles className="w-4 h-4" />
+                  <h3 className="font-semibold">Assistant IA métier</h3>
+                </div>
+                <p className="text-xs text-blue-100">
+                  Vos questions CPAM, facturation, tarifs et réglementation — réponses immédiates.
+                </p>
+              </Link>
+            )}
+
             {/* Statut Ameli (C5b) : badge verifie ou bouton de demande */}
             <AmeliStatusSection
               conventionne={fiche.ameli_conventionne}
