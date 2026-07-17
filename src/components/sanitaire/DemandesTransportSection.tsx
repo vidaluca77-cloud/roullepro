@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Phone,
@@ -13,6 +14,7 @@ import {
   Car,
   Cross,
   Stethoscope,
+  Sparkles,
 } from "lucide-react";
 import { LIBELLE_TYPE_TRANSPORT, type TypeTransport } from "@/lib/transport-types";
 import { MENTION_ESTIMATION_CPAM } from "@/lib/tarif-cpam";
@@ -163,7 +165,7 @@ function Trajet({ d }: { d: DemandeProRow }) {
   );
 }
 
-function CarteProposee({ d }: { d: DemandeProRow }) {
+function CarteProposee({ d, peutAccepter }: { d: DemandeProRow; peutAccepter: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState<"accepter" | "refuser" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -174,6 +176,9 @@ function CarteProposee({ d }: { d: DemandeProRow }) {
   const isNouvelle =
     !!d.proposee_at && Date.now() - new Date(d.proposee_at).getTime() < 24 * 60 * 60 * 1000;
 
+  // Verrou abonnement côté serveur (403) : bascule l'affichage vers le CTA d'abonnement.
+  const [abonnementRequis, setAbonnementRequis] = useState(!peutAccepter);
+
   const action = async (kind: "accepter" | "refuser") => {
     setError(null);
     setLoading(kind);
@@ -183,6 +188,9 @@ function CarteProposee({ d }: { d: DemandeProRow }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
+        if (res.status === 403 && data?.code === "abonnement_requis") {
+          setAbonnementRequis(true);
+        }
         setError(data?.error || "Une erreur est survenue. Réessaie.");
         setLoading(null);
         return;
@@ -216,30 +224,46 @@ function CarteProposee({ d }: { d: DemandeProRow }) {
         <span className="ml-1">(coordonnées révélées après acceptation)</span>
       </div>
       {error && <p className="text-xs text-red-600 mt-2">{error}</p>}
-      <div className="flex gap-2 mt-3">
-        <button
-          type="button"
-          onClick={() => action("accepter")}
-          disabled={loading !== null}
-          className="inline-flex items-center justify-center gap-1.5 flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold px-3 py-2 rounded-lg transition"
-        >
-          {loading === "accepter" ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <CheckCircle2 className="w-4 h-4" />
-          )}
-          Accepter cette course
-        </button>
-        <button
-          type="button"
-          onClick={() => action("refuser")}
-          disabled={loading !== null}
-          className="inline-flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-60 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition"
-        >
-          {loading === "refuser" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-          Refuser
-        </button>
-      </div>
+      {abonnementRequis ? (
+        <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+          <p className="text-xs text-emerald-900 mb-2">
+            Votre période d&apos;essai est terminée — passez au plan Pro (19,90 €/mois TTC)
+            pour accepter les courses.
+          </p>
+          <Link
+            href="/transport-medical/tarifs?raison=abonnement_requis"
+            className="inline-flex items-center justify-center gap-1.5 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-2 rounded-lg transition"
+          >
+            <Sparkles className="w-4 h-4" />
+            S&apos;abonner pour accepter cette course
+          </Link>
+        </div>
+      ) : (
+        <div className="flex gap-2 mt-3">
+          <button
+            type="button"
+            onClick={() => action("accepter")}
+            disabled={loading !== null}
+            className="inline-flex items-center justify-center gap-1.5 flex-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white text-sm font-semibold px-3 py-2 rounded-lg transition"
+          >
+            {loading === "accepter" ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
+            Accepter cette course
+          </button>
+          <button
+            type="button"
+            onClick={() => action("refuser")}
+            disabled={loading !== null}
+            className="inline-flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 disabled:opacity-60 text-gray-700 text-sm font-medium px-3 py-2 rounded-lg transition"
+          >
+            {loading === "refuser" ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            Refuser
+          </button>
+        </div>
+      )}
     </li>
   );
 }
@@ -352,8 +376,10 @@ function CartePassee({ d }: { d: DemandeProRow }) {
 
 export default function DemandesTransportSection({
   demandes,
+  peutAccepter = true,
 }: {
   demandes: DemandeProRow[];
+  peutAccepter?: boolean;
 }) {
   const proposees = demandes.filter((d) => d.dtp_statut === "proposee");
   const acceptees = demandes.filter((d) => d.dtp_statut === "acceptee");
@@ -384,7 +410,7 @@ export default function DemandesTransportSection({
       ) : (
         <ul className="space-y-3">
           {proposees.map((d) => (
-            <CarteProposee key={d.dtp_id} d={d} />
+            <CarteProposee key={d.dtp_id} d={d} peutAccepter={peutAccepter} />
           ))}
           {acceptees.map((d) => (
             <CarteAcceptee key={d.dtp_id} d={d} />

@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { notifyDemandeAcceptee } from "@/lib/demande-transport-accept";
+import { peutAccepterCourses } from "@/lib/sanitaire-plans";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -57,6 +58,25 @@ export async function POST(_req: Request, { params }: RouteParams) {
   }
 
   const admin = getAdminClient();
+
+  // Verrou abonnement : un pro en plan gratuit (essai terminé ou jamais abonné)
+  // continue de VOIR et de RECEVOIR les courses, mais ne peut pas les accepter.
+  const { data: pro } = await admin
+    .from("pros_sanitaire")
+    .select("plan, plan_expires_at, stripe_subscription_id")
+    .eq("id", ligne.pro_id)
+    .maybeSingle();
+
+  if (!peutAccepterCourses(pro)) {
+    return NextResponse.json(
+      {
+        error:
+          "Votre période d'essai est terminée. Passez au plan Pro (19,90 €/mois TTC) pour accepter les courses.",
+        code: "abonnement_requis",
+      },
+      { status: 403 }
+    );
+  }
 
   // UPDATE conditionnel race-safe : ne passe a 'acceptee' que si encore 'proposee'.
   const { data: updated } = await admin

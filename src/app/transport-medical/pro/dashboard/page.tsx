@@ -16,6 +16,7 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { type ProSanitaire } from "@/lib/sanitaire-data";
+import { peutAccepterCourses } from "@/lib/sanitaire-plans";
 import EditFicheForm from "@/components/sanitaire/EditFicheForm";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliStatusSection from "@/components/sanitaire/AmeliStatusSection";
@@ -91,6 +92,9 @@ export default async function ProDashboard({
   // Distingue un VRAI abonné payant (Stripe actif) d'un Pro en essai gratuit (auto_trial_2months ou offert)
   const isOnFreeTrial =
     isPro && !fiche.stripe_subscription_id && !!fiche.plan_offer_source;
+  // Droit d'accepter une course : plan payant réel OU essai encore en cours.
+  // Un essai expiré / plan gratuit voit la course mais reçoit un CTA d'abonnement.
+  const peutAccepter = peutAccepterCourses(fiche);
   const trialEndsAt = fiche.plan_expires_at ? new Date(fiche.plan_expires_at) : null;
   const daysUntilTrialEnd = trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -437,7 +441,7 @@ export default async function ProDashboard({
 
             {/* Demandes de transport (RPC demandes_pro_dashboard) */}
             <div id="demandes-transport" className="scroll-mt-20">
-              <DemandesTransportSection demandes={demandesPro} />
+              <DemandesTransportSection demandes={demandesPro} peutAccepter={peutAccepter} />
             </div>
 
             {/* Messagerie */}
