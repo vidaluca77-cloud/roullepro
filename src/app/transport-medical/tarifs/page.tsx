@@ -20,7 +20,13 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function TarifsPage() {
+export default async function TarifsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ raison?: string }>;
+}) {
+  const { raison } = await searchParams;
+  const abonnementRequis = raison === "abonnement_requis";
   const supabase = await createClient();
   const {
     data: { user },
@@ -52,6 +58,18 @@ export default async function TarifsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-blue-50/40">
+      {abonnementRequis && (
+        <div className="bg-amber-50 border-b border-amber-200">
+          <div className="max-w-4xl mx-auto px-4 py-4 flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-amber-900">
+              Votre période d&apos;essai est terminée. Passez au plan Pro (19,90 €/mois TTC)
+              pour accepter les courses qui vous sont proposées. Vous continuez à recevoir
+              toutes les demandes par email et SMS.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Hero */}
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-4xl mx-auto px-4 py-16 text-center">

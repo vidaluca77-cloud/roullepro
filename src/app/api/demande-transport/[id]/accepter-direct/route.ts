@@ -12,6 +12,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { verifyDemandeAcceptToken } from "@/lib/demande-accept-token";
 import { notifyDemandeAcceptee } from "@/lib/demande-transport-accept";
+import { peutAccepterCourses } from "@/lib/sanitaire-plans";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -91,6 +92,22 @@ export async function GET(req: Request, { params }: RouteParams) {
         ? "Tu as déjà accepté cette course. Retrouve les coordonnées du client dans ton tableau de bord."
         : "Cette course a déjà été attribuée à un autre professionnel ou n'est plus disponible.",
       dejaPrise ? "#059669" : "#b45309"
+    );
+  }
+
+  // Verrou abonnement : un pro en plan gratuit (essai terminé ou jamais abonné)
+  // reçoit toujours le lien email/SMS, mais ne peut pas accepter la course.
+  // On le renvoie vers la page tarifs avec un contexte explicite.
+  const { data: pro } = await admin
+    .from("pros_sanitaire")
+    .select("plan, plan_expires_at, stripe_subscription_id")
+    .eq("id", verified.proId)
+    .maybeSingle();
+
+  if (!peutAccepterCourses(pro)) {
+    return Response.redirect(
+      `${APP_URL}/transport-medical/tarifs?raison=abonnement_requis`,
+      302
     );
   }
 
