@@ -11,6 +11,11 @@ import {
   sendDemandeTransportAcceptationClient,
   sendDemandeTransportAutreAcceptee,
 } from "@/lib/email";
+import {
+  construireMessageSmsAcceptationPatient,
+  envoyerSmsTransactionnel,
+  normaliserTelephoneFr,
+} from "@/lib/sms";
 
 type DemandeRow = {
   id: string;
@@ -99,6 +104,40 @@ export async function notifyDemandeAcceptee(
       tauxPriseEnChargeAutre: d.taux_prise_en_charge_autre,
       bonTransportMedical: !!d.bon_transport_medical,
     }).catch(() => undefined);
+  }
+
+  // SMS au patient : sa course est prise en charge (complete l'email GAP2).
+  // Best-effort, jamais bloquant. Numero patient normalise en +33 ; absent ou
+  // invalide -> ignore silencieusement. Journalise dans sms_log ('patient_acceptation').
+  try {
+    const numeroPatient = d.telephone ? normaliserTelephoneFr(d.telephone) : null;
+    if (numeroPatient) {
+      const contenu = construireMessageSmsAcceptationPatient({
+        dateSouhaitee: d.date_souhaitee,
+        proNom,
+      });
+      const res = await envoyerSmsTransactionnel({
+        to: numeroPatient,
+        content: contenu,
+        tag: "patient-acceptation",
+      });
+      try {
+        await admin.from("sms_log").insert({
+          destinataire: numeroPatient,
+          pro_id: null,
+          demande_id: d.id,
+          type: "patient_acceptation",
+          contenu,
+          statut: res.ok ? "envoye" : "echec",
+          brevo_message_id: res.messageId || null,
+          erreur: res.erreur || null,
+        });
+      } catch {
+        // Table sms_log absente : journalisation ignoree.
+      }
+    }
+  } catch {
+    // Aucune erreur SMS ne doit casser l'acceptation.
   }
 
   // GAP3 — info aux autres pros RoullePro repassés en 'autre_acceptee' par le trigger.

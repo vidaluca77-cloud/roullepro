@@ -18,9 +18,11 @@ import { geocodeAdresse } from "@/lib/geocode-adresse";
 import { normaliserDepartement } from "@/lib/departement";
 import {
   construireMessageSmsCourse,
+  construireMessageSmsDepotPatient,
   envoyerSmsTransactionnel,
   normaliserTelephoneFr,
 } from "@/lib/sms";
+import { FENETRE_DOUBLON_MS, trouverDoublon } from "@/lib/demande-doublon";
 import { calculerDistanceCourse } from "@/lib/distance-course";
 import { estimerPrixCourse, type EstimationCourse } from "@/lib/tarif-transport-sanitaire";
 
@@ -158,6 +160,48 @@ export async function POST(req: Request) {
 
     const supabase = getAdminClient();
     const ipHash = crypto.createHash("sha256").update(ip).digest("hex").slice(0, 16);
+
+    // --- Anti-doublon serveur -------------------------------------------------
+    // ~24 % des demandes sont des re-soumissions (meme patient, meme trajet, meme
+    // date, < 24h) car le patient n'a aucun retour immediat. On cherche une
+    // demande ouverte (statut 'envoyee') recente identique : si trouvee, on NE
+    // recree PAS et on NE re-notifie PAS les pros. On renvoie le nombre de pros
+    // deja prevenus pour rassurer le patient cote front.
+    // Tolerant aux erreurs : une panne du dedup ne doit jamais bloquer un depot.
+    try {
+      const depuis = new Date(nowMs - FENETRE_DOUBLON_MS).toISOString();
+      const { data: recentes } = await supabase
+        .from("demandes_transport")
+        .select("id, telephone, lieu_depart, lieu_arrivee, date_souhaitee")
+        .eq("statut", "envoyee")
+        .eq("date_souhaitee", dateSouhaiteeIso)
+        .gte("created_at", depuis);
+
+      const doublon = trouverDoublon(
+        { telephone, lieu_depart: lieuDepartRaw, lieu_arrivee: lieuArriveeRaw || null, date_souhaitee: dateSouhaiteeIso },
+        (recentes as Array<{
+          id: string;
+          telephone: string | null;
+          lieu_depart: string | null;
+          lieu_arrivee: string | null;
+          date_souhaitee: string | null;
+        }> | null) || []
+      );
+
+      if (doublon) {
+        const { count } = await supabase
+          .from("demandes_transport_pros")
+          .select("id", { count: "exact", head: true })
+          .eq("demande_id", doublon.id);
+        return NextResponse.json({
+          ok: true,
+          doublon: true,
+          pros_notifies: count ?? 0,
+        });
+      }
+    } catch (e) {
+      console.error("[demande-transport] anti-doublon error", e);
+    }
 
     const etablissementId = body.etablissement_id || null;
     const proIdCible = body.pro_id_cible || null;
@@ -500,6 +544,41 @@ export async function POST(req: Request) {
         typeLibelle: libelle,
         nbPros: prosNotifies,
       }).catch(() => undefined);
+    }
+
+    // --- SMS de confirmation au patient (best-effort, jamais bloquant) --------
+    // Rassure le patient des le depot pour reduire les re-soumissions. Numero
+    // patient stocke en national (ex. "0663603304") : normalise en +33 par le
+    // helper. Numero absent/invalide -> ignore silencieusement (pas d'echec).
+    try {
+      const numeroPatient = normaliserTelephoneFr(telephone);
+      if (numeroPatient) {
+        const contenuPatient = construireMessageSmsDepotPatient({
+          typeTransport,
+          dateSouhaitee: dateSouhaiteeIso,
+        });
+        const resPatient = await envoyerSmsTransactionnel({
+          to: numeroPatient,
+          content: contenuPatient,
+          tag: "patient-depot",
+        });
+        try {
+          await supabase.from("sms_log").insert({
+            destinataire: numeroPatient,
+            pro_id: null,
+            demande_id: demande.id,
+            type: "patient_depot",
+            contenu: contenuPatient,
+            statut: resPatient.ok ? "envoye" : "echec",
+            brevo_message_id: resPatient.messageId || null,
+            erreur: resPatient.erreur || null,
+          });
+        } catch {
+          // Table sms_log absente : journalisation ignoree.
+        }
+      }
+    } catch (e) {
+      console.error("[demande-transport] SMS patient depot error", e);
     }
 
     // Notification admin (best-effort, non bloquante). Part meme si aucun pro

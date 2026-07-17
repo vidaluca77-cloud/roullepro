@@ -163,6 +163,64 @@ export function construireMessageSmsCourse(params: {
   return retirerAccents(message);
 }
 
+/** Formate une date souhaitee en "27/07 a 08h45" (fuseau Europe/Paris). */
+function formaterQuandSms(dateSouhaitee: string | null | undefined): string {
+  if (!dateSouhaitee) return "";
+  const d = new Date(dateSouhaitee);
+  if (Number.isNaN(d.getTime())) return "";
+  const dateStr = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    day: "2-digit",
+    month: "2-digit",
+  }).format(d);
+  const heureStr = new Intl.DateTimeFormat("fr-FR", {
+    timeZone: "Europe/Paris",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  })
+    .format(d)
+    .replace(":", "h");
+  return `${dateStr} a ${heureStr}`;
+}
+
+/**
+ * SMS de confirmation envoye au patient juste apres le depot de sa demande, ex. :
+ *   "RoullePro: votre demande de transport VSL du 27/07 a 08h45 est bien
+ *    enregistree. Les professionnels de votre secteur sont prevenus."
+ *
+ * Objectif : rassurer le patient pour eviter les re-soumissions (cf. anti-doublon).
+ * Sans accents (GSM-7), factuel, format aligne sur les SMS pros existants.
+ */
+export function construireMessageSmsDepotPatient(params: {
+  typeTransport: TypeTransport;
+  dateSouhaitee: string;
+}): string {
+  const type = TYPE_SMS[params.typeTransport] || retirerAccents(String(params.typeTransport)).toUpperCase();
+  const quand = formaterQuandSms(params.dateSouhaitee);
+  const suffixeDate = quand ? ` du ${quand}` : "";
+  const message = `RoullePro: votre demande de transport ${type}${suffixeDate} est bien enregistree. Les professionnels de votre secteur sont prevenus.`;
+  return retirerAccents(message);
+}
+
+/**
+ * SMS envoye au patient quand un pro accepte sa course, ex. :
+ *   "RoullePro: votre transport du 27/07 a 08h45 est pris en charge par
+ *    Taxi Dupont. Il vous contacte rapidement."
+ *
+ * Sans accents (GSM-7), factuel.
+ */
+export function construireMessageSmsAcceptationPatient(params: {
+  dateSouhaitee: string | null;
+  proNom: string;
+}): string {
+  const quand = formaterQuandSms(params.dateSouhaitee);
+  const suffixeDate = quand ? ` du ${quand}` : "";
+  const pro = retirerAccents((params.proNom || "un professionnel").trim());
+  const message = `RoullePro: votre transport${suffixeDate} est pris en charge par ${pro}. Il vous contacte rapidement.`;
+  return retirerAccents(message);
+}
+
 /**
  * Envoie un SMS transactionnel via Brevo.
  *

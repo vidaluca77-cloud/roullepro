@@ -73,6 +73,7 @@ export default function ContactProForm({
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [nbPros, setNbPros] = useState(0);
+  const [doublon, setDoublon] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const lieuDepartRef = useRef<HTMLInputElement>(null);
@@ -144,6 +145,7 @@ export default function ContactProForm({
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
       setNbPros(data.pros_notifies ?? 0);
+      setDoublon(data.doublon === true);
       setSent(true);
     } catch (err) {
       setError((err as Error).message);
@@ -156,11 +158,15 @@ export default function ContactProForm({
     return (
       <div className="bg-green-50 border border-green-200 rounded-xl p-5 text-center">
         <CheckCircle2 className="w-10 h-10 text-green-600 mx-auto mb-2" />
-        <div className="font-semibold text-gray-900 mb-1">Demande envoyée</div>
+        <div className="font-semibold text-gray-900 mb-1">
+          {doublon ? "Votre demande est déjà en cours" : "Demande envoyée"}
+        </div>
         <p className="text-sm text-gray-600">
-          {nbPros > 0
-            ? `${proNom} et ${nbPros} professionnel${nbPros > 1 ? "s" : ""} de votre secteur ${nbPros > 1 ? "ont" : "a"} été notifié${nbPros > 1 ? "s" : ""}. Une réponse vous parviendra par email ou téléphone.`
-            : `${proNom} a été notifié. Une réponse vous parviendra par email ou téléphone.`}
+          {doublon
+            ? `${nbPros > 0 ? `${nbPros} professionnel${nbPros > 1 ? "s" : ""} ${nbPros > 1 ? "ont" : "a"} été prévenu${nbPros > 1 ? "s" : ""}` : "Les professionnels de votre secteur ont été prévenus"}. Inutile de la redéposer, une réponse vous parviendra rapidement.`
+            : nbPros > 0
+              ? `${proNom} et ${nbPros} professionnel${nbPros > 1 ? "s" : ""} de votre secteur ${nbPros > 1 ? "ont" : "a"} été notifié${nbPros > 1 ? "s" : ""}. Une réponse vous parviendra par email ou téléphone.`
+              : `${proNom} a été notifié. Une réponse vous parviendra par email ou téléphone.`}
         </p>
       </div>
     );

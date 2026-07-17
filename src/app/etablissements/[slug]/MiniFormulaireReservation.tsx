@@ -66,6 +66,8 @@ export default function MiniFormulaireReservation({
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [nbPros, setNbPros] = useState(0);
+  const [doublon, setDoublon] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -139,6 +141,8 @@ export default function MiniFormulaireReservation({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
+      setNbPros(data.pros_notifies ?? 0);
+      setDoublon(data.doublon === true);
       setSent(true);
     } catch (err) {
       setError((err as Error).message);
@@ -151,9 +155,13 @@ export default function MiniFormulaireReservation({
     return (
       <div className="bg-white/10 border border-white/20 rounded-xl p-4 text-center">
         <CheckCircle2 className="w-8 h-8 text-white mx-auto mb-2" />
-        <div className="font-semibold text-white">Ta demande est bien reçue.</div>
+        <div className="font-semibold text-white">
+          {doublon ? "Ta demande est déjà en cours." : "Ta demande est bien reçue."}
+        </div>
         <p className="text-sm text-blue-100 mt-1">
-          Un professionnel va te rappeler rapidement.
+          {doublon
+            ? `${nbPros > 0 ? `${nbPros} professionnel${nbPros > 1 ? "s" : ""} ${nbPros > 1 ? "ont" : "a"} été prévenu${nbPros > 1 ? "s" : ""}` : "Les professionnels de ton secteur ont été prévenus"}. Inutile de la redéposer, ils te rappelleront.`
+            : "Un professionnel va te rappeler rapidement."}
         </p>
       </div>
     );
