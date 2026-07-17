@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test src/lib/horaires.test.ts src/lib/distance-course.test.ts src/lib/tarif-cpam.test.ts src/lib/tarif-transport-sanitaire.test.ts"
+    "test": "node --import tsx --test src/lib/horaires.test.ts src/lib/distance-course.test.ts src/lib/tarif-cpam.test.ts src/lib/tarif-transport-sanitaire.test.ts src/lib/date-heure.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
