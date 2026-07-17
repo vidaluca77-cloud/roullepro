@@ -13,8 +13,10 @@ import {
   Lock,
   Sparkles,
   AlertCircle,
+  MessageSquare,
 } from "lucide-react";
 import type { ProSanitaire } from "@/lib/sanitaire-data";
+import { normaliserTelephoneFr } from "@/lib/sms";
 
 const MAX_PHOTOS = 10;
 
@@ -52,6 +54,19 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
   const [photos, setPhotos] = useState<string[]>(
     Array.isArray(fiche.photos) ? fiche.photos : []
   );
+
+  // Notifications SMS (phase 1) : opt-in + numero de mobile dedie, pre-rempli
+  // avec le telephone public existant si aucun numero SMS n'est enregistre.
+  const [smsNotifications, setSmsNotifications] = useState<boolean>(
+    fiche.sms_notifications === true
+  );
+  const [telephoneSms, setTelephoneSms] = useState(
+    fiche.telephone_sms || fiche.telephone_public || ""
+  );
+  const smsNumeroInvalide =
+    smsNotifications &&
+    telephoneSms.trim() !== "" &&
+    normaliserTelephoneFr(telephoneSms) === null;
 
   // ADS : champs visibles uniquement pour les taxis conventionnes (art. L.3121-1 Code des transports)
   const isTaxi = fiche.categorie === "taxi_conventionne";
@@ -162,6 +177,19 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validation opt-in SMS : un numero de mobile FR valide est requis.
+    const smsNumero = telephoneSms.trim();
+    const smsNumeroNorm = smsNumero ? normaliserTelephoneFr(smsNumero) : null;
+    if (smsNotifications) {
+      if (!smsNumero) {
+        setMsg("Erreur : indiquez un numero de mobile pour recevoir les SMS.");
+        return;
+      }
+      if (!smsNumeroNorm) {
+        setMsg("Erreur : numero de mobile invalide (06/07 ou +33).");
+        return;
+      }
+    }
     setLoading(true);
     setMsg(null);
     try {
@@ -180,6 +208,9 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean),
+          // Notifications SMS (phase 1) : on stocke le numero normalise E.164.
+          sms_notifications: smsNotifications,
+          telephone_sms: smsNotifications ? smsNumeroNorm : smsNumeroNorm || null,
           horaires: (() => {
             const out: Record<string, string> = {};
             for (const j of JOURS) {
@@ -444,6 +475,49 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
         </div>
       )}
 
+      <div className="border border-gray-200 rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <MessageSquare className="w-4 h-4 text-[#0066CC]" />
+          <span className="text-sm font-semibold text-gray-800">
+            Notifications SMS
+          </span>
+        </div>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={smsNotifications}
+            onChange={(e) => setSmsNotifications(e.target.checked)}
+            className="mt-0.5 w-4 h-4 accent-[#0066CC]"
+          />
+          <span className="text-sm text-gray-800">
+            Recevoir les nouvelles courses par SMS
+          </span>
+        </label>
+        {smsNotifications && (
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Numéro de mobile pour les SMS
+            </label>
+            <input
+              type="tel"
+              value={telephoneSms}
+              onChange={(e) => setTelephoneSms(e.target.value)}
+              placeholder="06 12 34 56 78"
+              className={`${inputCls} ${smsNumeroInvalide ? "border-red-300 focus:border-red-400 focus:ring-red-100" : ""}`}
+            />
+            {smsNumeroInvalide && (
+              <div className="text-xs text-red-600 mt-1">
+                Numéro de mobile invalide (06/07 ou +33).
+              </div>
+            )}
+          </div>
+        )}
+        <p className="text-xs text-gray-500 mt-2">
+          SMS de notification uniquement (nouvelles courses dans votre département).
+          Désactivable à tout moment.
+        </p>
+      </div>
+
       <div className="border border-gray-200 rounded-2xl p-4 bg-gray-50/50">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div className="flex items-center gap-2">
@@ -547,7 +621,7 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || smsNumeroInvalide}
         className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] disabled:opacity-60 text-white font-semibold px-5 py-2.5 rounded-xl transition"
       >
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}

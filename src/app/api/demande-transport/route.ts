@@ -16,6 +16,11 @@ import {
 } from "@/lib/email";
 import { geocodeAdresse } from "@/lib/geocode-adresse";
 import { normaliserDepartement } from "@/lib/departement";
+import {
+  construireMessageSmsCourse,
+  envoyerSmsTransactionnel,
+  normaliserTelephoneFr,
+} from "@/lib/sms";
 import { calculerDistanceCourse } from "@/lib/distance-course";
 import { estimerPrixCourse, type EstimationCourse } from "@/lib/tarif-transport-sanitaire";
 
@@ -381,6 +386,90 @@ export async function POST(req: Request) {
         if (sent) prosNotifies += 1;
       })
     );
+
+    // --- SMS transactionnels aux pros opt-in (best-effort, jamais bloquant) ---
+    // Tolerant a l'absence des colonnes/tables SMS (avant application de la
+    // migration) : toute erreur est capturee et l'envoi email n'est pas impacte.
+    const proIdsNotifies = rows.map((r) => r.pro_id).filter(Boolean);
+    if (proIdsNotifies.length > 0) {
+      try {
+        const { data: smsPros, error: smsSelErr } = await supabase
+          .from("pros_sanitaire")
+          .select("id, sms_notifications, telephone_sms, phone_e164")
+          .in("id", proIdsNotifies)
+          .eq("sms_notifications", true);
+
+        if (!smsSelErr && smsPros && smsPros.length > 0) {
+          const contenu = construireMessageSmsCourse({
+            typeTransport,
+            dateSouhaitee: dateSouhaiteeIso,
+            villeDepart: villeDepart || villeCible,
+            departement: departementCible,
+          });
+
+          // Numeros normalises en E.164 (fallback phone_e164 si telephone_sms vide).
+          type SmsProRow = {
+            id: string;
+            telephone_sms: string | null;
+            phone_e164: string | null;
+          };
+          const cibles = (smsPros as SmsProRow[])
+            .map((p) => {
+              const brut = p.telephone_sms || p.phone_e164 || null;
+              const numero = brut ? normaliserTelephoneFr(String(brut)) : null;
+              return numero ? { proId: p.id, numero } : null;
+            })
+            .filter((x): x is { proId: string; numero: string } => x !== null);
+
+          // Exclusion des numeros presents dans sms_optout (table tolerante).
+          let optout = new Set<string>();
+          if (cibles.length > 0) {
+            try {
+              const { data: outRows } = await supabase
+                .from("sms_optout")
+                .select("numero")
+                .in(
+                  "numero",
+                  cibles.map((c) => c.numero)
+                );
+              optout = new Set(
+                ((outRows as { numero: string }[] | null) || []).map((r) => r.numero)
+              );
+            } catch {
+              // Table absente : aucun opt-out connu, on continue.
+            }
+          }
+
+          const aEnvoyer = cibles.filter((c) => !optout.has(c.numero));
+
+          await Promise.allSettled(
+            aEnvoyer.map(async ({ proId, numero }) => {
+              const res = await envoyerSmsTransactionnel({
+                to: numero,
+                content: contenu,
+                tag: "demande-transport",
+              });
+              try {
+                await supabase.from("sms_log").insert({
+                  destinataire: numero,
+                  pro_id: proId,
+                  demande_id: demande.id,
+                  type: "transactionnel",
+                  contenu,
+                  statut: res.ok ? "envoye" : "echec",
+                  brevo_message_id: res.messageId || null,
+                  erreur: res.erreur || null,
+                });
+              } catch {
+                // Table sms_log absente : journalisation ignoree.
+              }
+            })
+          );
+        }
+      } catch (e) {
+        console.error("[demande-transport] SMS pros error", e);
+      }
+    }
 
     // Aucun pro joignable : email de secours interne.
     if (prosNotifies === 0) {

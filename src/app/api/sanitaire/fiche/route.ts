@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { normaliserTelephoneFr } from "@/lib/sms";
 
 const getAdminClient = () =>
   createClient(
@@ -50,9 +51,39 @@ export async function PATCH(req: Request) {
       "commune_ads",
       "commune_ads_slug",
       "zupc_communes",
+      // Notifications SMS (phase 1)
+      "sms_notifications",
+      "telephone_sms",
     ];
     for (const k of allowedKeys) {
       if (k in fields) allowed[k] = fields[k];
+    }
+
+    // Notifications SMS : normalisation serveur du numero (E.164) + coherence.
+    if ("sms_notifications" in allowed) {
+      allowed.sms_notifications = allowed.sms_notifications === true;
+    }
+    if ("telephone_sms" in allowed) {
+      const brut = allowed.telephone_sms;
+      if (brut == null || String(brut).trim() === "") {
+        allowed.telephone_sms = null;
+      } else {
+        const numero = normaliserTelephoneFr(String(brut));
+        if (!numero) {
+          return NextResponse.json(
+            { error: "Numero de mobile SMS invalide" },
+            { status: 400 }
+          );
+        }
+        allowed.telephone_sms = numero;
+      }
+    }
+    // Un opt-in SMS sans numero valide est incoherent : on refuse.
+    if (allowed.sms_notifications === true && !allowed.telephone_sms) {
+      return NextResponse.json(
+        { error: "Un numero de mobile est requis pour activer les SMS" },
+        { status: 400 }
+      );
     }
 
     // Reserve les champs ADS aux taxis conventionnes : un ambulancier/VSL ne peut pas saisir d ADS.
