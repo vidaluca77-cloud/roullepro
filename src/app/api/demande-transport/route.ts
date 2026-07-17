@@ -17,7 +17,7 @@ import {
 import { geocodeAdresse } from "@/lib/geocode-adresse";
 import { normaliserDepartement } from "@/lib/departement";
 import { calculerDistanceCourse } from "@/lib/distance-course";
-import { estimerPrixCPAM, type EstimationCPAM } from "@/lib/tarif-cpam";
+import { estimerPrixCourse, type EstimationCourse } from "@/lib/tarif-transport-sanitaire";
 
 const getAdminClient = () =>
   createClient(
@@ -252,9 +252,10 @@ export async function POST(req: Request) {
     const distanceKm = distance?.distanceKm ?? null;
 
     let prixEstime: number | null = null;
-    let prixEstimeDetails: EstimationCPAM["details"] | null = null;
+    let prixEstimeDetails: EstimationCourse["details"] | null = null;
     if (distanceKm != null) {
-      const estimation = estimerPrixCPAM({
+      const estimation = estimerPrixCourse({
+        typeTransport,
         distanceKm,
         departementCible,
         villeDepart,
