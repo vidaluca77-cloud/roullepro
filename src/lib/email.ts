@@ -12,6 +12,8 @@
  */
 
 import { buildAccepterDirectUrl } from '@/lib/demande-accept-token';
+import { MENTION_ESTIMATION_CPAM } from '@/lib/tarif-cpam';
+import { MENTION_ESTIMATION_TRANSPORT_SANITAIRE } from '@/lib/tarif-transport-sanitaire';
 
 const FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL || 'RoullePro <onboarding@resend.dev>';
@@ -1230,14 +1232,20 @@ function formatEstimationCourse(
     parts.push(`Distance estimée : ${distanceKm} km`);
   }
   if (typeof prixEstime === 'number' && Number.isFinite(prixEstime) && prixEstime > 0) {
-    parts.push(`Estimation CPAM : ~${prixEstime} €`);
+    parts.push(`Estimation : ~${prixEstime} €`);
   }
   return parts.length ? parts.join(' · ') : null;
 }
 
-/** Mention indicative CPAM affichee sous toute estimation de prix. */
-const MENTION_CPAM_EMAIL =
-  'Estimation indicative selon la convention CPAM (arrêté du 29/07/2025), ne vaut pas devis.';
+/**
+ * Mention indicative adaptee au type de transport : taxi -> convention CPAM ;
+ * VSL / ambulance -> convention nationale des transporteurs sanitaires.
+ */
+function mentionEstimation(typeTransport?: string | null): string {
+  return typeTransport === 'vsl' || typeTransport === 'ambulance'
+    ? MENTION_ESTIMATION_TRANSPORT_SANITAIRE
+    : MENTION_ESTIMATION_CPAM;
+}
 
 /** Signature commerciale commune a tous les emails de transport (tutoiement). */
 function signatureBloc(): string {
@@ -1342,7 +1350,7 @@ export async function sendDemandeTransportPro(p: {
             ${ligneInfo('Bon de transport', bonStr)}
           </table>
         </div>
-        ${estimationStr ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin:16px 0"><p style="margin:0;font-size:14px;color:#1e40af;font-weight:600">${estimationStr}</p><p style="margin:6px 0 0;font-size:12px;color:#64748b">${MENTION_CPAM_EMAIL}</p></div>` : ''}
+        ${estimationStr ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin:16px 0"><p style="margin:0;font-size:14px;color:#1e40af;font-weight:600">${estimationStr}</p><p style="margin:6px 0 0;font-size:12px;color:#64748b">${mentionEstimation(p.typeTransport)}</p></div>` : ''}
         ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">
           ${accepterUrl ? `${emailButton(accepterUrl, 'Accepter cette course', '#10b981')}<br><br>` : ''}
@@ -1703,7 +1711,7 @@ export async function sendAdminNouvelleDemande(demande: {
             ${ligneInfo('Pros notifiés', String(nbPros))}
           </table>
         </div>
-        ${estimationStr ? `<p style="margin:-8px 0 16px;font-size:12px;color:#64748b">${MENTION_CPAM_EMAIL}</p>` : ''}
+        ${estimationStr ? `<p style="margin:-8px 0 16px;font-size:12px;color:#64748b">${mentionEstimation(demande.type_transport)}</p>` : ''}
         ${demande.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(demande.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">${emailButton(adminUrl, 'Voir dans l\'admin')}</div>
         ${emailFooter('Annuaire du transport sanitaire')}

@@ -66,7 +66,7 @@ const DEPARTEMENTS_GRANDE_VILLE = new Set(["92", "93", "94"]);
 function normaliserVille(v: string | null | undefined): string {
   return (v || "")
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
 }
@@ -156,6 +156,41 @@ function composantesParis(date: Date): PartsParis {
   return { annee, mois, jour, heure, jourSemaine };
 }
 
+function dateValide(date: Date | null | undefined): date is Date {
+  return !!date && !Number.isNaN(date.getTime());
+}
+
+/**
+ * Plage nuit (20h-8h, Europe/Paris). Helper factorise, reutilise par les
+ * estimateurs VSL / ambulance qui appliquent un taux nuit distinct.
+ */
+export function estNuit(date: Date | null | undefined): boolean {
+  if (!dateValide(date)) return false;
+  const { heure } = composantesParis(date);
+  return heure >= 20 || heure < 8;
+}
+
+/**
+ * Dimanche ou jour ferie (interpretation Europe/Paris). Ne tient pas compte de
+ * l'heure : combiner avec estNuit pour les regles de non-cumul.
+ */
+export function estDimancheOuFerie(date: Date | null | undefined): boolean {
+  if (!dateValide(date)) return false;
+  const { annee, mois, jour, jourSemaine } = composantesParis(date);
+  if (jourSemaine === 0) return true; // dimanche
+  return joursFeriesFrance(annee).has(`${mois}-${jour}`); // ferie
+}
+
+/**
+ * Samedi a partir de 12h (Europe/Paris) : le tarif dimanche/ferie s'applique
+ * des le samedi apres-midi dans les conventions de transport sanitaire.
+ */
+export function estSamediApres12h(date: Date | null | undefined): boolean {
+  if (!dateValide(date)) return false;
+  const { heure, jourSemaine } = composantesParis(date);
+  return jourSemaine === 6 && heure >= 12;
+}
+
 /**
  * Determine si une majoration nuit / week-end / jour ferie s'applique a la
  * date souhaitee (interpretation Europe/Paris) :
@@ -165,13 +200,7 @@ function composantesParis(date: Date): PartsParis {
  *  - jour ferie
  */
 export function majorationNuitWeApplicable(date: Date | null | undefined): boolean {
-  if (!date || Number.isNaN(date.getTime())) return false;
-  const { annee, mois, jour, heure, jourSemaine } = composantesParis(date);
-  if (heure >= 20 || heure < 8) return true; // nuit
-  if (jourSemaine === 0) return true; // dimanche
-  if (jourSemaine === 6 && heure >= 12) return true; // samedi apres-midi
-  if (joursFeriesFrance(annee).has(`${mois}-${jour}`)) return true; // ferie
-  return false;
+  return estNuit(date) || estDimancheOuFerie(date) || estSamediApres12h(date);
 }
 
 export type EstimationCPAMInput = {

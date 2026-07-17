@@ -15,6 +15,8 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { LIBELLE_TYPE_TRANSPORT, type TypeTransport } from "@/lib/transport-types";
+import { MENTION_ESTIMATION_CPAM } from "@/lib/tarif-cpam";
+import { MENTION_ESTIMATION_TRANSPORT_SANITAIRE } from "@/lib/tarif-transport-sanitaire";
 
 export type DemandeProRow = {
   dtp_id: string;
@@ -41,15 +43,21 @@ export type DemandeProRow = {
   demandeur_email: string | null;
 };
 
-/** Mention indicative CPAM affichee sous toute estimation de prix. */
-const MENTION_CPAM =
-  "Estimation indicative selon la convention CPAM (arrêté du 29/07/2025), ne vaut pas devis.";
+/**
+ * Mention indicative adaptee au type de transport : taxi -> convention CPAM ;
+ * VSL / ambulance -> convention nationale des transporteurs sanitaires.
+ */
+function mentionEstimation(typeTransport: string | null): string {
+  return typeTransport === "vsl" || typeTransport === "ambulance"
+    ? MENTION_ESTIMATION_TRANSPORT_SANITAIRE
+    : MENTION_ESTIMATION_CPAM;
+}
 
-/** Ligne "Distance estimée : X km · Estimation CPAM : ~Y €" (null si rien). */
+/** Ligne "Distance estimée : X km · Estimation : ~Y €" (null si rien). */
 function formatEstimation(distanceKm: number | null, prixEstime: number | null): string | null {
   const parts: string[] = [];
   if (typeof distanceKm === "number" && distanceKm > 0) parts.push(`Distance estimée : ${distanceKm} km`);
-  if (typeof prixEstime === "number" && prixEstime > 0) parts.push(`Estimation CPAM : ~${prixEstime} €`);
+  if (typeof prixEstime === "number" && prixEstime > 0) parts.push(`Estimation : ~${prixEstime} €`);
   return parts.length ? parts.join(" · ") : null;
 }
 
@@ -130,7 +138,7 @@ function Trajet({ d }: { d: DemandeProRow }) {
       {estimation && (
         <div className="bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5">
           <div className="text-xs font-semibold text-blue-800">{estimation}</div>
-          <div className="text-[10px] text-gray-500 mt-0.5">{MENTION_CPAM}</div>
+          <div className="text-[10px] text-gray-500 mt-0.5">{mentionEstimation(d.type_transport)}</div>
         </div>
       )}
       <div className="flex flex-wrap gap-1.5 text-[11px]">
