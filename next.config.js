@@ -39,14 +39,16 @@ const securityHeaders = [
   //   - Google Ads (conversions + tag remarketing)
   //   - hCaptcha (protection anti-bot)
   //   - Stripe Checkout (frame pour formulaire de paiement hosted)
+  //   - Google Maps / Places (autocomplete d'adresse des formulaires de transport)
+  //   - API Adresse nationale (fallback autocomplete si Google ne charge pas)
   {
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.gstatic.com https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://www.google.com https://www.gstatic.com https://maps.googleapis.com https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net",
       "style-src 'self' 'unsafe-inline' https://hcaptcha.com https://*.hcaptcha.com",
       "img-src 'self' https: data: blob:",
-      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net`,
+      `connect-src 'self' https://ypgolzcibtjljfydxcun.supabase.co wss://ypgolzcibtjljfydxcun.supabase.co https://api.resend.com https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://maps.googleapis.com https://api-adresse.data.gouv.fr https://hcaptcha.com https://*.hcaptcha.com https://taxiconnectpro.net`,
       "font-src 'self' data:",
       "frame-src https://checkout.stripe.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://taxiconnectpro.net",
       "frame-ancestors 'none'",

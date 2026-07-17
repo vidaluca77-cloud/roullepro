@@ -5,41 +5,29 @@
  * formulaires de demande de transport (home, widget, fiche etablissement,
  * fiche pro).
  *
- * Objectifs (cf. audit formulaires §5) :
- *  - date ET heure obligatoires (fini le `type=date` sans heure) ;
- *  - pas de 15 min (step=900) ;
- *  - `min` = maintenant + 30 min, `max` = +6 mois ;
- *  - message d'erreur clair en francais si la date est passee / hors bornes.
+ * Refonte (cf. audit formulaires §5) : l'input unique `datetime-local` collait
+ * l'heure au calendrier et la majorite des patients la laissaient vide ou
+ * fausse. On scinde donc en DEUX champs distincts (date + heure), avec un
+ * recapitulatif francais de confirmation comme garde-fou.
  *
- * La valeur exposee au parent est la chaine `datetime-local` locale
- * ("YYYY-MM-DDTHH:mm"). Le parent la convertit en ISO avec offset via
- * `toISODateSouhaitee` juste avant l'envoi API.
+ * L'interface publique reste INCHANGEE (value "YYYY-MM-DDTHH:mm", onChange,
+ * toISODateSouhaitee, memes props) : les 4 formulaires parents beneficient du
+ * nouveau rendu sans modification.
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  bornesDateHeure,
+  combineDateHeure,
+  formaterRecap,
+  splitDateHeure,
+  toISODateSouhaitee,
+  validerDateHeure,
+} from "@/lib/date-heure";
 
-/** Marge minimale avant la premiere course reservable (en minutes). */
-const MARGE_MIN_MINUTES = 30;
-/** Horizon maximal de reservation (en mois). */
-const HORIZON_MAX_MOIS = 6;
-
-/** Formate une Date en chaine locale "YYYY-MM-DDTHH:mm" pour un input datetime-local. */
-function formatLocalInput(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`;
-}
-
-/**
- * Convertit la chaine `datetime-local` locale saisie en ISO (avec offset du
- * fuseau du navigateur, typiquement Europe/Paris pour la cible). Renvoie null si
- * vide ou invalide. Tue le decalage TZ a l'affichage cote pro.
- */
-export function toISODateSouhaitee(local: string | null | undefined): string | null {
-  if (!local) return null;
-  const d = new Date(local);
-  if (Number.isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
+// Re-export pour conserver l'import existant des parents
+// (`import DateHeureCourse, { toISODateSouhaitee } from "..."`).
+export { toISODateSouhaitee };
 
 type Props = {
   /** Chaine datetime-local ("YYYY-MM-DDTHH:mm"). */
@@ -61,42 +49,95 @@ export default function DateHeureCourse({
   inputClassName,
   labelClassName,
 }: Props) {
-  // Bornes recalculees a chaque rendu (memo pour stabilite dans un cycle).
-  const { min, max } = useMemo(() => {
-    const now = new Date();
-    const minDate = new Date(now.getTime() + MARGE_MIN_MINUTES * 60_000);
-    const maxDate = new Date(now);
-    maxDate.setMonth(maxDate.getMonth() + HORIZON_MAX_MOIS);
-    return { min: formatLocalInput(minDate), max: formatLocalInput(maxDate) };
-  }, []);
+  const initial = splitDateHeure(value);
+  const [datePart, setDatePart] = useState(initial.date);
+  const [timePart, setTimePart] = useState(initial.time);
 
-  // Message d'erreur clair si la valeur saisie est hors bornes.
-  const erreur = useMemo(() => {
-    if (!value) return null;
-    if (value < min) return "Merci de choisir une date et une heure à venir (au moins 30 minutes à l'avance).";
-    if (value > max) return `Merci de choisir une date dans les ${HORIZON_MAX_MOIS} prochains mois.`;
-    return null;
-  }, [value, min, max]);
+  // Resynchronise l'etat interne si la valeur est pilotee de l'exterieur
+  // (reset apres envoi du formulaire, pre-remplissage eventuel).
+  useEffect(() => {
+    if (value !== combineDateHeure(datePart, timePart)) {
+      const s = splitDateHeure(value);
+      setDatePart(s.date);
+      setTimePart(s.time);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  // Bornes du selecteur (recalculees une fois par montage).
+  const { minDate, maxDate } = useMemo(() => bornesDateHeure(), []);
+
+  const { erreur, champ } = useMemo(
+    () => validerDateHeure(datePart, timePart),
+    [datePart, timePart]
+  );
+
+  const recap = useMemo(
+    () => (erreur ? null : formaterRecap(datePart, timePart)),
+    [datePart, timePart, erreur]
+  );
+
+  // onChange n'est appele qu'avec une chaine complete (sinon "").
+  const emettre = (d: string, t: string) => {
+    setDatePart(d);
+    setTimePart(t);
+    onChange(combineDateHeure(d, t));
+  };
+
+  const dateId = `${id}-date`;
+  const heureId = `${id}-heure`;
+  const errId = `${id}-erreur`;
 
   return (
     <div>
       {label && (
-        <label htmlFor={id} className={labelClassName}>
+        <span className={labelClassName} id={`${id}-label`}>
           {label}
-        </label>
+        </span>
       )}
-      <input
-        id={id}
-        type="datetime-local"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        min={min}
-        max={max}
-        step={900}
-        className={inputClassName}
-      />
-      {erreur && <p className="text-xs text-red-600 mt-1">{erreur}</p>}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label htmlFor={dateId} className={labelClassName}>
+            Date de prise en charge
+          </label>
+          <input
+            id={dateId}
+            type="date"
+            value={datePart}
+            onChange={(e) => emettre(e.target.value, timePart)}
+            required={required}
+            min={minDate}
+            max={maxDate}
+            className={inputClassName}
+            aria-invalid={erreur != null && champ === "date"}
+            aria-describedby={erreur && champ === "date" ? errId : undefined}
+          />
+        </div>
+        <div>
+          <label htmlFor={heureId} className={labelClassName}>
+            Heure de prise en charge
+          </label>
+          <input
+            id={heureId}
+            type="time"
+            value={timePart}
+            onChange={(e) => emettre(datePart, e.target.value)}
+            required={required}
+            step={300}
+            className={inputClassName}
+            aria-invalid={erreur != null && champ === "heure"}
+            aria-describedby={erreur && champ === "heure" ? errId : undefined}
+          />
+        </div>
+      </div>
+      {erreur && (
+        <p id={errId} className="text-xs text-red-600 mt-1">
+          {erreur}
+        </p>
+      )}
+      {recap && (
+        <p className="text-xs text-gray-600 mt-1.5 font-medium">{recap}</p>
+      )}
     </div>
   );
 }

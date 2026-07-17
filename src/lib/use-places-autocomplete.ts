@@ -66,6 +66,162 @@ declare global {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+/** Delai max d'attente du script Google avant bascule sur le fallback BAN (ms). */
+const GOOGLE_LOAD_TIMEOUT_MS = 3000;
+
+/**
+ * Structure minimale d'une feature renvoyee par l'API Adresse nationale (BAN).
+ * Doc : https://adresse.data.gouv.fr/api-doc/adresse
+ */
+type BanFeature = {
+  properties: {
+    label: string;
+    city?: string;
+    postcode?: string;
+    context?: string;
+  };
+  geometry: { coordinates: [number, number] }; // [lng, lat]
+};
+
+/**
+ * Fallback resilient : autocomplete d'adresse via l'API Adresse nationale
+ * (api-adresse.data.gouv.fr, gratuite, sans cle). Active uniquement si le script
+ * Google Places ne se charge pas (cle absente, timeout, erreur reseau/CSP).
+ *
+ * Cree un menu deroulant vanilla sous chaque input et alimente le MEME
+ * `onSelect(PlaceSelection)` que Google, afin que le calcul de distance et le
+ * dispatch departemental cote consommateur continuent de fonctionner a
+ * l'identique. Aucune difference visuelle notable pour l'utilisateur.
+ *
+ * Renvoie une fonction de nettoyage (listeners + noeuds DOM).
+ */
+function attachBanFallback(inputs: RefsInput[]): () => void {
+  const cleanups: Array<() => void> = [];
+
+  for (const { ref, onSelect } of inputs) {
+    const el = ref.current;
+    if (!el || el.dataset.banAttached === "1") continue;
+    el.dataset.banAttached = "1";
+    el.setAttribute("autocomplete", "off");
+
+    const dropdown = document.createElement("ul");
+    dropdown.setAttribute("role", "listbox");
+    dropdown.style.cssText =
+      "position:fixed;z-index:9999;margin:0;padding:4px;list-style:none;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);max-height:260px;overflow:auto;display:none;font-size:14px;color:#111827;";
+    document.body.appendChild(dropdown);
+
+    let features: BanFeature[] = [];
+    let debounceId: ReturnType<typeof setTimeout> | undefined;
+    let controller: AbortController | null = null;
+
+    const positionner = () => {
+      const r = el.getBoundingClientRect();
+      dropdown.style.left = `${r.left}px`;
+      dropdown.style.top = `${r.bottom + 2}px`;
+      dropdown.style.width = `${r.width}px`;
+    };
+
+    const masquer = () => {
+      dropdown.style.display = "none";
+    };
+
+    const choisir = (f: BanFeature) => {
+      const [lng, lat] = f.geometry.coordinates;
+      const cp = f.properties.postcode?.trim() || null;
+      // Departement : d'abord derive du code postal (helper partage), sinon on
+      // tente le premier segment du contexte BAN ("14, Calvados, Normandie").
+      const departement =
+        codePostalToDepartement(cp) ||
+        normaliserDepartement(f.properties.context?.split(",")[0]);
+      el.value = f.properties.label;
+      onSelect({
+        formattedAddress: f.properties.label,
+        components: [],
+        lat: typeof lat === "number" ? lat : null,
+        lng: typeof lng === "number" ? lng : null,
+        departement,
+        ville: f.properties.city || null,
+        codePostal: cp && /^\d{5}$/.test(cp) ? cp : null,
+      });
+      masquer();
+    };
+
+    const rendre = () => {
+      dropdown.innerHTML = "";
+      if (features.length === 0) {
+        masquer();
+        return;
+      }
+      for (const f of features) {
+        const li = document.createElement("li");
+        li.textContent = f.properties.label;
+        li.setAttribute("role", "option");
+        li.style.cssText = "padding:8px 10px;cursor:pointer;border-radius:8px;";
+        // mousedown (avant blur) pour ne pas fermer le menu avant la selection.
+        li.addEventListener("mousedown", (ev) => {
+          ev.preventDefault();
+          choisir(f);
+        });
+        li.addEventListener("mouseenter", () => {
+          li.style.background = "#f3f4f6";
+        });
+        li.addEventListener("mouseleave", () => {
+          li.style.background = "transparent";
+        });
+        dropdown.appendChild(li);
+      }
+      positionner();
+      dropdown.style.display = "block";
+    };
+
+    const onInput = () => {
+      const q = el.value.trim();
+      if (debounceId) clearTimeout(debounceId);
+      if (q.length < 3) {
+        features = [];
+        masquer();
+        return;
+      }
+      debounceId = setTimeout(async () => {
+        controller?.abort();
+        controller = new AbortController();
+        try {
+          const res = await fetch(
+            `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(q)}&limit=5&autocomplete=1`,
+            { signal: controller.signal }
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+          features = Array.isArray(data?.features) ? (data.features as BanFeature[]) : [];
+          rendre();
+        } catch {
+          // Reseau KO ou requete annulee : on ignore silencieusement.
+        }
+      }, 250);
+    };
+
+    const onBlur = () => setTimeout(masquer, 150);
+
+    el.addEventListener("input", onInput);
+    el.addEventListener("blur", onBlur);
+    window.addEventListener("scroll", positionner, true);
+    window.addEventListener("resize", positionner);
+
+    cleanups.push(() => {
+      if (debounceId) clearTimeout(debounceId);
+      controller?.abort();
+      el.removeEventListener("input", onInput);
+      el.removeEventListener("blur", onBlur);
+      window.removeEventListener("scroll", positionner, true);
+      window.removeEventListener("resize", positionner);
+      dropdown.remove();
+      delete el.dataset.banAttached;
+    });
+  }
+
+  return () => cleanups.forEach((fn) => fn());
+}
+
 /**
  * Extrait un code departement (2 ou 3 caracteres) a partir des
  * address_components Google. Strategie en cascade :
@@ -129,10 +285,11 @@ type RefsInput = {
  */
 export function usePlacesAutocomplete(inputs: RefsInput[]) {
   const autocompletesRef = useRef<GooglePlacesAutocomplete[]>([]);
+  const cleanupFallbackRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    if (!GOOGLE_MAPS_API_KEY) return;
     let cancelled = false;
+    let fallbackActive = false;
 
     const attach = () => {
       if (cancelled || !window.google?.maps?.places) return;
@@ -170,6 +327,22 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
       }
     };
 
+    // Bascule vers le fallback API Adresse nationale (une seule fois).
+    const activerFallback = () => {
+      if (cancelled || fallbackActive || window.google?.maps?.places) return;
+      fallbackActive = true;
+      cleanupFallbackRef.current = attachBanFallback(inputs);
+    };
+
+    // Pas de cle Google -> fallback direct.
+    if (!GOOGLE_MAPS_API_KEY) {
+      activerFallback();
+      return () => {
+        cancelled = true;
+        cleanupFallbackRef.current?.();
+      };
+    }
+
     if (window.google?.maps?.places) {
       const raf = requestAnimationFrame(attach);
       return () => {
@@ -178,19 +351,32 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
       };
     }
 
-    window.initGooglePlaces = attach;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    window.initGooglePlaces = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      attach();
+    };
+
     const scriptId = "google-maps-places-script";
-    if (!document.getElementById(scriptId)) {
+    const existing = document.getElementById(scriptId);
+    if (!existing) {
       const script = document.createElement("script");
       script.id = scriptId;
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
       script.async = true;
       script.defer = true;
+      // Erreur de chargement (CSP, reseau, cle invalide) -> fallback BAN.
+      script.addEventListener("error", activerFallback);
       document.head.appendChild(script);
     }
 
+    // Filet de securite : si le script ne s'est pas charge dans le delai imparti
+    // (ex. bloque par la CSP), on bascule sur le fallback.
+    timeoutId = setTimeout(activerFallback, GOOGLE_LOAD_TIMEOUT_MS);
+
     return () => {
       cancelled = true;
+      if (timeoutId) clearTimeout(timeoutId);
       if (window.google?.maps?.event) {
         for (const ac of autocompletesRef.current) {
           try {
@@ -201,6 +387,8 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
         }
       }
       autocompletesRef.current = [];
+      cleanupFallbackRef.current?.();
+      cleanupFallbackRef.current = null;
       // Ne pas supprimer initGooglePlaces : d'autres composants montes peuvent en avoir besoin
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
