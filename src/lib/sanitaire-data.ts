@@ -306,6 +306,10 @@ export type ProSanitaire = {
   longitude: number | null;
   telephone_public: string | null;
   email_public: string | null;
+  // Notifications SMS transactionnelles (phase 1) — colonnes optionnelles tant
+  // que la migration 20260717_sms_phase1.sql n'est pas appliquee en prod.
+  sms_notifications?: boolean | null;
+  telephone_sms?: string | null;
   site_web: string | null;
   horaires: Record<string, string> | null;
   description: string | null;
