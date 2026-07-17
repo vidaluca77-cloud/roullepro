@@ -34,10 +34,24 @@ export type DemandeProRow = {
   taux_prise_en_charge_autre: string | null;
   bon_transport_medical: boolean | null;
   source_form: string | null;
+  distance_km: number | null;
+  prix_estime: number | null;
   demandeur_nom: string | null;
   demandeur_telephone: string | null;
   demandeur_email: string | null;
 };
+
+/** Mention indicative CPAM affichee sous toute estimation de prix. */
+const MENTION_CPAM =
+  "Estimation indicative selon la convention CPAM (arrêté du 29/07/2025), ne vaut pas devis.";
+
+/** Ligne "Distance estimée : X km · Estimation CPAM : ~Y €" (null si rien). */
+function formatEstimation(distanceKm: number | null, prixEstime: number | null): string | null {
+  const parts: string[] = [];
+  if (typeof distanceKm === "number" && distanceKm > 0) parts.push(`Distance estimée : ${distanceKm} km`);
+  if (typeof prixEstime === "number" && prixEstime > 0) parts.push(`Estimation CPAM : ~${prixEstime} €`);
+  return parts.length ? parts.join(" · ") : null;
+}
 
 const LABEL_MOBILITE: Record<string, string> = {
   autonome: "Autonome",
@@ -95,6 +109,7 @@ function formatCourt(iso: string | null): string | null {
 function Trajet({ d }: { d: DemandeProRow }) {
   const dateLabel = formatDate(d.date_souhaitee);
   const taux = libelleTaux(d.taux_prise_en_charge, d.taux_prise_en_charge_autre);
+  const estimation = formatEstimation(d.distance_km, d.prix_estime);
   return (
     <div className="space-y-2 mt-2">
       <div className="flex items-start gap-2 text-sm text-gray-700">
@@ -110,6 +125,12 @@ function Trajet({ d }: { d: DemandeProRow }) {
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
           <span className="capitalize">{dateLabel}</span>
+        </div>
+      )}
+      {estimation && (
+        <div className="bg-blue-50 border border-blue-100 rounded-lg px-2.5 py-1.5">
+          <div className="text-xs font-semibold text-blue-800">{estimation}</div>
+          <div className="text-[10px] text-gray-500 mt-0.5">{MENTION_CPAM}</div>
         </div>
       )}
       <div className="flex flex-wrap gap-1.5 text-[11px]">

@@ -11,6 +11,8 @@
  *  - src/app/api/demande-transport/route.ts (POST)
  */
 
+import { codePostalToDepartement, normaliserDepartement } from "@/lib/departement";
+
 export type GeocodeAdresseResult = {
   latitude: number;
   longitude: number;
@@ -20,23 +22,6 @@ export type GeocodeAdresseResult = {
   score: number;
   label: string;
 };
-
-/**
- * Extrait un code departement (2 ou 3 caracteres) a partir d'un code postal FR.
- * - 97XXX -> "97X" (DROM/COM, ex 97400 -> "974")
- * - 98XXX -> "98X" (Polynesie/Wallis, ex 98800 -> "988")
- * - 20XXX -> "2A" / "2B" selon la borne (Corse)
- * - sinon les 2 premiers chiffres
- */
-function codePostalToDepartement(cp: string): string | null {
-  if (!/^\d{5}$/.test(cp)) return null;
-  if (cp.startsWith("97") || cp.startsWith("98")) return cp.slice(0, 3);
-  if (cp.startsWith("20")) {
-    const n = parseInt(cp, 10);
-    return n >= 20200 ? "2B" : "2A";
-  }
-  return cp.slice(0, 2);
-}
 
 /** Score minimum API Adresse pour accepter un resultat (0..1). */
 const MIN_SCORE = 0.4;
@@ -66,20 +51,9 @@ export async function geocodeAdresse(query: string): Promise<GeocodeAdresseResul
     if (score < MIN_SCORE) return null;
     const cp = f.properties?.postcode || null;
     const citycode = f.properties?.citycode || null;
-    // citycode INSEE est plus fiable que postcode pour la Corse / DROM
-    let departement: string | null = null;
-    if (citycode && /^(\d{2}|2A|2B)/i.test(citycode)) {
-      // citycode commence par 2A/2B (Corse) ou 2 chiffres / 3 chiffres pour DROM
-      if (/^(2A|2B)/i.test(citycode)) {
-        departement = citycode.slice(0, 2).toUpperCase();
-      } else if (citycode.startsWith("97") || citycode.startsWith("98")) {
-        departement = citycode.slice(0, 3);
-      } else {
-        departement = citycode.slice(0, 2);
-      }
-    } else if (cp) {
-      departement = codePostalToDepartement(cp);
-    }
+    // citycode INSEE est plus fiable que postcode pour la Corse / DROM.
+    const departement =
+      normaliserDepartement(citycode) || codePostalToDepartement(cp);
     if (!departement) return null;
     const [lng, lat] = f.geometry.coordinates;
     return {

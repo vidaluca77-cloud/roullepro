@@ -365,7 +365,7 @@ export default async function FicheProPage({ params }: Props) {
                 proNom={pro.nom_commercial || pro.raison_sociale}
               />
             )}
-            <ContactProForm proId={pro.id} proNom={pro.nom_commercial || pro.raison_sociale} />
+            <ContactProForm proId={pro.id} proNom={pro.nom_commercial || pro.raison_sociale} proCategorie={pro.categorie} />
           </div>
         </div>
 

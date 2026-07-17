@@ -14,6 +14,7 @@
  */
 
 import { useEffect, useRef } from "react";
+import { codePostalToDepartement, normaliserDepartement } from "@/lib/departement";
 
 export type AddressComponent = {
   long_name: string;
@@ -26,6 +27,10 @@ export type PlaceSelection = {
   components: AddressComponent[];
   lat: number | null;
   lng: number | null;
+  // Champs derives pour transmission directe a l'API (departement, ville, CP).
+  departement: string | null;
+  ville: string | null;
+  codePostal: string | null;
 };
 
 interface GooglePlacesAutocomplete {
@@ -76,24 +81,21 @@ export function extractDepartementFromComponents(
   const byType = (t: string) => components.find((c) => c.types.includes(t));
 
   const postal = byType("postal_code");
-  if (postal?.long_name && /^\d{5}$/.test(postal.long_name)) {
-    const cp = postal.long_name;
-    if (cp.startsWith("97") || cp.startsWith("98")) return cp.slice(0, 3);
-    if (cp.startsWith("20")) {
-      const n = parseInt(cp, 10);
-      return n >= 20200 ? "2B" : "2A";
-    }
-    return cp.slice(0, 2);
-  }
+  const depuisCp = codePostalToDepartement(postal?.long_name);
+  if (depuisCp) return depuisCp;
 
   const adminLvl2 = byType("administrative_area_level_2");
-  if (adminLvl2?.short_name) {
-    const s = adminLvl2.short_name.trim();
-    if (/^(2A|2B)$/i.test(s)) return s.toUpperCase();
-    if (/^\d{2,3}$/.test(s)) return s;
-  }
+  return normaliserDepartement(adminLvl2?.short_name);
+}
 
-  return null;
+/** Extrait le code postal a 5 chiffres des address_components, sinon null. */
+export function extractCodePostalFromComponents(
+  components: AddressComponent[] | null | undefined
+): string | null {
+  if (!components || components.length === 0) return null;
+  const postal = components.find((c) => c.types.includes("postal_code"));
+  const cp = postal?.long_name?.trim();
+  return cp && /^\d{5}$/.test(cp) ? cp : null;
 }
 
 /** Extrait la ville (locality, postal_town, ou administrative_area_level_2 long_name en fallback). */
@@ -159,6 +161,9 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
             components,
             lat,
             lng,
+            departement: extractDepartementFromComponents(components),
+            ville: extractVilleFromComponents(components),
+            codePostal: extractCodePostalFromComponents(components),
           });
         });
         autocompletesRef.current.push(ac);

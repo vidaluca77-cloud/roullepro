@@ -1,22 +1,56 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Send, Loader2, CheckCircle2, Calendar, MapPin, Stethoscope, Accessibility } from "lucide-react";
-// Types Google Maps Places sont declares globalement dans @/lib/use-places-autocomplete.
-// On importe pour recuperer l'augmentation globale de Window.
-import "@/lib/use-places-autocomplete";
+import {
+  usePlacesAutocomplete,
+  type PlaceSelection,
+} from "@/lib/use-places-autocomplete";
+import DateHeureCourse, { toISODateSouhaitee } from "@/components/forms/DateHeureCourse";
+import {
+  CATEGORIE_TO_TYPE_TRANSPORT,
+  type CategoriePro,
+  type TypeTransport,
+} from "@/lib/transport-types";
 
-type TypeTransport = "indifferent" | "ambulance" | "vsl" | "taxi_conventionne";
+// Choix affiche a l'utilisateur : "indifferent" laisse le pro (categorie de la
+// fiche) determiner le type reel envoye a l'API.
+type ChoixTransport = "indifferent" | "ambulance" | "vsl" | "taxi_conventionne";
 type Mobilite = "autonome" | "aide_marche" | "fauteuil" | "brancard";
 
-type LocalAutocomplete = {
-  addListener: (event: string, handler: () => void) => void;
-  getPlace: () => { formatted_address?: string; name?: string };
+const LABEL_TRANSPORT: Record<ChoixTransport, string> = {
+  indifferent: "Indifférent / à conseiller",
+  ambulance: "Ambulance (allongé)",
+  vsl: "VSL (assis, médicalisé)",
+  taxi_conventionne: "Taxi conventionné CPAM",
+};
+const LABEL_MOBILITE: Record<Mobilite, string> = {
+  autonome: "Autonome",
+  aide_marche: "Aide à la marche",
+  fauteuil: "Fauteuil roulant",
+  brancard: "Allongé / brancard",
 };
 
-const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+/**
+ * Resout le type de transport (taxi/vsl/ambulance) attendu par l'API a partir
+ * du choix utilisateur et, pour "indifferent", de la categorie de la fiche pro.
+ */
+function resoudreType(choix: ChoixTransport, proCategorie?: string | null): TypeTransport {
+  if (choix === "taxi_conventionne") return "taxi";
+  if (choix === "vsl") return "vsl";
+  if (choix === "ambulance") return "ambulance";
+  return CATEGORIE_TO_TYPE_TRANSPORT[(proCategorie as CategoriePro) ?? "taxi_conventionne"] || "taxi";
+}
 
-export default function ContactProForm({ proId, proNom }: { proId: string; proNom: string }) {
+export default function ContactProForm({
+  proId,
+  proNom,
+  proCategorie,
+}: {
+  proId: string;
+  proNom: string;
+  proCategorie?: string | null;
+}) {
   // Identité
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,153 +58,93 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
 
   // Transport (champs structurés)
   const [dateSouhaitee, setDateSouhaitee] = useState("");
-  const [heureSouhaitee, setHeureSouhaitee] = useState("");
   const [lieuDepart, setLieuDepart] = useState("");
   const [lieuArrivee, setLieuArrivee] = useState("");
-  const [typeTransport, setTypeTransport] = useState<TypeTransport>("indifferent");
+  const [choixTransport, setChoixTransport] = useState<ChoixTransport>("indifferent");
   const [allerRetour, setAllerRetour] = useState(false);
   const [mobilite, setMobilite] = useState<Mobilite>("autonome");
   const [precisions, setPrecisions] = useState("");
 
+  // Places (Google Autocomplete) — coordonnees + departement + ville des 2 bouts.
+  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(null);
+  const [arriveePlace, setArriveePlace] = useState<PlaceSelection | null>(null);
+
   // État
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
-  const [warning, setWarning] = useState<string | null>(null);
+  const [nbPros, setNbPros] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Google Places Autocomplete (chargement dynamique du script Maps)
   const lieuDepartRef = useRef<HTMLInputElement>(null);
   const lieuArriveeRef = useRef<HTMLInputElement>(null);
-  const departAutocompleteRef = useRef<LocalAutocomplete | null>(null);
-  const arriveeAutocompleteRef = useRef<LocalAutocomplete | null>(null);
 
-  useEffect(() => {
-    if (!GOOGLE_MAPS_API_KEY) return;
-
-    const attachAutocomplete = () => {
-      if (!window.google?.maps?.places) return;
-      const opts = {
-        componentRestrictions: { country: "fr" },
-        fields: ["formatted_address", "name"],
-      };
-      if (lieuDepartRef.current && !departAutocompleteRef.current) {
-        const ac = new window.google.maps.places.Autocomplete(lieuDepartRef.current, opts);
-        ac.addListener("place_changed", () => {
-          const place = ac.getPlace();
-          setLieuDepart(place.formatted_address || place.name || "");
-        });
-        departAutocompleteRef.current = ac;
-      }
-      if (lieuArriveeRef.current && !arriveeAutocompleteRef.current) {
-        const ac = new window.google.maps.places.Autocomplete(lieuArriveeRef.current, opts);
-        ac.addListener("place_changed", () => {
-          const place = ac.getPlace();
-          setLieuArrivee(place.formatted_address || place.name || "");
-        });
-        arriveeAutocompleteRef.current = ac;
-      }
-    };
-
-    // Cas 1 : script déjà chargé (navigation SPA) — attendre le prochain frame pour que les refs soient peupées
-    if (window.google?.maps?.places) {
-      const raf = requestAnimationFrame(attachAutocomplete);
-      return () => cancelAnimationFrame(raf);
-    }
-
-    // Cas 2 : script pas encore chargé — l'injecter avec callback
-    window.initGooglePlaces = attachAutocomplete;
-    const scriptId = "google-maps-places-script";
-    if (!document.getElementById(scriptId)) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-
-    return () => {
-      if (window.google?.maps?.event) {
-        if (departAutocompleteRef.current) {
-          window.google.maps.event.clearInstanceListeners(departAutocompleteRef.current);
-          departAutocompleteRef.current = null;
-        }
-        if (arriveeAutocompleteRef.current) {
-          window.google.maps.event.clearInstanceListeners(arriveeAutocompleteRef.current);
-          arriveeAutocompleteRef.current = null;
-        }
-      }
-      delete window.initGooglePlaces;
-    };
-  }, []);
-
-  const labelTransport: Record<TypeTransport, string> = {
-    indifferent: "Indifférent / à conseiller",
-    ambulance: "Ambulance (allongé)",
-    vsl: "VSL (assis, médicalisé)",
-    taxi_conventionne: "Taxi conventionné CPAM",
-  };
-  const labelMobilite: Record<Mobilite, string> = {
-    autonome: "Autonome",
-    aide_marche: "Aide à la marche",
-    fauteuil: "Fauteuil roulant",
-    brancard: "Allongé / brancard",
-  };
-
-  const buildContent = () => {
-    const lines: string[] = [];
-    lines.push("Demande de transport sanitaire");
-    lines.push("");
-    if (dateSouhaitee) {
-      lines.push(`Date souhaitée : ${dateSouhaitee}${heureSouhaitee ? ` à ${heureSouhaitee}` : ""}`);
-    }
-    if (lieuDepart) lines.push(`Départ : ${lieuDepart}`);
-    if (lieuArrivee) lines.push(`Arrivée : ${lieuArrivee}`);
-    lines.push(`Type de transport : ${labelTransport[typeTransport]}`);
-    lines.push(`Trajet : ${allerRetour ? "Aller-retour" : "Aller simple"}`);
-    lines.push(`Mobilité du bénéficiaire : ${labelMobilite[mobilite]}`);
-    if (precisions.trim()) {
-      lines.push("");
-      lines.push("Précisions :");
-      lines.push(precisions.trim());
-    }
-    return lines.join("\n");
-  };
+  usePlacesAutocomplete([
+    {
+      ref: lieuDepartRef,
+      onSelect: (p) => {
+        setLieuDepart(p.formattedAddress);
+        setDepartPlace(p);
+      },
+    },
+    {
+      ref: lieuArriveeRef,
+      onSelect: (p) => {
+        setLieuArrivee(p.formattedAddress);
+        setArriveePlace(p);
+      },
+    },
+  ]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
-    if (!dateSouhaitee || !lieuDepart.trim() || !lieuArrivee.trim()) {
-      setError("Merci de renseigner la date, le lieu de départ et le lieu d'arrivée.");
+    if (!name.trim() || !email.trim()) {
+      setError("Merci d'indiquer votre nom et votre email.");
       return;
     }
-
-    const content = buildContent();
-    if (content.length < 20) {
-      setError("Merci d'apporter quelques précisions sur la demande.");
+    if (!dateSouhaitee) {
+      setError("Merci d'indiquer la date et l'heure souhaitées du transport.");
+      return;
+    }
+    if (!lieuDepart.trim() || !lieuArrivee.trim()) {
+      setError("Merci de renseigner le lieu de départ et le lieu d'arrivée.");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/sanitaire/message", {
+      const res = await fetch("/api/demande-transport", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          pro_id: proId,
-          sender_name: name.trim(),
-          sender_email: email.trim(),
-          sender_phone: phone.trim(),
-          content,
+          type_transport: resoudreType(choixTransport, proCategorie),
+          nom: name.trim(),
+          telephone: phone.trim(),
+          email: email.trim() || null,
+          date_souhaitee: toISODateSouhaitee(dateSouhaitee),
+          lieu_depart: lieuDepart.trim(),
+          lieu_arrivee: lieuArrivee.trim(),
+          lieu_depart_lat: departPlace?.lat ?? null,
+          lieu_depart_lng: departPlace?.lng ?? null,
+          lieu_arrivee_lat: arriveePlace?.lat ?? null,
+          lieu_arrivee_lng: arriveePlace?.lng ?? null,
+          ville_depart: departPlace?.ville ?? null,
+          ville_arrivee: arriveePlace?.ville ?? null,
+          departement_depart: departPlace?.departement ?? null,
+          departement_arrivee: arriveePlace?.departement ?? null,
+          aller_retour: allerRetour,
+          mobilite,
+          precisions: precisions.trim() || null,
+          source_page: "fiche-pro",
+          source_form: "fiche_pro",
+          pro_id_cible: proId,
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur lors de l'envoi");
-      }
+      if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
+      setNbPros(data.pros_notifies ?? 0);
       setSent(true);
-      if (data.warning) setWarning(data.warning);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -184,13 +158,10 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
         <CheckCircle2 className="w-10 h-10 text-green-600 mx-auto mb-2" />
         <div className="font-semibold text-gray-900 mb-1">Demande envoyée</div>
         <p className="text-sm text-gray-600">
-          {proNom} a été notifié. Une réponse vous parviendra par email ou téléphone.
+          {nbPros > 0
+            ? `${proNom} et ${nbPros} professionnel${nbPros > 1 ? "s" : ""} de votre secteur ${nbPros > 1 ? "ont" : "a"} été notifié${nbPros > 1 ? "s" : ""}. Une réponse vous parviendra par email ou téléphone.`
+            : `${proNom} a été notifié. Une réponse vous parviendra par email ou téléphone.`}
         </p>
-        {warning && (
-          <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3">
-            {warning}
-          </p>
-        )}
       </div>
     );
   }
@@ -237,27 +208,13 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
         <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2 flex items-center gap-1.5">
           <Calendar className="w-3.5 h-3.5" /> Date du transport
         </div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Date souhaitée</label>
-            <input
-              type="date"
-              value={dateSouhaitee}
-              onChange={(e) => setDateSouhaitee(e.target.value)}
-              required
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className={labelCls}>Heure (facultatif)</label>
-            <input
-              type="time"
-              value={heureSouhaitee}
-              onChange={(e) => setHeureSouhaitee(e.target.value)}
-              className={inputCls}
-            />
-          </div>
-        </div>
+        <DateHeureCourse
+          value={dateSouhaitee}
+          onChange={setDateSouhaitee}
+          label="Date et heure souhaitées"
+          inputClassName={inputCls}
+          labelClassName={labelCls}
+        />
       </div>
 
       {/* Trajet */}
@@ -273,8 +230,12 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
               type="text"
               placeholder="Ex : Domicile, 12 rue des Lilas, Caen"
               value={lieuDepart}
-              onChange={(e) => setLieuDepart(e.target.value)}
+              onChange={(e) => {
+                setLieuDepart(e.target.value);
+                if (departPlace) setDepartPlace(null);
+              }}
               required
+              autoComplete="off"
               className={inputCls}
             />
           </div>
@@ -285,8 +246,12 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
               type="text"
               placeholder="Ex : Centre hospitalier de Caen, service dialyse"
               value={lieuArrivee}
-              onChange={(e) => setLieuArrivee(e.target.value)}
+              onChange={(e) => {
+                setLieuArrivee(e.target.value);
+                if (arriveePlace) setArriveePlace(null);
+              }}
               required
+              autoComplete="off"
               className={inputCls}
             />
           </div>
@@ -308,11 +273,11 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           <Stethoscope className="w-3.5 h-3.5" /> Type de transport
         </div>
         <div className="grid sm:grid-cols-2 gap-2">
-          {(Object.keys(labelTransport) as TypeTransport[]).map((t) => (
+          {(Object.keys(LABEL_TRANSPORT) as ChoixTransport[]).map((t) => (
             <label
               key={t}
               className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer transition text-sm ${
-                typeTransport === t
+                choixTransport === t
                   ? "border-[#0066CC] bg-blue-50 text-[#0066CC] font-medium"
                   : "border-gray-200 text-gray-700 hover:border-gray-300"
               }`}
@@ -321,11 +286,11 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
                 type="radio"
                 name="typeTransport"
                 value={t}
-                checked={typeTransport === t}
-                onChange={() => setTypeTransport(t)}
+                checked={choixTransport === t}
+                onChange={() => setChoixTransport(t)}
                 className="sr-only"
               />
-              {labelTransport[t]}
+              {LABEL_TRANSPORT[t]}
             </label>
           ))}
         </div>
@@ -337,7 +302,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
           <Accessibility className="w-3.5 h-3.5" /> Mobilité du bénéficiaire
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {(Object.keys(labelMobilite) as Mobilite[]).map((m) => (
+          {(Object.keys(LABEL_MOBILITE) as Mobilite[]).map((m) => (
             <label
               key={m}
               className={`flex items-center gap-2 px-3 py-2 border rounded-xl cursor-pointer transition text-sm ${
@@ -354,7 +319,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
                 onChange={() => setMobilite(m)}
                 className="sr-only"
               />
-              {labelMobilite[m]}
+              {LABEL_MOBILITE[m]}
             </label>
           ))}
         </div>
@@ -388,7 +353,7 @@ export default function ContactProForm({ proId, proNom }: { proId: string; proNo
         Envoyer la demande
       </button>
       <p className="text-xs text-gray-500 text-center">
-        Vos coordonnées ne sont partagées qu&apos;avec {proNom}. Aucune publicité, jamais revendues.
+        Vos coordonnées ne sont partagées qu&apos;avec {proNom} et les professionnels de votre secteur. Aucune publicité, jamais revendues.
       </p>
     </form>
   );

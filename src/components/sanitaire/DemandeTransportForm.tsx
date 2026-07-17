@@ -10,10 +10,9 @@ import {
 } from "@/lib/transport-types";
 import {
   usePlacesAutocomplete,
-  extractDepartementFromComponents,
-  extractVilleFromComponents,
   type PlaceSelection,
 } from "@/lib/use-places-autocomplete";
+import DateHeureCourse, { toISODateSouhaitee } from "@/components/forms/DateHeureCourse";
 
 type Mobilite = "autonome" | "aide_marche" | "fauteuil" | "brancard";
 
@@ -131,22 +130,9 @@ export default function DemandeTransportForm({
     // Departement / ville cibles : on privilegie ce qui vient du parent
     // (fiche etablissement, page pro deja localisee), sinon on derive du
     // place Google de depart. L'API completera en fallback via API Adresse FR.
-    const departementFromDepart = departPlace
-      ? extractDepartementFromComponents(departPlace.components)
-      : null;
-    const villeFromDepart = departPlace
-      ? extractVilleFromComponents(departPlace.components)
-      : null;
-    const departementFromArrivee = arriveePlace
-      ? extractDepartementFromComponents(arriveePlace.components)
-      : null;
-    const villeFromArrivee = arriveePlace
-      ? extractVilleFromComponents(arriveePlace.components)
-      : null;
-
     const departementResolved =
-      departementCible || departementFromDepart || departementFromArrivee;
-    const villeResolved = villeCible || villeFromDepart || villeFromArrivee;
+      departementCible || departPlace?.departement || arriveePlace?.departement || null;
+    const villeResolved = villeCible || departPlace?.ville || arriveePlace?.ville || null;
 
     setLoading(true);
     try {
@@ -158,11 +144,17 @@ export default function DemandeTransportForm({
           nom: nom.trim(),
           telephone: telephone.trim(),
           email: email.trim() || null,
-          date_souhaitee: dateSouhaitee || null,
+          date_souhaitee: toISODateSouhaitee(dateSouhaitee),
           lieu_depart: lieuDepart.trim(),
           lieu_arrivee: lieuArrivee.trim(),
           lieu_depart_lat: departPlace?.lat ?? null,
           lieu_depart_lng: departPlace?.lng ?? null,
+          lieu_arrivee_lat: arriveePlace?.lat ?? null,
+          lieu_arrivee_lng: arriveePlace?.lng ?? null,
+          ville_depart: departPlace?.ville ?? null,
+          ville_arrivee: arriveePlace?.ville ?? null,
+          departement_depart: departPlace?.departement ?? null,
+          departement_arrivee: arriveePlace?.departement ?? null,
           aller_retour: allerRetour,
           mobilite,
           precisions: precisions.trim() || null,
@@ -309,16 +301,12 @@ export default function DemandeTransportForm({
 
       {/* Date obligatoire partout (meme en mode compact) */}
       <div className="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label className={labelCls}>Date et heure souhaitées</label>
-          <input
-            type="datetime-local"
-            value={dateSouhaitee}
-            onChange={(e) => setDateSouhaitee(e.target.value)}
-            required
-            className={inputCls}
-          />
-        </div>
+        <DateHeureCourse
+          value={dateSouhaitee}
+          onChange={setDateSouhaitee}
+          inputClassName={inputCls}
+          labelClassName={labelCls}
+        />
         <div className="flex items-end pb-2">
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
             <input

@@ -1212,8 +1212,32 @@ function formatDateSouhaitee(iso?: string | null): string | null {
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: 'Europe/Paris',
   }).format(d);
 }
+
+/**
+ * Formate une ligne "Distance estimée : X km · Estimation CPAM : ~Y €" pour les
+ * emails de transport. Renvoie null si aucune donnee exploitable (jamais de 0 €
+ * trompeur). Toujours accompagnee de la mention indicative CPAM a l'affichage.
+ */
+function formatEstimationCourse(
+  distanceKm?: number | null,
+  prixEstime?: number | null
+): string | null {
+  const parts: string[] = [];
+  if (typeof distanceKm === 'number' && Number.isFinite(distanceKm) && distanceKm > 0) {
+    parts.push(`Distance estimée : ${distanceKm} km`);
+  }
+  if (typeof prixEstime === 'number' && Number.isFinite(prixEstime) && prixEstime > 0) {
+    parts.push(`Estimation CPAM : ~${prixEstime} €`);
+  }
+  return parts.length ? parts.join(' · ') : null;
+}
+
+/** Mention indicative CPAM affichee sous toute estimation de prix. */
+const MENTION_CPAM_EMAIL =
+  'Estimation indicative selon la convention CPAM (arrêté du 29/07/2025), ne vaut pas devis.';
 
 /** Signature commerciale commune a tous les emails de transport (tutoiement). */
 function signatureBloc(): string {
@@ -1277,10 +1301,13 @@ export async function sendDemandeTransportPro(p: {
   bonTransportMedical?: boolean;
   sourceForm?: string | null;
   typeTransport?: string | null;
+  distanceKm?: number | null;
+  prixEstime?: number | null;
   demandeId?: string | null;
   proId?: string | null;
 }): Promise<{ id: string | null } | null> {
   const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const estimationStr = formatEstimationCourse(p.distanceKm, p.prixEstime);
   const dashboardUrl = `${APP_URL_DV}/dashboard/demandes`;
   const accepterUrl =
     p.demandeId && p.proId
@@ -1315,6 +1342,7 @@ export async function sendDemandeTransportPro(p: {
             ${ligneInfo('Bon de transport', bonStr)}
           </table>
         </div>
+        ${estimationStr ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin:16px 0"><p style="margin:0;font-size:14px;color:#1e40af;font-weight:600">${estimationStr}</p><p style="margin:6px 0 0;font-size:12px;color:#64748b">${MENTION_CPAM_EMAIL}</p></div>` : ''}
         ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">
           ${accepterUrl ? `${emailButton(accepterUrl, 'Accepter cette course', '#10b981')}<br><br>` : ''}
@@ -1638,12 +1666,15 @@ export async function sendAdminNouvelleDemande(demande: {
   taux_prise_en_charge?: string | null;
   taux_prise_en_charge_autre?: string | null;
   source_form?: string | null;
+  distance_km?: number | null;
+  prix_estime?: number | null;
   pros_notifies?: number;
 }): Promise<{ id: string | null } | null> {
   const type = demande.type_transport || '';
   const typeLib = LIBELLE_TYPE_ADMIN[type] || type || 'Transport';
   const dpt = demande.departement_cible || '—';
   const dateStr = formatDateSouhaitee(demande.date_souhaitee);
+  const estimationStr = formatEstimationCourse(demande.distance_km, demande.prix_estime);
   const tel = telHref(demande.telephone);
   const tauxStr = tauxLibelle(demande.taux_prise_en_charge, demande.taux_prise_en_charge_autre);
   const adminUrl = `${APP_URL}/admin/transport-medical/demandes/${demande.id}`;
@@ -1666,11 +1697,13 @@ export async function sendAdminNouvelleDemande(demande: {
             ${ligneInfo('Arrivée', escapeHtml(demande.lieu_arrivee))}
             ${ligneInfo('Département', escapeHtml(dpt))}
             ${ligneInfo('Ville', escapeHtml(demande.ville_cible))}
+            ${estimationStr ? ligneInfo('Estimation', estimationStr) : ''}
             ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
             ${ligneInfo('Source formulaire', escapeHtml(demande.source_form))}
             ${ligneInfo('Pros notifiés', String(nbPros))}
           </table>
         </div>
+        ${estimationStr ? `<p style="margin:-8px 0 16px;font-size:12px;color:#64748b">${MENTION_CPAM_EMAIL}</p>` : ''}
         ${demande.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(demande.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">${emailButton(adminUrl, 'Voir dans l\'admin')}</div>
         ${emailFooter('Annuaire du transport sanitaire')}
