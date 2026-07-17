@@ -65,7 +65,7 @@ export default function FloatingReserveTaxi() {
         setArriveePlace(p);
       },
     },
-  ]);
+  ], { actif: open });
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);

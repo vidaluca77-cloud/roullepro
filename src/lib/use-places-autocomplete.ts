@@ -69,6 +69,74 @@ const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 /** Delai max d'attente du script Google avant bascule sur le fallback BAN (ms). */
 const GOOGLE_LOAD_TIMEOUT_MS = 3000;
 
+/** Id unique du <script> Google Maps injecte dans le <head>. */
+const GOOGLE_SCRIPT_ID = "google-maps-places-script";
+
+/**
+ * Loader singleton du script Google Maps + libraries=places, PARTAGE au niveau
+ * module. C'est le coeur du fix P0 : auparavant chaque instance du hook faisait
+ * `window.initGooglePlaces = () => attach()`, si bien que la derniere instance
+ * montee ecrasait le callback des precedentes. Comme deux formulaires sont
+ * montes simultanement (DemandeTransportForm + FloatingReserveTaxi global via
+ * layout.tsx), seul le callback du dernier survivait — celui du widget flottant,
+ * dont les inputs n'existent pas tant que la modale est fermee — et l'autocomplete
+ * ne s'attachait jamais aux formulaires visibles.
+ *
+ * Ici, le script est injecte UNE seule fois, le callback global est defini UNE
+ * seule fois, et une promesse partagee est renvoyee a tous les consommateurs :
+ *  - `true`  : `google.maps.places` est disponible -> chaque instance appelle attach()
+ *  - `false` : cle absente, erreur de chargement (CSP/reseau) ou timeout
+ *              -> chaque instance bascule sur le fallback BAN
+ */
+let googleLoadPromise: Promise<boolean> | null = null;
+
+export function loadGoogleMaps(): Promise<boolean> {
+  if (typeof window === "undefined") return Promise.resolve(false);
+  if (window.google?.maps?.places) return Promise.resolve(true);
+  if (!GOOGLE_MAPS_API_KEY) return Promise.resolve(false);
+  if (googleLoadPromise) return googleLoadPromise;
+
+  googleLoadPromise = new Promise<boolean>((resolve) => {
+    let settled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const finish = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      if (timeoutId) clearTimeout(timeoutId);
+      resolve(ok);
+    };
+
+    // Callback global defini UNE seule fois (plus d'ecrasement entre instances).
+    window.initGooglePlaces = () => finish(true);
+
+    const existing = document.getElementById(GOOGLE_SCRIPT_ID);
+    if (!existing) {
+      const script = document.createElement("script");
+      script.id = GOOGLE_SCRIPT_ID;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
+      script.async = true;
+      script.defer = true;
+      // Erreur de chargement (CSP, reseau, cle invalide) -> fallback BAN.
+      script.addEventListener("error", () => finish(false));
+      document.head.appendChild(script);
+    } else if (window.google?.maps?.places) {
+      // Script deja present et Google deja pret (ex. navigation client).
+      finish(true);
+    }
+
+    // Filet de securite : si le script ne se charge pas dans le delai imparti
+    // (ex. bloque par la CSP), on bascule sur le fallback. Si le script finit
+    // par charger apres coup, le garde `settled` conserve l'etat fallback : les
+    // consommateurs restent sur BAN, ce qui est acceptable.
+    timeoutId = setTimeout(
+      () => finish(!!window.google?.maps?.places),
+      GOOGLE_LOAD_TIMEOUT_MS
+    );
+  });
+
+  return googleLoadPromise;
+}
+
 /**
  * Structure minimale d'une feature renvoyee par l'API Adresse nationale (BAN).
  * Doc : https://adresse.data.gouv.fr/api-doc/adresse
@@ -282,12 +350,24 @@ type RefsInput = {
  *   usePlacesAutocomplete([
  *     { ref: lieuDepartRef, onSelect: (p) => { setLieuDepart(p.formattedAddress); setDepart(p); } },
  *   ]);
+ *
+ * Option `actif` (defaut `true`) : quand les inputs n'existent qu'a certains
+ * moments (ex. modale du widget flottant montee a l'ouverture), passer l'etat
+ * d'ouverture. L'effet se rejoue lorsque `actif` passe a `true` et attache alors
+ * l'autocomplete sur les inputs fraichement montes (le loader Google, deja
+ * resolu, renvoie immediatement).
  */
-export function usePlacesAutocomplete(inputs: RefsInput[]) {
+export function usePlacesAutocomplete(
+  inputs: RefsInput[],
+  options?: { actif?: boolean }
+) {
+  const actif = options?.actif ?? true;
   const autocompletesRef = useRef<GooglePlacesAutocomplete[]>([]);
   const cleanupFallbackRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    if (!actif) return;
+
     let cancelled = false;
     let fallbackActive = false;
 
@@ -334,49 +414,16 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
       cleanupFallbackRef.current = attachBanFallback(inputs);
     };
 
-    // Pas de cle Google -> fallback direct.
-    if (!GOOGLE_MAPS_API_KEY) {
-      activerFallback();
-      return () => {
-        cancelled = true;
-        cleanupFallbackRef.current?.();
-      };
-    }
-
-    if (window.google?.maps?.places) {
-      const raf = requestAnimationFrame(attach);
-      return () => {
-        cancelled = true;
-        cancelAnimationFrame(raf);
-      };
-    }
-
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    window.initGooglePlaces = () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      attach();
-    };
-
-    const scriptId = "google-maps-places-script";
-    const existing = document.getElementById(scriptId);
-    if (!existing) {
-      const script = document.createElement("script");
-      script.id = scriptId;
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGooglePlaces`;
-      script.async = true;
-      script.defer = true;
-      // Erreur de chargement (CSP, reseau, cle invalide) -> fallback BAN.
-      script.addEventListener("error", activerFallback);
-      document.head.appendChild(script);
-    }
-
-    // Filet de securite : si le script ne s'est pas charge dans le delai imparti
-    // (ex. bloque par la CSP), on bascule sur le fallback.
-    timeoutId = setTimeout(activerFallback, GOOGLE_LOAD_TIMEOUT_MS);
+    // Loader singleton partage : plus aucune ecriture de window.initGooglePlaces
+    // par instance, donc plus d'ecrasement entre formulaires montes simultanement.
+    loadGoogleMaps().then((ok) => {
+      if (cancelled) return;
+      if (ok) attach();
+      else activerFallback();
+    });
 
     return () => {
       cancelled = true;
-      if (timeoutId) clearTimeout(timeoutId);
       if (window.google?.maps?.event) {
         for (const ac of autocompletesRef.current) {
           try {
@@ -389,8 +436,7 @@ export function usePlacesAutocomplete(inputs: RefsInput[]) {
       autocompletesRef.current = [];
       cleanupFallbackRef.current?.();
       cleanupFallbackRef.current = null;
-      // Ne pas supprimer initGooglePlaces : d'autres composants montes peuvent en avoir besoin
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [actif]);
 }
