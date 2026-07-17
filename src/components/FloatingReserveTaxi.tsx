@@ -69,6 +69,8 @@ export default function FloatingReserveTaxi() {
 
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [nbPros, setNbPros] = useState(0);
+  const [doublon, setDoublon] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const isHiddenRoute =
@@ -160,6 +162,8 @@ export default function FloatingReserveTaxi() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
+      setNbPros(data.pros_notifies ?? 0);
+      setDoublon(data.doublon === true);
       setSent(true);
     } catch (err) {
       setError((err as Error).message);
@@ -172,6 +176,7 @@ export default function FloatingReserveTaxi() {
     setOpen(false);
     setTimeout(() => {
       setSent(false);
+      setDoublon(false);
       setError(null);
     }, 300);
   };
@@ -221,10 +226,12 @@ export default function FloatingReserveTaxi() {
               <div className="text-center py-6">
                 <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
                 <h3 className="text-lg font-bold text-gray-900 mb-1">
-                  Ta demande est bien reçue.
+                  {doublon ? "Ta demande est déjà en cours." : "Ta demande est bien reçue."}
                 </h3>
                 <p className="text-sm text-gray-600 mb-5">
-                  Un professionnel va te rappeler rapidement.
+                  {doublon
+                    ? `${nbPros > 0 ? `${nbPros} professionnel${nbPros > 1 ? "s" : ""} ${nbPros > 1 ? "ont" : "a"} été prévenu${nbPros > 1 ? "s" : ""}` : "Les professionnels de ton secteur ont été prévenus"}. Inutile de la redéposer, ils te rappelleront.`
+                    : "Un professionnel va te rappeler rapidement."}
                 </p>
                 <button
                   onClick={close}
