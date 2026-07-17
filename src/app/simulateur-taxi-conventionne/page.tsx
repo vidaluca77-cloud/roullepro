@@ -1,9 +1,39 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Car, ChevronRight } from "lucide-react";
+import {
+  Car,
+  ChevronRight,
+  MapPin,
+  Route,
+  Building2,
+  Moon,
+  Globe2,
+  Calculator,
+  ShieldCheck,
+  Wallet,
+  Repeat,
+  Users,
+  Ban,
+  Percent,
+  HelpCircle,
+  Stethoscope,
+  Cross,
+} from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { buildSimulateurJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import SimulateurTarif from "@/components/sanitaire/SimulateurTarif";
+import {
+  ArticleContainer,
+  SectionHeading,
+  Lead,
+  FeatureGrid,
+  FeatureCard,
+  StatGrid,
+  StatCard,
+  Callout,
+  FaqAccordion,
+  CtaBand,
+} from "@/components/sanitaire/editorial/EditorialUI";
 
 export const revalidate = 3600;
 
@@ -113,140 +143,182 @@ export default function SimulateurTaxiConventionnePage() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4 -mt-8 relative z-10">
+      <section id="simulateur" className="max-w-3xl mx-auto px-4 -mt-8 relative z-10 scroll-mt-24">
         <SimulateurTarif typeParDefaut="taxi" />
       </section>
 
-      <article className="max-w-3xl mx-auto px-4 py-12 prose prose-sm sm:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700">
-        <section id="calcul">
-          <h2>Comment se calcule le tarif d&apos;un taxi conventionné ?</h2>
-          <p>
+      <ArticleContainer>
+        <section id="calcul" className="space-y-6">
+          <SectionHeading icon={Calculator}>
+            Comment se calcule le tarif d&apos;un taxi conventionné ?
+          </SectionHeading>
+          <Lead>
             Le tarif du taxi conventionné n&apos;est pas fixé librement : il suit une grille conventionnelle
             négociée entre l&apos;Assurance maladie et les organisations de taxis (arrêté du 29 juillet 2025,
             en vigueur depuis le 1er octobre 2025). Le montant d&apos;une course dépend de plusieurs composantes
             que le simulateur additionne automatiquement :
-          </p>
-          <ul>
-            <li>
-              <strong>Le forfait de prise en charge</strong>, qui inclut les premiers kilomètres de la course ;
-            </li>
-            <li>
-              <strong>Le tarif kilométrique départemental</strong>, appliqué à chaque kilomètre au-delà du forfait :
-              il varie d&apos;un département à l&apos;autre, ce qui explique qu&apos;une même distance ne coûte pas
-              le même prix partout en France ;
-            </li>
-            <li>
-              <strong>Un forfait « grande ville »</strong> pour les départs ou arrivées dans certaines grandes
-              agglomérations et la petite couronne parisienne ;
-            </li>
-            <li>
-              <strong>Les majorations de nuit, du dimanche et des jours fériés</strong>, appliquées sur le socle
-              de la course lorsque l&apos;horaire saisi les déclenche ;
-            </li>
-            <li>
-              <strong>Un supplément outre-mer</strong> pour les courses réalisées dans les DROM.
-            </li>
-          </ul>
-          <p>
+          </Lead>
+          <FeatureGrid>
+            <FeatureCard icon={MapPin} title="Le forfait de prise en charge">
+              qui inclut les premiers kilomètres de la course.
+            </FeatureCard>
+            <FeatureCard icon={Route} title="Le tarif kilométrique départemental">
+              appliqué à chaque kilomètre au-delà du forfait : il varie d&apos;un département à l&apos;autre, ce
+              qui explique qu&apos;une même distance ne coûte pas le même prix partout en France.
+            </FeatureCard>
+            <FeatureCard icon={Building2} title="Un forfait « grande ville »">
+              pour les départs ou arrivées dans certaines grandes agglomérations et la petite couronne parisienne.
+            </FeatureCard>
+            <FeatureCard icon={Moon} title="Les majorations de nuit, du dimanche et des jours fériés">
+              appliquées sur le socle de la course lorsque l&apos;horaire saisi les déclenche.
+            </FeatureCard>
+            <FeatureCard icon={Globe2} title="Un supplément outre-mer">
+              pour les courses réalisées dans les DROM.
+            </FeatureCard>
+          </FeatureGrid>
+          <Callout title="À retenir">
             Le résultat affiché est une <strong>estimation indicative</strong> : elle ne remplace pas le devis du
             transporteur et ignore volontairement les éléments inconnus au moment de la demande (temps
             d&apos;attente, transport partagé, péages, retour à vide).
-          </p>
+          </Callout>
         </section>
 
-        <section id="remboursement">
-          <h2>Remboursement du taxi conventionné par la CPAM</h2>
-          <p>
+        <CtaBand
+          href="#simulateur"
+          title="Estimez le prix de votre course en taxi conventionné"
+          description="Renseignez vos adresses réelles et déposez une demande de transport auprès des transporteurs de votre secteur, sans engagement."
+          cta="Déposer une demande de transport"
+        />
+
+        <section id="remboursement" className="space-y-6">
+          <SectionHeading icon={ShieldCheck}>
+            Remboursement du taxi conventionné par la CPAM
+          </SectionHeading>
+          <Lead>
             Sur prescription médicale de transport, le taxi conventionné est pris en charge par la Sécurité
             sociale. Le taux dépend du motif :
-          </p>
-          <ul>
-            <li>
-              <strong>100 %</strong> en cas d&apos;affection longue durée (ALD) en lien avec le transport,
-              d&apos;accident du travail, de maladie professionnelle, d&apos;hospitalisation, de maternité à partir
-              du 1er jour du 6e mois, ou pour les bénéficiaires de la Complémentaire santé solidaire (CSS) et de
-              l&apos;AME ;
-            </li>
-            <li>
-              <strong>65 %</strong> pour les autres motifs ; le complément est généralement pris en charge par la
-              mutuelle.
-            </li>
-          </ul>
-          <p>
+          </Lead>
+          <StatGrid>
+            <StatCard value="100 %" label="ALD, AT/MP, hospitalisation, maternité, CSS et AME" accent />
+            <StatCard value="65 %" label="Autres motifs (complément par la mutuelle)" />
+            <StatCard value="4 €" label="Franchise par trajet (8 €/jour, 50 €/an)" />
+          </StatGrid>
+          <div className="space-y-3 text-slate-600 leading-relaxed">
+            <p>
+              <strong className="text-[#0B1120]">100 %</strong> en cas d&apos;affection longue durée (ALD) en lien
+              avec le transport, d&apos;accident du travail, de maladie professionnelle, d&apos;hospitalisation, de
+              maternité à partir du 1er jour du 6e mois, ou pour les bénéficiaires de la Complémentaire santé
+              solidaire (CSS) et de l&apos;AME ;
+            </p>
+            <p>
+              <strong className="text-[#0B1120]">65 %</strong> pour les autres motifs ; le complément est
+              généralement pris en charge par la mutuelle.
+            </p>
+          </div>
+          <Callout title="Bon à savoir" icon={Wallet}>
             Grâce au tiers payant, vous n&apos;avancez pas la part remboursée : présentez votre carte Vitale et
             votre bon de transport. Une franchise médicale de 4 € par trajet (plafonnée à 8 € par jour et 50 € par
             an) reste à votre charge. Les conditions détaillées figurent sur{" "}
-            <a href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
               ameli.fr
             </a>{" "}
             et dans notre guide{" "}
-            <Link href="/blog/remboursement-transport-medical">remboursement du transport médical</Link>.
-          </p>
+            <Link
+              href="/blog/remboursement-transport-medical"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              remboursement du transport médical
+            </Link>.
+          </Callout>
         </section>
 
-        <section id="cas-particuliers">
-          <h2>Prix taxi conventionné : les cas particuliers</h2>
-          <p>
-            Plusieurs situations font varier le prix d&apos;une course conventionnée :
-          </p>
-          <ul>
-            <li>
-              <strong>Trajets de nuit (20h-8h), dimanches et jours fériés</strong> : une majoration s&apos;applique
-              sur le socle de la course. Renseignez la date et l&apos;heure dans le simulateur pour la voir apparaître.
-            </li>
-            <li>
-              <strong>Aller-retour</strong> : le tarif est doublé lorsque le transporteur assure le retour. Cochez
-              la case « aller-retour » pour l&apos;inclure.
-            </li>
-            <li>
-              <strong>Transport partagé</strong> : lorsque plusieurs patients voyagent ensemble vers des soins
-              itératifs (dialyse, chimiothérapie), une tarification réduite s&apos;applique. Le simulateur estime une
-              course individuelle.
-            </li>
-            <li>
-              <strong>Sans prescription</strong> : la course relève alors du tarif préfectoral libre du taxi et
-              n&apos;est pas remboursée.
-            </li>
-          </ul>
+        <section id="cas-particuliers" className="space-y-6">
+          <SectionHeading icon={Percent}>Prix taxi conventionné : les cas particuliers</SectionHeading>
+          <Lead>Plusieurs situations font varier le prix d&apos;une course conventionnée :</Lead>
+          <FeatureGrid>
+            <FeatureCard icon={Moon} title="Trajets de nuit (20h-8h), dimanches et jours fériés">
+              une majoration s&apos;applique sur le socle de la course. Renseignez la date et l&apos;heure dans le
+              simulateur pour la voir apparaître.
+            </FeatureCard>
+            <FeatureCard icon={Repeat} title="Aller-retour">
+              le tarif est doublé lorsque le transporteur assure le retour. Cochez la case « aller-retour » pour
+              l&apos;inclure.
+            </FeatureCard>
+            <FeatureCard icon={Users} title="Transport partagé">
+              lorsque plusieurs patients voyagent ensemble vers des soins itératifs (dialyse, chimiothérapie), une
+              tarification réduite s&apos;applique. Le simulateur estime une course individuelle.
+            </FeatureCard>
+            <FeatureCard icon={Ban} title="Sans prescription">
+              la course relève alors du tarif préfectoral libre du taxi et n&apos;est pas remboursée.
+            </FeatureCard>
+          </FeatureGrid>
         </section>
 
-        <section id="difference">
-          <h2>Taxi conventionné, VSL ou ambulance ?</h2>
-          <p>
+        <section id="difference" className="space-y-6">
+          <SectionHeading icon={Percent}>Taxi conventionné, VSL ou ambulance ?</SectionHeading>
+          <Lead>
             Le taxi conventionné transporte des patients autonomes en position assise, sans qualification sanitaire
             du chauffeur. Le VSL (Véhicule Sanitaire Léger) est conduit par un auxiliaire ambulancier et s&apos;adresse
             aux patients qui ont besoin d&apos;une aide pour se déplacer ; l&apos;ambulance est réservée aux transports
             allongés ou sous surveillance. Le mode de transport est indiqué par le médecin sur la prescription. Pour
             comparer les trois, consultez notre{" "}
-            <Link href="/simulateur-transport-sanitaire">hub des simulateurs de transport sanitaire</Link> ou la page{" "}
-            <Link href="/taxi-conventionne">taxi conventionné CPAM</Link>.
-          </p>
-          <div className="not-prose grid sm:grid-cols-2 gap-3 my-6">
-            <Link href="/tarif-vsl" className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-4 py-3 text-sm font-semibold text-gray-900 transition">
-              Simulateur et tarif VSL →
+            <Link
+              href="/simulateur-transport-sanitaire"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              hub des simulateurs de transport sanitaire
+            </Link>{" "}
+            ou la page{" "}
+            <Link
+              href="/taxi-conventionne"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              taxi conventionné CPAM
+            </Link>.
+          </Lead>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link
+              href="/tarif-vsl"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[#0066CC]/40 hover:shadow-md"
+            >
+              <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Stethoscope className="h-5 w-5" />
+              </span>
+              <span className="font-semibold text-[#0B1120]">Simulateur et tarif VSL</span>
+              <ChevronRight className="ml-auto h-5 w-5 text-[#0066CC] transition group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/tarif-ambulance" className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-4 py-3 text-sm font-semibold text-gray-900 transition">
-              Simulateur et tarif ambulance →
+            <Link
+              href="/tarif-ambulance"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[#0066CC]/40 hover:shadow-md"
+            >
+              <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Cross className="h-5 w-5" />
+              </span>
+              <span className="font-semibold text-[#0B1120]">Simulateur et tarif ambulance</span>
+              <ChevronRight className="ml-auto h-5 w-5 text-[#0066CC] transition group-hover:translate-x-0.5" />
             </Link>
           </div>
         </section>
-      </article>
 
-      <section className="max-w-3xl mx-auto px-4 pb-16">
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
+        <section id="faq" className="space-y-6">
+          <SectionHeading icon={HelpCircle}>
             Questions fréquentes sur le prix du taxi conventionné
-          </h2>
-          <div className="space-y-4">
-            {FAQ.map((q, i) => (
-              <div key={i}>
-                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          </SectionHeading>
+          <FaqAccordion items={FAQ} />
+        </section>
+
+        <CtaBand
+          href="#simulateur"
+          title="Besoin d'un taxi conventionné ?"
+          description="Obtenez une estimation immédiate puis transmettez gratuitement votre demande aux transporteurs conventionnés de votre secteur."
+          cta="Déposer une demande de transport"
+        />
+      </ArticleContainer>
     </main>
   );
 }

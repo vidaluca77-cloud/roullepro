@@ -1,8 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Car, Cross, Stethoscope, ChevronRight, ArrowRight } from "lucide-react";
+import {
+  Car,
+  Cross,
+  Stethoscope,
+  ChevronRight,
+  ArrowRight,
+  Scale,
+  ShieldCheck,
+  Wallet,
+  LayoutGrid,
+  HelpCircle,
+} from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { buildSimulateurJsonLd, jsonLdHtml } from "@/lib/seo-schema";
+import {
+  ArticleContainer,
+  SectionHeading,
+  Lead,
+  StatGrid,
+  StatCard,
+  Callout,
+  DataTable,
+  FaqAccordion,
+  CtaBand,
+} from "@/components/sanitaire/editorial/EditorialUI";
 
 export const revalidate = 3600;
 
@@ -93,6 +115,15 @@ const MODES: ModeCard[] = [
   },
 ];
 
+const COMPARATIF: { critere: string; taxi: string; vsl: string; ambulance: string }[] = [
+  { critere: "Position du patient", taxi: "Assis", vsl: "Assis", ambulance: "Allongé / surveillance" },
+  { critere: "Conducteur", taxi: "Chauffeur agréé CPAM", vsl: "Auxiliaire ambulancier", ambulance: "Équipage qualifié (2 pers.)" },
+  { critere: "Grille tarifaire", taxi: "Convention CPAM taxi", vsl: "Avenant 11 sanitaire", ambulance: "Avenant 11 sanitaire" },
+  { critere: "Niveau de prix", taxi: "Modéré", vsl: "Modéré", ambulance: "Le plus élevé" },
+  { critere: "Transport partagé", taxi: "Possible", vsl: "Possible", ambulance: "Non" },
+  { critere: "Remboursement CPAM", taxi: "65 % / 100 % ALD", vsl: "65 % / 100 % ALD", ambulance: "65 % / 100 % ALD" },
+];
+
 export default function SimulateurTransportSanitairePage() {
   const faqLd = buildFaqJsonLd(FAQ);
   const breadLd = buildBreadcrumbJsonLd([
@@ -145,16 +176,16 @@ export default function SimulateurTransportSanitairePage() {
               <Link
                 key={m.type}
                 href={m.href}
-                className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 hover:border-[#0066CC] hover:shadow-md transition flex flex-col"
+                className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0066CC] hover:shadow-lg"
               >
-                <div className="inline-flex items-center gap-2 text-[#0066CC] font-bold text-lg mb-2">
-                  <Icone className="w-5 h-5" />
-                  {m.titre}
-                </div>
-                <p className="text-sm text-gray-600 flex-1">{m.description}</p>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                  <Icone className="h-6 w-6" />
+                </span>
+                <div className="mt-3 text-lg font-bold text-[#0B1120]">{m.titre}</div>
+                <p className="mt-1.5 flex-1 text-sm leading-relaxed text-slate-600">{m.description}</p>
                 <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0066CC]">
                   {m.cta}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
                 </span>
               </Link>
             );
@@ -162,121 +193,143 @@ export default function SimulateurTransportSanitairePage() {
         </div>
       </section>
 
-      <article className="max-w-3xl mx-auto px-4 py-12 prose prose-sm sm:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700">
-        <section id="comparatif">
-          <h2>Taxi conventionné, VSL ou ambulance : le comparatif</h2>
-          <p>
+      <ArticleContainer>
+        <section id="comparatif" className="space-y-6">
+          <SectionHeading icon={Scale}>
+            Taxi conventionné, VSL ou ambulance : le comparatif
+          </SectionHeading>
+          <Lead>
             Ces trois modes de transport sanitaire répondent à des besoins différents et suivent des grilles
             tarifaires distinctes. Le tableau ci-dessous résume leurs principales caractéristiques ; le choix est
             toujours déterminé par le médecin sur la prescription, en fonction de votre état de santé.
-          </p>
-          <div className="not-prose overflow-x-auto my-6">
-            <table className="w-full text-sm border border-gray-200 rounded-xl overflow-hidden">
-              <thead className="bg-gray-50 text-gray-700">
-                <tr>
-                  <th className="text-left font-semibold px-3 py-2.5 border-b border-gray-200">Critère</th>
-                  <th className="text-left font-semibold px-3 py-2.5 border-b border-gray-200">Taxi conventionné</th>
-                  <th className="text-left font-semibold px-3 py-2.5 border-b border-gray-200">VSL</th>
-                  <th className="text-left font-semibold px-3 py-2.5 border-b border-gray-200">Ambulance</th>
+          </Lead>
+          <DataTable>
+            <thead>
+              <tr className="bg-gradient-to-r from-[#0B1120] to-[#0f1d3a] text-left text-white">
+                <th className="px-4 py-3 font-semibold">Critère</th>
+                <th className="px-4 py-3 font-semibold">Taxi conventionné</th>
+                <th className="px-4 py-3 font-semibold">VSL</th>
+                <th className="px-4 py-3 font-semibold">Ambulance</th>
+              </tr>
+            </thead>
+            <tbody className="text-slate-700">
+              {COMPARATIF.map((row, i) => (
+                <tr key={row.critere} className={i % 2 === 1 ? "bg-slate-50/70" : "bg-white"}>
+                  <td className="px-4 py-3 font-medium text-[#0B1120]">{row.critere}</td>
+                  <td className="px-4 py-3">{row.taxi}</td>
+                  <td className="px-4 py-3">{row.vsl}</td>
+                  <td className="px-4 py-3">{row.ambulance}</td>
                 </tr>
-              </thead>
-              <tbody className="text-gray-700">
-                <tr className="border-b border-gray-100">
-                  <td className="px-3 py-2.5 font-medium">Position du patient</td>
-                  <td className="px-3 py-2.5">Assis</td>
-                  <td className="px-3 py-2.5">Assis</td>
-                  <td className="px-3 py-2.5">Allongé / surveillance</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="px-3 py-2.5 font-medium">Conducteur</td>
-                  <td className="px-3 py-2.5">Chauffeur agréé CPAM</td>
-                  <td className="px-3 py-2.5">Auxiliaire ambulancier</td>
-                  <td className="px-3 py-2.5">Équipage qualifié (2 pers.)</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="px-3 py-2.5 font-medium">Grille tarifaire</td>
-                  <td className="px-3 py-2.5">Convention CPAM taxi</td>
-                  <td className="px-3 py-2.5">Avenant 11 sanitaire</td>
-                  <td className="px-3 py-2.5">Avenant 11 sanitaire</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="px-3 py-2.5 font-medium">Niveau de prix</td>
-                  <td className="px-3 py-2.5">Modéré</td>
-                  <td className="px-3 py-2.5">Modéré</td>
-                  <td className="px-3 py-2.5">Le plus élevé</td>
-                </tr>
-                <tr className="border-b border-gray-100">
-                  <td className="px-3 py-2.5 font-medium">Transport partagé</td>
-                  <td className="px-3 py-2.5">Possible</td>
-                  <td className="px-3 py-2.5">Possible</td>
-                  <td className="px-3 py-2.5">Non</td>
-                </tr>
-                <tr>
-                  <td className="px-3 py-2.5 font-medium">Remboursement CPAM</td>
-                  <td className="px-3 py-2.5">65 % / 100 % ALD</td>
-                  <td className="px-3 py-2.5">65 % / 100 % ALD</td>
-                  <td className="px-3 py-2.5">65 % / 100 % ALD</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </DataTable>
         </section>
 
-        <section id="remboursement">
-          <h2>Un remboursement commun aux trois modes</h2>
-          <p>
+        <section id="remboursement" className="space-y-6">
+          <SectionHeading icon={ShieldCheck}>Un remboursement commun aux trois modes</SectionHeading>
+          <StatGrid>
+            <StatCard value="100 %" label="ALD, AT/MP, hospitalisation" accent />
+            <StatCard value="65 %" label="Autres motifs (part de base)" />
+            <StatCard value="4 €" label="Franchise par trajet (8 €/jour, 50 €/an)" />
+          </StatGrid>
+          <Lead>
             Quel que soit le mode prescrit, le remboursement suit les mêmes règles : sur prescription médicale de
             transport, l&apos;Assurance maladie prend en charge <strong>65 %</strong> du tarif conventionné pour la
             plupart des motifs, et <strong>100 %</strong> en cas d&apos;affection longue durée (ALD) en lien avec le
             transport, d&apos;accident du travail, de maladie professionnelle ou d&apos;hospitalisation. Le tiers
             payant évite d&apos;avancer la part remboursée ; une franchise de 4 € par trajet (plafonnée à 8 €/jour et
             50 €/an) reste à charge.
-          </p>
-          <p>
-            Pour approfondir, consultez notre guide{" "}
-            <Link href="/blog/remboursement-transport-medical">remboursement du transport médical</Link> ou les
-            conditions officielles sur{" "}
-            <a href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport" target="_blank" rel="noopener noreferrer">
+          </Lead>
+          <Callout title="Pour aller plus loin" icon={Wallet}>
+            Consultez notre guide{" "}
+            <Link
+              href="/blog/remboursement-transport-medical"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              remboursement du transport médical
+            </Link>{" "}
+            ou les conditions officielles sur{" "}
+            <a
+              href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
               ameli.fr
             </a>.
-          </p>
+          </Callout>
         </section>
 
-        <section id="simulateurs">
-          <h2>Accéder aux simulateurs dédiés</h2>
-          <p>
+        <section id="simulateurs" className="space-y-6">
+          <SectionHeading icon={LayoutGrid}>Accéder aux simulateurs dédiés</SectionHeading>
+          <Lead>
             Chaque mode dispose de son simulateur détaillé, avec le calcul complet et la possibilité de déposer une
             demande de transport auprès des professionnels de votre secteur :
-          </p>
-          <ul>
-            <li>
-              <Link href="/simulateur-taxi-conventionne">Simulateur de prix du taxi conventionné</Link> — grille CPAM 2026 ;
-            </li>
-            <li>
-              <Link href="/tarif-vsl">Simulateur et prix du VSL</Link> — grille avenant 11 ;
-            </li>
-            <li>
-              <Link href="/tarif-ambulance">Simulateur et tarif ambulance</Link> — grille avenant 11, prix avec ou sans prise en charge.
-            </li>
-          </ul>
-        </section>
-      </article>
-
-      <section className="max-w-3xl mx-auto px-4 pb-16">
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Questions fréquentes sur le transport sanitaire
-          </h2>
-          <div className="space-y-4">
-            {FAQ.map((q, i) => (
-              <div key={i}>
-                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
-              </div>
-            ))}
+          </Lead>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link
+              href="/simulateur-taxi-conventionne"
+              className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0066CC] hover:shadow-lg"
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Car className="h-5 w-5" />
+              </span>
+              <span className="mt-3 font-semibold text-[#0B1120]">
+                Simulateur de prix du taxi conventionné
+              </span>
+              <span className="mt-1 text-sm text-slate-600">grille CPAM 2026</span>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0066CC]">
+                Ouvrir le simulateur
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+            <Link
+              href="/tarif-vsl"
+              className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0066CC] hover:shadow-lg"
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Stethoscope className="h-5 w-5" />
+              </span>
+              <span className="mt-3 font-semibold text-[#0B1120]">Simulateur et prix du VSL</span>
+              <span className="mt-1 text-sm text-slate-600">grille avenant 11</span>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0066CC]">
+                Ouvrir le simulateur
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+            <Link
+              href="/tarif-ambulance"
+              className="group flex flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-[#0066CC] hover:shadow-lg"
+            >
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Cross className="h-5 w-5" />
+              </span>
+              <span className="mt-3 font-semibold text-[#0B1120]">Simulateur et tarif ambulance</span>
+              <span className="mt-1 text-sm text-slate-600">
+                grille avenant 11, prix avec ou sans prise en charge
+              </span>
+              <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-[#0066CC]">
+                Ouvrir le simulateur
+                <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+              </span>
+            </Link>
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section id="faq" className="space-y-6">
+          <SectionHeading icon={HelpCircle}>Questions fréquentes sur le transport sanitaire</SectionHeading>
+          <FaqAccordion items={FAQ} />
+        </section>
+
+        <CtaBand
+          href="/transport-medical"
+          title="Besoin d'un transport sanitaire ?"
+          description="Choisissez le simulateur adapté à votre prescription, obtenez une estimation et transmettez gratuitement votre demande aux transporteurs de votre secteur."
+          cta="Déposer une demande de transport"
+        />
+      </ArticleContainer>
+
+      <div aria-hidden className="h-16" />
     </main>
   );
 }

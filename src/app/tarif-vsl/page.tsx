@@ -1,9 +1,36 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Stethoscope, ChevronRight } from "lucide-react";
+import {
+  Stethoscope,
+  ChevronRight,
+  MapPin,
+  Route,
+  Ruler,
+  Moon,
+  Calculator,
+  Coins,
+  ShieldCheck,
+  Wallet,
+  Percent,
+  HelpCircle,
+  Car,
+  Cross,
+} from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { buildSimulateurJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import SimulateurTarif from "@/components/sanitaire/SimulateurTarif";
+import {
+  ArticleContainer,
+  SectionHeading,
+  Lead,
+  FeatureGrid,
+  FeatureCard,
+  StatGrid,
+  StatCard,
+  Callout,
+  FaqAccordion,
+  CtaBand,
+} from "@/components/sanitaire/editorial/EditorialUI";
 
 export const revalidate = 3600;
 
@@ -119,123 +146,157 @@ export default function TarifVslPage() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4 -mt-8 relative z-10">
+      <section id="simulateur" className="max-w-3xl mx-auto px-4 -mt-8 relative z-10 scroll-mt-24">
         <SimulateurTarif typeParDefaut="vsl" />
       </section>
 
-      <article className="max-w-3xl mx-auto px-4 py-12 prose prose-sm sm:prose-base max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-li:text-gray-700">
-        <section id="calcul">
-          <h2>Comment est calculé le prix d&apos;un VSL ?</h2>
-          <p>
+      <ArticleContainer>
+        <section id="calcul" className="space-y-6">
+          <SectionHeading icon={Calculator}>Comment est calculé le prix d&apos;un VSL ?</SectionHeading>
+          <Lead>
             Le prix d&apos;un VSL n&apos;est pas fixé librement : il suit la convention nationale des transporteurs
             sanitaires et son avenant 11, applicable en 2026. Le montant d&apos;une course additionne plusieurs
             composantes que le simulateur calcule automatiquement :
-          </p>
-          <ul>
-            <li>
-              <strong>Le forfait départemental de prise en charge</strong>, qui inclut les premiers kilomètres de
-              la course et varie d&apos;un département à l&apos;autre ;
-            </li>
-            <li>
-              <strong>Le tarif kilométrique</strong>, appliqué à chaque kilomètre au-delà du forfait ;
-            </li>
-            <li>
-              <strong>Une valorisation des trajets courts</strong>, prévue par la convention pour les courses de
-              faible distance ;
-            </li>
-            <li>
-              <strong>Les majorations de nuit, du dimanche et des jours fériés</strong>, appliquées lorsque
-              l&apos;horaire saisi les déclenche.
-            </li>
-          </ul>
-          <p>
+          </Lead>
+          <FeatureGrid>
+            <FeatureCard icon={MapPin} title="Le forfait départemental de prise en charge">
+              qui inclut les premiers kilomètres de la course et varie d&apos;un département à l&apos;autre.
+            </FeatureCard>
+            <FeatureCard icon={Route} title="Le tarif kilométrique">
+              appliqué à chaque kilomètre au-delà du forfait.
+            </FeatureCard>
+            <FeatureCard icon={Ruler} title="Une valorisation des trajets courts">
+              prévue par la convention pour les courses de faible distance.
+            </FeatureCard>
+            <FeatureCard icon={Moon} title="Les majorations de nuit, du dimanche et des jours fériés">
+              appliquées lorsque l&apos;horaire saisi les déclenche.
+            </FeatureCard>
+          </FeatureGrid>
+          <Callout title="À retenir">
             Le résultat affiché est une <strong>estimation indicative</strong> : elle ne remplace pas le devis du
             transporteur et ignore les éléments inconnus au moment de la demande (temps d&apos;attente, transport
             partagé, péages, retour à vide).
-          </p>
+          </Callout>
         </section>
 
-        <section id="cout">
-          <h2>Combien coûte un VSL ?</h2>
-          <p>
+        <section id="cout" className="space-y-6">
+          <SectionHeading icon={Coins}>Combien coûte un VSL ?</SectionHeading>
+          <Lead>
             La question « <strong>combien coûte un VSL ?</strong> » n&apos;a pas de réponse unique : le prix dépend
             avant tout de la distance parcourue et du département, car le tarif kilométrique est fixé
             département par département. Une même distance ne coûte donc pas le même prix partout en France.
-          </p>
-          <p>
+          </Lead>
+          <Lead>
             Le VSL est généralement <strong>moins cher qu&apos;une ambulance</strong>, car il transporte des
             patients en position assise sans nécessiter un équipage ni un véhicule médicalisé. Pour connaître le
             coût de votre course précise, saisissez vos adresses de départ et d&apos;arrivée dans le simulateur :
             il applique automatiquement le tarif de votre département.
-          </p>
+          </Lead>
         </section>
 
-        <section id="remboursement">
-          <h2>Remboursement du VSL par la CPAM</h2>
-          <p>
+        <CtaBand
+          href="#simulateur"
+          title="Estimez le prix de votre course en VSL"
+          description="Renseignez vos adresses réelles et déposez une demande de transport auprès des transporteurs de votre secteur, sans engagement."
+          cta="Déposer une demande de transport"
+        />
+
+        <section id="remboursement" className="space-y-6">
+          <SectionHeading icon={ShieldCheck}>Remboursement du VSL par la CPAM</SectionHeading>
+          <Lead>
             Sur prescription médicale de transport, le VSL est pris en charge par la Sécurité sociale. Le taux
             dépend du motif :
-          </p>
-          <ul>
-            <li>
-              <strong>100 %</strong> en cas d&apos;affection longue durée (ALD) en lien avec le transport,
-              d&apos;accident du travail, de maladie professionnelle, d&apos;hospitalisation, de maternité à partir
-              du 1er jour du 6e mois, ou pour les bénéficiaires de la Complémentaire santé solidaire (CSS) et de
-              l&apos;AME ;
-            </li>
-            <li>
-              <strong>65 %</strong> pour les autres motifs ; le complément est généralement pris en charge par la
-              mutuelle.
-            </li>
-          </ul>
-          <p>
+          </Lead>
+          <StatGrid>
+            <StatCard value="100 %" label="ALD, AT/MP, hospitalisation, maternité, CSS et AME" accent />
+            <StatCard value="65 %" label="Autres motifs (complément par la mutuelle)" />
+            <StatCard value="4 €" label="Franchise par trajet (8 €/jour, 50 €/an)" />
+          </StatGrid>
+          <div className="space-y-3 text-slate-600 leading-relaxed">
+            <p>
+              <strong className="text-[#0B1120]">100 %</strong> en cas d&apos;affection longue durée (ALD) en lien
+              avec le transport, d&apos;accident du travail, de maladie professionnelle, d&apos;hospitalisation, de
+              maternité à partir du 1er jour du 6e mois, ou pour les bénéficiaires de la Complémentaire santé
+              solidaire (CSS) et de l&apos;AME ;
+            </p>
+            <p>
+              <strong className="text-[#0B1120]">65 %</strong> pour les autres motifs ; le complément est
+              généralement pris en charge par la mutuelle.
+            </p>
+          </div>
+          <Callout title="Bon à savoir" icon={Wallet}>
             Grâce au tiers payant, vous n&apos;avancez pas la part remboursée : présentez votre carte Vitale et
             votre bon de transport. Une franchise médicale de 4 € par trajet (plafonnée à 8 € par jour et 50 € par
             an) reste à votre charge. Les conditions détaillées figurent sur{" "}
-            <a href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport" target="_blank" rel="noopener noreferrer">
+            <a
+              href="https://www.ameli.fr/assure/remboursements/rembourse/transports/prise-charge-frais-transport"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
               ameli.fr
             </a>{" "}
             et dans notre guide{" "}
-            <Link href="/blog/remboursement-transport-medical">remboursement du transport médical</Link>.
-          </p>
+            <Link
+              href="/blog/remboursement-transport-medical"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              remboursement du transport médical
+            </Link>.
+          </Callout>
         </section>
 
-        <section id="difference">
-          <h2>VSL, taxi conventionné ou ambulance ?</h2>
-          <p>
+        <section id="difference" className="space-y-6">
+          <SectionHeading icon={Percent}>VSL, taxi conventionné ou ambulance ?</SectionHeading>
+          <Lead>
             Le VSL est conduit par un auxiliaire ambulancier qui peut aider le patient à se déplacer ; il
             s&apos;adresse aux personnes autonomes en position assise mais nécessitant un accompagnement adapté. Le
             taxi conventionné transporte également des patients assis, mais sans qualification sanitaire du
             chauffeur. L&apos;ambulance, elle, est réservée aux transports allongés ou sous surveillance. Le mode
             de transport est indiqué par le médecin sur la prescription. Pour comparer les trois, consultez notre{" "}
-            <Link href="/simulateur-transport-sanitaire">hub des simulateurs de transport sanitaire</Link>.
-          </p>
-          <div className="not-prose grid sm:grid-cols-2 gap-3 my-6">
-            <Link href="/simulateur-taxi-conventionne" className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-4 py-3 text-sm font-semibold text-gray-900 transition">
-              Simulateur taxi conventionné →
+            <Link
+              href="/simulateur-transport-sanitaire"
+              className="font-medium text-[#0066CC] underline underline-offset-2 hover:text-[#0052a3]"
+            >
+              hub des simulateurs de transport sanitaire
+            </Link>.
+          </Lead>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link
+              href="/simulateur-taxi-conventionne"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[#0066CC]/40 hover:shadow-md"
+            >
+              <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Car className="h-5 w-5" />
+              </span>
+              <span className="font-semibold text-[#0B1120]">Simulateur taxi conventionné</span>
+              <ChevronRight className="ml-auto h-5 w-5 text-[#0066CC] transition group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/tarif-ambulance" className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-4 py-3 text-sm font-semibold text-gray-900 transition">
-              Simulateur et tarif ambulance →
+            <Link
+              href="/tarif-ambulance"
+              className="group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-[#0066CC]/40 hover:shadow-md"
+            >
+              <span className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#0066CC] ring-1 ring-blue-100">
+                <Cross className="h-5 w-5" />
+              </span>
+              <span className="font-semibold text-[#0B1120]">Simulateur et tarif ambulance</span>
+              <ChevronRight className="ml-auto h-5 w-5 text-[#0066CC] transition group-hover:translate-x-0.5" />
             </Link>
           </div>
         </section>
-      </article>
 
-      <section className="max-w-3xl mx-auto px-4 pb-16">
-        <div className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Questions fréquentes sur le prix du VSL
-          </h2>
-          <div className="space-y-4">
-            {FAQ.map((q, i) => (
-              <div key={i}>
-                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
-                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        <section id="faq" className="space-y-6">
+          <SectionHeading icon={HelpCircle}>Questions fréquentes sur le prix du VSL</SectionHeading>
+          <FaqAccordion items={FAQ} />
+        </section>
+
+        <CtaBand
+          href="#simulateur"
+          title="Besoin d'un transport en VSL ?"
+          description="Obtenez une estimation immédiate puis transmettez gratuitement votre demande aux transporteurs conventionnés de votre secteur."
+          cta="Déposer une demande de transport"
+        />
+      </ArticleContainer>
     </main>
   );
 }
