@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 import { renderValidateDecision } from "@/lib/email-templates/sanitaire";
+import { telephoneSmsParDefaut } from "@/lib/sms";
 
 const getAdminClient = () =>
   createClient(
@@ -38,7 +39,7 @@ export async function POST(req: Request) {
 
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
-      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public, source, free_trial_ends_at, departement")
+      .select("id, raison_sociale, nom_commercial, ville, ville_slug, categorie, slug, claimed_by, email_public, source, free_trial_ends_at, departement, telephone_public, telephone_sms, phone_e164")
       .eq("id", pro_id)
       .maybeSingle();
     if (!pro) return NextResponse.json({ error: "Fiche introuvable" }, { status: 404 });
@@ -68,6 +69,15 @@ export async function POST(req: Request) {
       if (isSelfRegistered) {
         updatePayload.actif = true;
       }
+      // SMS actives par defaut a l'approbation de la revendication. On pre-remplit
+      // le numero de mobile depuis le mobile connu sans ecraser un numero deja saisi.
+      updatePayload.sms_notifications = true;
+      const telSms = telephoneSmsParDefaut({
+        telephoneSmsActuel: (pro as typeof pro & { telephone_sms: string | null }).telephone_sms,
+        phoneE164: (pro as typeof pro & { phone_e164: string | null }).phone_e164,
+        telephonePublic: (pro as typeof pro & { telephone_public: string | null }).telephone_public,
+      });
+      if (telSms !== undefined) updatePayload.telephone_sms = telSms;
       const { error } = await supabaseAdmin
         .from("pros_sanitaire")
         .update(updatePayload)

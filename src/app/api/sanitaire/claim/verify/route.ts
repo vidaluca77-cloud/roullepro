@@ -5,6 +5,7 @@ import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email";
 import { renderClaimBienvenue, renderClaimAdmin } from "@/lib/email-templates/sanitaire";
+import { telephoneSmsParDefaut } from "@/lib/sms";
 
 const getAdminClient = () =>
   createClient(
@@ -58,7 +59,7 @@ export async function POST(req: Request) {
     const { data: pro } = await supabaseAdmin
       .from("pros_sanitaire")
       .select(
-        "id, raison_sociale, nom_commercial, ville, ville_slug, slug, categorie, email_public, adresse, code_postal, departement, siret, latitude, longitude"
+        "id, raison_sociale, nom_commercial, ville, ville_slug, slug, categorie, email_public, adresse, code_postal, departement, siret, latitude, longitude, telephone_public, telephone_sms, phone_e164"
       )
       .eq("id", claim.pro_id)
       .maybeSingle();
@@ -158,6 +159,16 @@ export async function POST(req: Request) {
     if (claim.method === "email_domaine") {
       updates.email_public = claim.contact;
     }
+
+    // SMS actives par defaut : le pro devient inscrit en revendiquant sa fiche.
+    // Numero pre-rempli depuis le mobile connu (sans ecraser un numero existant).
+    updates.sms_notifications = true;
+    const telSms = telephoneSmsParDefaut({
+      telephoneSmsActuel: pro.telephone_sms as string | null,
+      phoneE164: pro.phone_e164 as string | null,
+      telephonePublic: pro.telephone_public as string | null,
+    });
+    if (telSms !== undefined) updates.telephone_sms = telSms;
     const { error: updErr } = await supabaseAdmin
       .from("pros_sanitaire")
       .update(updates)

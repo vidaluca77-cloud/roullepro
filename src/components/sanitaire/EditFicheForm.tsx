@@ -513,8 +513,8 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
           </div>
         )}
         <p className="text-xs text-gray-500 mt-2">
+          Option activée par défaut pour les nouveaux inscrits, désactivable à tout moment.
           SMS de notification uniquement (nouvelles courses dans votre département).
-          Désactivable à tout moment.
         </p>
       </div>
 

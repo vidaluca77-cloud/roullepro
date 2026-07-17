@@ -77,6 +77,27 @@ export function normaliserTelephoneFr(tel: string): string | null {
   return null;
 }
 
+/**
+ * Numero de mobile a pre-remplir pour les notifications SMS au moment ou un pro
+ * devient inscrit (revendication effective ou inscription spontanee).
+ *
+ * - Si un numero SMS est deja renseigne sur la fiche, on ne l'ecrase pas
+ *   (retourne `undefined` : le champ ne doit pas etre inclus dans l'update).
+ * - Sinon on tente le mobile FR connu (phone_e164 puis telephone_public) et on
+ *   renvoie le numero normalise en E.164, ou `null` si ce n'est pas un mobile FR
+ *   exploitable (le pro le saisira lui-meme dans son dashboard).
+ */
+export function telephoneSmsParDefaut(params: {
+  telephoneSmsActuel?: string | null;
+  phoneE164?: string | null;
+  telephonePublic?: string | null;
+}): string | null | undefined {
+  const actuel = params.telephoneSmsActuel?.trim();
+  if (actuel) return undefined; // deja renseigne : on ne touche pas au choix du pro
+  const source = params.phoneE164 || params.telephonePublic || "";
+  return source ? normaliserTelephoneFr(source) : null;
+}
+
 /** Retire les accents pour rester en GSM-7 (1 credit SMS au lieu d'unicode). */
 export function retirerAccents(s: string): string {
   return s.normalize("NFD").replace(/[̀-ͯ]/g, "");

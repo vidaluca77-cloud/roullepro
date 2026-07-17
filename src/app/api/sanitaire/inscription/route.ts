@@ -10,6 +10,7 @@ import {
 } from "@/lib/email-templates/sanitaire";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { slugifyVille } from "@/lib/sanitaire-data";
+import { normaliserTelephoneFr } from "@/lib/sms";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -404,6 +405,11 @@ export async function POST(req: Request) {
         claim_status: "en_attente_validation",
         verified: false,
         actif: false,
+        // SMS actives par defaut pour tout nouvel inscrit. Le numero de mobile
+        // est pre-rempli depuis le telephone saisi s'il s'agit d'un mobile FR
+        // (06/07) ; sinon null, le pro le renseignera dans son dashboard.
+        sms_notifications: true,
+        telephone_sms: normaliserTelephoneFr(data.telephone),
         plan: "gratuit",
         free_trial_ends_at: freeTrialEndsAt,
       })

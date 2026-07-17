@@ -5,6 +5,7 @@ import {
   retirerAccents,
   construireMessageSmsCourse,
   envoyerSmsTransactionnel,
+  telephoneSmsParDefaut,
 } from "./sms";
 
 // --- normaliserTelephoneFr -------------------------------------------------
@@ -46,6 +47,57 @@ test("normaliserTelephoneFr : numeros invalides -> null", () => {
   assert.equal(normaliserTelephoneFr("06123456789"), null); // trop long
   assert.equal(normaliserTelephoneFr("abcdefghij"), null);
   assert.equal(normaliserTelephoneFr("+33512345678"), null); // +33 fixe
+});
+
+// --- telephoneSmsParDefaut -------------------------------------------------
+
+test("telephoneSmsParDefaut : conserve un numero SMS deja renseigne (undefined)", () => {
+  // undefined = ne pas inclure le champ dans l'update, on ne touche pas au choix du pro.
+  assert.equal(
+    telephoneSmsParDefaut({
+      telephoneSmsActuel: "+33612345678",
+      phoneE164: "+33699999999",
+      telephonePublic: "0788888888",
+    }),
+    undefined
+  );
+});
+
+test("telephoneSmsParDefaut : pre-remplit depuis phone_e164 en priorite", () => {
+  assert.equal(
+    telephoneSmsParDefaut({
+      telephoneSmsActuel: null,
+      phoneE164: "+33612345678",
+      telephonePublic: "0788888888",
+    }),
+    "+33612345678"
+  );
+});
+
+test("telephoneSmsParDefaut : fallback sur telephone_public (mobile)", () => {
+  assert.equal(
+    telephoneSmsParDefaut({
+      telephoneSmsActuel: "",
+      phoneE164: null,
+      telephonePublic: "06 12 34 56 78",
+    }),
+    "+33612345678"
+  );
+});
+
+test("telephoneSmsParDefaut : null si aucun mobile FR exploitable (fixe)", () => {
+  assert.equal(
+    telephoneSmsParDefaut({
+      telephoneSmsActuel: null,
+      phoneE164: null,
+      telephonePublic: "0231234567", // fixe -> non exploitable
+    }),
+    null
+  );
+});
+
+test("telephoneSmsParDefaut : null si aucune source", () => {
+  assert.equal(telephoneSmsParDefaut({}), null);
 });
 
 // --- retirerAccents --------------------------------------------------------
