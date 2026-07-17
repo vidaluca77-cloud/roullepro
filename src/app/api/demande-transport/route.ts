@@ -15,6 +15,9 @@ import {
   sendAdminNouvelleDemande,
 } from "@/lib/email";
 import { geocodeAdresse } from "@/lib/geocode-adresse";
+import { normaliserDepartement } from "@/lib/departement";
+import { calculerDistanceCourse } from "@/lib/distance-course";
+import { estimerPrixCPAM, type EstimationCPAM } from "@/lib/tarif-cpam";
 
 const getAdminClient = () =>
   createClient(
@@ -84,6 +87,29 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+    // Validation de la date : parseable, pas dans le passe (tolerance 1h),
+    // pas au-dela d'un an. Stockee en ISO normalise.
+    const dateSouhaiteeDate = new Date(dateSouhaiteeRaw);
+    if (Number.isNaN(dateSouhaiteeDate.getTime())) {
+      return NextResponse.json(
+        { error: "La date et heure souhaitees sont invalides" },
+        { status: 400 }
+      );
+    }
+    const nowMs = Date.now();
+    if (dateSouhaiteeDate.getTime() < nowMs - 3_600_000) {
+      return NextResponse.json(
+        { error: "La date souhaitee ne peut pas etre dans le passe." },
+        { status: 400 }
+      );
+    }
+    if (dateSouhaiteeDate.getTime() > nowMs + 365 * 86_400_000) {
+      return NextResponse.json(
+        { error: "La date souhaitee est trop lointaine (un an maximum)." },
+        { status: 400 }
+      );
+    }
+    const dateSouhaiteeIso = dateSouhaiteeDate.toISOString();
 
     // Lieu de depart obligatoire : sans ca on ne peut pas dispatcher la demande
     // au bon pro (le trigger fait p.departement = NEW.departement_cible).
@@ -130,12 +156,21 @@ export async function POST(req: Request) {
 
     const etablissementId = body.etablissement_id || null;
     const proIdCible = body.pro_id_cible || null;
-    let departementCible: string | null = body.departement_cible || null;
-    let villeCible: string | null = body.ville_cible || null;
-    const lieuDepartLat =
-      typeof body.lieu_depart_lat === "number" ? body.lieu_depart_lat : null;
-    const lieuDepartLng =
-      typeof body.lieu_depart_lng === "number" ? body.lieu_depart_lng : null;
+    let departementCible: string | null = normaliserDepartement(body.departement_cible);
+    let villeCible: string | null = (body.ville_cible ?? "").toString().trim() || null;
+
+    // Coordonnees + ville + departement de chaque extremite fournies par le front
+    // (Google Places). Completees ensuite par geocodage de secours si besoin.
+    const numOrNull = (v: unknown) =>
+      typeof v === "number" && Number.isFinite(v) ? v : null;
+    let lieuDepartLat = numOrNull(body.lieu_depart_lat);
+    let lieuDepartLng = numOrNull(body.lieu_depart_lng);
+    let lieuArriveeLat = numOrNull(body.lieu_arrivee_lat);
+    let lieuArriveeLng = numOrNull(body.lieu_arrivee_lng);
+    let villeDepart: string | null = (body.ville_depart ?? "").toString().trim() || null;
+    let villeArrivee: string | null = (body.ville_arrivee ?? "").toString().trim() || null;
+    let departementDepart: string | null = normaliserDepartement(body.departement_depart);
+    let departementArrivee: string | null = normaliserDepartement(body.departement_arrivee);
 
     // Si on a un etablissement, on recupere dept/ville pour le fan-out departemental.
     if (etablissementId) {
@@ -147,6 +182,9 @@ export async function POST(req: Request) {
       if (etab) {
         departementCible = departementCible || etab.departement || null;
         villeCible = villeCible || etab.ville || null;
+        // L'arrivee est l'etablissement pour ce formulaire.
+        departementArrivee = departementArrivee || etab.departement || null;
+        villeArrivee = villeArrivee || etab.ville || null;
       }
     }
 
@@ -164,16 +202,32 @@ export async function POST(req: Request) {
       }
     }
 
-    // Fallback : si le front n'a pas pu deriver le departement via Google Places
-    // (JS desactive, autocomplete pas declenche, etc.), on geocode le lieu de
-    // depart cote API via api-adresse.data.gouv.fr (gratuit, sans cle).
-    if (!departementCible && lieuDepartRaw) {
+    // Geocodage de secours cote serveur (api-adresse, gratuit, sans cle) pour
+    // fiabiliser le dispatch ET la distance : on complete depart puis arrivee
+    // quand le front n'a pas fourni coordonnees / ville / departement.
+    if ((!lieuDepartLat || !lieuDepartLng || !departementDepart || !villeDepart) && lieuDepartRaw) {
       const geo = await geocodeAdresse(lieuDepartRaw);
       if (geo) {
-        departementCible = geo.departement;
-        villeCible = villeCible || geo.ville;
+        lieuDepartLat = lieuDepartLat ?? geo.latitude;
+        lieuDepartLng = lieuDepartLng ?? geo.longitude;
+        departementDepart = departementDepart || geo.departement;
+        villeDepart = villeDepart || geo.ville;
       }
     }
+    // Ne jamais rejeter la demande si seule l'arrivee est introuvable.
+    if ((!lieuArriveeLat || !lieuArriveeLng || !departementArrivee || !villeArrivee) && lieuArriveeRaw) {
+      const geo = await geocodeAdresse(lieuArriveeRaw);
+      if (geo) {
+        lieuArriveeLat = lieuArriveeLat ?? geo.latitude;
+        lieuArriveeLng = lieuArriveeLng ?? geo.longitude;
+        departementArrivee = departementArrivee || geo.departement;
+        villeArrivee = villeArrivee || geo.ville;
+      }
+    }
+
+    // Departement / ville cible du dispatch : a defaut de parent, on prend le depart.
+    departementCible = departementCible || departementDepart;
+    villeCible = villeCible || villeDepart;
 
     if (!departementCible) {
       return NextResponse.json(
@@ -185,6 +239,37 @@ export async function POST(req: Request) {
       );
     }
 
+    // Distance de la course (Haversine x 1,3) + estimation CPAM indicative.
+    // Si une extremite n'est pas geolocalisable, pas d'estimation (pas de 0 km).
+    const distance = calculerDistanceCourse(
+      lieuDepartLat != null && lieuDepartLng != null
+        ? { lat: lieuDepartLat, lng: lieuDepartLng }
+        : null,
+      lieuArriveeLat != null && lieuArriveeLng != null
+        ? { lat: lieuArriveeLat, lng: lieuArriveeLng }
+        : null
+    );
+    const distanceKm = distance?.distanceKm ?? null;
+
+    let prixEstime: number | null = null;
+    let prixEstimeDetails: EstimationCPAM["details"] | null = null;
+    if (distanceKm != null) {
+      const estimation = estimerPrixCPAM({
+        distanceKm,
+        departementCible,
+        villeDepart,
+        villeArrivee,
+        departementDepart,
+        departementArrivee,
+        dateSouhaitee: dateSouhaiteeIso,
+        allerRetour: !!body.aller_retour,
+      });
+      if (estimation) {
+        prixEstime = estimation.total;
+        prixEstimeDetails = estimation.details;
+      }
+    }
+
     // Insertion de la demande. Le trigger dispatch_demande_transport() fait le
     // fan-out RoullePro (demandes_transport_pros) + TCP (tcp.reservations).
     const { data: demande, error: insertErr } = await supabase
@@ -194,11 +279,14 @@ export async function POST(req: Request) {
         nom,
         telephone,
         email: email || null,
-        date_souhaitee: body.date_souhaitee || null,
+        date_souhaitee: dateSouhaiteeIso,
         lieu_depart: lieuDepartRaw,
         lieu_arrivee: lieuArriveeRaw || null,
         lieu_depart_lat: lieuDepartLat,
         lieu_depart_lng: lieuDepartLng,
+        lieu_arrivee_lat: lieuArriveeLat,
+        lieu_arrivee_lng: lieuArriveeLng,
+        lieu_arrivee_ville: villeArrivee,
         aller_retour: !!body.aller_retour,
         mobilite: body.mobilite || null,
         precisions: body.precisions || null,
@@ -211,6 +299,9 @@ export async function POST(req: Request) {
         pro_id_cible: proIdCible,
         departement_cible: departementCible,
         ville_cible: villeCible,
+        distance_km: distanceKm,
+        prix_estime: prixEstime,
+        prix_estime_details: prixEstimeDetails,
         ip_hash: ipHash,
         user_agent: req.headers.get("user-agent")?.slice(0, 255) || null,
       })
@@ -264,7 +355,7 @@ export async function POST(req: Request) {
           typeLibelle: libelle,
           lieuDepart: lieuDepartRaw,
           lieuArrivee: lieuArriveeRaw || villeCible || null,
-          dateSouhaitee: body.date_souhaitee || null,
+          dateSouhaitee: dateSouhaiteeIso,
           allerRetour: !!body.aller_retour,
           mobilite: body.mobilite || null,
           precisions: body.precisions || null,
@@ -273,6 +364,8 @@ export async function POST(req: Request) {
           bonTransportMedical,
           sourceForm,
           typeTransport,
+          distanceKm,
+          prixEstime,
           demandeId: demande.id,
           proId: row.pro_id,
         }).catch(() => null);
@@ -302,7 +395,7 @@ export async function POST(req: Request) {
           ville: villeCible,
           lieuDepart: lieuDepartRaw,
           lieuArrivee: lieuArriveeRaw || null,
-          dateSouhaitee: body.date_souhaitee || null,
+          dateSouhaitee: dateSouhaiteeIso,
           precisions: body.precisions || null,
           demandeId: demande.id,
         }).catch(() => undefined);
@@ -328,7 +421,7 @@ export async function POST(req: Request) {
         telephone,
         email: email || null,
         type_transport: typeTransport,
-        date_souhaitee: body.date_souhaitee || null,
+        date_souhaitee: dateSouhaiteeIso,
         lieu_depart: lieuDepartRaw,
         lieu_arrivee: lieuArriveeRaw || null,
         departement_cible: departementCible,
@@ -337,6 +430,8 @@ export async function POST(req: Request) {
         taux_prise_en_charge: tauxPriseEnCharge,
         taux_prise_en_charge_autre: tauxPriseEnChargeAutre,
         source_form: sourceForm,
+        distance_km: distanceKm,
+        prix_estime: prixEstime,
         pros_notifies: prosNotifies,
       });
       await supabase

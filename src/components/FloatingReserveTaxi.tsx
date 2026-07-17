@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 import { Car, X, Loader2, CheckCircle2 } from "lucide-react";
 import {
   usePlacesAutocomplete,
-  extractDepartementFromComponents,
-  extractVilleFromComponents,
   type PlaceSelection,
 } from "@/lib/use-places-autocomplete";
+import DateHeureCourse, { toISODateSouhaitee } from "@/components/forms/DateHeureCourse";
 
 type Taux = "" | "100" | "65" | "autre";
 
@@ -124,18 +123,8 @@ export default function FloatingReserveTaxi() {
 
     // Departement / ville cibles derivees du place Google de depart (puis arrivee
     // en fallback). L'API completera via API Adresse FR si rien n'est resolu cote front.
-    const depFromDepart = departPlace
-      ? extractDepartementFromComponents(departPlace.components)
-      : null;
-    const villeFromDepart = departPlace
-      ? extractVilleFromComponents(departPlace.components)
-      : null;
-    const depFromArrivee = arriveePlace
-      ? extractDepartementFromComponents(arriveePlace.components)
-      : null;
-    const villeFromArrivee = arriveePlace
-      ? extractVilleFromComponents(arriveePlace.components)
-      : null;
+    const depResolved = departPlace?.departement || arriveePlace?.departement || null;
+    const villeResolved = departPlace?.ville || arriveePlace?.ville || null;
 
     setLoading(true);
     try {
@@ -147,11 +136,17 @@ export default function FloatingReserveTaxi() {
           nom: nom.trim(),
           telephone: telephone.trim(),
           email: email.trim() || null,
-          date_souhaitee: dateSouhaitee || null,
+          date_souhaitee: toISODateSouhaitee(dateSouhaitee),
           lieu_depart: lieuDepart.trim(),
           lieu_arrivee: lieuArrivee.trim(),
           lieu_depart_lat: departPlace?.lat ?? null,
           lieu_depart_lng: departPlace?.lng ?? null,
+          lieu_arrivee_lat: arriveePlace?.lat ?? null,
+          lieu_arrivee_lng: arriveePlace?.lng ?? null,
+          ville_depart: departPlace?.ville ?? null,
+          ville_arrivee: arriveePlace?.ville ?? null,
+          departement_depart: departPlace?.departement ?? null,
+          departement_arrivee: arriveePlace?.departement ?? null,
           mobilite: precisionsMobilite.trim() || null,
           taux_prise_en_charge: taux,
           taux_prise_en_charge_autre: taux === "autre" ? tauxAutre.trim() : null,
@@ -159,8 +154,8 @@ export default function FloatingReserveTaxi() {
           source_page: "widget",
           source_form: "widget",
           website,
-          departement_cible: depFromDepart || depFromArrivee,
-          ville_cible: villeFromDepart || villeFromArrivee,
+          departement_cible: depResolved,
+          ville_cible: villeResolved,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -310,17 +305,12 @@ export default function FloatingReserveTaxi() {
                       />
                     </div>
                   </div>
-                  <div>
-                    <label className={labelCls}>Date souhaitée</label>
-                    <input
-                      type="date"
-                      value={dateSouhaitee}
-                      onChange={(e) => setDateSouhaitee(e.target.value)}
-                      required
-                      aria-label="Date souhaitée"
-                      className={inputCls}
-                    />
-                  </div>
+                  <DateHeureCourse
+                    value={dateSouhaitee}
+                    onChange={setDateSouhaitee}
+                    inputClassName={inputCls}
+                    labelClassName={labelCls}
+                  />
 
                   <div>
                     <span className={labelCls}>Taux de prise en charge</span>

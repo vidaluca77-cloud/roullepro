@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Loader2, CheckCircle2, Car, Cross, Stethoscope } from "lucide-react";
 import {
   TYPES_TRANSPORT_DISPONIBLES,
   LIBELLE_TYPE_TRANSPORT,
   type TypeTransport,
 } from "@/lib/transport-types";
+import {
+  usePlacesAutocomplete,
+  type PlaceSelection,
+} from "@/lib/use-places-autocomplete";
+import DateHeureCourse, { toISODateSouhaitee } from "@/components/forms/DateHeureCourse";
 
 const ICONES: Record<TypeTransport, typeof Car> = {
   taxi: Car,
@@ -45,6 +50,20 @@ export default function MiniFormulaireReservation({
   // Honeypot anti-bot : doit rester vide.
   const [website, setWebsite] = useState("");
 
+  // Place Google du lieu de depart (coordonnees + departement + ville).
+  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(null);
+  const lieuDepartRef = useRef<HTMLInputElement>(null);
+
+  usePlacesAutocomplete([
+    {
+      ref: lieuDepartRef,
+      onSelect: (p) => {
+        setLieuDepart(p.formattedAddress);
+        setDepartPlace(p);
+      },
+    },
+  ]);
+
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +82,10 @@ export default function MiniFormulaireReservation({
     }
     if (!lieuDepart.trim()) {
       setError("Merci d'indiquer ton lieu de départ.");
+      return;
+    }
+    if (!dateSouhaitee) {
+      setError("Merci d'indiquer la date et l'heure souhaitées.");
       return;
     }
     if (email.trim() && !EMAIL_RE.test(email.trim())) {
@@ -95,9 +118,13 @@ export default function MiniFormulaireReservation({
           nom: nom.trim(),
           telephone: telephone.trim(),
           email: email.trim() || null,
-          date_souhaitee: dateSouhaitee || null,
+          date_souhaitee: toISODateSouhaitee(dateSouhaitee),
           lieu_depart: lieuDepart.trim(),
           lieu_arrivee: lieuArrivee,
+          lieu_depart_lat: departPlace?.lat ?? null,
+          lieu_depart_lng: departPlace?.lng ?? null,
+          ville_depart: departPlace?.ville ?? null,
+          departement_depart: departPlace?.departement ?? null,
           mobilite: precisionsMobilite.trim() || null,
           taux_prise_en_charge: taux,
           taux_prise_en_charge_autre: taux === "autre" ? tauxAutre.trim() : null,
@@ -202,26 +229,27 @@ export default function MiniFormulaireReservation({
       <div>
         <label className={labelCls}>Lieu de départ</label>
         <input
+          ref={lieuDepartRef}
           type="text"
           placeholder="Adresse complète ou ville"
           value={lieuDepart}
-          onChange={(e) => setLieuDepart(e.target.value)}
+          onChange={(e) => {
+            setLieuDepart(e.target.value);
+            if (departPlace) setDepartPlace(null);
+          }}
           required
+          autoComplete="off"
           aria-label="Lieu de départ"
           className={inputCls}
         />
         <p className="text-[11px] text-blue-100 mt-1">Arrivée : {lieuArrivee}</p>
       </div>
-      <div>
-        <label className={labelCls}>Date souhaitée (facultatif)</label>
-        <input
-          type="date"
-          value={dateSouhaitee}
-          onChange={(e) => setDateSouhaitee(e.target.value)}
-          aria-label="Date souhaitée"
-          className={inputCls}
-        />
-      </div>
+      <DateHeureCourse
+        value={dateSouhaitee}
+        onChange={setDateSouhaitee}
+        inputClassName={inputCls}
+        labelClassName={labelCls}
+      />
 
       <div>
         <span className={labelCls}>Taux de prise en charge</span>
