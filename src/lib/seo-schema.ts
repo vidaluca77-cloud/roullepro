@@ -43,6 +43,37 @@ export function buildBreadcrumbJsonLd(items: BreadcrumbItem[]) {
   };
 }
 
+/**
+ * WebApplication JSON-LD pour un simulateur de tarif en ligne (gratuit, sans
+ * inscription). Optimisé pour les résultats enrichis et la citation par les
+ * assistants IA (AI Overviews, Perplexity…).
+ */
+export function buildSimulateurJsonLd(input: {
+  name: string;
+  description: string;
+  url: string;
+  featureList?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: input.name,
+    description: input.description,
+    url: toAbsolute(input.url),
+    applicationCategory: "HealthApplication",
+    operatingSystem: "Web",
+    inLanguage: "fr-FR",
+    isAccessibleForFree: true,
+    offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+    provider: { "@type": "Organization", name: "RoullePro", url: BASE_URL },
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "h2"],
+    },
+    ...(input.featureList ? { featureList: input.featureList } : {}),
+  };
+}
+
 export type MedicalBusinessInput = {
   name: string;
   url: string;

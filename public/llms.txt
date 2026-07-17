@@ -23,6 +23,10 @@ Chiffres cles (juillet 2026) :
 - [Ambulance autour de moi](https://roullepro.com/ambulance-autour-de-moi) : trouver une ambulance conventionnee proche
 - [VSL autour de moi](https://roullepro.com/vsl-autour-de-moi) : trouver un VSL conventionne proche
 - [Taxi conventionne CPAM](https://roullepro.com/taxi-conventionne) : comprendre et trouver un taxi conventionne
+- [Simulateurs de transport sanitaire](https://roullepro.com/simulateur-transport-sanitaire) : comparer et estimer le prix taxi conventionne, VSL et ambulance
+- [Simulateur prix taxi conventionne](https://roullepro.com/simulateur-taxi-conventionne) : estimer le tarif d'une course en taxi conventionne (grille CPAM 2026)
+- [Tarif ambulance](https://roullepro.com/tarif-ambulance) : prix, calcul et remboursement d'un transport en ambulance
+- [Prix VSL](https://roullepro.com/tarif-vsl) : tarif, calcul et remboursement d'un transport en VSL
 - [Etablissements de sante](https://roullepro.com/etablissements) : hopitaux, cliniques, EHPAD et transporteurs associes
 - [Guides](https://roullepro.com/guides) : reglementation, conventionnement, remboursement
 - [Glossaire](https://roullepro.com/glossaire) : 202 termes du transport sanitaire definis

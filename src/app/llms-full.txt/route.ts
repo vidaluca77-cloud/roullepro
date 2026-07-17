@@ -56,6 +56,10 @@ Chiffres cles (juillet 2026) :
 - [Ambulance autour de moi](${BASE_URL}/ambulance-autour-de-moi): trouver une ambulance conventionnee proche
 - [VSL autour de moi](${BASE_URL}/vsl-autour-de-moi): trouver un VSL conventionne proche
 - [Taxi conventionne CPAM](${BASE_URL}/taxi-conventionne): comprendre et trouver un taxi conventionne
+- [Simulateurs de transport sanitaire](${BASE_URL}/simulateur-transport-sanitaire): comparer et estimer le prix taxi conventionne, VSL et ambulance (grilles CPAM et avenant 11)
+- [Simulateur prix taxi conventionne](${BASE_URL}/simulateur-taxi-conventionne): estimer le tarif d'une course en taxi conventionne (grille CPAM 2026)
+- [Tarif ambulance](${BASE_URL}/tarif-ambulance): prix, calcul et remboursement d'un transport en ambulance (avec ou sans prise en charge, longue distance)
+- [Prix VSL](${BASE_URL}/tarif-vsl): tarif, calcul et remboursement d'un transport en VSL
 - [Etablissements de sante](${BASE_URL}/etablissements): hopitaux, cliniques, EHPAD et transporteurs associes
 - [Guides](${BASE_URL}/guides): reglementation, conventionnement, remboursement
 - [Glossaire](${BASE_URL}/glossaire): 202 termes du transport sanitaire definis

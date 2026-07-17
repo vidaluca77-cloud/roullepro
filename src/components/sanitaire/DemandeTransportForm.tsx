@@ -47,6 +47,13 @@ export type DemandeTransportFormProps = {
   typeParDefaut?: TypeTransport;
   titre?: string;
   compact?: boolean;
+  /** Pré-remplissage (ex. depuis un simulateur de tarif). */
+  lieuDepartInitial?: string;
+  lieuArriveeInitial?: string;
+  departPlaceInitial?: PlaceSelection | null;
+  arriveePlaceInitial?: PlaceSelection | null;
+  dateSouhaiteeInitial?: string;
+  allerRetourInitial?: boolean;
 };
 
 export default function DemandeTransportForm({
@@ -58,15 +65,21 @@ export default function DemandeTransportForm({
   typeParDefaut = "taxi",
   titre,
   compact = false,
+  lieuDepartInitial = "",
+  lieuArriveeInitial = "",
+  departPlaceInitial = null,
+  arriveePlaceInitial = null,
+  dateSouhaiteeInitial = "",
+  allerRetourInitial = false,
 }: DemandeTransportFormProps) {
   const [type, setType] = useState<TypeTransport>(typeParDefaut);
   const [nom, setNom] = useState("");
   const [telephone, setTelephone] = useState("");
   const [email, setEmail] = useState("");
-  const [dateSouhaitee, setDateSouhaitee] = useState("");
-  const [lieuDepart, setLieuDepart] = useState("");
-  const [lieuArrivee, setLieuArrivee] = useState("");
-  const [allerRetour, setAllerRetour] = useState(false);
+  const [dateSouhaitee, setDateSouhaitee] = useState(dateSouhaiteeInitial);
+  const [lieuDepart, setLieuDepart] = useState(lieuDepartInitial);
+  const [lieuArrivee, setLieuArrivee] = useState(lieuArriveeInitial);
+  const [allerRetour, setAllerRetour] = useState(allerRetourInitial);
   const [mobilite, setMobilite] = useState<Mobilite>("autonome");
   const [precisions, setPrecisions] = useState("");
   const [tauxPriseEnCharge, setTauxPriseEnCharge] = useState<"" | "100" | "65" | "autre">("");
@@ -78,8 +91,8 @@ export default function DemandeTransportForm({
   // Place selections (Google Places Autocomplete) — utilises pour deriver
   // le departement et la ville cible cote front, et ainsi permettre au trigger
   // dispatch_demande_transport() de fan-outer la demande au bon pro.
-  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(null);
-  const [arriveePlace, setArriveePlace] = useState<PlaceSelection | null>(null);
+  const [departPlace, setDepartPlace] = useState<PlaceSelection | null>(departPlaceInitial);
+  const [arriveePlace, setArriveePlace] = useState<PlaceSelection | null>(arriveePlaceInitial);
 
   const lieuDepartRef = useRef<HTMLInputElement>(null);
   const lieuArriveeRef = useRef<HTMLInputElement>(null);
