@@ -281,6 +281,10 @@ export default function TaxiConventionnePage() {
             Le transport partagé, lorsque plusieurs patients voyagent ensemble vers des soins itératifs (dialyse,
             chimiothérapie, radiothérapie), fait l'objet d'une tarification réduite et reste à privilégier.
           </p>
+          <p>
+            Pour estimer le prix de votre course à partir de vos adresses réelles, utilisez notre{" "}
+            <Link href="/simulateur-taxi-conventionne">simulateur de prix du taxi conventionné</Link>.
+          </p>
         </section>
 
         <section id="prescription">

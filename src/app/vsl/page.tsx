@@ -314,6 +314,10 @@ export default async function VslPage() {
             l'objet d'une tarification spécifique et reste à privilégier pour les trajets de dialyse, chimiothérapie
             et radiothérapie.
           </p>
+          <p>
+            Pour estimer le prix de votre course selon votre département et déposer une demande, utilisez notre{" "}
+            <Link href="/tarif-vsl">simulateur de prix VSL</Link>.
+          </p>
         </section>
 
         <section id="remboursement">

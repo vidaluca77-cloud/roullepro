@@ -180,6 +180,11 @@ export default function TransportSanitairePage() {
             Le taxi conventionné est exclu du transport sanitaire stricto sensu : il complète l'offre pour les
             patients autonomes, sans relever du régime d'agrément ARS.
           </p>
+          <p>
+            Pour estimer et comparer le prix d'un taxi conventionné, d'un VSL ou d'une ambulance sur votre trajet,
+            utilisez nos{" "}
+            <Link href="/simulateur-transport-sanitaire">simulateurs de transport sanitaire</Link>.
+          </p>
         </section>
 
         <section id="specialites">

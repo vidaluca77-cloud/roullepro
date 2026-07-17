@@ -44,6 +44,8 @@ Le mode de transport est choisi par le médecin sur la prescription, en fonction
 
 Pour approfondir, consultez nos guides dédiés [VSL — Véhicule Sanitaire Léger : guide complet et annuaire](https://roullepro.com/vsl), [Taxi conventionné : guide et annuaire CPAM](https://roullepro.com/taxi-conventionne) et [l'annuaire national du transport médical](https://roullepro.com/transport-medical).
 
+Pour estimer le prix de votre course avant remboursement, utilisez nos simulateurs : [simulateur prix taxi conventionné](https://roullepro.com/simulateur-taxi-conventionne), [prix VSL](https://roullepro.com/tarif-vsl), [tarif ambulance](https://roullepro.com/tarif-ambulance), ou le [comparateur des simulateurs de transport sanitaire](https://roullepro.com/simulateur-transport-sanitaire).
+
 ## Qui peut beneficier d'un transport medical rembourse ?
 
 Le droit au remboursement du transport medical n'est pas automatique. Il repose sur des conditions strictes definies par le Code de la Securite sociale et precisees par [Ameli.fr](https://www.ameli.fr/assure/remboursements/rembourse/transport-rembourse-deplacement/transport-rembourse-deplacement).
