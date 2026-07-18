@@ -298,6 +298,11 @@ export default async function TarifsPage({
             CPAM, facturation SEFi/B2, tarifs, réglementation, marchés publics, paie…) en s&apos;appuyant sur
             une base documentaire de sources officielles (ameli.fr, Légifrance, service-public.fr, URSSAF…),
             avec citations cliquables et mémoire de vos conversations. Un quota mensuel de messages est inclus.
+            Pour préparer l&apos;échéance 2027, consultez notre dossier{" "}
+            <Link href="/transport-medical/sefi-2027" className="text-[#0066CC] hover:underline">
+              SEFi et géolocalisation 2027
+            </Link>
+            .
           </Faq>
           <Faq q="Comment fonctionnent les demandes de transport ?">
             Quand un patient, une famille ou un établissement remplit le formulaire de demande sur

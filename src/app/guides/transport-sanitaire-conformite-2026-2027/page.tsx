@@ -272,6 +272,9 @@ export default async function HubPage() {
           <p>
             Pour aller plus loin, l&apos;abonnement Pro RoullePro vous donne accès à un <strong>profil de conformité par fiche</strong> avec score 0-100, calendrier d&apos;échéances filtré par métier et activité, plan d&apos;action par alerte avec checklist cochable, et export PDF du rapport de conformité à présenter en interne ou aux financeurs.
           </p>
+          <p>
+            Sur l&apos;échéance 2027, consultez notre dossier dédié : <Link href="/transport-medical/sefi-2027">l&apos;obligation SEFi 2027</Link>, le <Link href="/transport-medical/logiciels-sefi">comparatif des logiciels SEFi</Link> et la <Link href="/transport-medical/geolocalisation-taxi-conventionne">géolocalisation du taxi conventionné</Link>.
+          </p>
         </section>
 
         <CtaUpgrade />
