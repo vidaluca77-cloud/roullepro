@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import CheckoutButton from "@/components/sanitaire/CheckoutButton";
 import { createClient } from "@/lib/supabase/server";
+import AllopointsProtectEncart from "@/components/partenaires/AllopointsProtectEncart";
 
 export const metadata: Metadata = {
   title: "Tarifs",
@@ -335,6 +336,10 @@ export default async function TarifsPage({
             suppression est définitive et effective sous 48 h.
           </Faq>
         </div>
+      </section>
+
+      <section className="max-w-4xl mx-auto px-4 pb-16">
+        <AllopointsProtectEncart />
       </section>
     </main>
   );
