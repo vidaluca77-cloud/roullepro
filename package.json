@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node --import tsx --test src/lib/horaires.test.ts src/lib/distance-course.test.ts src/lib/tarif-cpam.test.ts src/lib/tarif-transport-sanitaire.test.ts src/lib/date-heure.test.ts src/lib/use-places-autocomplete.test.ts src/lib/sms.test.ts src/lib/sanitaire-plans.test.ts src/lib/demande-doublon.test.ts src/lib/sanitaire-search.test.ts src/lib/facebook-publish.test.ts src/lib/geocode-adresse.test.ts src/lib/disponibilite.test.ts"
+    "test": "node --import tsx --test src/lib/horaires.test.ts src/lib/distance-course.test.ts src/lib/tarif-cpam.test.ts src/lib/tarif-transport-sanitaire.test.ts src/lib/date-heure.test.ts src/lib/use-places-autocomplete.test.ts src/lib/sms.test.ts src/lib/sanitaire-plans.test.ts src/lib/demande-doublon.test.ts src/lib/sanitaire-search.test.ts src/lib/facebook-publish.test.ts src/lib/geocode-adresse.test.ts src/lib/disponibilite.test.ts src/lib/planning-course.test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",
