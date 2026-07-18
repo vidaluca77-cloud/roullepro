@@ -185,6 +185,10 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/transport-medical/recherche`, changefreq: "daily", priority: 0.6 },
     { url: `${BASE_URL}/transport-medical/autour-de-moi`, changefreq: "daily", priority: 0.8 },
     { url: `${BASE_URL}/transport-medical/inscription`, changefreq: "monthly", priority: 0.7 },
+    // Dossier editorial « SEFi & geolocalisation 2027 »
+    { url: `${BASE_URL}/transport-medical/sefi-2027`, changefreq: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/transport-medical/logiciels-sefi`, changefreq: "weekly", priority: 0.8 },
+    { url: `${BASE_URL}/transport-medical/geolocalisation-taxi-conventionne`, changefreq: "weekly", priority: 0.8 },
   ];
 
   // Hubs nationaux thematiques (Phase 2 SEO) : forte priorite, requetes a fort volume.
