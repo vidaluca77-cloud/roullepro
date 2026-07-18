@@ -9,6 +9,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import CheckoutButton from "@/components/sanitaire/CheckoutButton";
+import PartenaireAllopoints from "@/components/PartenaireAllopoints";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -200,6 +201,9 @@ export default async function TarifsPage({
               </Link>
             )}
           </div>
+        </div>
+        <div className="mt-6">
+          <PartenaireAllopoints variant="compacte" />
         </div>
       </section>
 

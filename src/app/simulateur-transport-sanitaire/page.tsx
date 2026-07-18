@@ -25,6 +25,7 @@ import {
   FaqAccordion,
   CtaBand,
 } from "@/components/sanitaire/editorial/EditorialUI";
+import PartenaireAllopoints from "@/components/PartenaireAllopoints";
 
 export const revalidate = 3600;
 
@@ -327,6 +328,8 @@ export default function SimulateurTransportSanitairePage() {
           description="Choisissez le simulateur adapté à votre prescription, obtenez une estimation et transmettez gratuitement votre demande aux transporteurs de votre secteur."
           cta="Déposer une demande de transport"
         />
+
+        <PartenaireAllopoints />
       </ArticleContainer>
 
       <div aria-hidden className="h-16" />

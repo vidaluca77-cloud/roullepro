@@ -22,6 +22,7 @@ import {
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { buildSimulateurJsonLd, jsonLdHtml } from "@/lib/seo-schema";
 import SimulateurTarif from "@/components/sanitaire/SimulateurTarif";
+import PartenaireAllopoints from "@/components/PartenaireAllopoints";
 import {
   ArticleContainer,
   SectionHeading,
@@ -318,6 +319,8 @@ export default function SimulateurTaxiConventionnePage() {
           description="Obtenez une estimation immédiate puis transmettez gratuitement votre demande aux transporteurs conventionnés de votre secteur."
           cta="Déposer une demande de transport"
         />
+
+        <PartenaireAllopoints />
       </ArticleContainer>
     </main>
   );
