@@ -24,6 +24,7 @@ import WelcomeBanner from "@/components/sanitaire/WelcomeBanner";
 import DemandesTransportSection, {
   type DemandeProRow,
 } from "@/components/sanitaire/DemandesTransportSection";
+import DisponibiliteSection from "@/components/sanitaire/DisponibiliteSection";
 import {
   fetchMatchedAlerts,
   getProgressByAlert,
@@ -437,6 +438,13 @@ export default async function ProDashboard({
                   : null
               }
               proId={fiche.id}
+            />
+
+            {/* Disponibilite (conges / semaine off) : coupe le fan-out des nouvelles demandes */}
+            <DisponibiliteSection
+              proId={fiche.id}
+              indispoDebut={fiche.indispo_debut}
+              indispoFin={fiche.indispo_fin}
             />
 
             {/* Demandes de transport (RPC demandes_pro_dashboard) */}

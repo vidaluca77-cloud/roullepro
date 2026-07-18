@@ -310,6 +310,12 @@ export type ProSanitaire = {
   // que la migration 20260717_sms_phase1.sql n'est pas appliquee en prod.
   sms_notifications?: boolean | null;
   telephone_sms?: string | null;
+  // Disponibilite (conges / semaine off) — colonnes optionnelles tant que la
+  // migration 20260718140000_pros_disponibilite.sql n'est pas appliquee en prod.
+  // Periode [indispo_debut, indispo_fin] pendant laquelle le pro ne recoit plus
+  // de nouvelles demandes de course (cf. src/lib/disponibilite.ts).
+  indispo_debut?: string | null;
+  indispo_fin?: string | null;
   site_web: string | null;
   horaires: Record<string, string> | null;
   description: string | null;
