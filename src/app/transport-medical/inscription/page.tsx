@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import InscriptionForm from "@/components/sanitaire/InscriptionForm";
+import AllopointsProtectEncart from "@/components/partenaires/AllopointsProtectEncart";
 
 export const metadata: Metadata = {
   title: "Inscrire mon entreprise de transport sanitaire",
@@ -74,6 +75,10 @@ export default function InscriptionPage() {
               Réclamez votre fiche existante
             </a>
           </p>
+
+          <div className="mt-8">
+            <AllopointsProtectEncart />
+          </div>
         </div>
       </main>
     </>
