@@ -57,7 +57,7 @@ const GUIDE_SOURCES: SourceItem[] = [
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" });
 }
 
 export default function SourcesBlock({ variant, dateVerification, extraSources }: Props) {

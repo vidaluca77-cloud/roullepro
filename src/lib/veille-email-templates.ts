@@ -124,6 +124,7 @@ function formatApplicableFromFr(iso: string | null): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
   const now = new Date();
   return d.getTime() <= now.getTime()

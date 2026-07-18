@@ -464,7 +464,7 @@ export default async function FicheProPage({ params }: Props) {
               )}
               <div className="text-xs text-gray-400 pt-3 border-t border-gray-100 space-y-1">
                 <div>SIRET : {pro.siret}</div>
-                <div>Fiche mise à jour le {new Date(pro.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}</div>
+                <div>Fiche mise à jour le {new Date(pro.updated_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" })}</div>
               </div>
             </div>
           </div>

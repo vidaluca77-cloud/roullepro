@@ -877,7 +877,7 @@ export async function sendDepotRdvConfirmation(
 ) {
   const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'votre véhicule';
   const dateStr = depot.date_depot_prevu
-    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(depot.date_depot_prevu))
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }).format(new Date(depot.date_depot_prevu))
     : 'date à confirmer';
 
   const html = `
@@ -915,7 +915,7 @@ export async function sendDepotRdvNotification(
 ) {
   const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'véhicule';
   const dateStr = depot.date_depot_prevu
-    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(depot.date_depot_prevu))
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }).format(new Date(depot.date_depot_prevu))
     : 'date à confirmer';
 
   const html = `
@@ -961,7 +961,7 @@ export async function sendDepotOffreVendeur(
 ) {
   const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'votre véhicule';
   const expireStr = offre.expire_at
-    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(offre.expire_at))
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(offre.expire_at))
     : '48 heures';
 
   const html = `
@@ -1001,7 +1001,7 @@ export async function sendDepotOffreAcheteur(
 ) {
   const vehicule = [depot.marque, depot.modele].filter(Boolean).join(' ') || 'le véhicule';
   const expireStr = offre.expire_at
-    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(offre.expire_at))
+    ? new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(offre.expire_at))
     : 'sous 48 heures';
 
   const html = `
@@ -1799,6 +1799,7 @@ export async function sendAdminRecapQuotidien(stats: {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
+      timeZone: 'Europe/Paris',
     }).format(d);
   })();
   const adminUrl = `${APP_URL}/admin/transport-medical/demandes`;
@@ -1814,7 +1815,7 @@ export async function sendAdminRecapQuotidien(stats: {
   const lignesDemandes = stats.demandes_du_jour
     .map((d) => {
       const heure = d.created_at
-        ? new Date(d.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+        ? new Date(d.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' })
         : '';
       const typeLib = d.type ? LIBELLE_TYPE_ADMIN[d.type] || d.type : '—';
       return `<tr style="border-bottom:1px solid #e5e7eb">

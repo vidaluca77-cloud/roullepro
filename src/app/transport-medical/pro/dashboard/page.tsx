@@ -514,6 +514,7 @@ export default async function ProDashboard({
                           month: "2-digit",
                           hour: "2-digit",
                           minute: "2-digit",
+                          timeZone: "Europe/Paris",
                         })
                       : "Date non précisée";
                     return (

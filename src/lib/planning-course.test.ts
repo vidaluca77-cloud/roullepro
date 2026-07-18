@@ -99,6 +99,30 @@ test("grouperParJourSemaine : place les courses dans le bon jour, hors fenêtre 
   assert.ok(!ids.includes("hors"));
 });
 
+test("grouperParJourSemaine : bucketise au fuseau Europe/Paris (22h30 UTC = lendemain à Paris)", () => {
+  // 22h30 UTC le 15/07 correspond à 00h30 le 16/07 à Paris (heure d'été, UTC+2).
+  const c = course({ dtp_id: "nuit", date_souhaitee: "2026-07-15T22:30:00.000Z" });
+  const jours = grouperParJourSemaine([c], NOW);
+  const j15 = jours.find((j) => j.cle === "2026-07-15");
+  const j16 = jours.find((j) => j.cle === "2026-07-16");
+  assert.ok(j16 && j16.courses.some((x) => x.dtp_id === "nuit"));
+  assert.ok(j15 && !j15.courses.some((x) => x.dtp_id === "nuit"));
+});
+
+test("genererCSV : date et heure au fuseau Europe/Paris", () => {
+  const csv = genererCSV([course({ date_souhaitee: "2026-07-16T08:00:00.000Z" })]);
+  const champs = csv.replace("﻿", "").split("\r\n")[1].split(";");
+  assert.equal(champs[0], "16/07/2026");
+  assert.equal(champs[1], "10:00"); // 08h00 UTC + 2h (été) = 10h00 à Paris
+});
+
+test("genererCSV : la bascule de jour suit le fuseau Europe/Paris", () => {
+  const csv = genererCSV([course({ date_souhaitee: "2026-07-15T23:30:00.000Z" })]);
+  const champs = csv.replace("﻿", "").split("\r\n")[1].split(";");
+  assert.equal(champs[0], "16/07/2026"); // 23h30 UTC le 15 = 01h30 le 16 à Paris
+  assert.equal(champs[1], "01:30");
+});
+
 test("genererICS : structure VCALENDAR/VEVENT et champs clés", () => {
   const ics = genererICS([course({ dtp_id: "abc" })], NOW);
   assert.ok(ics.startsWith("BEGIN:VCALENDAR"));

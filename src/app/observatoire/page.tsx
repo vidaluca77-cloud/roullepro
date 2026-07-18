@@ -234,6 +234,7 @@ export default async function ObservatoirePage() {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
 
   const pctConventionnes =

@@ -262,6 +262,7 @@ export default function BlogPostPage({
                   day: "numeric",
                   month: "long",
                   year: "numeric",
+                  timeZone: "Europe/Paris",
                 })}
               </time>
             </div>

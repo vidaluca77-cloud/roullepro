@@ -138,8 +138,8 @@ export default async function DepotDetailPage({ params }: { params: { id: string
                 { label: 'Prix affiché', value: depot.prix_affiche ? formatEuro(Number(depot.prix_affiche)) : null },
                 { label: 'Estimation min', value: depot.estimation_min ? formatEuro(Number(depot.estimation_min)) : null },
                 { label: 'Estimation max', value: depot.estimation_max ? formatEuro(Number(depot.estimation_max)) : null },
-                { label: 'Date de dépôt', value: depot.date_depot_effectif ? new Date(depot.date_depot_effectif).toLocaleDateString('fr-FR') : null },
-                { label: 'Date limite', value: depot.date_limite ? new Date(depot.date_limite).toLocaleDateString('fr-FR') : null },
+                { label: 'Date de dépôt', value: depot.date_depot_effectif ? new Date(depot.date_depot_effectif).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }) : null },
+                { label: 'Date limite', value: depot.date_limite ? new Date(depot.date_limite).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }) : null },
               ].filter((row) => row.value != null).map((row) => (
                 <div key={row.label}>
                   <dt className="text-slate-400">{row.label}</dt>

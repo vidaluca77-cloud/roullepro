@@ -54,7 +54,7 @@ export default function GuideLayout(props: Props) {
           {props.updatedAt && (
             <p className="mt-3 text-xs text-blue-200">
               Dernière mise à jour :{" "}
-              {new Date(props.updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })}
+              {new Date(props.updatedAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" })}
             </p>
           )}
         </div>

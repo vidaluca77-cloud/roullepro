@@ -33,6 +33,7 @@ function formatDateFR(iso: string): string {
       day: "numeric",
       month: "long",
       year: "numeric",
+      timeZone: "Europe/Paris",
     });
   } catch {
     return iso;

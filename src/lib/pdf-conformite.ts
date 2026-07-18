@@ -91,6 +91,7 @@ function formatFr(iso: string | null | undefined): string {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
 }
 
@@ -270,7 +271,7 @@ export async function generateConformiteReportPDF(
 
   drawText(
     ctx,
-    `Genere le ${data.generatedAt.toLocaleDateString("fr-FR")} a ${data.generatedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`,
+    `Genere le ${data.generatedAt.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })} a ${data.generatedAt.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })}`,
     { size: 9, color: COLOR_MUTED }
   );
   moveY(ctx, 18);
@@ -427,7 +428,7 @@ export async function generateConformiteReportPDF(
     const p = doc.getPage(i);
     p.drawText(
       stripAccents(
-        `Document genere par RoullePro le ${data.generatedAt.toLocaleDateString("fr-FR")} - roullepro.com`
+        `Document genere par RoullePro le ${data.generatedAt.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })} - roullepro.com`
       ),
       {
         x: MARGIN_X,

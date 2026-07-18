@@ -130,6 +130,7 @@ export default async function ProfilVendeurPage({
   const memberSince = new Date(profile.created_at).toLocaleDateString('fr-FR', {
     month: 'long',
     year: 'numeric',
+    timeZone: 'Europe/Paris',
   });
 
   const stats = notationsRes?.stats;
@@ -385,6 +386,7 @@ export default async function ProfilVendeurPage({
                             day: '2-digit',
                             month: 'short',
                             year: 'numeric',
+                            timeZone: 'Europe/Paris',
                           })}
                         </span>
                       </div>

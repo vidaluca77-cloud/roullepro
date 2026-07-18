@@ -136,6 +136,7 @@ function buildApaCitation(
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
   const url = `${BASE_URL}/veille-reglementaire/${slug}`;
   return `RoullePro. (${year}). ${title}. Veille réglementaire transport sanitaire. Consulté le ${dateAccess}, sur ${url}`;
