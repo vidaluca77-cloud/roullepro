@@ -14,8 +14,12 @@ import {
   sendDemandeTransportFallback,
   sendAdminNouvelleDemande,
 } from "@/lib/email";
-import { geocodeAdresse } from "@/lib/geocode-adresse";
-import { normaliserDepartement } from "@/lib/departement";
+import {
+  geocodeAdresse,
+  geocodageEstFiable,
+  extraireCodePostal,
+} from "@/lib/geocode-adresse";
+import { normaliserDepartement, codePostalToDepartement } from "@/lib/departement";
 import {
   construireMessageSmsCourse,
   construireMessageSmsDepotPatient,
@@ -258,20 +262,45 @@ export async function POST(req: Request) {
     if ((!lieuDepartLat || !lieuDepartLng || !departementDepart || !villeDepart) && lieuDepartRaw) {
       const geo = await geocodeAdresse(lieuDepartRaw);
       if (geo) {
-        lieuDepartLat = lieuDepartLat ?? geo.latitude;
-        lieuDepartLng = lieuDepartLng ?? geo.longitude;
-        departementDepart = departementDepart || geo.departement;
-        villeDepart = villeDepart || geo.ville;
+        if (geocodageEstFiable(lieuDepartRaw, geo)) {
+          lieuDepartLat = lieuDepartLat ?? geo.latitude;
+          lieuDepartLng = lieuDepartLng ?? geo.longitude;
+          departementDepart = departementDepart || geo.departement;
+          villeDepart = villeDepart || geo.ville;
+        } else {
+          // CP saisi incoherent avec la commune geocodee : le code postal fait
+          // foi pour le dispatch, mais on ignore les coordonnees (pas de
+          // distance / estimation fondee sur une mauvaise commune).
+          const cpDepart = extraireCodePostal(lieuDepartRaw);
+          const depCp = cpDepart ? codePostalToDepartement(cpDepart) : null;
+          if (depCp) departementDepart = departementDepart || depCp;
+        }
       }
     }
     // Ne jamais rejeter la demande si seule l'arrivee est introuvable.
     if ((!lieuArriveeLat || !lieuArriveeLng || !departementArrivee || !villeArrivee) && lieuArriveeRaw) {
-      const geo = await geocodeAdresse(lieuArriveeRaw);
+      // Biais geographique : quand l'arrivee est saisie sans code postal, on
+      // privilegie les resultats proches du depart pour lever l'ambiguite de
+      // commune (ex. "verzy" -> Verzy 51 plutot que Nancy 54).
+      const biais =
+        !extraireCodePostal(lieuArriveeRaw) && lieuDepartLat != null && lieuDepartLng != null
+          ? { lat: lieuDepartLat, lng: lieuDepartLng }
+          : null;
+      const geo = await geocodeAdresse(lieuArriveeRaw, biais ? { biais } : {});
       if (geo) {
-        lieuArriveeLat = lieuArriveeLat ?? geo.latitude;
-        lieuArriveeLng = lieuArriveeLng ?? geo.longitude;
-        departementArrivee = departementArrivee || geo.departement;
-        villeArrivee = villeArrivee || geo.ville;
+        const reference =
+          lieuDepartLat != null && lieuDepartLng != null
+            ? { lat: lieuDepartLat, lng: lieuDepartLng }
+            : null;
+        // Si le resultat reste non fiable (mauvais departement / aberrant), on
+        // ne renseigne rien : la demande part sans ville ni estimation d'arrivee
+        // plutot qu'avec des valeurs fausses.
+        if (geocodageEstFiable(lieuArriveeRaw, geo, { reference })) {
+          lieuArriveeLat = lieuArriveeLat ?? geo.latitude;
+          lieuArriveeLng = lieuArriveeLng ?? geo.longitude;
+          departementArrivee = departementArrivee || geo.departement;
+          villeArrivee = villeArrivee || geo.ville;
+        }
       }
     }
 
