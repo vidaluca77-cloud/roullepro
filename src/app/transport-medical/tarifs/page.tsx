@@ -37,11 +37,16 @@ export default async function TarifsPage({
   let planOfferSource: string | null = null;
   let planExpiresAt: string | null = null;
   if (user) {
-    const { data } = await supabase
+    // Un pro connecté peut avoir réclamé une (ou plusieurs) fiche(s) : on prend
+    // la première pour l'emmener directement au checkout, sans jamais lui
+    // redemander de rechercher son entreprise.
+    const { data: fiches } = await supabase
       .from("pros_sanitaire")
       .select("id, plan, stripe_subscription_id, plan_offer_source, plan_expires_at")
       .eq("claimed_by", user.id)
-      .maybeSingle();
+      .order("created_at", { ascending: true })
+      .limit(1);
+    const data = fiches?.[0] ?? null;
     ficheId = data?.id ?? null;
     currentPlan = data?.plan ?? null;
     stripeSubId = (data?.stripe_subscription_id as string | null) ?? null;
