@@ -34,6 +34,11 @@ ALTER TABLE public.demandes_transport_pros
 -- demande est annulee. Les coordonnees du demandeur restent masquees tant que
 -- la proposition n'est pas acceptee.
 
+-- La signature RETURNS TABLE change (ajout de demande_statut) : Postgres refuse
+-- CREATE OR REPLACE dans ce cas (42P13 « cannot change return type »). On DROP
+-- d'abord l'ancienne version (creee par 20260717140002) avant de la recreer.
+DROP FUNCTION IF EXISTS public.demandes_pro_dashboard();
+
 CREATE OR REPLACE FUNCTION public.demandes_pro_dashboard()
 RETURNS TABLE (
   dtp_id uuid,
