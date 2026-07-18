@@ -25,6 +25,7 @@ import DemandesTransportSection, {
   type DemandeProRow,
 } from "@/components/sanitaire/DemandesTransportSection";
 import DisponibiliteSection from "@/components/sanitaire/DisponibiliteSection";
+import { partitionnerCourses, libelleType, type CoursePlanning } from "@/lib/planning-course";
 import {
   fetchMatchedAlerts,
   getProgressByAlert,
@@ -194,6 +195,10 @@ export default async function ProDashboard({
   const { data: demandesProRaw } = await supabase.rpc("demandes_pro_dashboard");
   const demandesPro = (demandesProRaw || []) as DemandeProRow[];
   const nouvellesDemandes = demandesPro.filter((d) => d.dtp_statut === "proposee").length;
+  // Aperçu « Prochaines courses » (3 max) — même source que le planning.
+  const prochainesCourses = partitionnerCourses(
+    demandesPro as CoursePlanning[]
+  ).aVenir.slice(0, 3);
 
   // Derniere demande de badge Ameli (workflow C5b) - on prend la plus recente
   // pour afficher le bon etat dans AmeliStatusSection (pending / need_info / rejected / aucune)
@@ -450,6 +455,64 @@ export default async function ProDashboard({
             {/* Demandes de transport (RPC demandes_pro_dashboard) */}
             <div id="demandes-transport" className="scroll-mt-20">
               <DemandesTransportSection demandes={demandesPro} peutAccepter={peutAccepter} />
+            </div>
+
+            {/* Prochaines courses : aperçu vers le planning */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4 text-[#0066CC]" />
+                  Prochaines courses
+                </h3>
+                <Link
+                  href="/transport-medical/pro/planning"
+                  className="text-xs font-semibold text-[#0066CC] hover:underline inline-flex items-center gap-1"
+                >
+                  Voir le planning
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+              {prochainesCourses.length === 0 ? (
+                <p className="text-xs text-gray-500">
+                  Aucune course à venir. Les courses que vous acceptez apparaîtront
+                  ici et dans votre planning.
+                </p>
+              ) : (
+                <ul className="space-y-2">
+                  {prochainesCourses.map((c) => {
+                    const quand = c.date_souhaitee
+                      ? new Date(c.date_souhaitee).toLocaleString("fr-FR", {
+                          weekday: "short",
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Date non précisée";
+                    return (
+                      <li
+                        key={c.dtp_id}
+                        className="rounded-xl border border-gray-100 bg-gray-50 p-3"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-sm font-semibold text-gray-900">
+                            {libelleType(c.type_transport)}
+                          </span>
+                          <span className="text-[11px] text-gray-500 capitalize">
+                            {quand}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1 flex items-start gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          <span>
+                            {c.lieu_depart || "Départ"} → {c.lieu_arrivee || "Arrivée"}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
 
             {/* Messagerie */}

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Truck,
+  CalendarDays,
   Sparkles,
   MessageCircle,
   Users,
@@ -45,6 +46,13 @@ const SIDEBAR_ITEMS: NavItem[] = [
     icon: Truck,
   },
   {
+    key: "planning",
+    label: "Planning des courses",
+    href: `${BASE}/planning`,
+    icon: CalendarDays,
+    matchPrefix: `${BASE}/planning`,
+  },
+  {
     key: "assistant",
     label: "Assistant IA",
     href: `${BASE}/assistant`,
@@ -82,19 +90,23 @@ const SIDEBAR_ITEMS: NavItem[] = [
   },
 ];
 
+const byKey = (key: string): NavItem =>
+  SIDEBAR_ITEMS.find((it) => it.key === key) as NavItem;
+
 // Barre d'onglets mobile : 4 entrées principales + « Plus ».
 const MOBILE_PRIMARY: NavItem[] = [
-  SIDEBAR_ITEMS[0], // Ma fiche
-  SIDEBAR_ITEMS[1], // Demandes
-  SIDEBAR_ITEMS[2], // Assistant
-  SIDEBAR_ITEMS[4], // Forum
+  byKey("fiche"),
+  byKey("demandes"),
+  byKey("assistant"),
+  byKey("forum"),
 ];
 
 // Reste des entrées, présentées dans le menu « Plus ».
 const MOBILE_MORE: NavItem[] = [
-  SIDEBAR_ITEMS[3], // Messagerie
-  SIDEBAR_ITEMS[5], // Badge Ameli
-  SIDEBAR_ITEMS[6], // Abonnement
+  byKey("planning"),
+  byKey("messages"),
+  byKey("ameli"),
+  byKey("abonnement"),
 ];
 
 function isActive(pathname: string, item: NavItem): boolean {
