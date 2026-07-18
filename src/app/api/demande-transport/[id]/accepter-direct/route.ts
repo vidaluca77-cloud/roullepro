@@ -84,6 +84,21 @@ export async function GET(req: Request, { params }: RouteParams) {
     );
   }
 
+  // Demande annulée par le patient : plus acceptable (garde-fou contre un
+  // lien email obsolète qui pointerait encore sur l'acceptation directe).
+  const { data: demandeStatut } = await admin
+    .from("demandes_transport")
+    .select("statut")
+    .eq("id", demandeId)
+    .maybeSingle();
+  if (demandeStatut?.statut === "annulee") {
+    return page(
+      "Course annulée",
+      "Cette course a été annulée par le patient.",
+      "#b45309"
+    );
+  }
+
   if (ligne.statut !== "proposee") {
     const dejaPrise = ligne.statut === "acceptee";
     return page(

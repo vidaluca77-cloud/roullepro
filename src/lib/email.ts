@@ -1380,12 +1380,20 @@ export async function sendDemandeTransportConfirmation(p: {
   demandeurNom: string;
   typeLibelle: string;
   nbPros: number;
+  suiviUrl?: string | null;
 }) {
   const typeLibelle = escapeHtml(p.typeLibelle);
   const corps =
     p.nbPros > 0
       ? `Votre demande de transport <strong>${typeLibelle}</strong> a été transmise à ${p.nbPros} professionnel${p.nbPros > 1 ? 's' : ''} proche${p.nbPros > 1 ? 's' : ''} de vous. Ils vous recontacteront directement par téléphone.`
       : `Votre demande de transport <strong>${typeLibelle}</strong> a bien été enregistrée. Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement.`;
+  // Lien de suivi (facultatif) : le patient consulte l'avancement et peut annuler.
+  const suiviBloc = p.suiviUrl
+    ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px 18px;margin:20px 0">
+        <p style="margin:0 0 10px;font-size:14px;color:#166534">Suivez l'avancement de votre demande et annulez-la si besoin, à tout moment et sans compte :</p>
+        <div style="text-align:center">${emailButton(p.suiviUrl, 'Suivre ma demande', '#16a34a')}</div>
+      </div>`
+    : '';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
       ${emailHeader('Votre demande de transport est transmise', 'Annuaire du transport sanitaire')}
@@ -1394,6 +1402,7 @@ export async function sendDemandeTransportConfirmation(p: {
         <div style="background:#eff6ff;border-left:4px solid #2563eb;border-radius:0 8px 8px 0;padding:14px 18px;margin:20px 0">
           <p style="margin:0;color:#1d4ed8;font-size:14px">${corps}</p>
         </div>
+        ${suiviBloc}
         <p style="font-size:14px;color:#374151">
           Gardez votre téléphone à portée de main. Si vous n'êtes pas rappelé rapidement, vous pouvez aussi
           contacter d'autres transporteurs directement depuis l'annuaire RoullePro.
@@ -1639,6 +1648,46 @@ export async function sendDemandeTransportAutreAcceptee(p: {
     replyTo: 'contact@roullepro.com',
     tags: [
       { name: 'category', value: 'demande_transport_autre_acceptee' },
+    ],
+  });
+}
+
+/* ── 7. Annulation par le patient : info au pro qui avait accepté ── */
+export async function sendDemandeTransportAnnuleePro(p: {
+  to: string;
+  proNom: string;
+  typeLibelle: string;
+  lieuDepart?: string | null;
+  lieuArrivee?: string | null;
+  dateSouhaitee?: string | null;
+}) {
+  const dateStr = formatDateSouhaitee(p.dateSouhaitee);
+  const trajet = [p.lieuDepart, p.lieuArrivee].filter(Boolean).join(' → ');
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
+      ${emailHeader('Course annulée par le patient', 'Annuaire du transport sanitaire')}
+      <div style="padding: 28px 32px;">
+        <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
+        <p style="font-size: 15px; color: #374151;">
+          Le patient a annulé la course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` prévue le ${escapeHtml(dateStr)}` : ''}
+          que tu avais acceptée. Tu n'as donc plus à assurer ce trajet.
+        </p>
+        <p style="font-size: 14px; color: #374151;">
+          Toutes nos excuses pour le désagrément. D'autres demandes te seront proposées dès qu'une course correspondra à ton secteur.
+        </p>
+        <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Voir mes demandes')}</div>
+        ${signatureBloc()}
+        ${emailFooter('Annuaire du transport sanitaire')}
+      </div>
+    </div>
+  `;
+  await sendEmail({
+    to: p.to,
+    subject: 'Course annulée par le patient',
+    html,
+    replyTo: 'contact@roullepro.com',
+    tags: [
+      { name: 'category', value: 'demande_transport_annulee_pro' },
     ],
   });
 }

@@ -25,6 +25,9 @@ export type DemandeProRow = {
   demande_id: string;
   pro_id: string;
   dtp_statut: string;
+  // Statut de la demande mere. Optionnel : absent tant que la migration
+  // 20260718150000 n'est pas appliquee (l'ancien RPC ne le renvoie pas).
+  demande_statut?: string | null;
   proposee_at: string | null;
   acceptee_at: string | null;
   type_transport: string | null;
@@ -374,6 +377,25 @@ function CartePassee({ d }: { d: DemandeProRow }) {
   );
 }
 
+function CarteAnnulee({ d }: { d: DemandeProRow }) {
+  return (
+    <li className="p-3 rounded-xl border bg-gray-50 border-gray-200 opacity-80">
+      <div className="flex items-center justify-between mb-1">
+        <div className="font-semibold text-sm text-gray-600">{libelleType(d.type_transport)}</div>
+        <span className="text-[10px] font-semibold uppercase bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded">
+          Annulée par le patient
+        </span>
+      </div>
+      <div className="flex items-start gap-2 text-xs text-gray-500">
+        <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+        <span>
+          {d.lieu_depart || "Départ"} → {d.lieu_arrivee || "Arrivée"}
+        </span>
+      </div>
+    </li>
+  );
+}
+
 export default function DemandesTransportSection({
   demandes,
   peutAccepter = true,
@@ -381,10 +403,13 @@ export default function DemandesTransportSection({
   demandes: DemandeProRow[];
   peutAccepter?: boolean;
 }) {
-  const proposees = demandes.filter((d) => d.dtp_statut === "proposee");
-  const acceptees = demandes.filter((d) => d.dtp_statut === "acceptee");
+  // Demande annulee par le patient : plus de bouton accepter, affichage dedie.
+  const annulees = demandes.filter((d) => d.demande_statut === "annulee");
+  const actives = demandes.filter((d) => d.demande_statut !== "annulee");
+  const proposees = actives.filter((d) => d.dtp_statut === "proposee");
+  const acceptees = actives.filter((d) => d.dtp_statut === "acceptee");
   // 'declinee' exclu : apres refus, la carte disparait du tableau de bord du pro.
-  const passees = demandes.filter(
+  const passees = actives.filter(
     (d) => !["proposee", "acceptee", "declinee"].includes(d.dtp_statut)
   );
 
@@ -417,6 +442,9 @@ export default function DemandesTransportSection({
           ))}
           {passees.map((d) => (
             <CartePassee key={d.dtp_id} d={d} />
+          ))}
+          {annulees.map((d) => (
+            <CarteAnnulee key={d.dtp_id} d={d} />
           ))}
         </ul>
       )}
