@@ -59,7 +59,7 @@ export default async function TarifsPage({
   // En essai gratuit (auto-trial) : pas d'abonnement Stripe + offer_source présent
   const isOnFreeTrial = isPro && !stripeSubId && !!planOfferSource;
   const trialEndsAtLabel = planExpiresAt
-    ? new Date(planExpiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+    ? new Date(planExpiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" })
     : null;
 
   return (

@@ -77,6 +77,7 @@ function formatFrDate(iso: string): string {
     day: "2-digit",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
 }
 

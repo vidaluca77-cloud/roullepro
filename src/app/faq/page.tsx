@@ -97,6 +97,7 @@ export default function FaqPage() {
             {new Date().toLocaleDateString("fr-FR", {
               month: "long",
               year: "numeric",
+              timeZone: "Europe/Paris",
             })}
           </p>
         </div>

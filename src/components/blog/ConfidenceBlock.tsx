@@ -90,6 +90,7 @@ export function ConfidenceBlock({
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "Europe/Paris",
   });
 
   return (

@@ -124,7 +124,7 @@ export default async function AdminDepotsPage({
                       <DepotStatusBadge statut={d.statut} />
                     </td>
                     <td className="px-5 py-4 text-slate-400 text-xs">
-                      {new Date(d.created_at).toLocaleDateString('fr-FR')}
+                      {new Date(d.created_at).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' })}
                     </td>
                   </tr>
                 );

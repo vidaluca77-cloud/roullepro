@@ -31,7 +31,6 @@ export type CoursePlanning = {
   demandeur_email: string | null;
 };
 
-const MS_PAR_JOUR = 24 * 60 * 60 * 1000;
 /** Durée par défaut d'une course pour l'export agenda (aucune heure de fin en BDD). */
 export const DUREE_COURSE_MINUTES = 60;
 
@@ -87,44 +86,55 @@ export function partitionnerCourses(
 }
 
 export type JourPlanning = {
-  /** Clé stable AAAA-MM-JJ (fuseau local). */
+  /** Clé stable AAAA-MM-JJ (fuseau Europe/Paris). */
   cle: string;
-  /** Date de début de journée (00:00 local). */
+  /** Instant de référence situé dans la journée Europe/Paris (midi UTC). */
   date: Date;
   courses: CoursePlanning[];
 };
 
-/** Clé de jour local AAAA-MM-JJ (sans dépendance de fuseau UTC). */
-function cleJourLocal(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const j = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${j}`;
+/**
+ * Clé de jour AAAA-MM-JJ au fuseau Europe/Paris. Le découpage par jour doit
+ * suivre le même fuseau que l'affichage des heures (une course à 23h30 UTC est
+ * le lendemain matin à Paris) : sur Netlify (serveur en UTC), un découpage local
+ * classerait les courses dans le mauvais jour.
+ */
+function cleJourParis(d: Date): string {
+  // en-CA => "AAAA-MM-JJ".
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
 }
 
 /**
  * Regroupe les courses à venir par jour sur une fenêtre glissante de 7 jours
  * (aujourd'hui inclus). Renvoie toujours 7 entrées, y compris les jours vides,
- * pour un affichage « vue semaine » régulier.
+ * pour un affichage « vue semaine » régulier. Les jours sont calculés au fuseau
+ * Europe/Paris pour rester cohérents avec l'affichage.
  */
 export function grouperParJourSemaine(
   courses: CoursePlanning[],
   now: Date = new Date()
 ): JourPlanning[] {
-  const debut = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const [annee, mois, jour] = cleJourParis(now).split("-").map(Number);
   const jours: JourPlanning[] = [];
   const index = new Map<string, CoursePlanning[]>();
 
   for (let i = 0; i < 7; i++) {
-    const date = new Date(debut.getTime() + i * MS_PAR_JOUR);
-    const cle = cleJourLocal(date);
+    // Midi UTC du i-ème jour calendaire : reste dans la bonne journée Europe/Paris
+    // quel que soit le basculement heure d'été / heure d'hiver.
+    const date = new Date(Date.UTC(annee, mois - 1, jour + i, 12));
+    const cle = cleJourParis(date);
     const liste: CoursePlanning[] = [];
     index.set(cle, liste);
     jours.push({ cle, date, courses: liste });
   }
 
   for (const c of coursesRetenues(courses)) {
-    const cle = cleJourLocal(new Date(c.date_souhaitee as string));
+    const cle = cleJourParis(new Date(c.date_souhaitee as string));
     const liste = index.get(cle);
     if (liste) liste.push(c);
   }
@@ -230,11 +240,11 @@ function champsCSV(c: CoursePlanning): string[] {
   const d = c.date_souhaitee ? new Date(c.date_souhaitee) : null;
   const dateStr =
     d && !Number.isNaN(d.getTime())
-      ? d.toLocaleDateString("fr-FR")
+      ? d.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })
       : "";
   const heureStr =
     d && !Number.isNaN(d.getTime())
-      ? d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+      ? d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" })
       : "";
   return [
     dateStr,

@@ -22,6 +22,7 @@ const dateStr = today.toLocaleDateString("fr-FR", {
   day: "numeric",
   month: "long",
   year: "numeric",
+  timeZone: "Europe/Paris",
 });
 const dateISO = today.toISOString().slice(0, 10);
 

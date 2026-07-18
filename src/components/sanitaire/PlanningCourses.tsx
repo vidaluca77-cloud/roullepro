@@ -53,6 +53,7 @@ function formatDateHeure(iso: string | null): string {
     month: "long",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Europe/Paris",
   });
 }
 
@@ -60,7 +61,7 @@ function formatHeure(iso: string | null): string {
   if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Paris" });
 }
 
 function formatEstimation(c: CoursePlanning): string | null {
@@ -209,6 +210,7 @@ export default function PlanningCourses({ courses }: { courses: CoursePlanning[]
               weekday: "short",
               day: "2-digit",
               month: "2-digit",
+              timeZone: "Europe/Paris",
             });
             return (
               <div

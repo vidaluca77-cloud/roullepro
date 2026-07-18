@@ -324,6 +324,7 @@ export default function GlossaireSlugPage({ params }: PageProps) {
           day: "numeric",
           month: "long",
           year: "numeric",
+          timeZone: "Europe/Paris",
         })}
       </p>
     </main>

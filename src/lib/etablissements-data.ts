@@ -207,6 +207,7 @@ export function formatSourceDate(date: string | null): string {
       year: "numeric",
       month: "long",
       day: "numeric",
+      timeZone: "Europe/Paris",
     });
   } catch {
     return date;

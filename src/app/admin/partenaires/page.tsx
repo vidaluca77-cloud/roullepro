@@ -89,6 +89,7 @@ function formatDate(iso: string): string {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
+      timeZone: "Europe/Paris",
     });
   } catch {
     return iso;

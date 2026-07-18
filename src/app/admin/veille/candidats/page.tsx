@@ -92,6 +92,7 @@ function fmtDate(iso: string | null | undefined): string {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Europe/Paris",
   });
 }
 
@@ -99,7 +100,7 @@ function fmtDateOnly(iso: string | null | undefined): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("fr-FR");
+  return d.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" });
 }
 
 async function ensureAdmin(): Promise<string | null> {

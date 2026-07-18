@@ -74,6 +74,7 @@ export default async function CategorieSeoPage({ params }: Props) {
     year: "numeric",
     month: "long",
     day: "numeric",
+    timeZone: "Europe/Paris",
   });
 
   const faq = [

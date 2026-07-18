@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     const rows = (data || []).map((a: any) => toRow([
       a.id, a.title, a.status, a.price, a.city, a.marque, a.modele, a.annee, a.kilometrage, a.carburant,
       a.views_count, a.profiles?.full_name, a.profiles?.email, a.profiles?.company_name,
-      a.categories?.name, new Date(a.created_at).toLocaleDateString('fr-FR'),
+      a.categories?.name, new Date(a.created_at).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }),
     ]));
     csvContent = [toRow(headers), ...rows].join('\n');
     filename = `roullepro-annonces-${new Date().toISOString().slice(0,10)}.csv`;
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     const rows = (data || []).map((u: any) => toRow([
       u.id, u.full_name, u.email, u.company_name, u.siret, u.city, u.phone,
       u.role, u.is_verified ? 'Oui' : 'Non', u.statut_verification,
-      new Date(u.created_at).toLocaleDateString('fr-FR'),
+      new Date(u.created_at).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }),
     ]));
     csvContent = [toRow(headers), ...rows].join('\n');
     filename = `roullepro-utilisateurs-${new Date().toISOString().slice(0,10)}.csv`;
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       (n as any)['profiles_notations_vendeur_id_fkey']?.full_name || (n as any).profiles?.full_name,
       (n as any)['profiles_notations_vendeur_id_fkey']?.email || (n as any).profiles?.email,
       (n as any)['profiles_notations_acheteur_id_fkey']?.full_name,
-      new Date(n.created_at).toLocaleDateString('fr-FR'),
+      new Date(n.created_at).toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris' }),
     ]));
     csvContent = [toRow(headers), ...rows].join('\n');
     filename = `roullepro-notations-${new Date().toISOString().slice(0,10)}.csv`;

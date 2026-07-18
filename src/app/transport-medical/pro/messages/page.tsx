@@ -121,7 +121,7 @@ export default async function MessagesPage() {
                     </div>
                   </div>
                   <div className="text-xs text-gray-400">
-                    {new Date(m.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                    {new Date(m.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" })}
                   </div>
                 </div>
                 <p className="text-gray-700 whitespace-pre-line leading-relaxed">{m.content}</p>
@@ -138,7 +138,7 @@ export default async function MessagesPage() {
                     <div className="text-xs font-semibold text-[#0066CC] mb-1">Votre réponse</div>
                     <p className="text-gray-700 whitespace-pre-line text-sm leading-relaxed">{r.content}</p>
                     <div className="text-[11px] text-gray-400 mt-1">
-                      {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
+                      {new Date(r.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short", timeZone: "Europe/Paris" })}
                     </div>
                   </div>
                 ))}

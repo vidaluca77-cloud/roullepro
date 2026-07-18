@@ -8,7 +8,7 @@ type Props = {
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Paris" });
 }
 
 export default function AuthorBlock({ authorKey = "lucas-horville", publishedAt, updatedAt }: Props) {

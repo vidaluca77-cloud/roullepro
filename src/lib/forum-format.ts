@@ -6,6 +6,7 @@ export function formatForumDate(iso: string): string {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'Europe/Paris',
     }).format(new Date(iso));
   } catch {
     return '';
@@ -18,6 +19,7 @@ export function formatForumDateShort(iso: string): string {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
+      timeZone: 'Europe/Paris',
     }).format(new Date(iso));
   } catch {
     return '';
