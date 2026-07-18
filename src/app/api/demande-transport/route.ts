@@ -198,10 +198,24 @@ export async function POST(req: Request) {
           .from("demandes_transport_pros")
           .select("id", { count: "exact", head: true })
           .eq("demande_id", doublon.id);
+        // Token de suivi de la demande existante (lecture tolerante).
+        let suiviTokenDoublon: string | null = null;
+        try {
+          const { data: tokenRow } = await supabase
+            .from("demandes_transport")
+            .select("suivi_token")
+            .eq("id", doublon.id)
+            .maybeSingle();
+          suiviTokenDoublon =
+            (tokenRow as { suivi_token?: string | null } | null)?.suivi_token ?? null;
+        } catch {
+          // Colonne absente : pas de lien de suivi.
+        }
         return NextResponse.json({
           ok: true,
           doublon: true,
           pros_notifies: count ?? 0,
+          suivi_token: suiviTokenDoublon,
         });
       }
     } catch (e) {
@@ -393,6 +407,24 @@ export async function POST(req: Request) {
     }
 
     const libelle = LIBELLE_TYPE_TRANSPORT[typeTransport];
+
+    // Token de suivi patient (lien magique). Lecture tolerante : si la colonne
+    // suivi_token n'existe pas encore (migration non appliquee), on continue sans
+    // lien de suivi plutot que d'echouer.
+    let suiviToken: string | null = null;
+    try {
+      const { data: tokenRow } = await supabase
+        .from("demandes_transport")
+        .select("suivi_token")
+        .eq("id", demande.id)
+        .maybeSingle();
+      suiviToken = (tokenRow as { suivi_token?: string | null } | null)?.suivi_token ?? null;
+    } catch {
+      // Colonne absente : pas de lien de suivi.
+    }
+    const suiviUrl = suiviToken
+      ? `${process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com"}/suivi-demande/${suiviToken}`
+      : null;
 
     // --- Publication Facebook anonymisee (best-effort, jamais bloquante) ------
     // Uniquement pour une NOUVELLE demande creee (pas les doublons). Ne diffuse
@@ -587,6 +619,7 @@ export async function POST(req: Request) {
         demandeurNom: nom,
         typeLibelle: libelle,
         nbPros: prosNotifies,
+        suiviUrl,
       }).catch(() => undefined);
     }
 
@@ -655,7 +688,7 @@ export async function POST(req: Request) {
       console.error("[admin notif] failed", e);
     }
 
-    return NextResponse.json({ ok: true, pros_notifies: prosNotifies });
+    return NextResponse.json({ ok: true, pros_notifies: prosNotifies, suivi_token: suiviToken });
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }

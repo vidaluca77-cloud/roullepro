@@ -118,6 +118,7 @@ export default function DemandeTransportForm({
   const [sent, setSent] = useState(false);
   const [nbPros, setNbPros] = useState(0);
   const [doublon, setDoublon] = useState(false);
+  const [suiviToken, setSuiviToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -188,6 +189,7 @@ export default function DemandeTransportForm({
       if (!res.ok) throw new Error(data.error || "Erreur lors de l'envoi");
       setNbPros(data.pros_notifies ?? 0);
       setDoublon(data.doublon === true);
+      setSuiviToken(typeof data.suivi_token === "string" ? data.suivi_token : null);
       setSent(true);
     } catch (err) {
       setError((err as Error).message);
@@ -210,6 +212,19 @@ export default function DemandeTransportForm({
               ? `${nbPros} professionnel${nbPros > 1 ? "s" : ""} proche${nbPros > 1 ? "s" : ""} de vous ${nbPros > 1 ? "ont" : "a"} été notifié${nbPros > 1 ? "s" : ""}. Ils vous rappelleront directement.`
               : "Nous recherchons un professionnel disponible dans votre secteur et reviendrons vers vous rapidement."}
         </p>
+        {suiviToken && (
+          <div className="mt-4 pt-4 border-t border-green-200">
+            <p className="text-sm text-gray-600 mb-2">
+              Suivez l&apos;avancement de votre demande et annulez-la si besoin :
+            </p>
+            <a
+              href={`/suivi-demande/${suiviToken}`}
+              className="inline-flex items-center justify-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-4 py-2 rounded-xl transition text-sm"
+            >
+              Suivre ma demande
+            </a>
+          </div>
+        )}
       </div>
     );
   }

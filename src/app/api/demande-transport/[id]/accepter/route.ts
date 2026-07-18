@@ -59,6 +59,20 @@ export async function POST(_req: Request, { params }: RouteParams) {
 
   const admin = getAdminClient();
 
+  // Demande annulée par le patient : plus acceptable (garde-fou contre un
+  // dashboard obsolète qui afficherait encore le bouton accepter).
+  const { data: demandeStatut } = await admin
+    .from("demandes_transport")
+    .select("statut")
+    .eq("id", demandeId)
+    .maybeSingle();
+  if (demandeStatut?.statut === "annulee") {
+    return NextResponse.json(
+      { error: "Cette demande a été annulée par le patient." },
+      { status: 409 }
+    );
+  }
+
   // Verrou abonnement : un pro en plan gratuit (essai terminé ou jamais abonné)
   // continue de VOIR et de RECEVOIR les courses, mais ne peut pas les accepter.
   const { data: pro } = await admin

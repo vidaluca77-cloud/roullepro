@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminSupabase } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
@@ -194,10 +195,35 @@ export default async function ProDashboard({
   // callback_requests (deprecated).
   const { data: demandesProRaw } = await supabase.rpc("demandes_pro_dashboard");
   const demandesPro = (demandesProRaw || []) as DemandeProRow[];
-  const nouvellesDemandes = demandesPro.filter((d) => d.dtp_statut === "proposee").length;
+
+  // Marquage « vue » : trace la première consultation par le pro de ses demandes.
+  // Le pro n'a pas de droit UPDATE (RLS) : on passe par le service_role, en
+  // best-effort. Tolérant à l'absence de la colonne vue_at (migration non
+  // appliquée) : l'erreur éventuelle est ignorée et n'impacte pas l'affichage.
+  if (ficheIds.length > 0) {
+    try {
+      const adminClient = createAdminSupabase(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      await adminClient
+        .from("demandes_transport_pros")
+        .update({ vue_at: new Date().toISOString() })
+        .in("pro_id", ficheIds)
+        .is("vue_at", null);
+    } catch {
+      // Colonne vue_at absente ou service_role indisponible : no-op.
+    }
+  }
+
+  // Demandes annulées par le patient : exclues du compteur « nouvelles » et de
+  // l'aperçu planning (plus rien à traiter côté pro).
+  const demandesActives = demandesPro.filter((d) => d.demande_statut !== "annulee");
+  const nouvellesDemandes = demandesActives.filter((d) => d.dtp_statut === "proposee").length;
   // Aperçu « Prochaines courses » (3 max) — même source que le planning.
   const prochainesCourses = partitionnerCourses(
-    demandesPro as CoursePlanning[]
+    demandesActives as CoursePlanning[]
   ).aVenir.slice(0, 3);
 
   // Derniere demande de badge Ameli (workflow C5b) - on prend la plus recente
