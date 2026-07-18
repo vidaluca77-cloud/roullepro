@@ -25,6 +25,7 @@ import {
 import { FENETRE_DOUBLON_MS, trouverDoublon } from "@/lib/demande-doublon";
 import { calculerDistanceCourse } from "@/lib/distance-course";
 import { estimerPrixCourse, type EstimationCourse } from "@/lib/tarif-transport-sanitaire";
+import { publierDemandeSurFacebook } from "@/lib/facebook-publish";
 
 const getAdminClient = () =>
   createClient(
@@ -363,6 +364,20 @@ export async function POST(req: Request) {
     }
 
     const libelle = LIBELLE_TYPE_TRANSPORT[typeTransport];
+
+    // --- Publication Facebook anonymisee (best-effort, jamais bloquante) ------
+    // Uniquement pour une NOUVELLE demande creee (pas les doublons). Ne diffuse
+    // que villes + departement : aucune donnee personnelle. Fire-and-forget : un
+    // echec Facebook ne doit jamais bloquer ni ralentir la reponse au patient.
+    void publierDemandeSurFacebook({
+      typeTransport,
+      dateSouhaitee: dateSouhaiteeIso,
+      villeDepart,
+      villeArrivee,
+      departementCible,
+      lieuDepart: lieuDepartRaw,
+      lieuArrivee: lieuArriveeRaw || null,
+    });
 
     // Recuperation des pros notifies par le trigger (avec leur email public).
     const { data: dtpRows } = await supabase
