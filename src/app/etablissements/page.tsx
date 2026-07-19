@@ -19,7 +19,7 @@ export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title:
-    "Établissements de santé France — Annuaire transport médical CPAM | RoullePro",
+    "Établissements de santé France — Annuaire transport médical CPAM",
   description:
     "Annuaire complet des hôpitaux, cliniques, EHPAD, centres de dialyse et maisons de santé en France. Trouvez un transporteur conventionné CPAM pour vous rendre dans chaque établissement.",
   alternates: { canonical: "/etablissements" },

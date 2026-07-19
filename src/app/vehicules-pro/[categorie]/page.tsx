@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return { title: "Page introuvable" };
 
   const title =
-    cat.nomH1 + " - Annonces verifiees | RoullePro";
+    cat.nomH1 + " - Annonces verifiees";
   const description =
     "Trouvez votre " +
     cat.nomPhrase +

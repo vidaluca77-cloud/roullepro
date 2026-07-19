@@ -7,6 +7,13 @@ import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/san
 import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
 import { getCityCategoryContent } from "@/lib/seo-city-content";
 import { getDepartementByCode } from "@/lib/departements-fr";
+import {
+  buildTarifBlock,
+  buildLocalFaq,
+  topVillesDepartement,
+  type FaqItem,
+} from "@/lib/sanitaire-ville-categorie";
+import EtablissementsVilleCategorie from "@/components/etablissements/EtablissementsVilleCategorie";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import AmeliFilterToggle from "@/components/sanitaire/AmeliFilterToggle";
@@ -36,6 +43,42 @@ async function fetchProsVilleCategorie(villeSlug: string, categorieKey: string, 
   if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
   const { data } = await query;
   return (data || []) as ProSanitaire[];
+}
+
+/**
+ * Une seule requete pour le departement : compteur exact (part 5) + villes pour
+ * le maillage (part 6). La vue publique applique deja le filtre taxi.
+ */
+async function fetchDepartementCategorie(departement: string, categorieKey: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data, count } = await supabase
+    .from("pros_sanitaire_public")
+    .select("ville, ville_slug", { count: "exact" })
+    .eq("actif", true)
+    .eq("suspendu", false)
+    .eq("departement", departement)
+    .eq("categorie", categorieKey)
+    .limit(2000);
+  return {
+    rows: (data || []) as { ville: string; ville_slug: string }[],
+    total: count ?? 0,
+  };
+}
+
+/** Fusionne des FAQ en dedoublonnant par question (une seule FAQPage). */
+function dedupeFaq(items: FaqItem[]): FaqItem[] {
+  const vues = new Set<string>();
+  const out: FaqItem[] = [];
+  for (const q of items) {
+    const cle = q.question.trim().toLowerCase();
+    if (vues.has(cle)) continue;
+    vues.add(cle);
+    out.push(q);
+  }
+  return out;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -108,13 +151,22 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   // Contenu editorial enrichi pour les pages hub prioritaires (striking distance).
   const enriched = getCityCategoryContent(ville, categorie);
 
+  // Departement : compteur exact + maillage villes (une seule requete), tarifs
+  // conventionnels et FAQ locale generee.
+  const depInfo = departement ? getDepartementByCode(departement) : null;
+  const { rows: deptRows, total: deptTotal } = departement
+    ? await fetchDepartementCategorie(departement, cat.key)
+    : { rows: [], total: 0 };
+  const autresVilles = topVillesDepartement(deptRows, ville, 8);
+  const tarifBlock = depInfo ? buildTarifBlock(cat.key, depInfo.code, depInfo.nom) : null;
+
+  const generatedFaq = buildLocalFaq(nomVille, depInfo?.nom ?? departement, cat.key);
   const villeFaq = getVilleFaq(nomVille, pros.length);
   const localFaq = enriched?.faq ?? [];
-  const faqLd = buildFaqJsonLd([...localFaq, ...villeFaq]);
+  const faqLd = buildFaqJsonLd(dedupeFaq([...generatedFaq, ...localFaq, ...villeFaq]));
 
   // Fil d'Ariane hierarchique : Annuaire -> Departement -> Ville -> Categorie.
   // Le niveau departement renforce le maillage interne vers les pages departementales.
-  const depInfo = departement ? getDepartementByCode(departement) : null;
   const breadItems: { name: string; url: string }[] = [
     { name: "Annuaire", url: "/transport-medical" },
   ];
@@ -159,7 +211,14 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
             <span className="text-white">{cat.labelPluriel}</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-3">{cat.labelPluriel} à {nomVille}</h1>
-          <p className="text-blue-100">{pros.length} professionnels référencés {departement ? `· Département ${departement}` : ""}</p>
+          <p className="text-blue-100">
+            {pros.length} {cat.labelPluriel.toLowerCase()} à {nomVille}
+            {depInfo && deptTotal > 0
+              ? ` · ${deptTotal} professionnels dans le département ${depInfo.nom} (${depInfo.code})`
+              : departement
+                ? ` · Département ${departement}`
+                : ""}
+          </p>
         </div>
       </section>
 
@@ -211,6 +270,35 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
           </div>
         )}
 
+        {tarifBlock && (
+          <div className="mt-10 bg-white border border-gray-200 rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">{tarifBlock.titre}</h2>
+            <p className="text-sm text-gray-600 mb-4">{tarifBlock.intro}</p>
+            <dl className="divide-y divide-gray-100">
+              {tarifBlock.lignes.map((l) => (
+                <div key={l.label} className="flex items-center justify-between py-2 gap-4">
+                  <dt className="text-sm text-gray-700">{l.label}</dt>
+                  <dd className="text-sm font-semibold text-gray-900 whitespace-nowrap">{l.valeur}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-4 text-xs text-gray-500">{tarifBlock.mention}</p>
+            <Link
+              href={tarifBlock.simulateur.href}
+              className="mt-4 inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+            >
+              {tarifBlock.simulateur.label}
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+
+        <EtablissementsVilleCategorie
+          villeSlug={ville}
+          nomVille={nomVille}
+          departement={departement}
+        />
+
         {enriched && enriched.voisines.length > 0 && (
           <div className="mt-10">
             <h2 className="text-xl font-bold text-gray-900 mb-3">
@@ -233,10 +321,43 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
           </div>
         )}
 
+        {autresVilles.length > 0 && (!enriched || enriched.voisines.length === 0) && (
+          <div className="mt-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-3">
+              {cat.labelPluriel} dans les autres villes {depInfo ? `du département ${depInfo.nom} (${depInfo.code})` : "du département"}
+            </h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {autresVilles.map((v) => (
+                <Link
+                  key={v.slug}
+                  href={`/transport-medical/${v.slug}/${categorie}`}
+                  className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
+                >
+                  {cat.label} {v.nom}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-10 bg-white border border-gray-200 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">
+            Questions fréquentes — {cat.labelPluriel.toLowerCase()} à {nomVille}
+          </h2>
+          <div className="space-y-4">
+            {generatedFaq.map((q, i) => (
+              <div key={i}>
+                <h3 className="font-semibold text-gray-900 mb-1">{q.question}</h3>
+                <p className="text-sm text-gray-700 leading-relaxed">{q.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {localFaq.length > 0 && (
           <div className="mt-10 bg-white border border-gray-200 rounded-2xl p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Questions fréquentes — {cat.labelPluriel.toLowerCase()} à {nomVille}
+              En savoir plus sur les {cat.labelPluriel.toLowerCase()} à {nomVille}
             </h2>
             <div className="space-y-4">
               {localFaq.map((q, i) => (

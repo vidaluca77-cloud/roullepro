@@ -17,7 +17,7 @@ import {
 export const revalidate = 86400;
 
 const GIVA_URL = "https://go.giva.fr/?src=LucasH";
-const TITLE = "Assurance pro transport sanitaire — Partenaire Giva | RoullePro";
+const TITLE = "Assurance pro transport sanitaire — Partenaire Giva";
 const DESCRIPTION =
   "Devis en ligne d'assurance professionnelle pour ambulances, VSL et taxis conventionnés via notre partenaire Giva. Garanties métier, accompagnement, tarifs négociés.";
 

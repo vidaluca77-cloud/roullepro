@@ -7,7 +7,7 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title:
-    "Observatoire du transport sanitaire en France — Données 2026 | RoullePro",
+    "Observatoire du transport sanitaire en France — Données 2026",
   description:
     "Données chiffrées sur le transport sanitaire en France : nombre d'ambulances, VSL, taxis conventionnés par région, évolution conventionnement CPAM, dépenses Assurance maladie. Source ouverte, mise à jour trimestrielle.",
   alternates: { canonical: "/observatoire" },
