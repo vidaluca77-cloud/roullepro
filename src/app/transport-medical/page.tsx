@@ -294,6 +294,25 @@ export default async function TransportMedicalHome() {
         </div>
       </section>
 
+      <section className="max-w-6xl mx-auto px-4 pb-4">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Guides pratiques du transport médical</h2>
+        <p className="text-gray-600 mb-8">Comprendre la prescription, les tarifs et le remboursement, côté patient.</p>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <Link href="/vsl" className="block bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Guide du VSL</h3>
+            <p className="text-sm text-gray-600">Véhicule sanitaire léger : définition, prescription, remboursement et tarifs.</p>
+          </Link>
+          <Link href="/taxi-conventionne" className="block bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Taxi conventionné CPAM</h3>
+            <p className="text-sm text-gray-600">Conditions de prise en charge, tarifs conventionnels et réservation.</p>
+          </Link>
+          <Link href="/bon-de-transport" className="block bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Bon de transport</h3>
+            <p className="text-sm text-gray-600">CERFA 11574, entente préalable, durée de validité et remboursement.</p>
+          </Link>
+        </div>
+      </section>
+
       <section className="bg-gray-50 py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Les villes les plus actives</h2>
