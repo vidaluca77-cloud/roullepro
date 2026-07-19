@@ -109,6 +109,49 @@ export default function BlogIndexPage() {
           </div>
         </section>
 
+        {/* ─── GUIDES DE RÉFÉRENCE (piliers) ─────────────── */}
+        <section className="mb-14">
+          <div className="flex items-end justify-between mb-6">
+            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+              Les guides de référence
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              {
+                href: "/vsl",
+                titre: "VSL : le guide complet",
+                desc: "Définition, prescription, remboursement et annuaire.",
+              },
+              {
+                href: "/taxi-conventionne",
+                titre: "Taxi conventionné CPAM",
+                desc: "Tarifs, agrément, prise en charge et annuaire.",
+              },
+              {
+                href: "/bon-de-transport",
+                titre: "Bon de transport CPAM",
+                desc: "CERFA 11574, prescription et démarches patient.",
+              },
+            ].map((p) => (
+              <Link
+                key={p.href}
+                href={p.href}
+                className="group flex flex-col rounded-2xl border border-gray-200 bg-white p-5 hover:border-blue-300 hover:shadow-md transition"
+              >
+                <span className="font-semibold text-gray-900 group-hover:text-blue-700 transition">
+                  {p.titre}
+                </span>
+                <span className="mt-1 text-sm text-gray-600">{p.desc}</span>
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-blue-600">
+                  Consulter le guide
+                  <ArrowRight size={14} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         {/* ─── À LA UNE + ARTICLES ─────────────────────── */}
         <section>
           <div className="flex items-end justify-between mb-6">

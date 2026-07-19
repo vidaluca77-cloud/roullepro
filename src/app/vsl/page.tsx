@@ -5,6 +5,7 @@ import { Car, ChevronRight, Shield, Search, MapPin } from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { getProStats } from "@/lib/stats";
 import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
+import { ArticlesLiesPilier } from "@/components/blog/ArticlesLiesPilier";
 
 export const revalidate = 3600;
 
@@ -529,6 +530,8 @@ export default async function VslPage() {
           </form>
         </div>
       </section>
+
+      <ArticlesLiesPilier needles={["vsl", "vehicule sanitaire leger"]} />
     </main>
   );
 }

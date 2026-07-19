@@ -413,6 +413,31 @@ export function getLatestPosts(limit = 3): BlogPost[] {
   return getAllPosts().slice(0, limit);
 }
 
+function normaliserTexte(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+/**
+ * Articles dont le titre, le slug ou les mots-clés contiennent l'un des termes
+ * fournis (recherche insensible aux accents et à la casse). Utilisé pour le
+ * maillage bidirectionnel pilier -> blog. Triés du plus récent au plus ancien.
+ */
+export function getPostsByKeywords(needles: string[], limit = 3): BlogPost[] {
+  const termes = needles.map(normaliserTexte).filter(Boolean);
+  if (termes.length === 0) return [];
+  return getAllPosts()
+    .filter((p) => {
+      const haystack = normaliserTexte(
+        [p.title, p.slug, ...p.keywords].join(" ")
+      );
+      return termes.some((t) => haystack.includes(t));
+    })
+    .slice(0, limit);
+}
+
 /* ----------------------------- IMAGES ----------------------------- */
 
 /** Slugs de catégorie disposant d'un visuel placeholder dédié dans /public/blog/categories. */
