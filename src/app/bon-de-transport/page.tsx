@@ -7,13 +7,20 @@ import { REGLES_CPAM } from "@/lib/tarif-cpam";
 
 export const revalidate = 3600;
 
-const TITLE =
-  "Bon de transport (CERFA 11574) — Prescription, remboursement CPAM et entente préalable";
+const TITLE = "Bon de transport : prescription, remboursement CPAM et démarches";
 const DESCRIPTION =
-  "Le bon de transport médical expliqué : qu'est-ce que le CERFA 11574, qui le délivre, durée de validité, transport assis ou ambulance, entente préalable et remboursement CPAM. Guide patient 2026.";
+  "Le bon de transport médical (CERFA 11574) : qui le prescrit, transport assis ou allongé, entente préalable et remboursement CPAM. Démarches patient expliquées.";
 const H1 = "Bon de transport : prescription médicale, remboursement CPAM et démarches";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "https://roullepro.com/bon-de-transport" },
+  openGraph: { title: TITLE, description: DESCRIPTION, type: "website", locale: "fr_FR" },
+  twitter: { card: "summary", title: TITLE, description: DESCRIPTION },
+};
 
 // Montants tarifaires : lus depuis les libs (aucun chiffre en dur), formatés en euros.
 const euro = (n: number) =>
