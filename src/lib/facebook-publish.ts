@@ -130,7 +130,7 @@ export function construireMessageFacebook(demande: DemandeFacebook): string {
   const detail = [quand, trajet].filter(Boolean).join(" — ");
 
   const lignes = [
-    `Nouvelle demande de course — ${type}`,
+    `Nouvelle demande de transport — ${type}`,
     detail,
     `Vous êtes professionnel conventionné dans ce département ? Créez votre fiche gratuite et recevez ces demandes : ${URL_INSCRIPTION}`,
   ].filter(Boolean);
