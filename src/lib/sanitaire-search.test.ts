@@ -8,7 +8,10 @@ import {
   matchesQuery,
   slugWordConcatenations,
   matchesVilleSlug,
+  villeSlugMatchScore,
   buildVilleOrFilter,
+  buildVillePhraseFilter,
+  escapeLikePattern,
 } from "./sanitaire-search";
 
 // Fiche réelle à l'origine du bug production.
@@ -150,9 +153,90 @@ test("matchesVilleSlug : ville nulle/vide -> false", () => {
   assert.equal(matchesVilleSlug("", "thury"), false);
 });
 
-test("buildVilleOrFilter : sous-chaîne slug OU regex accent-insensible nom", () => {
+test("buildVilleOrFilter : frontière de mot (début OU après tiret) OU regex nom", () => {
   assert.equal(
     buildVilleOrFilter("evreux"),
-    "ville_slug.ilike.*evreux*,ville.imatch.[eéèêë]vr[eéèêë][uùûü]x"
+    "ville_slug.ilike.evreux*,ville_slug.ilike.*-evreux*,ville.imatch.[eéèêë]vr[eéèêë][uùûü]x"
   );
+});
+
+// ---------------------------------------------------------------------------
+// Bug client (prod) : « le hom » (Le Hom, commune du Calvados englobant
+// Thury-Harcourt, slug « thury-harcourt-le-hom ») renvoyait Hombourg-Haut (57)
+// et Homecourt (54) mais PAS Le Hom, car « hom » n'était matché qu'en tête de
+// slug. On matche désormais les mots à n'importe quelle position et on classe
+// les suites de mots consécutives en premier.
+// ---------------------------------------------------------------------------
+
+const HOMBOURG = "hombourg-haut";
+const HOMECOURT = "homecourt";
+const SAINT_QUENTIN_LE_HOMME = "saint-quentin-sur-le-homme";
+
+test("matchesVilleSlug : « le hom » matche « thury-harcourt-le-hom » (mot en fin de slug)", () => {
+  assert.equal(matchesVilleSlug(THURY, "le hom"), true);
+});
+
+test("matchesVilleSlug : mot interne — « le homme » matche « saint-quentin-sur-le-homme »", () => {
+  assert.equal(matchesVilleSlug(SAINT_QUENTIN_LE_HOMME, "le homme"), true);
+  assert.equal(matchesVilleSlug(SAINT_QUENTIN_LE_HOMME, "saint quentin"), true);
+});
+
+test("villeSlugMatchScore : suite de mots consécutifs (« le hom ») classée avant préfixe isolé", () => {
+  const scoreThury = villeSlugMatchScore(THURY, "le hom");
+  const scoreHombourg = villeSlugMatchScore(HOMBOURG, "le hom");
+  const scoreHomecourt = villeSlugMatchScore(HOMECOURT, "le hom");
+  // Le Hom (suite « le-hom » entière) doit primer sur Hombourg / Homecourt.
+  assert.ok(scoreThury > scoreHombourg, "Le Hom doit primer sur Hombourg");
+  assert.ok(scoreThury > scoreHomecourt, "Le Hom doit primer sur Homecourt");
+  // Les trois restent des résultats valides (score > 0) pour « hom ».
+  assert.ok(villeSlugMatchScore(THURY, "hom") > 0);
+  assert.ok(villeSlugMatchScore(HOMBOURG, "hom") > 0);
+  assert.ok(villeSlugMatchScore(HOMECOURT, "hom") > 0);
+});
+
+test("villeSlugMatchScore : « le hom » = mots entiers consécutifs (score maximal 3)", () => {
+  assert.equal(villeSlugMatchScore(THURY, "le hom"), 3);
+});
+
+test("villeSlugMatchScore : « hom » seul est un préfixe de mot (score 2) sur Hombourg", () => {
+  assert.equal(villeSlugMatchScore(HOMBOURG, "hom"), 2);
+});
+
+test("villeSlugMatchScore : « thury harcourt » non-régression (mots entiers consécutifs)", () => {
+  assert.equal(villeSlugMatchScore(THURY, "thury harcourt"), 3);
+  assert.equal(matchesVilleSlug(THURY, "thury harcourt"), true);
+});
+
+test("villeSlugMatchScore : mono-mot exact « caen » (score 3), absent ailleurs (0)", () => {
+  assert.equal(villeSlugMatchScore("caen", "caen"), 3);
+  assert.equal(villeSlugMatchScore("marseille", "marseille"), 3);
+  assert.equal(villeSlugMatchScore(THURY, "caen"), 0);
+});
+
+test("villeSlugMatchScore : sous-chaîne en milieu de mot ne matche pas (« hom » vs thomery)", () => {
+  assert.equal(villeSlugMatchScore("thomery", "hom"), 0);
+});
+
+test("buildVillePhraseFilter : « le hom » cible la suite « le-hom » (tête OU milieu de slug)", () => {
+  assert.equal(
+    buildVillePhraseFilter("le hom"),
+    "ville_slug.ilike.le-hom*,ville_slug.ilike.*-le-hom*"
+  );
+});
+
+test("buildVillePhraseFilter : mono-mot -> null (le filtre par token suffit)", () => {
+  assert.equal(buildVillePhraseFilter("caen"), null);
+  assert.equal(buildVillePhraseFilter("hom"), null);
+});
+
+test("buildVillePhraseFilter : « thury harcourt » cible « thury-harcourt »", () => {
+  assert.equal(
+    buildVillePhraseFilter("thury harcourt"),
+    "ville_slug.ilike.thury-harcourt*,ville_slug.ilike.*-thury-harcourt*"
+  );
+});
+
+test("escapeLikePattern : échappe les jokers LIKE (%, _, backslash)", () => {
+  assert.equal(escapeLikePattern("a%b_c"), "a\\%b\\_c");
+  assert.equal(escapeLikePattern("le-hom"), "le-hom");
 });

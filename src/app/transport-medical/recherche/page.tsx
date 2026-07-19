@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES_SANITAIRE, getCategorieBySlug, getCategorieByKey, slugifyVille, REGIONS_FR_SEO, type ProSanitaire } from "@/lib/sanitaire-data";
-import { tokenize, buildVilleOrFilter, matchesVilleSlug } from "@/lib/sanitaire-search";
+import { tokenize, buildVilleOrFilter, buildVillePhraseFilter, matchesVilleSlug, villeSlugMatchScore } from "@/lib/sanitaire-search";
 import { resolveRechercheMetadata } from "@/lib/recherche-metadata";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
@@ -228,6 +228,14 @@ export default async function RecherchePage({ searchParams }: Props) {
       for (const token of tokenize(queryVille)) {
         query = query.or(buildVilleOrFilter(token));
       }
+      // Requête multi-mots : on exige aussi la suite de mots consécutive dans le
+      // slug (« le hom » -> « ...-le-hom »). Cela cible « thury-harcourt-le-hom »
+      // et écarte « hombourg-haut »/« homecourt », évitant que ces pros d'autres
+      // régions saturent les 300 lignes triées par plan et n'évincent Le Hom.
+      const phraseFilter = buildVillePhraseFilter(queryVille);
+      if (phraseFilter) {
+        query = query.or(phraseFilter);
+      }
     }
     if (cat) query = query.eq("categorie", cat.key);
     if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
@@ -237,6 +245,15 @@ export default async function RecherchePage({ searchParams }: Props) {
     // sur-approximation par sous-chaîne). On garde tel quel pour le code postal.
     if (!isCodePostal) {
       rows = rows.filter((p) => matchesVilleSlug(p.ville_slug, queryVille));
+      // Classement par pertinence : une ville qui contient la requête comme suite
+      // de mots consécutifs (« le hom » -> « thury-harcourt-le-hom ») passe avant
+      // un simple préfixe de token (« hom » -> « hombourg »). Tri stable : à score
+      // égal, l'ordre plan/claimed issu de la requête SQL est conservé.
+      rows.sort(
+        (a, b) =>
+          villeSlugMatchScore(b.ville_slug, queryVille) -
+          villeSlugMatchScore(a.ville_slug, queryVille)
+      );
     }
     pros = rows.slice(0, 100);
   } else if (cat) {
