@@ -11,6 +11,7 @@ import {
   buildTarifBlock,
   buildLocalFaq,
   topVillesDepartement,
+  formatNomVille,
   type FaqItem,
 } from "@/lib/sanitaire-ville-categorie";
 import EtablissementsVilleCategorie from "@/components/etablissements/EtablissementsVilleCategorie";
@@ -68,6 +69,31 @@ async function fetchDepartementCategorie(departement: string, categorieKey: stri
   };
 }
 
+/**
+ * Departement de la ville, derive independamment de la categorie affichee.
+ * Permet aux blocs departementaux (tarifs, maillage, FAQ) de fonctionner meme
+ * quand la categorie demandee ne compte aucun pro dans la ville (ex. 0 VSL).
+ * Requete legere : une seule ligne, toutes categories confondues.
+ */
+async function fetchVilleDepartement(
+  villeSlug: string
+): Promise<{ departement: string; ville: string } | null> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("pros_sanitaire_public")
+    .select("departement, ville")
+    .eq("actif", true)
+    .eq("suspendu", false)
+    .eq("ville_slug", villeSlug)
+    .not("departement", "is", null)
+    .limit(1);
+  const row = (data || [])[0] as { departement: string; ville: string } | undefined;
+  return row ? { departement: row.departement, ville: row.ville } : null;
+}
+
 /** Fusionne des FAQ en dedoublonnant par question (une seule FAQPage). */
 function dedupeFaq(items: FaqItem[]): FaqItem[] {
   const vues = new Set<string>();
@@ -85,8 +111,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { ville, categorie } = await params;
   const cat = getCategorieBySlug(categorie);
   if (!cat) return {};
-  const nomVille = deslugifyVille(ville);
   const pros = await fetchProsVilleCategorie(ville, cat.key);
+  const nomVille = pros.length > 0 ? formatNomVille(pros[0].ville) : deslugifyVille(ville);
   const nb = pros.length;
   const conventionnes = pros.filter((p) => p.ameli_conventionne).length;
 
@@ -129,8 +155,20 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   if (!cat) notFound();
 
   const pros = await fetchProsVilleCategorie(ville, cat.key, ameliOnly);
-  const nomVille = pros.length > 0 ? pros[0].ville : deslugifyVille(ville);
-  const departement = pros.length > 0 ? pros[0].departement : "";
+
+  // Le departement est derive independamment des pros de la categorie : sans
+  // cela, une page a 0 pro (ex. draguignan/vsl) perdrait tarifs, maillage et
+  // FAQ departementale. On interroge la ville toutes categories confondues.
+  let nomVilleRaw = pros.length > 0 ? pros[0].ville : deslugifyVille(ville);
+  let departement = pros.length > 0 ? pros[0].departement : "";
+  if (!departement) {
+    const info = await fetchVilleDepartement(ville);
+    if (info) {
+      departement = info.departement;
+      if (info.ville) nomVilleRaw = info.ville;
+    }
+  }
+  const nomVille = formatNomVille(nomVilleRaw);
 
   // JSON-LD ItemList enrichi : Google peut afficher en carrousel local
   const jsonLd = {
@@ -161,7 +199,12 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   const tarifBlock = depInfo ? buildTarifBlock(cat.key, depInfo.code, depInfo.nom) : null;
 
   const generatedFaq = buildLocalFaq(nomVille, depInfo?.nom ?? departement, cat.key);
-  const villeFaq = getVilleFaq(nomVille, pros.length);
+  const villeFaq = getVilleFaq(nomVille, pros.length, {
+    categorieLabel: cat.label.toLowerCase(),
+    categorieLabelPluriel: cat.labelPluriel.toLowerCase(),
+    depNom: depInfo?.nom ?? departement,
+    depTotal: deptTotal,
+  });
   const localFaq = enriched?.faq ?? [];
   const faqLd = buildFaqJsonLd(dedupeFaq([...generatedFaq, ...localFaq, ...villeFaq]));
 
@@ -244,7 +287,26 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
                 .
               </>
             ) : (
-              <>Aucun {cat.label.toLowerCase()} référencé à {nomVille} pour l&apos;instant.</>
+              <>
+                <p className="mb-2">
+                  Aucun {cat.label.toLowerCase()} n&apos;est référencé à {nomVille} pour l&apos;instant.
+                  {depInfo && deptTotal > 0 ? (
+                    <>
+                      {" "}En revanche, {deptTotal} {cat.labelPluriel.toLowerCase()} sont référencés dans le
+                      département {depInfo.nom} ({depInfo.code}) : consultez les villes voisines ci-dessous.
+                    </>
+                  ) : null}
+                </p>
+                {depInfo && (
+                  <Link
+                    href={`/transport-medical/departement/${depInfo.code}`}
+                    className="inline-flex items-center gap-1 font-medium text-[#0066CC] hover:underline"
+                  >
+                    Voir tout le transport sanitaire dans le département {depInfo.nom} ({depInfo.code})
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                )}
+              </>
             )}
           </div>
         ) : (
@@ -333,7 +395,7 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
                   href={`/transport-medical/${v.slug}/${categorie}`}
                   className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
                 >
-                  {cat.label} {v.nom}
+                  {cat.label} {formatNomVille(v.nom)}
                 </Link>
               ))}
             </div>
@@ -418,7 +480,7 @@ function ProCard({
           <div className="font-semibold text-gray-900 truncate">{pro.nom_commercial || pro.raison_sociale}</div>
           <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
             <MapPin className="w-3 h-3" />
-            {pro.adresse ? `${pro.adresse}, ${pro.code_postal} ${pro.ville}` : `${pro.code_postal} ${pro.ville}`}
+            {pro.adresse ? `${pro.adresse}, ${pro.code_postal} ${formatNomVille(pro.ville)}` : `${pro.code_postal} ${formatNomVille(pro.ville)}`}
           </div>
         </div>
         {pro.verified && (

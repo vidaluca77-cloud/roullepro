@@ -20,6 +20,7 @@ import {
   getVilleSeoOverride,
   buildVilleServiceJsonLd,
 } from "@/lib/sanitaire-ville-seo";
+import { formatNomVille } from "@/lib/sanitaire-ville-categorie";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
@@ -191,7 +192,7 @@ export default async function VillePage({ params, searchParams }: Props) {
     );
   }
 
-  const nomVille = pros[0]?.ville || deslugifyVille(ville);
+  const nomVille = formatNomVille(pros[0]?.ville || deslugifyVille(ville));
   const departement = pros[0]?.departement || "";
   const region = pros[0]?.region || "";
 
@@ -228,7 +229,7 @@ export default async function VillePage({ params, searchParams }: Props) {
             "@type": "PostalAddress",
             streetAddress: p.adresse || undefined,
             postalCode: p.code_postal,
-            addressLocality: p.ville,
+            addressLocality: formatNomVille(p.ville),
             addressCountry: "FR",
           },
         },
@@ -441,7 +442,7 @@ export default async function VillePage({ params, searchParams }: Props) {
                   href={`/transport-medical/${v.ville_slug}`}
                   className="inline-flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-[#0066CC] text-sm px-3 py-1.5 rounded-full transition"
                 >
-                  {v.ville}
+                  {formatNomVille(v.ville)}
                   <span className="text-xs text-gray-500">· {v.nb}</span>
                 </Link>
               ))}
@@ -512,7 +513,7 @@ function ProCard({ pro, villeSlug }: { pro: ProSanitaire; villeSlug: string }) {
           <div className="font-semibold text-gray-900 truncate">{pro.nom_commercial || pro.raison_sociale}</div>
           <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
             <MapPin className="w-3 h-3" />
-            {pro.adresse ? `${pro.adresse}, ${pro.code_postal} ${pro.ville}` : `${pro.code_postal} ${pro.ville}`}
+            {pro.adresse ? `${pro.adresse}, ${pro.code_postal} ${formatNomVille(pro.ville)}` : `${pro.code_postal} ${formatNomVille(pro.ville)}`}
           </div>
         </div>
         {pro.verified && (

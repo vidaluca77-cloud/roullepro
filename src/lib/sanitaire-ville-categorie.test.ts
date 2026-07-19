@@ -5,10 +5,66 @@ import {
   buildLocalFaq,
   selectEtablissementsAffichage,
   topVillesDepartement,
+  formatNomVille,
   type EtabRow,
 } from "./sanitaire-ville-categorie";
 import { TAUX_KM_PAR_DEPARTEMENT, REGLES_CPAM } from "./tarif-cpam";
 import { REGLES_VSL, REGLES_AMBULANCE } from "./tarif-transport-sanitaire";
+
+// --- formatNomVille --------------------------------------------------------
+
+test("formatNomVille : nom simple en MAJUSCULES", () => {
+  assert.equal(formatNomVille("CAEN"), "Caen");
+  assert.equal(formatNomVille("PARIS"), "Paris");
+});
+
+test("formatNomVille : mot compose a tiret", () => {
+  assert.equal(formatNomVille("SAINT-LO"), "Saint-Lo");
+  assert.equal(formatNomVille("BOULOGNE-BILLANCOURT"), "Boulogne-Billancourt");
+});
+
+test("formatNomVille : apostrophe capitalisee", () => {
+  assert.equal(formatNomVille("L'ISLE-ADAM"), "L'Isle-Adam");
+  assert.equal(formatNomVille("SAINT-JEAN-D'ANGELY"), "Saint-Jean-d'Angely");
+});
+
+test("formatNomVille : apostrophe typographique", () => {
+  assert.equal(formatNomVille("L’ISLE-ADAM"), "L’Isle-Adam");
+});
+
+test("formatNomVille : particules en minuscules au milieu du nom", () => {
+  assert.equal(formatNomVille("AIX-EN-PROVENCE"), "Aix-en-Provence");
+  assert.equal(formatNomVille("ROQUEBRUNE-SUR-ARGENS"), "Roquebrune-sur-Argens");
+  assert.equal(formatNomVille("BAGNOLS-SUR-CEZE"), "Bagnols-sur-Ceze");
+  assert.equal(formatNomVille("LES-SABLES-D-OLONNE"), "Les-Sables-d-Olonne");
+});
+
+test("formatNomVille : particule en tete reste capitalisee", () => {
+  assert.equal(formatNomVille("LE HAVRE"), "Le Havre");
+  assert.equal(formatNomVille("LA ROCHELLE"), "La Rochelle");
+  assert.equal(formatNomVille("LES ULIS"), "Les Ulis");
+});
+
+test("formatNomVille : espaces conserves et particules en minuscules", () => {
+  assert.equal(formatNomVille("AIX EN PROVENCE"), "Aix en Provence");
+  assert.equal(formatNomVille("SAINT MICHEL SUR ORGE"), "Saint Michel sur Orge");
+});
+
+test("formatNomVille : deja bien formate (idempotent sur casse)", () => {
+  assert.equal(formatNomVille("Caen"), "Caen");
+  assert.equal(formatNomVille("Aix-en-Provence"), "Aix-en-Provence");
+});
+
+test("formatNomVille : accents preserves, aucun accent ajoute", () => {
+  assert.equal(formatNomVille("BÉZIERS"), "Béziers");
+  assert.equal(formatNomVille("SAINT-LO"), "Saint-Lo");
+});
+
+test("formatNomVille : entree vide ou nulle", () => {
+  assert.equal(formatNomVille(""), "");
+  assert.equal(formatNomVille(null), "");
+  assert.equal(formatNomVille(undefined), "");
+});
 
 // --- buildTarifBlock -------------------------------------------------------
 

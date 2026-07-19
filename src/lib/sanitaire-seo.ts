@@ -6,6 +6,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ProSanitaire } from "./sanitaire-data";
 import { buildOpeningHoursSpecification } from "./horaires";
+import { formatNomVille } from "./sanitaire-ville-categorie";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -246,12 +247,7 @@ function cleanAdresseRue(adresse: string | null | undefined, codePostal: string,
 }
 
 function titleCaseVille(ville: string): string {
-  if (!ville) return "";
-  return ville
-    .toLowerCase()
-    .split(/(\s|-|')/)
-    .map((part) => (part.length > 0 && /[a-z]/.test(part[0]) ? part[0].toUpperCase() + part.slice(1) : part))
-    .join("");
+  return formatNomVille(ville);
 }
 
 function titleCaseRaison(raison: string): string {
@@ -412,14 +408,48 @@ export function getFicheFaq(pro: ProSanitaire): { question: string; answer: stri
 }
 
 /**
- * FAQ generique pour une page ville.
+ * Construit l'item de FAQ affiche quand aucun pro n'est reference (0 pro).
+ * S'appuie sur le compteur departemental reel pour rediriger l'internaute
+ * vers les villes voisines sans jamais presenter "0 professionnels" comme
+ * une information positive.
  */
-export function getVilleFaq(ville: string, nbPros: number): { question: string; answer: string }[] {
+function buildZeroProFaqItem(
+  ville: string,
+  options?: { categorieLabel?: string; categorieLabelPluriel?: string; depNom?: string; depTotal?: number }
+): { question: string; answer: string } {
+  const labelPluriel = options?.categorieLabelPluriel || "professionnels du transport sanitaire";
+  const labelSingulier = options?.categorieLabel || "professionnel du transport sanitaire";
+  const depDispo =
+    options?.depNom && options.depTotal && options.depTotal > 0
+      ? ` En revanche, ${options.depTotal} professionnels du transport sanitaire sont disponibles dans le département ${options.depNom} : consultez les villes voisines listées ci-dessous.`
+      : ` Consultez les villes voisines listées ci-dessous ou élargissez votre recherche au département.`;
+  return {
+    question: `Où trouver des ${labelPluriel} près de ${ville} ?`,
+    answer: `Aucun ${labelSingulier} n'est référencé à ${ville} pour le moment.${depDispo}`,
+  };
+}
+
+/**
+ * FAQ generique pour une page ville.
+ *
+ * `options` permet, sur une page categorie sans aucun pro (nbPros === 0), de
+ * remplacer la premiere question par une formulation departementale utile
+ * plutot que d'afficher "recense 0 professionnels" comme un fait positif.
+ */
+export function getVilleFaq(
+  ville: string,
+  nbPros: number,
+  options?: { categorieLabel?: string; categorieLabelPluriel?: string; depNom?: string; depTotal?: number }
+): { question: string; answer: string }[] {
+  const premiere =
+    nbPros === 0
+      ? buildZeroProFaqItem(ville, options)
+      : {
+          question: `Combien y a-t-il d'ambulances et VSL à ${ville} ?`,
+          answer: `L'annuaire RoullePro recense ${nbPros} professionnels du transport sanitaire à ${ville} : ambulances, VSL et taxis conventionnés. Tous les établissements sont identifiés par leur numéro SIRET officiel.`,
+        };
   return [
-    {
-      question: `Combien y a-t-il d'ambulances et VSL à ${ville} ?`,
-      answer: `L'annuaire RoullePro recense ${nbPros} professionnels du transport sanitaire à ${ville} : ambulances, VSL et taxis conventionnés. Tous les établissements sont identifiés par leur numéro SIRET officiel.`,
-    },
+    premiere,
     {
       question: `Comment réserver un transport sanitaire à ${ville} ?`,
       answer: `Vous pouvez contacter directement les professionnels référencés à ${ville} via les numéros de téléphone affichés sur leurs fiches. Pour un transport remboursé, une prescription médicale est requise.`,

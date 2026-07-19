@@ -48,6 +48,46 @@ const SIMULATEUR_PAR_CATEGORIE: Record<CategorieSanitaire, { href: string; label
   ambulance: { href: "/tarif-ambulance", label: "Estimer le prix d'un transport en ambulance" },
 };
 
+/**
+ * Particules francaises laissees en minuscules lorsqu'elles apparaissent au
+ * milieu d'un nom de ville (jamais en tete). Couvre les articles, prepositions
+ * et elisions courantes ("d'", "l'").
+ */
+const PARTICULES_MINUSCULES = new Set([
+  "en", "sur", "sous", "les", "la", "le", "de", "du", "des", "aux", "et", "d", "l",
+]);
+
+/**
+ * Met en forme un nom de ville francais issu de la base (souvent en MAJUSCULES,
+ * ex. "CAEN", "SAINT-LO", "L'ISLE-ADAM"). Fonction pure, sans I/O.
+ *
+ * Regles :
+ *  - chaque composant separe par un espace, un tiret ou une apostrophe est
+ *    capitalise (premiere lettre en majuscule, reste en minuscules) ;
+ *  - les separateurs (espaces, tirets, apostrophes) sont conserves tels quels ;
+ *  - les particules ("en", "sur", "de", "le"...) restent en minuscules quand
+ *    elles ne sont pas le premier mot : "AIX-EN-PROVENCE" -> "Aix-en-Provence",
+ *    "ROQUEBRUNE-SUR-ARGENS" -> "Roquebrune-sur-Argens" ;
+ *  - le premier composant est toujours capitalise, meme si c'est une particule
+ *    ("LE HAVRE" -> "Le Havre", "L'ISLE-ADAM" -> "L'Isle-Adam") ;
+ *  - les accents eventuels sont preserves ; aucun accent n'est ajoute.
+ */
+export function formatNomVille(nom: string | null | undefined): string {
+  if (!nom) return "";
+  const parts = nom.toLowerCase().split(/([\s\-'’])/);
+  let motRang = 0;
+  return parts
+    .map((part) => {
+      // Separateur (espace, tiret, apostrophe) : conserve tel quel.
+      if (part.length === 0 || /^[\s\-'’]$/.test(part)) return part;
+      const estPremier = motRang === 0;
+      motRang += 1;
+      if (!estPremier && PARTICULES_MINUSCULES.has(part)) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join("");
+}
+
 function euros(n: number): string {
   return n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 }
