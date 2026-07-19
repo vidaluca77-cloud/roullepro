@@ -4,12 +4,13 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { ChevronRight, MapPin, Cross, Car, Users } from "lucide-react";
 import { getDepartementByCode } from "@/lib/departements-fr";
-import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
+import { CATEGORIES_SANITAIRE, type CategorieSanitaire } from "@/lib/sanitaire-data";
 import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
 } from "@/lib/sanitaire-seo";
 import { getDepartementSeoOverride } from "@/lib/sanitaire-departement-seo";
+import { buildTarifBlock, formatNomVille, type FaqItem } from "@/lib/sanitaire-ville-categorie";
 
 export const revalidate = 3600;
 
@@ -32,9 +33,12 @@ type CountByCat = {
   total: number;
 };
 
+type VillesParCategorie = Record<CategorieSanitaire, VilleStat[]>;
+
 async function fetchDepartementData(code: string): Promise<{
   villes: VilleStat[];
   counts: CountByCat;
+  villesParCat: VillesParCategorie;
 } | null> {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,9 +60,15 @@ async function fetchDepartementData(code: string): Promise<{
 
   if (error || !pros || pros.length === 0) return null;
 
-  // Agregation par ville
+  // Agregation par ville (toutes categories) et par ville x categorie, a partir
+  // de l'unique requete ci-dessus : aucun appel supplementaire, pas de N+1.
   const villesMap = new Map<string, VilleStat>();
   const counts: CountByCat = { ambulance: 0, vsl: 0, taxi_conventionne: 0, total: 0 };
+  const parCatMap: Record<CategorieSanitaire, Map<string, VilleStat>> = {
+    ambulance: new Map(),
+    vsl: new Map(),
+    taxi_conventionne: new Map(),
+  };
 
   for (const p of pros as Array<{ ville: string; ville_slug: string; categorie: string }>) {
     if (!p.ville_slug) continue;
@@ -69,10 +79,38 @@ async function fetchDepartementData(code: string): Promise<{
     if (p.categorie === "ambulance") counts.ambulance += 1;
     else if (p.categorie === "vsl") counts.vsl += 1;
     else if (p.categorie === "taxi_conventionne") counts.taxi_conventionne += 1;
+
+    if (p.categorie === "ambulance" || p.categorie === "vsl" || p.categorie === "taxi_conventionne") {
+      const catMap = parCatMap[p.categorie];
+      const curCat = catMap.get(p.ville_slug);
+      if (curCat) curCat.nb += 1;
+      else catMap.set(p.ville_slug, { ville: p.ville, ville_slug: p.ville_slug, nb: 1 });
+    }
   }
 
-  const villes = Array.from(villesMap.values()).sort((a, b) => b.nb - a.nb);
-  return { villes, counts };
+  const trier = (m: Map<string, VilleStat>) =>
+    Array.from(m.values()).sort((a, b) => b.nb - a.nb || a.ville.localeCompare(b.ville, "fr"));
+
+  const villes = trier(villesMap);
+  const villesParCat: VillesParCategorie = {
+    ambulance: trier(parCatMap.ambulance),
+    vsl: trier(parCatMap.vsl),
+    taxi_conventionne: trier(parCatMap.taxi_conventionne),
+  };
+  return { villes, counts, villesParCat };
+}
+
+/** Fusionne des FAQ en dedoublonnant par question (une seule FAQPage JSON-LD). */
+function dedupeFaq(items: FaqItem[]): FaqItem[] {
+  const vues = new Set<string>();
+  const out: FaqItem[] = [];
+  for (const q of items) {
+    const cle = q.question.trim().toLowerCase();
+    if (vues.has(cle)) continue;
+    vues.add(cle);
+    out.push(q);
+  }
+  return out;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -103,8 +141,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const data = await fetchDepartementData(dep.code);
   const nbTaxi = data?.counts.taxi_conventionne || 0;
-  const titre = `Liste des taxis conventionnés CPAM ${dep.code} (${dep.nom})`;
-  const description = `Liste des taxis conventionnés CPAM ${dep.code} (${dep.nom}) agréés Assurance Maladie : ${nbTaxi > 0 ? nbTaxi + " taxis conventionnés" : "taxis conventionnés"}, ambulances et VSL. Téléphone direct, tiers payant, remboursement sur prescription.`.slice(0, 160);
+  // Title elargi : couvre taxi conventionne + VSL + ambulance sans perdre la
+  // cible taxi. Le suffixe " | RoullePro" est ajoute par title.template (layout).
+  const titre = `Taxi conventionné, VSL et ambulance dans le ${dep.nom} (${dep.code}) — annuaire CPAM`;
+  const description = `Taxis conventionnés, VSL et ambulances dans le ${dep.nom} (${dep.code}) agréés Assurance Maladie : ${nbTaxi > 0 ? nbTaxi + " taxis conventionnés" : "annuaire CPAM"}, tarifs indicatifs, téléphone direct, tiers payant et remboursement sur prescription.`.slice(0, 160);
   return {
     title: titre,
     description,
@@ -131,8 +171,21 @@ export default async function DepartementPage({ params }: Props) {
 
   const villes = data?.villes || [];
   const counts = data?.counts || { ambulance: 0, vsl: 0, taxi_conventionne: 0, total: 0 };
+  const villesParCat: VillesParCategorie = data?.villesParCat || {
+    ambulance: [],
+    vsl: [],
+    taxi_conventionne: [],
+  };
 
   const seoOverride = getDepartementSeoOverride(dep.code);
+
+  // Bloc tarifs departemental (differenciateur SEO). Reutilise buildTarifBlock :
+  // pour le taxi, renvoie null si le taux km prefectoral du departement est
+  // indisponible dans la lib -> on n'affiche alors que VSL et ambulance, jamais
+  // de valeur inventee. Aucun chiffre tarifaire en dur ici.
+  const tarifBlocks = CATEGORIES_SANITAIRE.map((cat) =>
+    buildTarifBlock(cat.key, dep.code, dep.nom)
+  ).filter((b): b is NonNullable<typeof b> => b !== null);
 
   const breadLd = buildBreadcrumbJsonLd(
     seoOverride
@@ -180,7 +233,28 @@ export default async function DepartementPage({ params }: Props) {
       answer: `Un taxi conventionné CPAM affiche un autocollant "conventionné Assurance Maladie" et figure sur la liste des taxis conventionnés de sa caisse départementale. Sur RoullePro, chaque fiche du ${dep.nom} indique le statut de conventionnement, vérifié auprès des données publiques Ameli. En cas de doute, demandez au chauffeur son numéro de convention avant la course.`,
     },
   ];
-  const faqs = [...taxiListeFaqs, ...(seoOverride ? seoOverride.faq : genericFaqs)];
+  // Questions departementales ciblant "tarif taxi conventionne / vsl [dept]" et
+  // "trouver un transport conventionne [dept]". Les reponses renvoient au bloc
+  // tarifs / aux simulateurs sans citer de montant en dur.
+  const tarifDepFaqs: FaqItem[] = [
+    {
+      question: `Quel est le tarif d'un taxi conventionné dans le ${dep.nom} (${dep.code}) ?`,
+      answer: `Le tarif d'un taxi conventionné dans le ${dep.nom} suit la convention CPAM : un forfait de prise en charge national et un tarif kilométrique propre au département ${dep.code}, majorés la nuit, le dimanche et les jours fériés. Le détail figure dans la section « Tarifs » de cette page ; vous pouvez aussi estimer votre course avec le simulateur de taxi conventionné.`,
+    },
+    {
+      question: `Combien coûtent un VSL et une ambulance dans le ${dep.nom} ?`,
+      answer: `Les tarifs VSL et ambulance sont fixés par la convention nationale des transporteurs sanitaires (avenant 11) : un forfait départemental, un tarif kilométrique national et des majorations nuit et dimanche. Ils sont identiques d'un professionnel à l'autre. Consultez la section « Tarifs » de cette page ou nos simulateurs VSL et ambulance pour une estimation.`,
+    },
+    {
+      question: `Comment trouver un transport conventionné dans le ${dep.nom} ?`,
+      answer: `Sélectionnez votre commune dans la liste ci-dessous, ou parcourez les sous-sections ambulance, VSL et taxi conventionné de cette page pour accéder aux professionnels agréés du ${dep.nom} (${dep.code}). Chaque fiche affiche le téléphone direct, le conventionnement et les horaires. Le transport conventionné est remboursé par la CPAM ${dep.code} sur prescription médicale.`,
+    },
+  ];
+  const faqs = dedupeFaq([
+    ...taxiListeFaqs,
+    ...tarifDepFaqs,
+    ...(seoOverride ? seoOverride.faq : genericFaqs),
+  ]);
   const faqLd = buildFaqJsonLd(faqs);
 
   // ItemList JSON-LD pour les villes
@@ -212,10 +286,10 @@ export default async function DepartementPage({ params }: Props) {
             <span className="text-white">{dep.nom} ({dep.code})</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {seoOverride ? seoOverride.h1 : `Liste des taxis conventionnés CPAM ${dep.code} — ${dep.nom}`}
+            {seoOverride ? seoOverride.h1 : `Taxi conventionné, VSL et ambulance dans le ${dep.nom} (${dep.code})`}
           </h1>
           <p className="text-blue-100 max-w-3xl">
-            Taxis conventionnés CPAM, ambulances et VSL agréés Assurance Maladie dans le {dep.nom} ({dep.code}), en region {dep.region}. Prefecture : {dep.prefecture}.
+            Taxis conventionnés CPAM, ambulances et VSL agréés Assurance Maladie dans le {dep.nom} ({dep.code}), en région {dep.region}. Préfecture : {dep.prefecture}.
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 rounded-full text-sm">
@@ -225,7 +299,7 @@ export default async function DepartementPage({ params }: Props) {
               <Car className="w-4 h-4" /> {counts.vsl} VSL
             </span>
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 rounded-full text-sm">
-              <Users className="w-4 h-4" /> {counts.taxi_conventionne} taxis conventionnes
+              <Users className="w-4 h-4" /> {counts.taxi_conventionne} taxis conventionnés
             </span>
           </div>
         </div>
@@ -245,22 +319,22 @@ export default async function DepartementPage({ params }: Props) {
             </p>
             {seoOverride && <p>{seoOverride.intro}</p>}
             <p>
-              Le departement du {dep.nom} ({dep.code}) compte {counts.total} professionnels du transport sanitaire reference sur RoullePro :
-              {" "}{counts.ambulance} societes d'ambulances, {counts.vsl} Vehicules Sanitaires Legers (VSL) et {counts.taxi_conventionne} taxis
-              conventionnes par la CPAM. Tous sont agrees par l'Agence Regionale de Sante {dep.region} et exercent dans le respect du cadre reglementaire
-              du Code de la sante publique.
+              Le département du {dep.nom} ({dep.code}) compte {counts.total} professionnels du transport sanitaire référencés sur RoullePro :
+              {" "}{counts.ambulance} sociétés d&apos;ambulances, {counts.vsl} Véhicules Sanitaires Légers (VSL) et {counts.taxi_conventionne} taxis
+              conventionnés par la CPAM. Tous sont agréés par l&apos;Agence Régionale de Santé {dep.region} et exercent dans le respect du cadre réglementaire
+              du Code de la santé publique.
             </p>
             <p>
-              Le transport sanitaire prescrit par un medecin est pris en charge par l'Assurance maladie a 55 % du tarif conventionne, et a 100 %
-              en cas d'Affection Longue Duree (ALD), de maternite, d'accident du travail ou de soins lies a une hospitalisation.
-              Le tiers payant est applique : le patient n'avance pas les frais. Une franchise medicale de 4 euros par trajet (plafonnee a 8 euros par jour
-              et 50 euros par an) reste a la charge du patient.
+              Le transport sanitaire prescrit par un médecin est pris en charge par l&apos;Assurance maladie à 55 % du tarif conventionné, et à 100 %
+              en cas d&apos;Affection Longue Durée (ALD), de maternité, d&apos;accident du travail ou de soins liés à une hospitalisation.
+              Le tiers payant est appliqué : le patient n&apos;avance pas les frais. Une franchise médicale de 4 euros par trajet (plafonnée à 8 euros par jour
+              et 50 euros par an) reste à la charge du patient.
             </p>
             <p>
-              <strong>Ambulance</strong> : transport medicalise allonge, equipage compose d'un Diplome d'Etat d'Ambulancier et d'un auxiliaire,
-              vehicule equipe d'oxygene, d'un brancard et d'un defibrillateur.
-              <strong> VSL</strong> : transport assis pour patients en etat stable (dialyse, chimiotherapie, consultations), jusqu'a 3 patients par vehicule.
-              <strong> Taxi conventionne CPAM</strong> : transport assis pour soins programmes, conventionnement signe avec la caisse departementale.
+              <strong>Ambulance</strong> : transport médicalisé allongé, équipage composé d&apos;un Diplôme d&apos;État d&apos;Ambulancier et d&apos;un auxiliaire,
+              véhicule équipé d&apos;oxygène, d&apos;un brancard et d&apos;un défibrillateur.
+              <strong> VSL</strong> : transport assis pour patients en état stable (dialyse, chimiothérapie, consultations), jusqu&apos;à 3 patients par véhicule.
+              <strong> Taxi conventionné CPAM</strong> : transport assis pour soins programmés, conventionnement signé avec la caisse départementale.
             </p>
           </div>
         </article>
@@ -271,7 +345,7 @@ export default async function DepartementPage({ params }: Props) {
               Villes du {dep.nom} avec transport sanitaire
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              {villes.length} communes referencees. Cliquez pour acceder aux professionnels.
+              {villes.length} communes référencées. Cliquez pour accéder aux professionnels.
             </p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {villes.map((v) => (
@@ -291,17 +365,105 @@ export default async function DepartementPage({ params }: Props) {
           </article>
         ) : (
           <article className="bg-white border border-gray-200 rounded-2xl p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-2">Aucune fiche referencee dans ce departement</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">Aucune fiche référencée dans ce département</h2>
             <p className="text-sm text-gray-600">
-              Aucun professionnel du transport sanitaire n'est encore reference dans le {dep.nom} sur RoullePro. Si vous etes
-              ambulancier, exploitant VSL ou taxi conventionne dans ce departement,{" "}
+              Aucun professionnel du transport sanitaire n&apos;est encore référencé dans le {dep.nom} sur RoullePro. Si vous êtes
+              ambulancier, exploitant VSL ou taxi conventionné dans ce département,{" "}
               <Link href="/transport-medical/inscription" className="text-[#0066CC] underline">inscrivez votre entreprise gratuitement</Link>.
             </p>
           </article>
         )}
 
+        {counts.total > 0 && (
+          <div className="space-y-6 mt-6">
+            {CATEGORIES_SANITAIRE.map((cat) => {
+              const nb = counts[cat.key];
+              if (nb === 0) return null;
+              const topVilles = villesParCat[cat.key].slice(0, 12);
+              return (
+                <article key={cat.key} className="bg-white border border-gray-200 rounded-2xl p-6">
+                  <h2 className="text-lg font-bold text-gray-900 mb-1">
+                    {cat.labelPluriel} dans le {dep.nom} ({dep.code}) : {nb} professionnel{nb > 1 ? "s" : ""}
+                  </h2>
+                  <p className="text-sm text-gray-600 mb-4">{cat.description}</p>
+                  {topVilles.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {topVilles.map((v) => (
+                        <Link
+                          key={v.ville_slug}
+                          href={`/transport-medical/${v.ville_slug}/${cat.slug}`}
+                          className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-medium text-gray-900 transition"
+                        >
+                          {cat.label} {formatNomVille(v.ville)}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+
+        {tarifBlocks.length > 0 && (
+          <div className="space-y-6 mt-6">
+            {tarifBlocks.map((bloc) => (
+              <article key={bloc.titre} className="bg-white border border-gray-200 rounded-2xl p-6">
+                <h2 className="text-lg font-bold text-gray-900 mb-2">{bloc.titre}</h2>
+                <p className="text-sm text-gray-600 mb-4">{bloc.intro}</p>
+                <dl className="divide-y divide-gray-100">
+                  {bloc.lignes.map((l) => (
+                    <div key={l.label} className="flex items-center justify-between py-2 gap-4">
+                      <dt className="text-sm text-gray-700">{l.label}</dt>
+                      <dd className="text-sm font-semibold text-gray-900 whitespace-nowrap">{l.valeur}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-4 text-xs text-gray-500">{bloc.mention}</p>
+                <Link
+                  href={bloc.simulateur.href}
+                  className="mt-4 inline-flex items-center gap-1 font-semibold text-blue-700 hover:text-blue-900"
+                >
+                  {bloc.simulateur.label}
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </article>
+            ))}
+          </div>
+        )}
+
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Categories de transport sanitaire</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">En savoir plus sur le transport conventionné</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Comprendre le remboursement, le bon de transport et chaque mode de transport sanitaire dans le {dep.nom}.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <Link
+              href="/taxi-conventionne"
+              className="flex items-center justify-between gap-2 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 hover:bg-blue-50 hover:text-[#0066CC] transition"
+            >
+              Taxi conventionné
+              <ChevronRight className="w-4 h-4 flex-shrink-0" />
+            </Link>
+            <Link
+              href="/vsl"
+              className="flex items-center justify-between gap-2 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 hover:bg-blue-50 hover:text-[#0066CC] transition"
+            >
+              VSL (Véhicule Sanitaire Léger)
+              <ChevronRight className="w-4 h-4 flex-shrink-0" />
+            </Link>
+            <Link
+              href="/bon-de-transport"
+              className="flex items-center justify-between gap-2 border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-900 hover:bg-blue-50 hover:text-[#0066CC] transition"
+            >
+              Bon de transport
+              <ChevronRight className="w-4 h-4 flex-shrink-0" />
+            </Link>
+          </div>
+        </article>
+
+        <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Catégories de transport sanitaire</h2>
           <div className="grid sm:grid-cols-3 gap-3">
             {CATEGORIES_SANITAIRE.map((cat) => (
               <div key={cat.slug} className="border border-gray-200 rounded-xl p-4">
@@ -313,7 +475,7 @@ export default async function DepartementPage({ params }: Props) {
         </article>
 
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-4">Questions frequentes — {dep.nom}</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-4">Questions fréquentes — {dep.nom}</h2>
           <div className="space-y-4">
             {faqs.map((q, i) => (
               <div key={i}>
