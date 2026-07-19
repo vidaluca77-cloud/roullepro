@@ -35,7 +35,7 @@ import {
 
 export const revalidate = 3600;
 
-const TITLE = "Prix VSL 2026 : tarif, calcul et remboursement du transport";
+const TITLE = "Tarif VSL 2026 : prix, calcul et remboursement CPAM";
 const DESCRIPTION =
   "Prix d'un VSL en 2026 : estimez le tarif de votre transport en véhicule sanitaire léger (forfait, kilomètres, majorations) selon la grille conventionnée avenant 11. Combien coûte un VSL, remboursement CPAM 65 % ou 100 % expliqué.";
 const H1 = "Prix d'un VSL 2026 : tarif, calcul et remboursement";

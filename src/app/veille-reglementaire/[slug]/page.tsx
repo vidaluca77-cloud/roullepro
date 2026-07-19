@@ -78,7 +78,7 @@ export async function generateMetadata({
   }
   if (!alert) {
     return {
-      title: "Alerte introuvable — Veille RoullePro",
+      title: "Alerte introuvable — Veille",
       robots: { index: false },
     };
   }
@@ -94,7 +94,7 @@ export async function generateMetadata({
   ].filter(Boolean);
 
   return {
-    title: `${alert.title_short} — Veille RoullePro${isPreview ? " (prévisualisation)" : ""}`,
+    title: `${alert.title_short} — Veille${isPreview ? " (prévisualisation)" : ""}`,
     description: alert.summary_oneliner,
     alternates: { canonical },
     keywords,

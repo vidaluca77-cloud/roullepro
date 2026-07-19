@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const url = `${FORUM_BASE_URL}/forum/${ctx.cat.slug}/${ctx.thread.slug}`;
   const description = `${ctx.thread.titre} — discussion entre professionnels vérifiés du transport sanitaire (${ctx.cat.nom}).`;
   return {
-    title: `${ctx.thread.titre} — Forum entre pros — RoullePro`,
+    title: `${ctx.thread.titre} — Forum entre pros`,
     description,
     alternates: { canonical: url },
     openGraph: {

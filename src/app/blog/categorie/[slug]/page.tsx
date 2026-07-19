@@ -28,7 +28,7 @@ export async function generateMetadata({
   const url = `https://roullepro.com/blog/categorie/${cat.slug}`;
   const image = `https://roullepro.com/blog/categories/${cat.slug}.svg`;
   return {
-    title: `${cat.label} — Blog RoullePro`,
+    title: `${cat.label} — Blog`,
     description: cat.description,
     alternates: { canonical: url },
     openGraph: {

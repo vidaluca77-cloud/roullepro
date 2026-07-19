@@ -14,7 +14,7 @@ export const revalidate = 120;
 const PAGE_URL = `${FORUM_BASE_URL}/forum`;
 
 export const metadata: Metadata = {
-  title: 'Forum entre pros du transport sanitaire — RoullePro',
+  title: 'Forum entre pros du transport sanitaire',
   description:
     'Échangez entre professionnels vérifiés du transport sanitaire : conventionnement CPAM, facturation, réglementation, matériel, emploi et entraide entre confrères.',
   alternates: { canonical: PAGE_URL },

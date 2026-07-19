@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const t = getTypeBySlug(slug);
   if (t) {
     return {
-      title: `${t.labelPluriel} conventionnes en France — Annuaire RoullePro`,
+      title: `${t.labelPluriel} conventionnes en France — Annuaire`,
       description: `Annuaire des ${t.labelPluriel.toLowerCase()} en France (donnees FINESS). Adresse, ville, taxi conventionne CPAM, VSL et ambulance vers chaque etablissement.`,
       alternates: { canonical: `/etablissements/${t.slug}` },
     };
