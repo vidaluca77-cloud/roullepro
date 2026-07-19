@@ -5,6 +5,7 @@ import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { DEPARTEMENTS_FR } from "@/lib/departements-fr";
 import { REGLES_CPAM } from "@/lib/tarif-cpam";
 import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
+import { ArticlesLiesPilier } from "@/components/blog/ArticlesLiesPilier";
 
 export const revalidate = 3600;
 
@@ -509,6 +510,8 @@ export default function TaxiConventionnePage() {
           </form>
         </div>
       </section>
+
+      <ArticlesLiesPilier needles={["taxi conventionne", "cpam", "agrement"]} />
     </main>
   );
 }

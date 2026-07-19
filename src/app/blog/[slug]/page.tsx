@@ -35,6 +35,7 @@ import { NewsletterInline } from "@/components/blog/NewsletterInline";
 import { BlogCTA } from "@/components/blog/BlogCTA";
 import MaillageTransporteurs from "@/components/etablissements/MaillageTransporteurs";
 import { FaqAccordion } from "@/components/blog/FaqAccordion";
+import { PourAllerPlusLoin } from "@/components/blog/PourAllerPlusLoin";
 import {
   ConfidenceBlock,
   DEFAULT_SOURCES_CPAM,
@@ -332,6 +333,15 @@ export default function BlogPostPage({
                 }
               />
             )}
+
+            {/* Maillage interne contextuel : piliers, simulateurs, page ville */}
+            <PourAllerPlusLoin
+              article={{
+                titre: post.title,
+                slug: post.slug,
+                tags: post.keywords,
+              }}
+            />
 
             {/* CTA contextuel */}
             <BlogCTA category={post.category} />

@@ -4,6 +4,7 @@ import { FileText, ChevronRight, Shield, Search, MapPin, ClipboardCheck } from "
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
 import { REGLES_CPAM } from "@/lib/tarif-cpam";
+import { ArticlesLiesPilier } from "@/components/blog/ArticlesLiesPilier";
 
 export const revalidate = 3600;
 
@@ -392,6 +393,10 @@ export default function BonDeTransportPage() {
           </div>
         </div>
       </section>
+
+      <ArticlesLiesPilier
+        needles={["bon de transport", "cerfa", "prescription", "remboursement"]}
+      />
     </main>
   );
 }

@@ -6,6 +6,7 @@ import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import { getProStats } from "@/lib/stats";
 import { jsonLdHtml } from "@/lib/seo-schema";
+import { ArticlesLiesPilier } from "@/components/blog/ArticlesLiesPilier";
 
 export const revalidate = 3600;
 
@@ -469,6 +470,16 @@ export default async function TransportMedicalHome() {
           </Link>
         </div>
       </section>
+
+      <ArticlesLiesPilier
+        needles={[
+          "transport sanitaire",
+          "transport medical",
+          "ambulance",
+          "vsl",
+          "taxi conventionne",
+        ]}
+      />
     </main>
   );
 }
