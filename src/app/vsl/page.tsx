@@ -145,6 +145,7 @@ const FAQ: { question: string; answer: string }[] = [
 export default async function VslPage() {
   const stats = await getProStats();
   const topVillesVsl = await getTopVillesVsl();
+  const currentYear = new Date().getFullYear();
 
   const faqLd = buildFaqJsonLd(FAQ);
   const breadLd = buildBreadcrumbJsonLd([
@@ -164,12 +165,26 @@ export default async function VslPage() {
     audience: { "@type": "Patient" },
     url: `${BASE_URL}/vsl`,
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${BASE_URL}/vsl`,
+    url: `${BASE_URL}/vsl`,
+    name: TITLE,
+    description: DESCRIPTION,
+    inLanguage: "fr-FR",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["#pilier-titre", "#pilier-definition"],
+    },
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-14">
@@ -184,10 +199,14 @@ export default async function VslPage() {
             <Car className="w-3.5 h-3.5" />
             Guide complet et annuaire France entière
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
-          <p className="text-blue-100 max-w-2xl">
-            Définition, prescription, tarif convention CPAM 2025-2026, remboursement et annuaire des sociétés
-            VSL agréées. Tout ce qu'il faut savoir pour organiser un transport assis remboursé par la Sécurité sociale.
+          <h1 id="pilier-titre" className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
+          <p id="pilier-definition" className="text-blue-100 max-w-2xl">
+            En France, le VSL (véhicule sanitaire léger) est un véhicule de transport assis conventionné, agréé par
+            l'Agence régionale de santé (ARS) et conduit par un auxiliaire ambulancier formé aux premiers secours.
+            Il transporte, sur prescription médicale, les patients dont l'état est stable mais qui ne peuvent se
+            déplacer seuls, et son coût est pris en charge par l'Assurance maladie. En {currentYear}, le VSL reste,
+            avec l'ambulance et le taxi conventionné, l'un des trois modes de transport sanitaire remboursables par
+            la Sécurité sociale.
           </p>
         </div>
       </section>
