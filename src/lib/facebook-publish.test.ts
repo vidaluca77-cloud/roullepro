@@ -22,7 +22,7 @@ test("construireMessageFacebook : format complet conforme a l'exemple", () => {
   assert.equal(
     msg,
     [
-      "Nouvelle demande de course — TAXI CONVENTIONNÉ",
+      "Nouvelle demande de transport — TAXI CONVENTIONNÉ",
       "Lundi 20 juillet, 11h15 — Voreppe → Grenoble (38)",
       `Vous êtes professionnel conventionné dans ce département ? Créez votre fiche gratuite et recevez ces demandes : ${URL_INSCRIPTION}`,
     ].join("\n")
@@ -36,7 +36,7 @@ test("construireMessageFacebook : libelles VSL et Ambulance en majuscules", () =
     villeDepart: "Caen",
     departementCible: "14",
   });
-  assert.match(vsl, /^Nouvelle demande de course — VSL$/m);
+  assert.match(vsl, /^Nouvelle demande de transport — VSL$/m);
 
   const amb = construireMessageFacebook({
     typeTransport: "ambulance",
@@ -44,7 +44,7 @@ test("construireMessageFacebook : libelles VSL et Ambulance en majuscules", () =
     villeDepart: "Caen",
     departementCible: "14",
   });
-  assert.match(amb, /^Nouvelle demande de course — AMBULANCE$/m);
+  assert.match(amb, /^Nouvelle demande de transport — AMBULANCE$/m);
 });
 
 // --- Anonymisation : aucune fuite de donnee personnelle ---------------------
