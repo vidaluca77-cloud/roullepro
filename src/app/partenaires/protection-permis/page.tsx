@@ -16,7 +16,7 @@ import { ALLOPOINTS_PROTECT_URL } from "@/components/partenaires/AllopointsProte
 export const revalidate = 86400;
 
 const TITLE =
-  "Protection du permis de conduire — Partenaire Allopoints Protect | RoullePro";
+  "Protection du permis de conduire — Partenaire Allopoints Protect";
 const DESCRIPTION =
   "Protégez votre permis, votre outil de travail. Allopoints Protect fait contester vos contraventions avec perte de points par des avocats spécialistes (95 % de réussite). −5 % avec RoullePro.";
 

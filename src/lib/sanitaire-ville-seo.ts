@@ -233,7 +233,7 @@ function buildVilleFaq(params: {
 
 const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
   nice: {
-    title: "Taxi conventionné Nice 06 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Nice 06 | Transport médical CPAM",
     description:
       "Trouvez un taxi conventionné CPAM à Nice et dans les Alpes-Maritimes. 47 entreprises agréées : tarifs, agrément, réservation immédiate.",
     h1: "Taxi conventionné Nice 06 — Trouver un transport médical CPAM dans les Alpes-Maritimes",
@@ -243,7 +243,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "06",
   },
   paris: {
-    title: "Taxi conventionné Paris 75 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Paris 75 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Paris (75). Réservation, tarif convention 2026, agrément vérifié. Tous les arrondissements couverts.",
     h1: "Taxi conventionné Paris — Transport médical CPAM dans les 20 arrondissements",
@@ -253,7 +253,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "75",
   },
   lyon: {
-    title: "Taxi conventionné Lyon 69 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Lyon 69 | Transport médical CPAM",
     description:
       "Annuaire taxis conventionnés CPAM Lyon et Métropole. Tarif convention 2026, agrément vérifié, dispense d'avance des frais.",
     h1: "Taxi conventionné Lyon — Transport médical CPAM dans la métropole et le Rhône",
@@ -263,7 +263,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "69",
   },
   marseille: {
-    title: "Taxi conventionné Marseille 13 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Marseille 13 | Transport médical CPAM",
     description:
       "Taxis conventionnés CPAM à Marseille (13). Annuaire vérifié : agrément, tarif convention, tiers payant, véhicules adaptés.",
     h1: "Taxi conventionné Marseille — Transport médical CPAM dans les Bouches-du-Rhône",
@@ -273,7 +273,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "13",
   },
   montpellier: {
-    title: "Taxi conventionné Montpellier 34 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Montpellier 34 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Montpellier (34) : agrément vérifié, tarif convention, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Montpellier — Transport médical CPAM dans l'Hérault",
@@ -283,7 +283,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "34",
   },
   bordeaux: {
-    title: "Taxi conventionné Bordeaux 33 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Bordeaux 33 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Bordeaux (33) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Bordeaux — Transport médical CPAM en Gironde",
@@ -298,7 +298,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "33",
   },
   toulouse: {
-    title: "Taxi conventionné Toulouse 31 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Toulouse 31 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Toulouse (31) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Toulouse — Transport médical CPAM en Haute-Garonne",
@@ -313,7 +313,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "31",
   },
   nantes: {
-    title: "Taxi conventionné Nantes 44 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Nantes 44 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Nantes (44) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Nantes — Transport médical CPAM en Loire-Atlantique",
@@ -328,7 +328,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "44",
   },
   strasbourg: {
-    title: "Taxi conventionné Strasbourg 67 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Strasbourg 67 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Strasbourg (67) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Strasbourg — Transport médical CPAM dans le Bas-Rhin",
@@ -343,7 +343,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "67",
   },
   rennes: {
-    title: "Taxi conventionné Rennes 35 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Rennes 35 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Rennes (35) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Rennes — Transport médical CPAM en Ille-et-Vilaine",
@@ -358,7 +358,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "35",
   },
   lille: {
-    title: "Taxi conventionné Lille 59 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Lille 59 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Lille (59) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Lille — Transport médical CPAM dans le Nord",
@@ -373,7 +373,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "59",
   },
   "saint-etienne": {
-    title: "Taxi conventionné Saint-Étienne 42 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Saint-Étienne 42 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Saint-Étienne (42) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Saint-Étienne — Transport médical CPAM dans la Loire",
@@ -388,7 +388,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "42",
   },
   "le-havre": {
-    title: "Taxi conventionné Le Havre 76 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Le Havre 76 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM au Havre (76) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Le Havre — Transport médical CPAM en Seine-Maritime",
@@ -403,7 +403,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "76",
   },
   "clermont-ferrand": {
-    title: "Taxi conventionné Clermont-Ferrand 63 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Clermont-Ferrand 63 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Clermont-Ferrand (63) : 45 taxis agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Clermont-Ferrand — Transport médical CPAM dans le Puy-de-Dôme",
@@ -418,7 +418,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "63",
   },
   brest: {
-    title: "Taxi conventionné Brest 29 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Brest 29 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Brest (29) : taxis et ambulances agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Brest — Transport médical CPAM dans le Finistère",
@@ -433,7 +433,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "29",
   },
   amiens: {
-    title: "Taxi conventionné Amiens 80 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Amiens 80 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Amiens (80) : 61 taxis agréés, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Amiens — Transport médical CPAM dans la Somme",
@@ -448,7 +448,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "80",
   },
   grenoble: {
-    title: "Taxi conventionné Grenoble 38 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Grenoble 38 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Grenoble (38) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Grenoble — Transport médical CPAM en Isère",
@@ -463,7 +463,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "38",
   },
   dijon: {
-    title: "Taxi conventionné Dijon 21 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Dijon 21 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Dijon (21) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Dijon — Transport médical CPAM en Côte-d'Or",
@@ -478,7 +478,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "21",
   },
   angers: {
-    title: "Taxi conventionné Angers 49 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Angers 49 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Angers (49) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Angers — Transport médical CPAM en Maine-et-Loire",
@@ -493,7 +493,7 @@ const VILLE_SEO_OVERRIDES: Record<string, VilleSeoOverride> = {
     departement: "49",
   },
   reims: {
-    title: "Taxi conventionné Reims 51 | Transport médical CPAM | RoullePro",
+    title: "Taxi conventionné Reims 51 | Transport médical CPAM",
     description:
       "Annuaire des taxis conventionnés CPAM à Reims (51) : agrément vérifié, tarif convention 2026, dispense d'avance des frais, véhicules adaptés.",
     h1: "Taxi conventionné Reims — Transport médical CPAM dans la Marne",

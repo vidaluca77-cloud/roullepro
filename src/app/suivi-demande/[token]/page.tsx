@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 // Page privee accessible uniquement via lien magique : jamais indexee.
 export const metadata: Metadata = {
-  title: "Suivi de ma demande de transport | RoullePro",
+  title: "Suivi de ma demande de transport",
   robots: { index: false, follow: false },
 };
 
