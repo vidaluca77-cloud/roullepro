@@ -3,8 +3,14 @@ import Link from "next/link";
 import { Car, ChevronRight, Shield, Search, MapPin } from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { DEPARTEMENTS_FR } from "@/lib/departements-fr";
+import { REGLES_CPAM } from "@/lib/tarif-cpam";
+import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
 
 export const revalidate = 3600;
+
+// Montants tarifaires : lus depuis les libs (aucun chiffre en dur), formatés en euros.
+const euro = (n: number) =>
+  n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 const TITLE =
   "Taxi conventionné CPAM 2026 — Annuaire, tarifs, prescription et remboursement";
@@ -56,11 +62,24 @@ const VILLES: { nom: string; slug: string }[] = [
   { nom: "Saint-Denis", slug: "saint-denis" },
 ];
 
+// Maillage cible "taxi conventionné [ville]" : villes prioritaires vers les hubs ville + categorie.
+const VILLES_TAXI_PRIORITAIRES: { nom: string; slug: string }[] = [
+  { nom: "Nice", slug: "nice" },
+  { nom: "Paris", slug: "paris" },
+  { nom: "Marseille", slug: "marseille" },
+  { nom: "Lyon", slug: "lyon" },
+  { nom: "Rouen", slug: "rouen" },
+  { nom: "Cannes", slug: "cannes" },
+  { nom: "Antibes", slug: "antibes" },
+  { nom: "Avignon", slug: "avignon" },
+  { nom: "Rennes", slug: "rennes" },
+  { nom: "Perpignan", slug: "perpignan" },
+];
+
 const FAQ: { question: string; answer: string }[] = [
   {
     question: "Quel est le tarif d'un taxi conventionné CPAM en 2026 ?",
-    answer:
-      "Le tarif du taxi conventionné est encadré par la convention nationale 2025-2026 conclue entre l'Assurance maladie et les organisations de taxis. Il comprend une prise en charge de 2,80 €, un kilomètre tarif A à 1,12 €/km et une heure d'attente à 28,80 €/h, avec un abattement conventionnel appliqué sur le tarif préfectoral. Les majorations de nuit, dimanche et jours fériés s'appliquent selon le département.",
+    answer: `Le tarif du taxi conventionné est encadré par la grille CPAM (arrêté du 29 juillet 2025). Il comprend un forfait de prise en charge de ${euro(REGLES_CPAM.forfaitPriseEnCharge)} incluant les ${REGLES_CPAM.kmInclus} premiers kilomètres, un tarif kilométrique propre à chaque département au-delà, un forfait grande ville de ${euro(REGLES_CPAM.forfaitGrandeVille)} au départ ou à l'arrivée d'une grande agglomération, et une majoration de nuit, dimanche et jours fériés de +${Math.round(REGLES_CPAM.tauxMajorationNuitWe * 100)} % sur le socle.`,
   },
   {
     question: "Faut-il une prescription pour prendre un taxi conventionné ?",
@@ -70,7 +89,7 @@ const FAQ: { question: string; answer: string }[] = [
   {
     question: "Le taxi conventionné est-il remboursé à 100 % en ALD ?",
     answer:
-      "Oui. En cas d'affection longue durée (ALD) en lien avec le transport, d'accident du travail, de maladie professionnelle ou d'hospitalisation, le transport en taxi conventionné est pris en charge à 100 % par la CPAM. Pour les autres motifs, le remboursement est de 65 %, le complément étant assuré par votre mutuelle. La franchise médicale de 4 € par trajet reste à votre charge.",
+      "Oui. En cas d'affection longue durée (ALD) en lien avec le transport, d'accident du travail, de maladie professionnelle, de maternité à partir du 1er jour du 6e mois, ou pour les bénéficiaires de la CSS et de l'AME, le transport en taxi conventionné est pris en charge à 100 % par la CPAM. Pour les autres motifs, le remboursement est de 55 % du tarif conventionnel, le complément étant assuré par votre mutuelle. La franchise médicale de 4 € par trajet reste à votre charge.",
   },
   {
     question: "Comment trouver un taxi conventionné autour de moi ?",
@@ -231,15 +250,15 @@ export default function TaxiConventionnePage() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-3 py-2 font-medium">Tarif référence</td>
-                  <td className="px-3 py-2">Tarif convention locale CPAM (prise en charge 2,80 €, 1,12 €/km)</td>
-                  <td className="px-3 py-2">Forfait 13,50 € + 0,93 €/km (tarif A urbain)</td>
-                  <td className="px-3 py-2">Forfait départemental ambulance + kilométrage</td>
+                  <td className="px-3 py-2">Prise en charge {euro(REGLES_CPAM.forfaitPriseEnCharge)} + tarif kilométrique départemental</td>
+                  <td className="px-3 py-2">Forfait {euro(REGLES_VSL.forfait)} + {euro(REGLES_VSL.tauxKm)}/km au-delà des km inclus</td>
+                  <td className="px-3 py-2">Forfait {euro(REGLES_AMBULANCE.forfait)} + {euro(REGLES_AMBULANCE.tauxKm)}/km au-delà des km inclus</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2 font-medium">Remboursement CPAM</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 65 % autres motifs</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 65 % autres motifs</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 55 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
                 </tr>
               </tbody>
             </table>
@@ -264,18 +283,16 @@ export default function TaxiConventionnePage() {
         </section>
 
         <section id="tarif">
-          <h2>Tarif convention 2025-2026</h2>
+          <h2>Tarif convention CPAM</h2>
           <p>
-            Le tarif du taxi conventionné est encadré par la convention nationale conclue entre l'Assurance maladie
-            et les organisations professionnelles, déclinée localement par chaque CPAM. Il s'appuie sur le tarif
-            préfectoral du taxi, auquel un abattement conventionnel est appliqué. Les principaux paramètres de
-            référence sont :
+            Le tarif du taxi conventionné est encadré par la grille CPAM issue de l'arrêté du 29 juillet 2025, en
+            vigueur depuis le 1er octobre 2025. Les principaux paramètres de référence sont :
           </p>
           <ul>
-            <li>Prise en charge : 2,80 € ;</li>
-            <li>Kilomètre tarif A (zone urbaine, course chargée) : 1,12 €/km ;</li>
-            <li>Heure d'attente : 28,80 €/h ;</li>
-            <li>Majorations de nuit, dimanche et jours fériés selon le barème préfectoral départemental.</li>
+            <li>Forfait de prise en charge : {euro(REGLES_CPAM.forfaitPriseEnCharge)} (les {REGLES_CPAM.kmInclus} premiers kilomètres sont inclus) ;</li>
+            <li>Tarif kilométrique : propre à chaque département, appliqué au-delà des kilomètres inclus ;</li>
+            <li>Forfait grande ville : {euro(REGLES_CPAM.forfaitGrandeVille)} au départ ou à l'arrivée d'une grande agglomération ;</li>
+            <li>Majoration de nuit, dimanche et jours fériés : +{Math.round(REGLES_CPAM.tauxMajorationNuitWe * 100)} % sur le socle.</li>
           </ul>
           <p>
             Le transport partagé, lorsque plusieurs patients voyagent ensemble vers des soins itératifs (dialyse,
@@ -311,8 +328,8 @@ export default function TaxiConventionnePage() {
               6e mois, ou pour les bénéficiaires de la CSS et de l'AME ;
             </li>
             <li>
-              <strong>65 %</strong> pour les autres motifs ; le complément est généralement pris en charge par la
-              mutuelle complémentaire santé.
+              <strong>55 %</strong> du tarif conventionnel pour les autres motifs ; le complément est généralement
+              pris en charge par la mutuelle complémentaire santé.
             </li>
           </ul>
           <p>
@@ -379,6 +396,68 @@ export default function TaxiConventionnePage() {
               </Link>
             ))}
           </div>
+        </section>
+
+        <section id="villes-taxi">
+          <h2>Taxi conventionné : villes les plus recherchées</h2>
+          <p>
+            Accédez directement à l'annuaire des taxis conventionnés CPAM dans les villes où la demande est la plus
+            forte :
+          </p>
+          <div className="not-prose grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 my-6">
+            {VILLES_TAXI_PRIORITAIRES.map((v) => (
+              <Link
+                key={v.slug}
+                href={`/transport-medical/${v.slug}/taxi-conventionne`}
+                className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
+              >
+                Taxi conventionné {v.nom}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section id="guides-lies">
+          <h2>Guides et simulateurs liés</h2>
+          <p>
+            Pour comparer les modes de transport et estimer le coût réel d'une course, consultez nos autres guides
+            de référence : le <Link href="/vsl">VSL (Véhicule Sanitaire Léger)</Link> et le{" "}
+            <Link href="/bon-de-transport">bon de transport (CERFA 11574)</Link>. Estimez votre trajet avec le{" "}
+            <Link href="/simulateur-taxi-conventionne">simulateur du taxi conventionné</Link>, le{" "}
+            <Link href="/tarif-vsl">simulateur de prix VSL</Link> ou l'estimateur du{" "}
+            <Link href="/tarif-ambulance">tarif ambulance</Link>.
+          </p>
+        </section>
+
+        <section id="sources">
+          <h2>Sources officielles</h2>
+          <p>Les informations réglementaires de cette page sont vérifiables auprès des sources publiques suivantes :</p>
+          <ul>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/assure/remboursements/rembourse/frais-transport" target="_blank" rel="noopener noreferrer nofollow">
+                Frais de transport : prise en charge et remboursements (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/medecin/exercice-liberal/regles-de-prescription-et-formalites/prescription-transports" target="_blank" rel="noopener noreferrer nofollow">
+                Prescription des transports (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/assure/droits-demarches/maladie-accident-hospitalisation/affection-longue-duree-ald/transports-maladie-chronique" target="_blank" rel="noopener noreferrer nofollow">
+                Transport en affection de longue durée (ALD) (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Service-public.fr —{" "}
+              <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2951" target="_blank" rel="noopener noreferrer nofollow">
+                Prise en charge des frais de transport pour raison médicale (taux de 55 %)
+              </a>
+            </li>
+          </ul>
         </section>
       </article>
 

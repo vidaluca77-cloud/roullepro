@@ -4,8 +4,13 @@ import { createClient } from "@supabase/supabase-js";
 import { Car, ChevronRight, Shield, Search, MapPin } from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { getProStats } from "@/lib/stats";
+import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
 
 export const revalidate = 3600;
+
+// Montants tarifaires : lus depuis les libs (aucun chiffre en dur), formatés en euros.
+const euro = (n: number) =>
+  n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 const TITLE = "VSL Véhicule Sanitaire Léger 2026 — Remboursement, prescription, tarifs";
 const DESCRIPTION =
@@ -44,6 +49,20 @@ const VILLES_PRINCIPALES: { nom: string; slug: string }[] = [
   { nom: "Strasbourg", slug: "strasbourg" },
   { nom: "Bordeaux", slug: "bordeaux" },
   { nom: "Lille", slug: "lille" },
+];
+
+// Maillage cible "VSL [ville]" : villes prioritaires vers les hubs ville + categorie VSL.
+const VILLES_VSL_PRIORITAIRES: { nom: string; slug: string }[] = [
+  { nom: "Nice", slug: "nice" },
+  { nom: "Marseille", slug: "marseille" },
+  { nom: "Lille", slug: "lille" },
+  { nom: "Caen", slug: "caen" },
+  { nom: "Rouen", slug: "rouen" },
+  { nom: "Valence", slug: "valence" },
+  { nom: "Saint-Étienne", slug: "saint-etienne" },
+  { nom: "Nancy", slug: "nancy" },
+  { nom: "Metz", slug: "metz" },
+  { nom: "Reims", slug: "reims" },
 ];
 
 // Reutilise la logique d'annuaire existante (table pros_sanitaire_public + filtre
@@ -94,12 +113,11 @@ const FAQ: { question: string; answer: string }[] = [
   {
     question: "Le VSL est-il remboursé par la CPAM ?",
     answer:
-      "Oui, à 100 % en cas d'affection longue durée (ALD), d'accident du travail ou d'hospitalisation. Pour les autres motifs, le remboursement est à 65 % par la CPAM, le complément étant pris en charge par votre mutuelle complémentaire santé.",
+      "Oui. Le remboursement est de 55 % du tarif conventionnel pour les motifs courants, le complément étant pris en charge par votre mutuelle complémentaire santé. Il passe à 100 % en cas d'affection de longue durée (ALD) en lien avec le transport, d'accident du travail ou de maladie professionnelle, de maternité à partir du 1er jour du 6e mois, ou pour les bénéficiaires de la complémentaire santé solidaire (CSS) et de l'AME.",
   },
   {
     question: "Quel est le tarif d'un VSL en 2026 ?",
-    answer:
-      "Le tarif VSL est fixé par la convention nationale CPAM 2025-2026 : forfait prise en charge 13,50 €, indemnité kilométrique tarif A 0,93 €/km en zone urbaine. Le tarif global d'une course est encadré et la dispense d'avance des frais (tiers payant) s'applique.",
+    answer: `Le tarif VSL est fixé par la convention nationale des transporteurs sanitaires (avenant 11, tarif majoré) : forfait départemental de ${euro(REGLES_VSL.forfait)} incluant les trois premiers kilomètres, puis ${euro(REGLES_VSL.tauxKm)}/km au-delà, avec majorations de nuit, dimanche et jours fériés. Le tarif global d'une course est encadré et la dispense d'avance des frais (tiers payant) s'applique.`,
   },
   {
     question: "Combien de temps faut-il pour réserver un VSL ?",
@@ -249,15 +267,15 @@ export default async function VslPage() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-3 py-2 font-medium">Tarif référence</td>
-                  <td className="px-3 py-2">Forfait 13,50 € + 0,93 €/km (tarif A urbain)</td>
-                  <td className="px-3 py-2">Forfait départemental ambulance + kilométrage</td>
-                  <td className="px-3 py-2">Tarif convention locale CPAM</td>
+                  <td className="px-3 py-2">Forfait {euro(REGLES_VSL.forfait)} + {euro(REGLES_VSL.tauxKm)}/km au-delà des km inclus</td>
+                  <td className="px-3 py-2">Forfait {euro(REGLES_AMBULANCE.forfait)} + {euro(REGLES_AMBULANCE.tauxKm)}/km au-delà des km inclus</td>
+                  <td className="px-3 py-2">Prise en charge + tarif kilométrique départemental (grille CPAM)</td>
                 </tr>
                 <tr>
                   <td className="px-3 py-2 font-medium">Remboursement CPAM</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 65 % autres motifs</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 55 % autres motifs</td>
-                  <td className="px-3 py-2">100 % ALD / AT / hospitalisation, 65 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
+                  <td className="px-3 py-2">100 % ALD / AT-MP / maternité, 55 % autres motifs</td>
                 </tr>
               </tbody>
             </table>
@@ -298,16 +316,15 @@ export default async function VslPage() {
         </section>
 
         <section id="tarif">
-          <h2>Tarif convention CPAM 2025-2026</h2>
+          <h2>Tarif convention des transporteurs sanitaires</h2>
           <p>
-            Le tarif du VSL est encadré par la convention nationale conclue entre l'Assurance maladie et les
-            organisations de transporteurs sanitaires pour la période 2025-2026. Il se compose d'un forfait de prise
-            en charge et d'une indemnité kilométrique :
+            Le tarif du VSL est encadré par la convention nationale des transporteurs sanitaires (avenant 11, grille
+            « tarif majoré »). Il se compose d'un forfait départemental et d'un tarif kilométrique :
           </p>
           <ul>
-            <li>Forfait de prise en charge : 13,50 € ;</li>
-            <li>Indemnité kilométrique tarif A (zone urbaine) : 0,93 €/km ;</li>
-            <li>Majorations possibles selon le département, l'horaire de nuit, le dimanche et les jours fériés.</li>
+            <li>Forfait départemental : {euro(REGLES_VSL.forfait)} (les trois premiers kilomètres sont inclus) ;</li>
+            <li>Tarif kilométrique : {euro(REGLES_VSL.tauxKm)}/km au-delà des kilomètres inclus ;</li>
+            <li>Majorations : nuit (+{Math.round(REGLES_VSL.tauxNuit * 100)} %), dimanche et jours fériés (+{Math.round(REGLES_VSL.tauxDimanche * 100)} %).</li>
           </ul>
           <p>
             Le transport partagé, lorsque plusieurs patients voyagent ensemble vers des soins itératifs, fait
@@ -333,8 +350,8 @@ export default async function VslPage() {
               ou pour les bénéficiaires de la CSS et de l'AME ;
             </li>
             <li>
-              <strong>65 %</strong> pour les autres motifs ; le complément est généralement pris en charge par la
-              mutuelle complémentaire santé.
+              <strong>55 %</strong> du tarif conventionnel pour les autres motifs ; le complément est généralement
+              pris en charge par la mutuelle complémentaire santé.
             </li>
           </ul>
           <p>
@@ -366,6 +383,68 @@ export default async function VslPage() {
             les ambulances et taxis conventionnés. Pour une recherche géolocalisée immédiate, utilisez la page{" "}
             <Link href="/vsl-autour-de-moi">VSL autour de moi</Link>.
           </p>
+        </section>
+
+        <section id="villes-vsl">
+          <h2>Trouver un VSL par ville</h2>
+          <p>
+            Accédez directement à l'annuaire des VSL conventionnés dans les principales villes où la demande est la
+            plus forte :
+          </p>
+          <div className="not-prose grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 my-6">
+            {VILLES_VSL_PRIORITAIRES.map((v) => (
+              <Link
+                key={v.slug}
+                href={`/transport-medical/${v.slug}/vsl`}
+                className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
+              >
+                VSL {v.nom}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section id="guides-lies">
+          <h2>Guides et simulateurs liés</h2>
+          <p>
+            Pour comparer les modes de transport et estimer le coût réel d'une course, consultez nos autres guides
+            de référence : le <Link href="/taxi-conventionne">taxi conventionné CPAM</Link> et le{" "}
+            <Link href="/bon-de-transport">bon de transport (CERFA 11574)</Link>. Estimez votre trajet avec le{" "}
+            <Link href="/tarif-vsl">simulateur de prix VSL</Link>, le{" "}
+            <Link href="/simulateur-taxi-conventionne">simulateur du taxi conventionné</Link> ou l'estimateur du{" "}
+            <Link href="/tarif-ambulance">tarif ambulance</Link>.
+          </p>
+        </section>
+
+        <section id="sources">
+          <h2>Sources officielles</h2>
+          <p>Les informations réglementaires de cette page sont vérifiables auprès des sources publiques suivantes :</p>
+          <ul>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/assure/remboursements/rembourse/frais-transport" target="_blank" rel="noopener noreferrer nofollow">
+                Frais de transport : prise en charge et remboursements (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/medecin/exercice-liberal/regles-de-prescription-et-formalites/prescription-transports" target="_blank" rel="noopener noreferrer nofollow">
+                Prescription des transports (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Assurance maladie —{" "}
+              <a href="https://www.ameli.fr/assure/droits-demarches/maladie-accident-hospitalisation/affection-longue-duree-ald/transports-maladie-chronique" target="_blank" rel="noopener noreferrer nofollow">
+                Transport en affection de longue durée (ALD) (ameli.fr)
+              </a>
+            </li>
+            <li>
+              Service-public.fr —{" "}
+              <a href="https://www.service-public.gouv.fr/particuliers/vosdroits/F2951" target="_blank" rel="noopener noreferrer nofollow">
+                Prise en charge des frais de transport pour raison médicale (taux de 55 %)
+              </a>
+            </li>
+          </ul>
         </section>
       </article>
 
