@@ -5,7 +5,7 @@ import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 
 export const revalidate = 3600;
 
-const TITLE = "VSL autour de moi | Véhicule Sanitaire Léger conventionné CPAM — RoullePro";
+const TITLE = "VSL autour de moi — Véhicule Sanitaire Léger conventionné CPAM";
 const DESCRIPTION =
   "Trouvez un VSL (Véhicule Sanitaire Léger) conventionné près de chez vous. Annuaire France : téléphone direct, tiers payant, remboursement CPAM sur prescription, réservation gratuite.";
 const H1 = "VSL autour de moi — trouver un Véhicule Sanitaire Léger conventionné";

@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     cat.description ||
     `Discussions ${cat.nom.toLowerCase()} entre professionnels vérifiés du transport sanitaire.`;
   return {
-    title: `${cat.nom} — Forum entre pros — RoullePro`,
+    title: `${cat.nom} — Forum entre pros`,
     description,
     alternates: { canonical: url },
     openGraph: {

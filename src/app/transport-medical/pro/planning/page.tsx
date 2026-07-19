@@ -9,7 +9,7 @@ import { type CoursePlanning } from "@/lib/planning-course";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Planning des courses — RoullePro",
+  title: "Planning des courses",
   description:
     "Organisez vos courses acceptées : agenda de la semaine, courses à venir, historique et export agenda (.ics) / CSV.",
   robots: { index: false, follow: false },

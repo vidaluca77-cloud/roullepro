@@ -5,23 +5,12 @@ import { redirect } from "next/navigation";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES_SANITAIRE, getCategorieBySlug, getCategorieByKey, slugifyVille, REGIONS_FR_SEO, type ProSanitaire } from "@/lib/sanitaire-data";
 import { tokenize, buildVilleOrFilter, matchesVilleSlug } from "@/lib/sanitaire-search";
+import { resolveRechercheMetadata } from "@/lib/recherche-metadata";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import GeolocBouton from "@/components/sanitaire/GeolocBouton";
 
 export const dynamic = "force-dynamic";
-
-// Page de recherche a facettes (?q, ?categorie, ?lat/lng, ?ameli...) : elle reproduit
-// le contenu des hubs canoniques (/transport-medical/[ville], /[ville]/[categorie]) et
-// genere une infinite d'URLs parametrees. On la place en noindex,follow pour eviter le
-// contenu duplique (cf. doublons /marseille/ambulance vs /recherche?q=Marseille) tout en
-// laissant Google suivre les liens vers les fiches et hubs reels.
-export const metadata: Metadata = {
-  title: "Rechercher un transport sanitaire près de chez vous",
-  description:
-    "Trouvez une ambulance, un VSL ou un taxi conventionné CPAM près de chez vous : recherche par ville, code postal ou géolocalisation.",
-  robots: { index: false, follow: true },
-};
 
 type Props = {
   searchParams: Promise<{
@@ -33,6 +22,32 @@ type Props = {
     radius?: string;
   }>;
 };
+
+// Page de recherche a facettes (?q, ?categorie, ?lat/lng, ?ameli...) : elle reproduit
+// le contenu des hubs canoniques (/transport-medical/[ville], /[ville]/[categorie]) et
+// genere une infinite d'URLs parametrees. Google a fini par indexer certaines de ces
+// URLs (?categorie=vsl, ?q=... issu du SearchAction JSON-LD). On resout les
+// metadonnees cote serveur pour :
+//  - ?categorie=vsl|ambulance|taxi_conventionne -> canonical vers la page dediee
+//    (/vsl-autour-de-moi, /ambulance-autour-de-moi, /taxi-vsl-autour-de-moi) et
+//    ainsi transferer les positions vers ces pages.
+//  - ?q=... / ?lat&lng (recherche libre ou geolocalisee) -> noindex,follow +
+//    canonical vers la page de recherche (contenu dynamique/duplique).
+//  - sans parametre -> page de recherche canonique, indexable.
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { q, categorie, lat, lng } = await searchParams;
+  const meta = resolveRechercheMetadata({
+    q,
+    categorie,
+    geo: Boolean(lat && lng),
+  });
+  return {
+    title: meta.title,
+    description: meta.description,
+    alternates: { canonical: meta.canonicalPath },
+    robots: { index: meta.index, follow: true },
+  };
+}
 
 // Distance Haversine en km entre deux points lat/lng.
 function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {

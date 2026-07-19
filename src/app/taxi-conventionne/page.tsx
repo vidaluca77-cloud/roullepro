@@ -14,7 +14,7 @@ const euro = (n: number) =>
   n.toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
 const TITLE =
-  "Taxi conventionné CPAM 2026 — Annuaire, tarifs, prescription et remboursement";
+  "Taxis conventionnés CPAM 2026 — Annuaire, tarifs et remboursement";
 const DESCRIPTION =
   "Liste des taxis conventionnés CPAM par département et par ville. Tarif convention 2026, prescription, prise en charge ALD, agrément Assurance Maladie. Annuaire France entière.";
 const H1 =

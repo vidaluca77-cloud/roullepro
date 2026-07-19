@@ -52,7 +52,7 @@ export async function generateMetadata(
   const annonce = await getAnnonce(params.id);
   if (!annonce) {
     return {
-      title: 'Annonce introuvable — RoullePro',
+      title: 'Annonce introuvable',
       robots: { index: false, follow: false },
     };
   }

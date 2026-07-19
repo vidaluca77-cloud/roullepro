@@ -10,7 +10,7 @@ import AssistantChat from "@/components/sanitaire/AssistantChat";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Équipe d'experts IA métier — RoullePro",
+  title: "Équipe d'experts IA métier",
   description:
     "Votre équipe de 6 experts IA du transport sanitaire (réglementaire, facturation, commercial, RH, gestion) avec réponses sourcées (ameli.fr, Légifrance…). Réservé aux abonnés Pro.",
   robots: { index: false, follow: false },
