@@ -4,6 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { MapPin, Search, Phone, Cross, Car, Users, BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES_SANITAIRE, getCategorieBySlug, getCategorieByKey, slugifyVille, REGIONS_FR_SEO, type ProSanitaire } from "@/lib/sanitaire-data";
+import { tokenize, buildVilleOrFilter, matchesVilleSlug } from "@/lib/sanitaire-search";
 import AmeliBadge from "@/components/sanitaire/AmeliBadge";
 import OpenStatusBadge from "@/components/sanitaire/OpenStatusBadge";
 import GeolocBouton from "@/components/sanitaire/GeolocBouton";
@@ -100,7 +101,6 @@ export default async function RecherchePage({ searchParams }: Props) {
   // ---------------------------------------------------------------------------
 
   const cat = categorie ? getCategorieBySlug(categorie) || getCategorieByKey(categorie) : null;
-  const villeSlug = slugifyVille(queryVille);
   // Filtre conventionne Ameli : OFF par defaut (inclusivite). Active via ?ameli=1
   const ameliOnly = ameli === "1";
 
@@ -193,18 +193,37 @@ export default async function RecherchePage({ searchParams }: Props) {
     const { data } = await query;
     pros = (data || []) as ProSanitaire[];
   } else if (queryVille) {
+    // Recherche par ville tolérante aux saisies multi-mots partielles.
+    // Bug prod : « thury harcourt » / « le hom » ne retrouvaient pas la ville
+    // « thury-harcourt-le-hom » car l'ancien filtre comparait la requête brute
+    // (espaces) au nom de ville (traits d'union) ou exigeait un slug exact.
+    // On matche désormais par tokens (chaque token = préfixe d'un mot).
+    const isCodePostal = /^\d{2,5}$/.test(queryVille);
     let query = supabase
       .from("pros_sanitaire_public")
       .select("*")
       .eq("actif", true).eq("suspendu", false)
-      .or(`ville_slug.eq.${villeSlug},ville.ilike.%${queryVille}%,code_postal.eq.${queryVille}`)
       .order("plan", { ascending: false })
       .order("claimed", { ascending: false })
-      .limit(100);
+      .limit(300);
+    if (isCodePostal) {
+      query = query.or(`code_postal.eq.${queryVille},code_postal.ilike.${queryVille}*`);
+    } else {
+      // Chaque `.or()` est combiné en AND : tous les tokens doivent matcher.
+      for (const token of tokenize(queryVille)) {
+        query = query.or(buildVilleOrFilter(token));
+      }
+    }
     if (cat) query = query.eq("categorie", cat.key);
     if (ameliOnly) query = query.eq("ameli_conventionne", true).not("ameli_last_seen", "is", null);
     const { data } = await query;
-    pros = (data || []) as ProSanitaire[];
+    let rows = (data || []) as ProSanitaire[];
+    // Filtrage précis « préfixe de mot » côté serveur (le filtre SQL est une
+    // sur-approximation par sous-chaîne). On garde tel quel pour le code postal.
+    if (!isCodePostal) {
+      rows = rows.filter((p) => matchesVilleSlug(p.ville_slug, queryVille));
+    }
+    pros = rows.slice(0, 100);
   } else if (cat) {
     let query = supabase
       .from("pros_sanitaire_public")

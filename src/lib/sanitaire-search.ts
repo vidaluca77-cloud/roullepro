@@ -84,3 +84,57 @@ export function buildOrFilter(token: string): string {
     `ville.imatch.${pattern}`,
   ].join(",");
 }
+
+// ---------------------------------------------------------------------------
+// Recherche par VILLE tolérante aux saisies multi-mots partielles.
+// Bug prod : « thury harcourt » ou « le hom » ne retrouvaient pas la ville
+// « Thury-Harcourt-le-Hom » (slug thury-harcourt-le-hom) car l'ancien filtre
+// comparait la requête brute (avec espaces) au nom de ville (avec traits
+// d'union) ou exigeait un slug exact. On matche désormais par tokens : chaque
+// token doit être le préfixe d'un mot du nom de ville.
+// ---------------------------------------------------------------------------
+
+/**
+ * Concaténations des mots du slug à partir de chaque position. Permet de matcher
+ * un token même à cheval sur une élision (ex. « lisle » vs « l-isle-adam »).
+ * « thury-harcourt-le-hom » -> ["thuryharcourtlehom","harcourtlehom","lehom","hom"].
+ */
+export function slugWordConcatenations(villeSlug: string): string[] {
+  const words = normalizeForMatch(villeSlug)
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const out: string[] = [];
+  for (let i = 0; i < words.length; i++) {
+    out.push(words.slice(i).join(""));
+  }
+  return out;
+}
+
+/**
+ * Vrai si chaque token de la requête est le préfixe d'un mot du nom de ville,
+ * insensible à la casse, aux accents, aux traits d'union et aux apostrophes.
+ * Ex. « thury harcourt », « le hom », « Thury Harcourt le hom » matchent tous
+ * « thury-harcourt-le-hom » ; « saint pierre » matche « saint-pierre-sur-dives ».
+ * Fonction pure : filtre de sûreté côté serveur + base des tests.
+ */
+export function matchesVilleSlug(
+  villeSlug: string | null | undefined,
+  query: string
+): boolean {
+  if (!villeSlug) return false;
+  const tokens = tokenize(query);
+  if (tokens.length === 0) return false;
+  const parts = slugWordConcatenations(villeSlug);
+  return tokens.every((token) => parts.some((part) => part.startsWith(token)));
+}
+
+/**
+ * Clause `.or()` PostgREST pour un token de ville : sous-chaîne sur le slug
+ * (déjà minuscule/sans accent) OU sur le nom de ville (regex insensible aux
+ * accents). Combiner plusieurs `.or()` = AND (chaque token doit matcher). Le
+ * filtrage précis « préfixe de mot » est fait ensuite via matchesVilleSlug.
+ */
+export function buildVilleOrFilter(token: string): string {
+  const pattern = buildTokenPattern(token);
+  return [`ville_slug.ilike.*${token}*`, `ville.imatch.${pattern}`].join(",");
+}
