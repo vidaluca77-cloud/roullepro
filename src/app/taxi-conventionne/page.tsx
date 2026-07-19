@@ -130,6 +130,7 @@ const FAQ: { question: string; answer: string }[] = [
 ];
 
 export default function TaxiConventionnePage() {
+  const currentYear = new Date().getFullYear();
   const faqLd = buildFaqJsonLd(FAQ);
   const breadLd = buildBreadcrumbJsonLd([
     { name: "Accueil", url: "/" },
@@ -148,12 +149,26 @@ export default function TaxiConventionnePage() {
     audience: { "@type": "Patient" },
     url: `${BASE_URL}/taxi-conventionne`,
   };
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${BASE_URL}/taxi-conventionne`,
+    url: `${BASE_URL}/taxi-conventionne`,
+    name: TITLE,
+    description: DESCRIPTION,
+    inLanguage: "fr-FR",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["#pilier-titre", "#pilier-definition"],
+    },
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-14">
@@ -168,11 +183,14 @@ export default function TaxiConventionnePage() {
             <Car className="w-3.5 h-3.5" />
             Guide complet et annuaire CPAM France entière
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
-          <p className="text-blue-100 max-w-2xl">
-            Tarif convention CPAM 2025-2026, prescription médicale, remboursement, agrément et annuaire des
-            taxis conventionnés ville par ville. Tout ce qu'il faut savoir pour organiser un transport assis
-            remboursé par la Sécurité sociale.
+          <h1 id="pilier-titre" className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
+          <p id="pilier-definition" className="text-blue-100 max-w-2xl">
+            En France, un taxi conventionné est un taxi ayant signé une convention avec la Caisse primaire
+            d'assurance maladie (CPAM) pour transporter, sur prescription médicale, des patients autonomes en
+            position assise vers leur lieu de soins. Il facture directement l'Assurance maladie grâce au tiers
+            payant : le patient n'avance pas les frais sur la part remboursée par la Sécurité sociale. En{" "}
+            {currentYear}, c'est l'un des trois modes de transport sanitaire remboursables, aux côtés du VSL et de
+            l'ambulance.
           </p>
         </div>
       </section>

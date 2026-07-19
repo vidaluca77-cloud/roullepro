@@ -77,17 +77,32 @@ const FAQ: { question: string; answer: string }[] = [
 ];
 
 export default function BonDeTransportPage() {
+  const currentYear = new Date().getFullYear();
   const faqLd = buildFaqJsonLd(FAQ);
   const breadLd = buildBreadcrumbJsonLd([
     { name: "Accueil", url: "/" },
     { name: "Transport médical", url: "/transport-medical" },
     { name: "Bon de transport", url: "/bon-de-transport" },
   ]);
+  const webPageLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${BASE_URL}/bon-de-transport`,
+    url: `${BASE_URL}/bon-de-transport`,
+    name: TITLE,
+    description: DESCRIPTION,
+    inLanguage: "fr-FR",
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["#pilier-titre", "#pilier-definition"],
+    },
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white via-blue-50/30 to-white">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageLd) }} />
 
       <section className="bg-gradient-to-br from-[#0B1120] via-[#0f1d3a] to-[#0066CC] text-white">
         <div className="max-w-5xl mx-auto px-4 py-14">
@@ -102,10 +117,13 @@ export default function BonDeTransportPage() {
             <FileText className="w-3.5 h-3.5" />
             Guide patient — CERFA 11574 et prise en charge
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
-          <p className="text-blue-100 max-w-2xl">
-            Qu'est-ce qu'un bon de transport, qui le délivre, quelle est sa durée de validité, quand faut-il une
-            entente préalable et comment se faire rembourser un transport assis ou allongé par la Sécurité sociale.
+          <h1 id="pilier-titre" className="text-3xl sm:text-4xl font-bold mb-4">{H1}</h1>
+          <p id="pilier-definition" className="text-blue-100 max-w-2xl">
+            En France, le bon de transport est le nom courant de la prescription médicale de transport, établie par
+            un médecin sur le formulaire CERFA 11574*07. Ce document atteste que l'état de santé du patient justifie
+            un transport vers un lieu de soins et précise le mode adapté (taxi conventionné, VSL ou ambulance) ; il
+            conditionne la prise en charge du trajet par l'Assurance maladie. En {currentYear}, sans ce bon, un
+            transport assis ou allongé n'est pas remboursé par la Sécurité sociale.
           </p>
         </div>
       </section>
