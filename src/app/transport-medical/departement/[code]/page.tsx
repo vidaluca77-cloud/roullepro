@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { ChevronRight, MapPin, Cross, Car, Users } from "lucide-react";
-import { getDepartementByCode } from "@/lib/departements-fr";
+import { getDepartementByCode, dansLeDepartement, duDepartement } from "@/lib/departements-fr";
 import { CATEGORIES_SANITAIRE, type CategorieSanitaire } from "@/lib/sanitaire-data";
 import {
   buildBreadcrumbJsonLd,
@@ -143,8 +143,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const nbTaxi = data?.counts.taxi_conventionne || 0;
   // Title elargi : couvre taxi conventionne + VSL + ambulance sans perdre la
   // cible taxi. Le suffixe " | RoullePro" est ajoute par title.template (layout).
-  const titre = `Taxi conventionné, VSL et ambulance dans le ${dep.nom} (${dep.code}) — annuaire CPAM`;
-  const description = `Taxis conventionnés, VSL et ambulances dans le ${dep.nom} (${dep.code}) agréés Assurance Maladie : ${nbTaxi > 0 ? nbTaxi + " taxis conventionnés" : "annuaire CPAM"}, tarifs indicatifs, téléphone direct, tiers payant et remboursement sur prescription.`.slice(0, 160);
+  const titre = `Taxi conventionné, VSL et ambulance ${dansLeDepartement(dep.code)} (${dep.code}) — annuaire CPAM`;
+  const description = `Taxis conventionnés, VSL et ambulances ${dansLeDepartement(dep.code)} (${dep.code}) agréés Assurance Maladie : ${nbTaxi > 0 ? nbTaxi + " taxis conventionnés" : "annuaire CPAM"}, tarifs indicatifs, téléphone direct, tiers payant et remboursement sur prescription.`.slice(0, 160);
   return {
     title: titre,
     description,
@@ -202,19 +202,19 @@ export default async function DepartementPage({ params }: Props) {
 
   const genericFaqs = [
     {
-      question: `Combien y a-t-il de societes de transport sanitaire dans le ${dep.nom} ?`,
+      question: `Combien y a-t-il de societes de transport sanitaire ${dansLeDepartement(dep.code)} ?`,
       answer: `${counts.total} professionnels du transport sanitaire sont referencies dans le departement ${dep.code} (${dep.nom}) : ${counts.ambulance} societes d'ambulances, ${counts.vsl} VSL et ${counts.taxi_conventionne} taxis conventionnes CPAM.`,
     },
     {
-      question: `Comment trouver une ambulance dans le ${dep.nom} ?`,
+      question: `Comment trouver une ambulance ${dansLeDepartement(dep.code)} ?`,
       answer: `Selectionnez votre commune dans la liste ci-dessous pour acceder aux ambulances, VSL et taxis conventionnes les plus proches. Tous les professionnels sont agrees par l'Agence Regionale de Sante (ARS) ${dep.region}.`,
     },
     {
-      question: `Le transport est-il rembourse dans le ${dep.nom} ?`,
+      question: `Le transport est-il rembourse ${dansLeDepartement(dep.code)} ?`,
       answer: `Oui. Le transport sanitaire (ambulance, VSL, taxi conventionne) prescrit par un medecin est rembourse par la Securite sociale a 55 % du tarif conventionne, ou 100 % en cas d'ALD, maternite ou hospitalisation. La CPAM ${dep.code} applique le tiers payant aux transports conventionnes.`,
     },
     {
-      question: `Quelle est la prefecture du ${dep.nom} ?`,
+      question: `Quelle est la prefecture ${duDepartement(dep.code)} ?`,
       answer: `La prefecture du departement ${dep.code} (${dep.nom}) est ${dep.prefecture}, en region ${dep.region}.`,
     },
   ];
@@ -222,15 +222,15 @@ export default async function DepartementPage({ params }: Props) {
   const taxiListeFaqs = [
     {
       question: `Où trouver la liste des taxis conventionnés CPAM ${dep.code} (${dep.nom}) ?`,
-      answer: `La liste des taxis conventionnés CPAM du ${dep.nom} (${dep.code}) est disponible sur RoullePro : ${counts.taxi_conventionne > 0 ? `${counts.taxi_conventionne} taxis conventionnés` : "les taxis conventionnés"} agréés par l'Assurance Maladie sont référencés par commune, avec téléphone direct et conventionnement vérifié. Sélectionnez votre ville dans la liste ci-dessous pour les afficher.`,
+      answer: `La liste des taxis conventionnés CPAM ${duDepartement(dep.code)} (${dep.code}) est disponible sur RoullePro : ${counts.taxi_conventionne > 0 ? `${counts.taxi_conventionne} taxis conventionnés` : "les taxis conventionnés"} agréés par l'Assurance Maladie sont référencés par commune, avec téléphone direct et conventionnement vérifié. Sélectionnez votre ville dans la liste ci-dessous pour les afficher.`,
     },
     {
-      question: `Comment être remboursé d'un taxi conventionné dans le ${dep.nom} ?`,
+      question: `Comment être remboursé d'un taxi conventionné ${dansLeDepartement(dep.code)} ?`,
       answer: `Pour être remboursé, présentez au taxi conventionné votre prescription médicale de transport (bon de transport CERFA 11574) et votre carte Vitale. La CPAM ${dep.code} rembourse alors la course à 55 % du tarif conventionné, ou 100 % en cas d'ALD, accident du travail, maternité ou hospitalisation. Le tiers payant vous évite d'avancer les frais.`,
     },
     {
       question: `Comment savoir si un taxi est conventionné CPAM ?`,
-      answer: `Un taxi conventionné CPAM affiche un autocollant "conventionné Assurance Maladie" et figure sur la liste des taxis conventionnés de sa caisse départementale. Sur RoullePro, chaque fiche du ${dep.nom} indique le statut de conventionnement, vérifié auprès des données publiques Ameli. En cas de doute, demandez au chauffeur son numéro de convention avant la course.`,
+      answer: `Un taxi conventionné CPAM affiche un autocollant "conventionné Assurance Maladie" et figure sur la liste des taxis conventionnés de sa caisse départementale. Sur RoullePro, chaque fiche ${duDepartement(dep.code)} indique le statut de conventionnement, vérifié auprès des données publiques Ameli. En cas de doute, demandez au chauffeur son numéro de convention avant la course.`,
     },
   ];
   // Questions departementales ciblant "tarif taxi conventionne / vsl [dept]" et
@@ -238,16 +238,16 @@ export default async function DepartementPage({ params }: Props) {
   // tarifs / aux simulateurs sans citer de montant en dur.
   const tarifDepFaqs: FaqItem[] = [
     {
-      question: `Quel est le tarif d'un taxi conventionné dans le ${dep.nom} (${dep.code}) ?`,
-      answer: `Le tarif d'un taxi conventionné dans le ${dep.nom} suit la convention CPAM : un forfait de prise en charge national et un tarif kilométrique propre au département ${dep.code}, majorés la nuit, le dimanche et les jours fériés. Le détail figure dans la section « Tarifs » de cette page ; vous pouvez aussi estimer votre course avec le simulateur de taxi conventionné.`,
+      question: `Quel est le tarif d'un taxi conventionné ${dansLeDepartement(dep.code)} (${dep.code}) ?`,
+      answer: `Le tarif d'un taxi conventionné ${dansLeDepartement(dep.code)} suit la convention CPAM : un forfait de prise en charge national et un tarif kilométrique propre au département ${dep.code}, majorés la nuit, le dimanche et les jours fériés. Le détail figure dans la section « Tarifs » de cette page ; vous pouvez aussi estimer votre course avec le simulateur de taxi conventionné.`,
     },
     {
-      question: `Combien coûtent un VSL et une ambulance dans le ${dep.nom} ?`,
+      question: `Combien coûtent un VSL et une ambulance ${dansLeDepartement(dep.code)} ?`,
       answer: `Les tarifs VSL et ambulance sont fixés par la convention nationale des transporteurs sanitaires (avenant 11) : un forfait départemental, un tarif kilométrique national et des majorations nuit et dimanche. Ils sont identiques d'un professionnel à l'autre. Consultez la section « Tarifs » de cette page ou nos simulateurs VSL et ambulance pour une estimation.`,
     },
     {
-      question: `Comment trouver un transport conventionné dans le ${dep.nom} ?`,
-      answer: `Sélectionnez votre commune dans la liste ci-dessous, ou parcourez les sous-sections ambulance, VSL et taxi conventionné de cette page pour accéder aux professionnels agréés du ${dep.nom} (${dep.code}). Chaque fiche affiche le téléphone direct, le conventionnement et les horaires. Le transport conventionné est remboursé par la CPAM ${dep.code} sur prescription médicale.`,
+      question: `Comment trouver un transport conventionné ${dansLeDepartement(dep.code)} ?`,
+      answer: `Sélectionnez votre commune dans la liste ci-dessous, ou parcourez les sous-sections ambulance, VSL et taxi conventionné de cette page pour accéder aux professionnels agréés ${duDepartement(dep.code)} (${dep.code}). Chaque fiche affiche le téléphone direct, le conventionnement et les horaires. Le transport conventionné est remboursé par la CPAM ${dep.code} sur prescription médicale.`,
     },
   ];
   const faqs = dedupeFaq([
@@ -261,7 +261,7 @@ export default async function DepartementPage({ params }: Props) {
   const itemListLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `Villes du ${dep.nom} avec transport sanitaire`,
+    name: `Villes ${duDepartement(dep.code)} avec transport sanitaire`,
     itemListElement: villes.slice(0, 100).map((v, i) => ({
       "@type": "ListItem",
       position: i + 1,
@@ -286,10 +286,10 @@ export default async function DepartementPage({ params }: Props) {
             <span className="text-white">{dep.nom} ({dep.code})</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-            {seoOverride ? seoOverride.h1 : `Taxi conventionné, VSL et ambulance dans le ${dep.nom} (${dep.code})`}
+            {seoOverride ? seoOverride.h1 : `Taxi conventionné, VSL et ambulance ${dansLeDepartement(dep.code)} (${dep.code})`}
           </h1>
           <p className="text-blue-100 max-w-3xl">
-            Taxis conventionnés CPAM, ambulances et VSL agréés Assurance Maladie dans le {dep.nom} ({dep.code}), en région {dep.region}. Préfecture : {dep.prefecture}.
+            Taxis conventionnés CPAM, ambulances et VSL agréés Assurance Maladie {dansLeDepartement(dep.code)} ({dep.code}), en région {dep.region}. Préfecture : {dep.prefecture}.
           </p>
           <div className="flex flex-wrap gap-3 mt-5">
             <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur border border-white/20 px-3 py-1.5 rounded-full text-sm">
@@ -307,7 +307,7 @@ export default async function DepartementPage({ params }: Props) {
 
       <section className="max-w-5xl mx-auto px-4 py-8">
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-3">Liste des taxis conventionnés CPAM dans le {dep.nom} ({dep.code})</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">Liste des taxis conventionnés CPAM {dansLeDepartement(dep.code)} ({dep.code})</h2>
           <div className="space-y-3 text-gray-700 leading-relaxed">
             <p>
               Vous cherchez la <strong>liste des taxis conventionnés CPAM {dep.code}</strong> ({dep.nom}) ? RoullePro recense
@@ -319,7 +319,7 @@ export default async function DepartementPage({ params }: Props) {
             </p>
             {seoOverride && <p>{seoOverride.intro}</p>}
             <p>
-              Le département du {dep.nom} ({dep.code}) compte {counts.total} professionnels du transport sanitaire référencés sur RoullePro :
+              Le département {duDepartement(dep.code)} ({dep.code}) compte {counts.total} professionnels du transport sanitaire référencés sur RoullePro :
               {" "}{counts.ambulance} sociétés d&apos;ambulances, {counts.vsl} Véhicules Sanitaires Légers (VSL) et {counts.taxi_conventionne} taxis
               conventionnés par la CPAM. Tous sont agréés par l&apos;Agence Régionale de Santé {dep.region} et exercent dans le respect du cadre réglementaire
               du Code de la santé publique.
@@ -342,7 +342,7 @@ export default async function DepartementPage({ params }: Props) {
         {villes.length > 0 ? (
           <article className="bg-white border border-gray-200 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-1">
-              Villes du {dep.nom} avec transport sanitaire
+              Villes {duDepartement(dep.code)} avec transport sanitaire
             </h2>
             <p className="text-sm text-gray-600 mb-4">
               {villes.length} communes référencées. Cliquez pour accéder aux professionnels.
@@ -367,7 +367,7 @@ export default async function DepartementPage({ params }: Props) {
           <article className="bg-white border border-gray-200 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-2">Aucune fiche référencée dans ce département</h2>
             <p className="text-sm text-gray-600">
-              Aucun professionnel du transport sanitaire n&apos;est encore référencé dans le {dep.nom} sur RoullePro. Si vous êtes
+              Aucun professionnel du transport sanitaire n&apos;est encore référencé {dansLeDepartement(dep.code)} sur RoullePro. Si vous êtes
               ambulancier, exploitant VSL ou taxi conventionné dans ce département,{" "}
               <Link href="/transport-medical/inscription" className="text-[#0066CC] underline">inscrivez votre entreprise gratuitement</Link>.
             </p>
@@ -383,7 +383,7 @@ export default async function DepartementPage({ params }: Props) {
               return (
                 <article key={cat.key} className="bg-white border border-gray-200 rounded-2xl p-6">
                   <h2 className="text-lg font-bold text-gray-900 mb-1">
-                    {cat.labelPluriel} dans le {dep.nom} ({dep.code}) : {nb} professionnel{nb > 1 ? "s" : ""}
+                    {cat.labelPluriel} {dansLeDepartement(dep.code)} ({dep.code}) : {nb} professionnel{nb > 1 ? "s" : ""}
                   </h2>
                   <p className="text-sm text-gray-600 mb-4">{cat.description}</p>
                   {topVilles.length > 0 && (
@@ -435,7 +435,7 @@ export default async function DepartementPage({ params }: Props) {
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
           <h2 className="text-lg font-bold text-gray-900 mb-3">En savoir plus sur le transport conventionné</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Comprendre le remboursement, le bon de transport et chaque mode de transport sanitaire dans le {dep.nom}.
+            Comprendre le remboursement, le bon de transport et chaque mode de transport sanitaire {dansLeDepartement(dep.code)}.
           </p>
           <div className="grid sm:grid-cols-3 gap-3">
             <Link
