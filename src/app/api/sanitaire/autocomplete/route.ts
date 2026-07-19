@@ -1,11 +1,14 @@
 export const dynamic = "force-dynamic";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { tokenize, buildVilleOrFilter, matchesVilleSlug } from "@/lib/sanitaire-search";
 
 /**
  * Autocomplete villes pour la recherche particulier.
  * GET /api/sanitaire/autocomplete?q=bay
  * Renvoie les villes qui matchent + leur nombre de fiches.
+ * Matching par tokens (préfixe de mot) : « thury harcourt » ou « le hom »
+ * retrouvent « Thury-Harcourt-le-Hom » malgré les espaces vs traits d'union.
  */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -19,21 +22,30 @@ export async function GET(req: Request) {
 
   const isCodePostal = /^\d{2,5}$/.test(q);
 
-  const { data } = isCodePostal
-    ? await supabase
-        .from("pros_sanitaire_public")
-        .select("ville, ville_slug, code_postal, departement")
-        .eq("actif", true).eq("suspendu", false)
-        .ilike("code_postal", `${q}%`)
-        .limit(200)
-    : await supabase
-        .from("pros_sanitaire_public")
-        .select("ville, ville_slug, code_postal, departement")
-        .eq("actif", true).eq("suspendu", false)
-        .ilike("ville", `${q}%`)
-        .limit(200);
+  let rows: { ville: string; ville_slug: string; code_postal: string; departement: string }[] = [];
+  if (isCodePostal) {
+    const { data } = await supabase
+      .from("pros_sanitaire_public")
+      .select("ville, ville_slug, code_postal, departement")
+      .eq("actif", true).eq("suspendu", false)
+      .ilike("code_postal", `${q}%`)
+      .limit(200);
+    rows = data || [];
+  } else {
+    let query = supabase
+      .from("pros_sanitaire_public")
+      .select("ville, ville_slug, code_postal, departement")
+      .eq("actif", true).eq("suspendu", false)
+      .limit(300);
+    // Chaque `.or()` est combiné en AND : tous les tokens doivent matcher.
+    for (const token of tokenize(q)) {
+      query = query.or(buildVilleOrFilter(token));
+    }
+    const { data } = await query;
+    // Filtrage précis « préfixe de mot » (le filtre SQL est une sur-approximation).
+    rows = (data || []).filter((r) => matchesVilleSlug(r.ville_slug, q));
+  }
 
-  const rows = data || [];
   const map = new Map<string, { ville: string; ville_slug: string; code_postal: string; departement: string; count: number }>();
   rows.forEach((row) => {
     const key = row.ville_slug;
