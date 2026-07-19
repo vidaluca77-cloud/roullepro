@@ -104,11 +104,14 @@ describe("dansLeDepartement", () => {
     assert.equal(dansLeDepartement("65"), "dans les Hautes-Pyrenees");
   });
 
-  it("DOM et Paris sans article -> à", () => {
+  it("Guadeloupe / Martinique / Guyane -> en (usage idiomatique)", () => {
+    assert.equal(dansLeDepartement("971"), "en Guadeloupe");
+    assert.equal(dansLeDepartement("972"), "en Martinique");
+    assert.equal(dansLeDepartement("973"), "en Guyane");
+  });
+
+  it("Paris / La Reunion / Mayotte sans article -> à", () => {
     assert.equal(dansLeDepartement("75"), "à Paris");
-    assert.equal(dansLeDepartement("971"), "dans la Guadeloupe");
-    assert.equal(dansLeDepartement("972"), "dans la Martinique");
-    assert.equal(dansLeDepartement("973"), "dans la Guyane");
     assert.equal(dansLeDepartement("974"), "à La Reunion");
     assert.equal(dansLeDepartement("976"), "à Mayotte");
   });
@@ -149,9 +152,14 @@ describe("duDepartement", () => {
     assert.equal(duDepartement("78"), "des Yvelines");
   });
 
-  it("DOM et Paris sans article -> de", () => {
+  it("Guadeloupe / Martinique / Guyane -> de (forme naturelle)", () => {
+    assert.equal(duDepartement("971"), "de Guadeloupe");
+    assert.equal(duDepartement("972"), "de Martinique");
+    assert.equal(duDepartement("973"), "de Guyane");
+  });
+
+  it("Paris / La Reunion / Mayotte sans article -> de", () => {
     assert.equal(duDepartement("75"), "de Paris");
-    assert.equal(duDepartement("971"), "de la Guadeloupe");
     assert.equal(duDepartement("974"), "de La Reunion");
     assert.equal(duDepartement("976"), "de Mayotte");
   });

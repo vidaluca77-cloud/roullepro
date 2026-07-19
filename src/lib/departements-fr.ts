@@ -134,11 +134,13 @@ export function getAllDepartementCodes(): string[] {
  *  - "la"   : feminin, consonne          -> dans la Manche / de la Manche
  *  - "l"    : singulier a initiale vocalique (m. ou f.) -> dans l'Ain / de l'Ain
  *  - "les"  : pluriel                    -> dans les Landes / des Landes
+ *  - "en"   : region/collectivite feminine, usage idiomatique (Guadeloupe,
+ *             Martinique, Guyane) -> en Guadeloupe / de Guadeloupe
  *  - "sans" : nom propre sans article (Paris, Mayotte, La Reunion) -> a Paris / de Paris
  * Le "h" de "Haut(e)(s)" etant aspire, ces departements prennent le/la/les
  * (jamais l'). Le "h" de l'Herault est muet -> "l".
  */
-export type ArticleDepartement = "le" | "la" | "l" | "les" | "sans";
+export type ArticleDepartement = "le" | "la" | "l" | "les" | "en" | "sans";
 
 const ARTICLE_PAR_DEPARTEMENT: Record<string, ArticleDepartement> = {
   "01": "l", "02": "l", "03": "l", "04": "les", "05": "les", "06": "les",
@@ -157,14 +159,14 @@ const ARTICLE_PAR_DEPARTEMENT: Record<string, ArticleDepartement> = {
   "78": "les", "79": "les", "80": "la", "81": "le", "82": "le", "83": "le",
   "84": "le", "85": "la", "86": "la", "87": "la", "88": "les", "89": "l",
   "90": "le", "91": "l", "92": "les", "93": "la", "94": "le", "95": "le",
-  "971": "la", "972": "la", "973": "la", "974": "sans", "976": "sans",
+  "971": "en", "972": "en", "973": "en", "974": "sans", "976": "sans",
 };
 
 /**
  * Renvoie le complement de lieu grammaticalement correct pour un departement :
  * "dans le Calvados", "dans la Manche", "dans l'Ain", "dans les Landes",
- * "a Paris", "a Mayotte", "a La Reunion". Fonction pure. Renvoie "" si le code
- * est inconnu.
+ * "en Guadeloupe", "a Paris", "a Mayotte", "a La Reunion". Fonction pure.
+ * Renvoie "" si le code est inconnu.
  */
 export function dansLeDepartement(code: string): string {
   const dep = getDepartementByCode(code);
@@ -177,6 +179,8 @@ export function dansLeDepartement(code: string): string {
       return `dans l'${dep.nom}`;
     case "les":
       return `dans les ${dep.nom}`;
+    case "en":
+      return `en ${dep.nom}`;
     case "sans":
       return `à ${dep.nom}`;
     case "le":
@@ -187,8 +191,9 @@ export function dansLeDepartement(code: string): string {
 
 /**
  * Renvoie le complement du nom grammaticalement correct pour un departement :
- * "du Calvados", "de la Manche", "de l'Ain", "des Landes", "de Paris",
- * "de Mayotte", "de La Reunion". Fonction pure. Renvoie "" si le code est inconnu.
+ * "du Calvados", "de la Manche", "de l'Ain", "des Landes", "de Guadeloupe",
+ * "de Paris", "de Mayotte", "de La Reunion". Fonction pure. Renvoie "" si le
+ * code est inconnu.
  */
 export function duDepartement(code: string): string {
   const dep = getDepartementByCode(code);
@@ -201,6 +206,7 @@ export function duDepartement(code: string): string {
       return `de l'${dep.nom}`;
     case "les":
       return `des ${dep.nom}`;
+    case "en":
     case "sans":
       return `de ${dep.nom}`;
     case "le":
