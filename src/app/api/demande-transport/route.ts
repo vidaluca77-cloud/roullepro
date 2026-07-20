@@ -26,6 +26,15 @@ import {
   envoyerSmsTransactionnel,
   normaliserTelephoneFr,
 } from "@/lib/sms";
+import { TYPE_TRANSPORT_TO_CATEGORIE } from "@/lib/transport-types";
+import {
+  PLAFOND_SMS_RECRUTEMENT,
+  communeSlugRecrutement,
+  construireMessageSmsRecrutement,
+  dansFenetreEnvoiParis,
+  normaliserMobileRecrutement,
+  selectionnerCiblesRecrutement,
+} from "@/lib/sms-recrutement";
 import { FENETRE_DOUBLON_MS, trouverDoublon } from "@/lib/demande-doublon";
 import { calculerDistanceCourse } from "@/lib/distance-course";
 import { estimerPrixCourse, type EstimationCourse } from "@/lib/tarif-transport-sanitaire";
@@ -658,6 +667,107 @@ export async function POST(req: Request) {
       console.error("[demande-transport] SMS patient depot error", e);
     }
 
+    // --- SMS de recrutement aux pros NON inscrits de la commune de depart -----
+    // PUREMENT ADDITIF : n'altere ni le dispatch, ni les pros inscrits notifies
+    // ci-dessus. Cible uniquement la commune de depart (ville_slug exact), les
+    // fiches non revendiquees (claimed=false) actives, avec mobile public, dans
+    // la fenetre 8 h-20 h Paris. Best-effort : toute erreur est capturee et ne
+    // fait jamais echouer le depot ni le dispatch normal.
+    let prosNonInscritsPrevenus = 0;
+    try {
+      const villeRecrutement = villeDepart || villeCible;
+      const slugCommune = communeSlugRecrutement(villeRecrutement);
+      if (slugCommune && villeRecrutement && dansFenetreEnvoiParis(new Date())) {
+        const categorie = TYPE_TRANSPORT_TO_CATEGORIE[typeTransport];
+        const { data: prosNi, error: niErr } = await supabase
+          .from("pros_sanitaire")
+          .select("id, telephone_public, actif, suspendu")
+          .eq("claimed", false)
+          .eq("categorie", categorie)
+          .eq("ville_slug", slugCommune);
+
+        if (!niErr && prosNi && prosNi.length > 0) {
+          type ProNiRow = {
+            id: string;
+            telephone_public: string | null;
+            actif: boolean | null;
+            suspendu: boolean | null;
+          };
+          // Semantique alignee sur le trigger : COALESCE(actif,true), COALESCE(suspendu,false).
+          const eligibles = (prosNi as ProNiRow[]).filter(
+            (p) => p.actif !== false && p.suspendu !== true
+          );
+
+          // Numeros candidats (mobiles FR uniquement) pour interroger sms_optout.
+          const numerosCandidats = Array.from(
+            new Set(
+              eligibles
+                .map((p) => normaliserMobileRecrutement(p.telephone_public))
+                .filter((n): n is string => n !== null)
+            )
+          );
+
+          let optout = new Set<string>();
+          if (numerosCandidats.length > 0) {
+            try {
+              const { data: outRows } = await supabase
+                .from("sms_optout")
+                .select("numero")
+                .in("numero", numerosCandidats);
+              optout = new Set(
+                ((outRows as { numero: string }[] | null) || []).map((r) => r.numero)
+              );
+            } catch {
+              // Table absente : aucun opt-out connu, on continue.
+            }
+          }
+
+          const cibles = selectionnerCiblesRecrutement({
+            pros: eligibles,
+            optout,
+            plafond: PLAFOND_SMS_RECRUTEMENT,
+          });
+
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
+          const resultats = await Promise.allSettled(
+            cibles.map(async ({ proId, numero }) => {
+              const contenu = construireMessageSmsRecrutement({
+                typeTransport,
+                dateSouhaitee: dateSouhaiteeIso,
+                villeDepart: villeRecrutement,
+                url: `${appUrl}/transport-medical/pro/reclamer?pro=${proId}`,
+              });
+              const res = await envoyerSmsTransactionnel({
+                to: numero,
+                content: contenu,
+                tag: "recrutement-course",
+              });
+              try {
+                await supabase.from("sms_log").insert({
+                  destinataire: numero,
+                  pro_id: proId,
+                  demande_id: demande.id,
+                  type: "recrutement_course",
+                  contenu,
+                  statut: res.ok ? "envoye" : "echec",
+                  brevo_message_id: res.messageId || null,
+                  erreur: res.erreur || null,
+                });
+              } catch {
+                // Table sms_log absente : journalisation ignoree.
+              }
+              return res.ok;
+            })
+          );
+          prosNonInscritsPrevenus = resultats.filter(
+            (r) => r.status === "fulfilled" && r.value === true
+          ).length;
+        }
+      }
+    } catch (e) {
+      console.error("[demande-transport] SMS recrutement error", e);
+    }
+
     // Notification admin (best-effort, non bloquante). Part meme si aucun pro
     // n'a ete notifie pour que l'admin puisse traiter manuellement.
     try {
@@ -679,6 +789,7 @@ export async function POST(req: Request) {
         distance_km: distanceKm,
         prix_estime: prixEstime,
         pros_notifies: prosNotifies,
+        pros_non_inscrits_prevenus: prosNonInscritsPrevenus,
       });
       await supabase
         .from("demandes_transport")

@@ -1726,6 +1726,7 @@ export async function sendAdminNouvelleDemande(demande: {
   distance_km?: number | null;
   prix_estime?: number | null;
   pros_notifies?: number;
+  pros_non_inscrits_prevenus?: number;
 }): Promise<{ id: string | null } | null> {
   const type = demande.type_transport || '';
   const typeLib = LIBELLE_TYPE_ADMIN[type] || type || 'Transport';
@@ -1758,6 +1759,7 @@ export async function sendAdminNouvelleDemande(demande: {
             ${tauxStr ? ligneInfo('Taux de prise en charge', tauxStr) : ''}
             ${ligneInfo('Source formulaire', escapeHtml(demande.source_form))}
             ${ligneInfo('Pros notifiés', String(nbPros))}
+            ${demande.pros_non_inscrits_prevenus != null ? ligneInfo('Pros non inscrits prévenus', String(demande.pros_non_inscrits_prevenus)) : ''}
           </table>
         </div>
         ${estimationStr ? `<p style="margin:-8px 0 16px;font-size:12px;color:#64748b">${mentionEstimation(demande.type_transport)}</p>` : ''}
