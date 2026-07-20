@@ -29,11 +29,15 @@ import {
 import { TYPE_TRANSPORT_TO_CATEGORIE } from "@/lib/transport-types";
 import {
   PLAFOND_SMS_RECRUTEMENT,
+  RAYON_REPLI_KM,
   communeSlugRecrutement,
   construireMessageSmsRecrutement,
   dansFenetreEnvoiParis,
   normaliserMobileRecrutement,
   selectionnerCiblesRecrutement,
+  selectionnerProsDansRayon,
+  type CibleRecrutement,
+  type ProRepliGeo,
 } from "@/lib/sms-recrutement";
 import { FENETRE_DOUBLON_MS, trouverDoublon } from "@/lib/demande-doublon";
 import { calculerDistanceCourse } from "@/lib/distance-course";
@@ -667,68 +671,52 @@ export async function POST(req: Request) {
       console.error("[demande-transport] SMS patient depot error", e);
     }
 
-    // --- SMS de recrutement aux pros NON inscrits de la commune de depart -----
+    // --- SMS de recrutement aux pros NON inscrits ----------------------------
     // PUREMENT ADDITIF : n'altere ni le dispatch, ni les pros inscrits notifies
-    // ci-dessus. Cible uniquement la commune de depart (ville_slug exact), les
-    // fiches non revendiquees (claimed=false) actives, avec mobile public, dans
-    // la fenetre 8 h-20 h Paris. Best-effort : toute erreur est capturee et ne
-    // fait jamais echouer le depot ni le dispatch normal.
+    // ci-dessus. Etape 1 : commune de depart exacte (ville_slug). Etape 2 (repli
+    // geographique) : si la commune exacte ne donne AUCUNE cible eligible,
+    // elargir aux pros non inscrits du meme departement a moins de 15 km, tries
+    // par distance. Fiches non revendiquees (claimed=false) actives, mobile
+    // public 06/07 uniquement, opt-out respecte, plafond 8, fenetre 8 h-20 h
+    // Paris. Best-effort : toute erreur est capturee et ne fait jamais echouer
+    // le depot ni le dispatch normal.
     let prosNonInscritsPrevenus = 0;
     try {
       const villeRecrutement = villeDepart || villeCible;
       const slugCommune = communeSlugRecrutement(villeRecrutement);
       if (slugCommune && villeRecrutement && dansFenetreEnvoiParis(new Date())) {
         const categorie = TYPE_TRANSPORT_TO_CATEGORIE[typeTransport];
-        const { data: prosNi, error: niErr } = await supabase
-          .from("pros_sanitaire")
-          .select("id, telephone_public, actif, suspendu")
-          .eq("claimed", false)
-          .eq("categorie", categorie)
-          .eq("ville_slug", slugCommune);
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
-        if (!niErr && prosNi && prosNi.length > 0) {
-          type ProNiRow = {
-            id: string;
-            telephone_public: string | null;
-            actif: boolean | null;
-            suspendu: boolean | null;
-          };
-          // Semantique alignee sur le trigger : COALESCE(actif,true), COALESCE(suspendu,false).
-          const eligibles = (prosNi as ProNiRow[]).filter(
-            (p) => p.actif !== false && p.suspendu !== true
-          );
+        // Numeros candidats (mobiles FR uniquement) -> opt-out connus.
+        const chargerOptout = async (numeros: string[]): Promise<Set<string>> => {
+          if (numeros.length === 0) return new Set<string>();
+          try {
+            const { data: outRows } = await supabase
+              .from("sms_optout")
+              .select("numero")
+              .in("numero", numeros);
+            return new Set(
+              ((outRows as { numero: string }[] | null) || []).map((r) => r.numero)
+            );
+          } catch {
+            // Table absente : aucun opt-out connu, on continue.
+            return new Set<string>();
+          }
+        };
 
-          // Numeros candidats (mobiles FR uniquement) pour interroger sms_optout.
-          const numerosCandidats = Array.from(
+        const numerosDe = (pros: { telephone_public: string | null }[]) =>
+          Array.from(
             new Set(
-              eligibles
+              pros
                 .map((p) => normaliserMobileRecrutement(p.telephone_public))
                 .filter((n): n is string => n !== null)
             )
           );
 
-          let optout = new Set<string>();
-          if (numerosCandidats.length > 0) {
-            try {
-              const { data: outRows } = await supabase
-                .from("sms_optout")
-                .select("numero")
-                .in("numero", numerosCandidats);
-              optout = new Set(
-                ((outRows as { numero: string }[] | null) || []).map((r) => r.numero)
-              );
-            } catch {
-              // Table absente : aucun opt-out connu, on continue.
-            }
-          }
-
-          const cibles = selectionnerCiblesRecrutement({
-            pros: eligibles,
-            optout,
-            plafond: PLAFOND_SMS_RECRUTEMENT,
-          });
-
-          const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
+        // Envoie les SMS aux cibles retenues et journalise ; renvoie le nombre
+        // d'envois reussis.
+        const envoyerCibles = async (cibles: CibleRecrutement[]): Promise<number> => {
           const resultats = await Promise.allSettled(
             cibles.map(async ({ proId, numero }) => {
               const contenu = construireMessageSmsRecrutement({
@@ -759,9 +747,76 @@ export async function POST(req: Request) {
               return res.ok;
             })
           );
-          prosNonInscritsPrevenus = resultats.filter(
+          return resultats.filter(
             (r) => r.status === "fulfilled" && r.value === true
           ).length;
+        };
+
+        type ProNiRow = {
+          id: string;
+          telephone_public: string | null;
+          actif: boolean | null;
+          suspendu: boolean | null;
+        };
+
+        // --- Etape 1 : commune de depart exacte (ville_slug) ------------------
+        let cibles: CibleRecrutement[] = [];
+        const { data: prosNi, error: niErr } = await supabase
+          .from("pros_sanitaire")
+          .select("id, telephone_public, actif, suspendu")
+          .eq("claimed", false)
+          .eq("categorie", categorie)
+          .eq("ville_slug", slugCommune);
+
+        if (!niErr && prosNi && prosNi.length > 0) {
+          // Semantique alignee sur le trigger : COALESCE(actif,true), COALESCE(suspendu,false).
+          const eligibles = (prosNi as ProNiRow[]).filter(
+            (p) => p.actif !== false && p.suspendu !== true
+          );
+          const optout = await chargerOptout(numerosDe(eligibles));
+          cibles = selectionnerCiblesRecrutement({
+            pros: eligibles,
+            optout,
+            plafond: PLAFOND_SMS_RECRUTEMENT,
+          });
+        }
+
+        // --- Etape 2 : repli geographique 15 km (meme departement) ------------
+        // Uniquement si la commune exacte n'a donne AUCUNE cible eligible, et si
+        // le point de depart et le departement sont connus.
+        const departementRepli = departementDepart || departementCible;
+        if (cibles.length === 0 && lieuDepartLat != null && lieuDepartLng != null && departementRepli) {
+          const { data: prosRepli, error: repliErr } = await supabase
+            .from("pros_sanitaire")
+            .select("id, telephone_public, actif, suspendu, latitude, longitude")
+            .eq("claimed", false)
+            .eq("categorie", categorie)
+            .eq("departement", departementRepli)
+            .neq("ville_slug", slugCommune)
+            .not("latitude", "is", null)
+            .not("longitude", "is", null)
+            .limit(500);
+
+          if (!repliErr && prosRepli && prosRepli.length > 0) {
+            // Filtre rayon + tri par distance croissante (fonction pure).
+            const prosProches = selectionnerProsDansRayon({
+              depart: { lat: lieuDepartLat, lng: lieuDepartLng },
+              pros: prosRepli as ProRepliGeo[],
+              rayonKm: RAYON_REPLI_KM,
+            });
+            const optout = await chargerOptout(numerosDe(prosProches));
+            // selectionnerCiblesRecrutement preserve l'ordre : les pros les plus
+            // proches sont retenus en priorite lors de l'application du plafond.
+            cibles = selectionnerCiblesRecrutement({
+              pros: prosProches,
+              optout,
+              plafond: PLAFOND_SMS_RECRUTEMENT,
+            });
+          }
+        }
+
+        if (cibles.length > 0) {
+          prosNonInscritsPrevenus = await envoyerCibles(cibles);
         }
       }
     } catch (e) {

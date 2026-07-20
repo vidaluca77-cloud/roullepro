@@ -14,10 +14,18 @@
 
 import { retirerAccents } from "@/lib/sms";
 import { normalizeForMatch } from "@/lib/sanitaire-search";
+import { distanceHaversineKm, type PointGeo } from "@/lib/distance-course";
 import type { TypeTransport } from "@/lib/transport-types";
 
 /** Plafond de SMS de recrutement par demande (garde-fou anti-spam). */
 export const PLAFOND_SMS_RECRUTEMENT = 8;
+
+/**
+ * Rayon (km) du repli geographique : si la commune exacte ne donne aucune cible
+ * eligible, on elargit aux pros non inscrits du meme departement situes a moins
+ * de RAYON_REPLI_KM du point de depart, tries par distance croissante.
+ */
+export const RAYON_REPLI_KM = 15;
 
 /** Debut de la fenetre d'envoi (heure de Paris, incluse). */
 export const HEURE_DEBUT_ENVOI = 8;
@@ -180,4 +188,62 @@ export function selectionnerCiblesRecrutement(params: {
     cibles.push({ proId: pro.id, numero });
   }
   return cibles;
+}
+
+/** Fiche pro geolocalisee, candidate au repli geographique. */
+export type ProRepliGeo = ProRecrutement & {
+  latitude: number | null;
+  longitude: number | null;
+  actif?: boolean | null;
+  suspendu?: boolean | null;
+};
+
+/**
+ * Selectionne les pros non inscrits situes dans un rayon autour du point de
+ * depart, pour le repli geographique (etape 2). Fonction pure :
+ *   - ignore les fiches sans latitude/longitude exploitables ;
+ *   - applique la meme semantique d'eligibilite que la commune exacte
+ *     (COALESCE(actif,true) !== false, COALESCE(suspendu,false) !== true) ;
+ *   - ne garde que les fiches a distance haversine <= `rayonKm` du depart ;
+ *   - trie par distance croissante (les plus proches en premier), tri stable.
+ *
+ * Le tri par distance est preserve en sortie pour que
+ * `selectionnerCiblesRecrutement` retienne en priorite les pros les plus
+ * proches lors de l'application du plafond.
+ */
+export function selectionnerProsDansRayon(params: {
+  depart: PointGeo | null | undefined;
+  pros: ProRepliGeo[];
+  rayonKm?: number;
+}): ProRepliGeo[] {
+  const rayonKm = params.rayonKm ?? RAYON_REPLI_KM;
+  const depart = params.depart;
+  if (
+    !depart ||
+    !Number.isFinite(depart.lat) ||
+    !Number.isFinite(depart.lng)
+  ) {
+    return [];
+  }
+
+  const dansRayon: { pro: ProRepliGeo; distance: number }[] = [];
+  for (const pro of params.pros) {
+    if (pro.actif === false || pro.suspendu === true) continue;
+    if (
+      pro.latitude == null ||
+      pro.longitude == null ||
+      !Number.isFinite(pro.latitude) ||
+      !Number.isFinite(pro.longitude)
+    ) {
+      continue;
+    }
+    const distance = distanceHaversineKm(depart, {
+      lat: pro.latitude,
+      lng: pro.longitude,
+    });
+    if (distance <= rayonKm) dansRayon.push({ pro, distance });
+  }
+
+  dansRayon.sort((a, b) => a.distance - b.distance);
+  return dansRayon.map((d) => d.pro);
 }
