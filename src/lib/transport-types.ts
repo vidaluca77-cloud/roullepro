@@ -17,6 +17,15 @@ export const TYPE_TRANSPORT_TO_CATEGORIE: Record<TypeTransport, CategoriePro> = 
   ambulance: 'ambulance',
 } as const;
 
+// Categories de pros pouvant assurer un type de transport demande. Aligne sur
+// le dispatch SQL (dispatch_demande_transport) : un VSL peut aussi etre pris en
+// charge par un taxi conventionne.
+export const CATEGORIES_COMPATIBLES: Record<TypeTransport, CategoriePro[]> = {
+  taxi: ['taxi_conventionne'],
+  vsl: ['vsl', 'taxi_conventionne'],
+  ambulance: ['ambulance'],
+} as const;
+
 export const CATEGORIE_TO_TYPE_TRANSPORT: Record<CategoriePro, TypeTransport> = {
   taxi_conventionne: 'taxi',
   vsl: 'vsl',
