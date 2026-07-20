@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { analyserLienRecuperation } from "@/lib/reset-password";
 import { Truck, AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 
 export default function ReinitialiserPage() {
@@ -17,27 +18,64 @@ export default function ReinitialiserPage() {
   const [success, setSuccess] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [noSession, setNoSession] = useState(false);
+  const [messageLien, setMessageLien] = useState<string | null>(null);
 
   useEffect(() => {
-    // Au chargement de la page depuis le lien email, Supabase cree automatiquement
-    // une session de recuperation (via le hash #access_token). On attend qu'elle soit prete.
+    // Le lien email renvoie ici en flux PKCE (?code=...) ou, en cas de probleme,
+    // avec une erreur en query ou en hash. On finalise la session de recuperation.
     let cancelled = false;
-    const check = async () => {
+
+    const preparer = async () => {
+      const lien = analyserLienRecuperation(
+        window.location.search,
+        window.location.hash
+      );
+
+      // Lien expire ou invalide : message clair + possibilite d'en redemander un.
+      if (lien.erreur) {
+        if (cancelled) return;
+        setMessageLien(lien.messageErreur);
+        setNoSession(true);
+        return;
+      }
+
+      // Une session peut deja exister (cookie pose par le serveur, ou hash
+      // implicite deja traite par le client) : dans ce cas on ne re-echange pas.
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (data.session) {
         setSessionReady(true);
-      } else {
-        // Laisse une chance au listener onAuthStateChange de mettre la session en place
-        setTimeout(async () => {
-          if (cancelled) return;
+        return;
+      }
+
+      // Flux PKCE : on echange explicitement le code contre une session.
+      if (lien.code) {
+        const { error: err } = await supabase.auth.exchangeCodeForSession(
+          lien.code
+        );
+        if (cancelled) return;
+        if (!err) {
+          setSessionReady(true);
+        } else {
+          // L'echange a pu etre fait en parallele par le client : on reverifie.
           const { data: d2 } = await supabase.auth.getSession();
+          if (cancelled) return;
           if (d2.session) setSessionReady(true);
           else setNoSession(true);
-        }, 1500);
+        }
+        return;
       }
+
+      // Repli flux implicite : on laisse une chance au listener onAuthStateChange.
+      setTimeout(async () => {
+        if (cancelled) return;
+        const { data: d3 } = await supabase.auth.getSession();
+        if (d3.session) setSessionReady(true);
+        else setNoSession(true);
+      }, 1500);
     };
-    check();
+
+    preparer();
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session && !cancelled) setSessionReady(true);
     });
@@ -105,7 +143,8 @@ export default function ReinitialiserPage() {
             </div>
             <h2 className="text-lg font-bold text-slate-900 mb-2">Lien invalide ou expiré</h2>
             <p className="text-sm text-slate-600 mb-5">
-              Le lien de réinitialisation n'est plus valide. Demandez un nouveau lien.
+              {messageLien ??
+                "Le lien de réinitialisation n'est plus valide. Demandez un nouveau lien."}
             </p>
             <Link
               href="/auth/mot-de-passe-oublie"
