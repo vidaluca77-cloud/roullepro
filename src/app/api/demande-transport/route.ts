@@ -26,7 +26,8 @@ import {
   envoyerSmsTransactionnel,
   normaliserTelephoneFr,
 } from "@/lib/sms";
-import { TYPE_TRANSPORT_TO_CATEGORIE } from "@/lib/transport-types";
+import { TYPE_TRANSPORT_TO_CATEGORIE, CATEGORIES_COMPATIBLES } from "@/lib/transport-types";
+import { departementsPoolRegional } from "@/lib/pool-regional";
 import {
   PLAFOND_SMS_RECRUTEMENT,
   RAYON_REPLI_KM,
@@ -452,6 +453,60 @@ export async function POST(req: Request) {
       lieuDepart: lieuDepartRaw,
       lieuArrivee: lieuArriveeRaw || null,
     });
+
+    // --- Pool regional : mutualisation inter-departementale -------------------
+    // Le trigger dispatch_demande_transport() n'insere que les pros du
+    // departement cible EXACT. Pour les regions mutualisees (ex. Ile-de-France),
+    // on etend la proposition a TOUS les pros inscrits du pool : un chauffeur du
+    // 93 doit pouvoir accepter une course du 92. Additif et idempotent
+    // (ignoreDuplicates) : ces lignes rendent la course visible dans l'espace
+    // pro (RPC demandes_pro_dashboard) et declenchent l'email ci-dessous.
+    // Best-effort : toute erreur est capturee et ne bloque jamais le depot.
+    // L'exclusivite d'une demande ciblee sur une fiche claimed est preservee.
+    try {
+      const departementsPool = departementsPoolRegional(departementCible);
+      const cibleClaimedExclusive = await (async () => {
+        if (!proIdCible) return false;
+        const { data: proCible } = await supabase
+          .from("pros_sanitaire")
+          .select("claimed")
+          .eq("id", proIdCible)
+          .maybeSingle();
+        return (proCible as { claimed?: boolean } | null)?.claimed === true;
+      })();
+
+      if (departementsPool.length > 1 && !cibleClaimedExclusive) {
+        const categories = CATEGORIES_COMPATIBLES[typeTransport];
+        const { data: prosPool } = await supabase
+          .from("pros_sanitaire")
+          .select("id")
+          .eq("claimed", true)
+          .in("categorie", categories)
+          .in("departement", departementsPool)
+          // Semantique alignee sur le trigger : COALESCE(actif,true)=true,
+          // COALESCE(suspendu,false)=false (les NULL sont eligibles).
+          .or("actif.is.null,actif.eq.true")
+          .or("suspendu.is.null,suspendu.eq.false");
+
+        const lignesPool =
+          (prosPool as { id: string }[] | null)?.map((p) => ({
+            demande_id: demande.id,
+            pro_id: p.id,
+            statut: "proposee",
+          })) ?? [];
+
+        if (lignesPool.length > 0) {
+          await supabase
+            .from("demandes_transport_pros")
+            .upsert(lignesPool, {
+              onConflict: "demande_id,pro_id",
+              ignoreDuplicates: true,
+            });
+        }
+      }
+    } catch (e) {
+      console.error("[demande-transport] pool regional error", e);
+    }
 
     // Recuperation des pros notifies par le trigger (avec leur email public).
     const { data: dtpRows } = await supabase
