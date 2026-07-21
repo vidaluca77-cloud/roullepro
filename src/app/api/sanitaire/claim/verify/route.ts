@@ -221,6 +221,30 @@ export async function POST(req: Request) {
       }
     } catch {}
 
+    // Rattrapage a l'inscription : rattache automatiquement les demandes
+    // ouvertes pertinentes (categorie + geo + fenetre 7 jours) au pro qui vient
+    // de revendiquer sa fiche. Place APRES le geocodage ci-dessus pour que le
+    // repli 15 km beneficie des coordonnees fraichement calculees. Best-effort :
+    // un echec ne casse jamais le claim.
+    try {
+      const { rattraperDemandesPourPro } = await import(
+        "@/lib/rattrapage-inscription"
+      );
+      const rattrapage = await rattraperDemandesPourPro({
+        admin: supabaseAdmin,
+        proId: claim.pro_id,
+      });
+      console.log("[claim/verify] rattrapage demandes:", {
+        pro_id: claim.pro_id,
+        rattrapees: rattrapage.rattrapees,
+      });
+    } catch (err) {
+      console.warn(
+        "[claim/verify] rattrapage error:",
+        err instanceof Error ? err.message : err
+      );
+    }
+
     // Auto-inscription newsletter veille reglementaire (best-effort, non bloquant)
     const newsletterEmail = accountEmail || pro.email_public || null;
     if (newsletterEmail && pro.categorie) {
