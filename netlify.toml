@@ -36,6 +36,10 @@
 [functions."drip-essential"]
   schedule = "0 9 * * *"
 
+# Scheduled function : relances de fin d'essai / d'offre gratuite (J-7 / J-3 / J-1), tous les jours a 07:30 UTC (9h30 Paris ete)
+[functions."relance-essai"]
+  schedule = "30 7 * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
