@@ -26,7 +26,6 @@ import DemandesTransportSection, {
   type DemandeProRow,
 } from "@/components/sanitaire/DemandesTransportSection";
 import DisponibiliteSection from "@/components/sanitaire/DisponibiliteSection";
-import { ALLOPOINTS_PROTECT_URL } from "@/components/partenaires/AllopointsProtectEncart";
 import { partitionnerCourses, libelleType, type CoursePlanning } from "@/lib/planning-course";
 import {
   fetchMatchedAlerts,
@@ -638,53 +637,6 @@ export default async function ProDashboard({
               </div>
             )}
 
-            {/* Partenaire Giva — Assurance pro */}
-            <div className="bg-gradient-to-br from-emerald-50 to-blue-50 border border-emerald-100 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-700" />
-                <h3 className="font-semibold text-gray-900">Bonus partenaire — Assurance pro Giva</h3>
-              </div>
-              <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-                Obtenez un devis en ligne d&apos;assurance professionnelle adapté au transport sanitaire (ambulance, VSL, taxi conventionné) via notre courtier partenaire.
-              </p>
-              <Link
-                href="/partenaires/assurance-pro"
-                className="inline-flex items-center gap-1 text-sm bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-4 py-2 rounded-xl transition"
-              >
-                Découvrir l&apos;offre
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-              <p className="text-[11px] text-gray-500 mt-2">
-                Lien partenaire — voir mentions légales.
-              </p>
-            </div>
-
-            {/* Partenaire Allopoints Protect — Protection du permis */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-100 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-4 h-4 text-amber-700" />
-                <h3 className="font-semibold text-gray-900">
-                  Bonus partenaire — Protection du permis Allopoints Protect
-                </h3>
-              </div>
-              <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-                Contestation des contraventions (2<sup>e</sup> à 4<sup>e</sup> classe) par des
-                avocats spécialisés en droit routier certifiés CNB — protégez votre permis,
-                c&apos;est votre outil de travail. −5 % de remise via RoullePro.
-              </p>
-              <a
-                href={ALLOPOINTS_PROTECT_URL}
-                target="_blank"
-                rel="sponsored noopener"
-                className="inline-flex items-center gap-1 text-sm bg-amber-700 hover:bg-amber-800 text-white font-semibold px-4 py-2 rounded-xl transition"
-              >
-                Découvrir l&apos;offre
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-              <p className="text-[11px] text-gray-500 mt-2">
-                Lien partenaire — voir mentions légales.
-              </p>
-            </div>
           </aside>
         </div>
 
