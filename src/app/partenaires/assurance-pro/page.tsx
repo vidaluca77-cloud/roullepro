@@ -2,24 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
+  Building2,
   CheckCircle2,
   ChevronRight,
-  ExternalLink,
-  ShieldCheck,
-  Phone,
-  FileText,
   Clock,
-  Building2,
-  HeartPulse,
-  Wrench,
+  ExternalLink,
+  FileText,
+  Phone,
+  ShieldCheck,
 } from "lucide-react";
 
 export const revalidate = 86400;
 
 const GIVA_URL = "https://go.giva.fr/?src=LucasH";
-const TITLE = "Assurance pro transport sanitaire — Partenaire Giva";
+const TITLE = "Économisez sur vos assurances avec Giva — Partenaire RoullePro";
 const DESCRIPTION =
-  "Devis en ligne d'assurance professionnelle pour ambulances, VSL et taxis conventionnés via notre partenaire Giva. Garanties métier, accompagnement, tarifs négociés.";
+  "Giva aide à faire le point sur vos contrats d'assurance personnels (auto, habitation, emprunteur, deux-roues, PNO) avec un parcours annoncé en 2 minutes et des économies moyennes affichées de 720 €/an.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -35,34 +33,29 @@ export const metadata: Metadata = {
 
 const FAQ: { q: string; a: string }[] = [
   {
-    q: "Pourquoi RoullePro recommande Giva ?",
-    a: "Giva est un courtier en assurance qui dispose d'une vraie expertise du transport sanitaire et de la mobilité professionnelle. Les devis intègrent des garanties adaptées à votre activité réelle (ambulance, VSL, taxi conventionné). Le formulaire en ligne renvoie un devis sans engagement.",
+    q: "Cette page concerne-t-elle l'assurance professionnelle de mon entreprise ?",
+    a: "Non. Cette page conserve son URL historique, mais le contenu concerne Giva comme service de regroupement d'assurances pour particuliers. Elle ne décrit pas une assurance professionnelle pour votre activité de transport sanitaire.",
+  },
+  {
+    q: "Quels contrats personnels peuvent être concernés ?",
+    a: "Selon votre situation, Giva met en avant le regroupement de contrats comme l'auto, le deux-roues, l'habitation, l'emprunteur et le propriétaire non occupant. L'objectif est de faire le point sur vos assurances du quotidien avec un seul interlocuteur.",
+  },
+  {
+    q: "Comment se passe le parcours ?",
+    a: "Giva présente un premier audit en ligne très court, puis une mise en relation avec des agents généraux partenaires pour étudier les contrats à regrouper et les économies possibles.",
   },
   {
     q: "Le lien Giva est-il un lien d'affiliation ?",
-    a: "Oui. RoullePro perçoit une commission si vous souscrivez via ce lien. Cela ne modifie ni le prix payé ni les conditions de votre contrat. Cette mention est rendue visible sur la page conformément à la réglementation.",
-  },
-  {
-    q: "Quelles garanties sont couvertes ?",
-    a: "Responsabilité civile professionnelle, garantie corporelle du conducteur, dommages au véhicule, vol/incendie, assistance, défense recours, garantie matériel sanitaire embarqué. Le détail exact dépend de la formule choisie et de votre flotte.",
-  },
-  {
-    q: "Combien de temps prend la souscription ?",
-    a: "Le devis en ligne prend en général 5 à 10 minutes. Après acceptation du devis, la souscription effective se fait par signature électronique et l'attestation provisoire est envoyée le jour même dans la plupart des cas.",
-  },
-  {
-    q: "Puis-je changer d'assurance en cours d'année ?",
-    a: "Depuis la loi Hamon, vous pouvez résilier votre contrat d'assurance auto pro à tout moment après la première année. Giva accompagne la procédure et peut prendre en charge la résiliation du contrat précédent.",
+    a: "Oui. RoullePro peut percevoir une commission si vous souscrivez via ce lien. Cela ne modifie ni le prix payé ni les conditions proposées par Giva ou ses partenaires.",
   },
 ];
 
 export default function AssuranceProPage() {
   return (
-    <main className="bg-slate-50 min-h-screen">
-      {/* Hero */}
+    <main className="min-h-screen bg-slate-50">
       <section className="bg-gradient-to-br from-blue-800 to-blue-900 text-white">
         <div className="max-w-5xl mx-auto px-4 py-14">
-          <nav aria-label="Fil d'Ariane" className="text-sm text-blue-100 mb-5">
+          <nav aria-label="Fil d'Ariane" className="mb-5 text-sm text-blue-100">
             <ol className="flex flex-wrap items-center gap-1">
               <li>
                 <Link href="/" className="hover:text-white">
@@ -70,7 +63,7 @@ export default function AssuranceProPage() {
                 </Link>
               </li>
               <li>
-                <ChevronRight className="inline h-3.5 w-3.5 mx-0.5" />
+                <ChevronRight className="mx-0.5 inline h-3.5 w-3.5" />
               </li>
               <li>
                 <Link href="/partenaires" className="hover:text-white">
@@ -78,274 +71,307 @@ export default function AssuranceProPage() {
                 </Link>
               </li>
               <li>
-                <ChevronRight className="inline h-3.5 w-3.5 mx-0.5" />
+                <ChevronRight className="mx-0.5 inline h-3.5 w-3.5" />
               </li>
-              <li className="text-white">Assurance pro</li>
+              <li className="text-white">Assurances</li>
             </ol>
           </nav>
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-3 py-1 rounded-full text-xs font-medium mb-4">
+
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium">
             <ShieldCheck className="h-3.5 w-3.5" />
             Partenaire RoullePro
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
-            Une assurance pro adaptée aux transporteurs sanitaires
+
+          <h1 className="mb-4 text-3xl font-bold leading-tight md:text-4xl">
+            Faites le point sur vos assurances personnelles avec Giva
           </h1>
-          <p className="text-lg text-blue-50 max-w-3xl mb-6">
-            Ambulances, VSL, taxis conventionnés : obtenez un devis en ligne en quelques minutes auprès de Giva, courtier spécialisé en assurance mobilité professionnelle.
+          <p className="mb-6 max-w-3xl text-lg text-blue-50">
+            Quand on conduit toute la journée ou qu&apos;on dirige une structure,
+            on cumule souvent de nombreux contrats perso : auto, habitation,
+            emprunteur, deux-roues, parfois PNO. Giva propose de les regrouper
+            avec un parcours annoncé en 2 minutes, un accompagnement par des
+            agents généraux et des économies affichées de 720 €/an en moyenne.
           </p>
-          <a
-            href={GIVA_URL}
-            target="_blank"
-            rel="noopener sponsored"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-800 rounded-xl font-bold hover:bg-blue-50 transition shadow-lg"
-          >
-            Obtenir un devis Giva
-            <ExternalLink className="h-4 w-4" />
-          </a>
+          <div className="flex flex-wrap gap-3">
+            <a
+              href={GIVA_URL}
+              target="_blank"
+              rel="noopener sponsored"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-bold text-blue-800 shadow-lg transition hover:bg-blue-50"
+            >
+              Faire le point avec Giva
+              <ExternalLink className="h-4 w-4" />
+            </a>
+            <Link
+              href="/partenaires"
+              className="inline-flex items-center gap-2 rounded-xl border border-white/20 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
+            >
+              Voir tous nos partenaires
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
       <section className="max-w-5xl mx-auto px-4 py-12">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <article className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 md:p-10 prose prose-slate max-w-none prose-headings:scroll-mt-24 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-lg prose-h3:font-semibold prose-h3:mt-6 prose-h3:mb-3 prose-p:leading-relaxed prose-li:my-0 prose-a:text-blue-700 hover:prose-a:text-blue-800 prose-strong:text-slate-900">
-            <h2 id="pourquoi-giva">Pourquoi un partenariat avec Giva</h2>
-            <p>
-              Le transport sanitaire est un métier où les risques s&apos;additionnent. Vous transportez des patients fragiles, votre flotte roule beaucoup, vos chauffeurs sont en garde de nuit, votre matériel embarqué (oxygène, défibrillateur, brancard, dispositifs médicaux) représente un investissement significatif. Une assurance générique pensée pour les artisans du bâtiment ne couvre pas correctement ces réalités.
-            </p>
-            <p>
-              <strong>Giva</strong> est un courtier en assurance qui a structuré une offre dédiée à la mobilité professionnelle. Les contrats négociés intègrent les spécificités du transport sanitaire : <strong>responsabilité civile professionnelle adaptée au transport de patients</strong>, garantie du matériel médical embarqué, accompagnement en cas de sinistre par des interlocuteurs qui connaissent le secteur.
-            </p>
-            <p>
-              RoullePro a sélectionné Giva après avoir comparé plusieurs courtiers généralistes et spécialistes. Le retour des transporteurs déjà clients met en avant trois points : la qualité du devis en ligne (rapide et précis), la disponibilité de l&apos;équipe support, et la compétitivité tarifaire sur les flottes de 1 à 20 véhicules.
-            </p>
-
-            <h2 id="ce-qui-est-couvert">Ce qui est couvert</h2>
-            <p>
-              Les contrats Giva pour le transport sanitaire incluent typiquement les garanties suivantes. Le détail précis dépend de la formule retenue et de votre situation (flotte, ancienneté du dirigeant, sinistralité, zone d&apos;exercice).
-            </p>
-            <ul>
-              <li>
-                <strong>Responsabilité civile professionnelle</strong> : indispensable pour tout transporteur sanitaire conventionné. Couvre les dommages causés à un tiers lors de l&apos;exécution de la prestation, y compris au patient transporté.
-              </li>
-              <li>
-                <strong>Responsabilité civile exploitation</strong> : protège l&apos;entreprise pour les dommages causés en dehors de l&apos;activité de transport (locaux, matériels stockés, accueil de personnels externes).
-              </li>
-              <li>
-                <strong>Dommages au véhicule</strong> : tous risques ou tiers étendu selon le profil de la flotte.
-              </li>
-              <li>
-                <strong>Garantie du matériel sanitaire embarqué</strong> : oxygène, défibrillateur, brancard, matelas immobilisateur, dispositifs médicaux divers.
-              </li>
-              <li>
-                <strong>Garantie corporelle du conducteur</strong> : indemnisation du chauffeur en cas d&apos;accident.
-              </li>
-              <li>
-                <strong>Assistance 24/7</strong> : remorquage, véhicule de remplacement, rapatriement du patient si nécessaire.
-              </li>
-              <li>
-                <strong>Vol, incendie, bris de glace</strong> : couvertures classiques en formule complète.
-              </li>
-              <li>
-                <strong>Défense recours</strong> : assistance juridique en cas de litige avec un tiers.
-              </li>
-              <li>
-                <strong>Garantie perte d&apos;exploitation</strong> : optionnelle, mais utile pour les flottes monolocales.
-              </li>
-            </ul>
-
-            <h2 id="benefices">Les bénéfices concrets</h2>
-            <h3>Devis en ligne en 5 à 10 minutes</h3>
-            <p>
-              Le formulaire Giva est conçu pour aller à l&apos;essentiel. Il vous demande votre numéro SIRET, votre catégorie d&apos;activité (ambulance, VSL, taxi conventionné), votre flotte actuelle (nombre de véhicules, modèles, ancienneté), votre sinistralité des trois dernières années, et la formule souhaitée. Le devis vous est envoyé par email dans la foulée et vous pouvez le partager avec votre comptable ou votre conjoint d&apos;exploitation.
-            </p>
-
-            <h3>Tarifs négociés pour le secteur</h3>
-            <p>
-              Giva travaille avec plusieurs assureurs partenaires et joue la concurrence pour vous proposer le meilleur tarif. Pour les flottes de plus de cinq véhicules, des conditions spécifiques peuvent être négociées (franchise réduite, étalement de la prime, prise en charge des frais de résiliation du précédent contrat).
-            </p>
-
-            <h3>Accompagnement humain en cas de sinistre</h3>
-            <p>
-              Quand un sinistre survient, vous ne tombez pas dans un centre d&apos;appels anonyme. Un interlocuteur dédié vous suit du déclaration à l&apos;indemnisation, et connaît les spécificités du transport sanitaire (urgence de remplacement du véhicule pour ne pas interrompre la prestation, gestion du matériel médical endommagé, déclaration ARS si nécessaire).
-            </p>
-
-            <h3>Souscription rapide après acceptation</h3>
-            <p>
-              Une fois le devis accepté, la souscription se fait par signature électronique. <strong>L&apos;attestation provisoire est envoyée le jour même</strong> dans la plupart des cas, ce qui permet une mise en route immédiate. La résiliation de votre ancien contrat (si applicable) est prise en charge par Giva avec la loi Hamon.
-            </p>
-
-            <h2 id="qui-est-concerne">À qui s&apos;adresse cette offre</h2>
-            <p>
-              L&apos;offre Giva est pertinente pour les profils suivants :
-            </p>
-            <ul>
-              <li>
-                <strong>Création d&apos;entreprise</strong> : vous lancez votre activité ambulancière, VSL ou taxi conventionné. Le devis Giva fournit une base solide pour bâtir votre business plan.
-              </li>
-              <li>
-                <strong>Renouvellement annuel</strong> : votre contrat actuel arrive à échéance. C&apos;est le bon moment pour comparer et négocier.
-              </li>
-              <li>
-                <strong>Sortie loi Hamon</strong> : vous êtes assuré depuis plus de douze mois et souhaitez résilier à tout moment. Giva accompagne la transition.
-              </li>
-              <li>
-                <strong>Croissance de flotte</strong> : vous ajoutez un véhicule, vous passez de 3 à 6 ambulances. Renégocier l&apos;ensemble de la flotte permet souvent d&apos;améliorer les conditions.
-              </li>
-              <li>
-                <strong>Reprise d&apos;entreprise</strong> : vous rachetez une société de transport sanitaire. Un nouveau contrat sur mesure est préférable au transfert du contrat existant.
-              </li>
-            </ul>
-
-            <h2 id="comment-ca-marche">Comment ça marche</h2>
-            <ol>
-              <li>
-                <strong>Cliquez sur le bouton de devis Giva</strong> ci-dessous. Vous arrivez sur le formulaire en ligne.
-              </li>
-              <li>
-                <strong>Renseignez vos informations</strong> (SIRET, catégorie, flotte). Comptez 5 à 10 minutes.
-              </li>
-              <li>
-                <strong>Recevez votre devis par email</strong> détaillé, avec plusieurs niveaux de formule.
-              </li>
-              <li>
-                <strong>Échangez avec un conseiller Giva</strong> par téléphone ou email pour ajuster les garanties.
-              </li>
-              <li>
-                <strong>Signez électroniquement</strong> et recevez votre attestation provisoire.
-              </li>
-              <li>
-                <strong>Giva résilie l&apos;ancien contrat</strong> si vous le souhaitez (loi Hamon), sans démarche de votre part.
-              </li>
-            </ol>
-
-            <div className="not-prose my-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <Clock className="h-5 w-5 text-blue-700 mb-2" />
-                <p className="text-sm font-semibold text-slate-900">Devis sous 10 min</p>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Formulaire en ligne, sans engagement.
+        <div className="grid gap-8 lg:grid-cols-3">
+          <article className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 md:p-10">
+            <div className="space-y-6 text-slate-700">
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Pourquoi cette page existe sur RoullePro
+                </h2>
+                <p className="mt-4 leading-relaxed">
+                  La plupart des chauffeurs, dirigeants et indépendants du
+                  transport sanitaire gèrent d&apos;un côté leur activité
+                  professionnelle, et de l&apos;autre leur budget personnel.
+                  C&apos;est souvent là que s&apos;empilent les contrats :
+                  assurance auto perso, habitation, prêt immobilier,
+                  deux-roues ou propriétaire non occupant.
                 </p>
-              </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <HeartPulse className="h-5 w-5 text-blue-700 mb-2" />
-                <p className="text-sm font-semibold text-slate-900">Garanties métier</p>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Adaptées au transport sanitaire conventionné.
+                <p className="mt-4 leading-relaxed">
+                  Cette page ne parle donc pas d&apos;une assurance métier pour
+                  ambulance, VSL ou taxi conventionné. Elle présente Giva comme
+                  un service de regroupement d&apos;assurances pour particuliers,
+                  utile pour ceux qui veulent remettre à plat leurs contrats
+                  personnels et gagner en lisibilité.
                 </p>
-              </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <Phone className="h-5 w-5 text-blue-700 mb-2" />
-                <p className="text-sm font-semibold text-slate-900">Accompagnement</p>
-                <p className="text-xs text-slate-600 mt-0.5">
-                  Interlocuteur dédié, support sinistre 24/7.
-                </p>
-              </div>
-            </div>
+              </section>
 
-            <h2 id="faq">Questions fréquentes</h2>
-            <div className="not-prose space-y-3">
-              {FAQ.map((it, idx) => (
-                <details
-                  key={idx}
-                  className="group border border-slate-200 rounded-xl bg-white open:border-blue-200"
-                >
-                  <summary className="cursor-pointer p-4 text-sm font-semibold text-slate-900 list-none flex items-center justify-between gap-3">
-                    <span>{it.q}</span>
-                    <span className="text-slate-400 group-open:rotate-45 transition">+</span>
-                  </summary>
-                  <div className="px-4 pb-4 text-sm text-slate-700 leading-relaxed">
-                    {it.a}
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Ce que Giva met en avant
+                </h2>
+                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <Clock className="mb-2 h-5 w-5 text-blue-700" />
+                    <p className="text-sm font-semibold text-slate-900">
+                      Parcours rapide
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Une situation à renseigner en 2 minutes selon Giva.
+                    </p>
                   </div>
-                </details>
-              ))}
-            </div>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <FileText className="mb-2 h-5 w-5 text-blue-700" />
+                    <p className="text-sm font-semibold text-slate-900">
+                      Vision globale
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Un audit pour faire le point sur plusieurs contrats du
+                      quotidien.
+                    </p>
+                  </div>
+                  <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+                    <Phone className="mb-2 h-5 w-5 text-blue-700" />
+                    <p className="text-sm font-semibold text-slate-900">
+                      Accompagnement humain
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Des échanges avec des agents généraux partenaires.
+                    </p>
+                  </div>
+                </div>
+                <p className="mt-4 leading-relaxed">
+                  Giva communique sur un regroupement de contrats qui permet de
+                  simplifier la gestion, d&apos;éviter les doublons de garanties
+                  et de rechercher des économies. Le site met en avant jusqu&apos;à
+                  30 % d&apos;économies et 720 €/an en moyenne selon les dossiers.
+                </p>
+              </section>
 
-            <h2 id="affilie">Transparence sur le lien partenaire</h2>
-            <p className="text-sm text-slate-600">
-              Lien partenaire. RoullePro peut percevoir une commission si vous souscrivez via ce lien. Cela ne modifie ni le prix ni les conditions de votre contrat Giva. Cette mention est rendue visible sur la page conformément à la réglementation. Pour plus d&apos;informations, consultez nos <Link href="/mentions-legales">mentions légales</Link>.
-            </p>
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Contrats personnels souvent concernés
+                </h2>
+                <ul className="mt-4 space-y-3">
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                    <span>
+                      <strong className="text-slate-900">Auto</strong> :
+                      particulièrement pertinent quand plusieurs véhicules ou
+                      conducteurs coexistent dans le foyer.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                    <span>
+                      <strong className="text-slate-900">Deux-roues</strong> :
+                      scooter ou moto, souvent oubliés alors qu&apos;ils pèsent
+                      vite dans le budget annuel.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                    <span>
+                      <strong className="text-slate-900">Habitation / MRH</strong> :
+                      résidence principale, secondaire ou logement étudiant selon
+                      les situations.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                    <span>
+                      <strong className="text-slate-900">Emprunteur</strong> :
+                      un poste de dépense important dès qu&apos;un crédit immobilier
+                      est en cours.
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-600" />
+                    <span>
+                      <strong className="text-slate-900">PNO</strong> :
+                      propriétaire non occupant pour les profils qui possèdent
+                      un bien locatif.
+                    </span>
+                  </li>
+                </ul>
+              </section>
 
-            <div className="not-prose mt-10 pt-6 border-t border-slate-200 text-center">
-              <a
-                href={GIVA_URL}
-                target="_blank"
-                rel="noopener sponsored"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-xl font-bold transition shadow-md"
-              >
-                Obtenir mon devis Giva maintenant
-                <ArrowRight className="h-4 w-4" />
-              </a>
-              <p className="text-xs text-slate-500 mt-3">
-                Vous quittez RoullePro et accédez à go.giva.fr (ouverture dans un nouvel onglet).
-              </p>
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Comment se passe la démarche
+                </h2>
+                <ol className="mt-4 space-y-4">
+                  <li className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <strong className="text-slate-900">1. Vous renseignez votre situation.</strong>
+                    <p className="mt-1 text-sm leading-6">
+                      Giva annonce un premier parcours très court pour lister les
+                      contrats que vous avez déjà.
+                    </p>
+                  </li>
+                  <li className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <strong className="text-slate-900">2. Vos contrats sont étudiés.</strong>
+                    <p className="mt-1 text-sm leading-6">
+                      L&apos;objectif est d&apos;identifier les regroupements
+                      possibles et les économies potentielles.
+                    </p>
+                  </li>
+                  <li className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <strong className="text-slate-900">3. Un agent vous recontacte.</strong>
+                    <p className="mt-1 text-sm leading-6">
+                      Vous échangez avec un interlocuteur humain pour affiner la
+                      solution proposée.
+                    </p>
+                  </li>
+                  <li className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <strong className="text-slate-900">4. Vous décidez librement.</strong>
+                    <p className="mt-1 text-sm leading-6">
+                      Vous choisissez ensuite de poursuivre ou non selon les
+                      conditions obtenues.
+                    </p>
+                  </li>
+                </ol>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Questions fréquentes
+                </h2>
+                <div className="mt-4 space-y-3">
+                  {FAQ.map((item) => (
+                    <details
+                      key={item.q}
+                      className="group rounded-xl border border-slate-200 bg-white open:border-blue-200"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-sm font-semibold text-slate-900">
+                        <span>{item.q}</span>
+                        <span className="text-slate-400 transition group-open:rotate-45">
+                          +
+                        </span>
+                      </summary>
+                      <div className="px-4 pb-4 text-sm leading-relaxed text-slate-700">
+                        {item.a}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+
+              <section className="border-t border-slate-200 pt-6">
+                <h2 className="text-xl font-bold text-slate-900">
+                  Transparence sur le lien partenaire
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600">
+                  Lien partenaire. RoullePro peut percevoir une commission si
+                  vous utilisez ce lien. Cela ne modifie ni le prix ni les
+                  conditions proposées par Giva. Pour plus d&apos;informations,
+                  consultez nos{" "}
+                  <Link href="/mentions-legales" className="text-blue-700 hover:text-blue-800">
+                    mentions légales
+                  </Link>
+                  .
+                </p>
+              </section>
+
+              <div className="border-t border-slate-200 pt-6 text-center">
+                <a
+                  href={GIVA_URL}
+                  target="_blank"
+                  rel="noopener sponsored"
+                  className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-3 font-bold text-white shadow-md transition hover:bg-blue-800"
+                >
+                  Découvrir Giva
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <p className="mt-3 text-xs text-slate-500">
+                  Vous quittez RoullePro et ouvrez go.giva.fr dans un nouvel
+                  onglet.
+                </p>
+              </div>
             </div>
           </article>
 
-          {/* Sidebar */}
           <aside className="space-y-4">
-            <div className="bg-white border border-slate-200 rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="mb-3 flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-blue-700" />
-                <h3 className="font-semibold text-slate-900">Devis express</h3>
+                <h3 className="font-semibold text-slate-900">En bref</h3>
               </div>
-              <p className="text-sm text-slate-600 mb-4">
-                Sans engagement, sans création de compte. Vous recevez le devis par email.
-              </p>
-              <a
-                href={GIVA_URL}
-                target="_blank"
-                rel="noopener sponsored"
-                className="block text-center px-4 py-2.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg font-semibold transition text-sm"
-              >
-                Démarrer mon devis
-              </a>
-            </div>
-
-            <div className="bg-white border border-slate-200 rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
-                Cibles
-              </p>
               <ul className="space-y-2 text-sm text-slate-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  Sociétés ambulancières
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                  Regroupement d&apos;assurances personnelles
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  Entreprises de VSL
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                  Parcours annoncé en 2 minutes
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  Taxis conventionnés CPAM
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                  Agents généraux partenaires
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                  Flottes de 1 à 20 véhicules
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-600" />
+                  Économies affichées de 720 €/an en moyenne
                 </li>
               </ul>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">
-                Garanties clés
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-amber-700" />
+                <h3 className="font-semibold text-slate-900">Point important</h3>
+              </div>
+              <p className="text-sm leading-6 text-slate-700">
+                Cette page ne décrit pas une assurance professionnelle pour le
+                transport sanitaire. Le slug historique est conservé uniquement
+                pour ne pas casser les liens existants.
               </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="mb-3 flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-blue-700" />
+                <h3 className="font-semibold text-slate-900">
+                  Profils souvent concernés
+                </h3>
+              </div>
               <ul className="space-y-2 text-sm text-slate-700">
-                <li className="flex items-start gap-2">
-                  <FileText className="h-4 w-4 text-blue-700 mt-0.5 flex-shrink-0" />
-                  RC pro transport de patients
-                </li>
-                <li className="flex items-start gap-2">
-                  <Wrench className="h-4 w-4 text-blue-700 mt-0.5 flex-shrink-0" />
-                  Matériel sanitaire embarqué
-                </li>
-                <li className="flex items-start gap-2">
-                  <Building2 className="h-4 w-4 text-blue-700 mt-0.5 flex-shrink-0" />
-                  Locaux et exploitation
-                </li>
-                <li className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 text-blue-700 mt-0.5 flex-shrink-0" />
-                  Assistance 24/7
-                </li>
+                <li>Dirigeants qui veulent simplifier leurs contrats perso</li>
+                <li>Chauffeurs avec auto + habitation + deux-roues</li>
+                <li>Foyers avec crédit immobilier et assurance emprunteur</li>
+                <li>Propriétaires bailleurs avec contrat PNO</li>
               </ul>
             </div>
           </aside>

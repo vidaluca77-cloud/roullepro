@@ -48,6 +48,13 @@ test("ordre public et pro respecte la consigne", () => {
   );
   assert.deepEqual(
     getPartnerStripPartners("pro").map((partner) => partner.name),
-    ["Giva", "Allopoints Protect", "Notre Livre"],
+    ["Allopoints Protect", "Giva", "Notre Livre"],
+  );
+});
+
+test("libelle Giva corrige pour le regroupement d'assurances", () => {
+  assert.equal(
+    getPartnerStripPartners("public").find((partner) => partner.key === "giva")?.description,
+    "Regroupez vos assurances (auto, habitation...) — jusqu'à 720 €/an d'économies",
   );
 });

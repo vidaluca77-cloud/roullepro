@@ -24,7 +24,8 @@ const PARTNERS: Record<PartnerStripPartnerKey, PartnerStripPartner> = {
   giva: {
     key: "giva",
     name: "Giva",
-    description: "Assurance pro transport sanitaire — devis en ligne",
+    description:
+      "Regroupez vos assurances (auto, habitation...) — jusqu'à 720 €/an d'économies",
     href: "/partenaires/assurance-pro",
   },
   allopoints: {
@@ -43,8 +44,8 @@ const PUBLIC_ORDER: PartnerStripPartnerKey[] = [
 ];
 
 const PRO_ORDER: PartnerStripPartnerKey[] = [
-  "giva",
   "allopoints",
+  "giva",
   "notre-livre",
 ];
 
