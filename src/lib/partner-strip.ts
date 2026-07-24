@@ -92,7 +92,10 @@ export function getPartnerStripAudience(
   const normalizedPathname = normalizePathname(pathname);
 
   if (!normalizedPathname) return null;
-  if (normalizedPathname === "/" || isBlogRoute(normalizedPathname)) {
+  if (normalizedPathname === "/") {
+    return null;
+  }
+  if (isBlogRoute(normalizedPathname)) {
     return "public";
   }
   if (isExcludedDashboardRoute(normalizedPathname)) {

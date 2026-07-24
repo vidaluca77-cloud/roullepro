@@ -18,6 +18,7 @@ import {
 import SearchHero from "@/components/sanitaire/SearchHero";
 import RechercheEtablissement from "@/components/RechercheEtablissement";
 import DemandeTransportForm from "@/components/sanitaire/DemandeTransportForm";
+import PartnerStrip from "@/components/partenaires/PartnerStrip";
 import { CATEGORIES_SANITAIRE } from "@/lib/sanitaire-data";
 import { getProStats } from "@/lib/stats";
 import { jsonLdHtml } from "@/lib/seo-schema";
@@ -312,67 +313,86 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {hopitauxPhares.length > 0 && (
-        <section className="border-t border-gray-100 bg-white">
-          <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
-            <div className="text-center mb-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-                Hôpitaux près de chez vous
-              </h2>
-              <p className="text-gray-600 max-w-2xl mx-auto">
-                Trouvez un taxi conventionné, un VSL ou une ambulance pour votre rendez-vous à
-                l&apos;hôpital.
-              </p>
-            </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {hopitauxPhares.map((h) => {
-                const nom = h.nom_affichage || h.nom_court || h.raison_sociale;
-                return (
-                  <div
-                    key={h.id}
-                    className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-lg transition"
-                  >
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0066CC] flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-5 h-5" />
-                      </div>
-                      <div className="min-w-0">
-                        <Link
-                          href={`/etablissements/${h.slug}`}
-                          className="font-bold text-gray-900 hover:text-[#0066CC] transition block truncate"
-                        >
-                          {nom}
-                        </Link>
-                        <div className="text-xs text-gray-500 flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
-                          {h.ville}
-                          {h.departement ? ` (${h.departement})` : ""}
+      <PartnerStrip audience="public" />
+
+      <section className="border-t border-gray-100 bg-white">
+        <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
+              Hôpitaux près de chez vous
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Trouvez un taxi conventionné, un VSL ou une ambulance pour votre rendez-vous à
+              l&apos;hôpital.
+            </p>
+          </div>
+
+          {hopitauxPhares.length > 0 ? (
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {hopitauxPhares.map((h) => {
+                  const nom = h.nom_affichage || h.nom_court || h.raison_sociale;
+                  return (
+                    <div
+                      key={h.id}
+                      className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-blue-300 hover:shadow-lg transition"
+                    >
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0066CC] flex items-center justify-center flex-shrink-0">
+                          <Building2 className="w-5 h-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/etablissements/${h.slug}`}
+                            className="font-bold text-gray-900 hover:text-[#0066CC] transition block truncate"
+                          >
+                            {nom}
+                          </Link>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {h.ville}
+                            {h.departement ? ` (${h.departement})` : ""}
+                          </div>
                         </div>
                       </div>
+                      <Link
+                        href={`/transport-medical/vers/${h.slug}`}
+                        className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] hover:gap-2 transition-all"
+                      >
+                        Taxi conventionné et VSL vers {nom}
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
                     </div>
-                    <Link
-                      href={`/transport-medical/vers/${h.slug}`}
-                      className="inline-flex items-center gap-1 text-sm font-medium text-[#0066CC] hover:gap-2 transition-all"
-                    >
-                      Taxi conventionné et VSL vers {nom}
-                      <ChevronRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-8 text-center">
+                  );
+                })}
+              </div>
+              <div className="mt-8 text-center">
+                <Link
+                  href="/etablissements/hopitaux"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#0066CC] hover:underline"
+                >
+                  Voir tous les hôpitaux en France
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </>
+          ) : (
+            <div className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-slate-50 px-6 py-8 text-center">
+              <p className="text-sm leading-6 text-gray-600 sm:text-base">
+                Retrouvez l&apos;annuaire des hôpitaux et les trajets conventionnés associés partout
+                en France.
+              </p>
               <Link
                 href="/etablissements/hopitaux"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#0066CC] hover:underline"
+                className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#0066CC] hover:underline"
               >
                 Voir tous les hôpitaux en France
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
-          </div>
-        </section>
-      )}
+          )}
+        </div>
+      </section>
 
       <section className="bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16">

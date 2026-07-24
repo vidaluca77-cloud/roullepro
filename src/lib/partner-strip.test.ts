@@ -5,8 +5,8 @@ import {
   getPartnerStripPartners,
 } from "./partner-strip";
 
-test("accueil => audience public", () => {
-  assert.equal(getPartnerStripAudience("/"), "public");
+test("accueil => masque le slot footer", () => {
+  assert.equal(getPartnerStripAudience("/"), null);
 });
 
 test("blog, categorie et article => audience public", () => {
