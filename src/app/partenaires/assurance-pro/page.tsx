@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const FAQ: { q: string; a: string }[] = [
   {
     q: "Cette page concerne-t-elle l'assurance professionnelle de mon entreprise ?",
-    a: "Non. Cette page conserve son URL historique, mais le contenu concerne Giva comme service de regroupement d'assurances pour particuliers. Elle ne décrit pas une assurance professionnelle pour votre activité de transport sanitaire.",
+    a: "Non. Le contenu concerne Giva comme service de regroupement d'assurances pour particuliers. Elle ne décrit pas une assurance professionnelle pour votre activité de transport sanitaire.",
   },
   {
     q: "Quels contrats personnels peuvent être concernés ?",
@@ -355,8 +355,7 @@ export default function AssuranceProPage() {
               </div>
               <p className="text-sm leading-6 text-slate-700">
                 Cette page ne décrit pas une assurance professionnelle pour le
-                transport sanitaire. Le slug historique est conservé uniquement
-                pour ne pas casser les liens existants.
+                transport sanitaire.
               </p>
             </div>
 
