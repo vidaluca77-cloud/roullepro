@@ -65,6 +65,13 @@ export function BlogCTA({ category }: { category: string }) {
       primary: { label: "Voir les annonces", href: "/annonces" },
       secondary: { label: "Créer un compte", href: "/auth/signup" },
     },
+    "Transport sanitaire": {
+      title: "Trouvez un transporteur fiable près de chez vous",
+      description:
+        "Annuaire gratuit pour patients et aidants : ambulances, VSL et taxis conventionnés avec téléphone direct et repères pratiques.",
+      primary: { label: "Rechercher un transport", href: "/transport-medical/recherche" },
+      secondary: { label: "Voir le guide transport médical", href: "/transport-medical" },
+    },
   };
 
   const cta = map[category] || map["Guide acheteur"];
