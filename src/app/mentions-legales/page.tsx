@@ -451,7 +451,8 @@ export default function MentionsLegalesPage() {
             <p>
               RoullePro peut inclure des liens d&apos;affiliation vers des partenaires
               commerciaux. C&apos;est notamment le cas pour le partenariat avec Giva,
-              courtier en assurance professionnelle, dont le lien partenaire est{" "}
+              service de regroupement d&apos;assurances pour particuliers, dont le
+              lien partenaire est{" "}
               <a
                 href="https://go.giva.fr/?src=LucasH"
                 target="_blank"

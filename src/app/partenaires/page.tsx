@@ -51,19 +51,19 @@ export default function PartenairesPage() {
               <div className="flex items-center gap-2 mb-2">
                 <ShieldCheck className="w-5 h-5 text-blue-700" />
                 <h3 className="font-semibold text-gray-900">
-                  Giva — Assurance pro
+                  Giva — Assurances
                 </h3>
               </div>
               <p className="text-sm text-gray-600 leading-relaxed mb-4 flex-1">
-                Devis en ligne d&apos;assurance professionnelle adaptée au
-                transport sanitaire (ambulance, VSL, taxi conventionné) via notre
-                courtier partenaire.
+                Faites le point sur tous vos contrats (auto, deux-roues,
+                habitation, emprunteur) et économisez en moyenne 720 €/an grâce
+                au regroupement d&apos;assurances.
               </p>
               <Link
                 href="/partenaires/assurance-pro"
                 className="inline-flex items-center gap-1.5 text-sm bg-[#0066CC] hover:bg-[#0052a3] text-white font-semibold px-4 py-2 rounded-xl transition self-start"
               >
-                Découvrir l&apos;offre
+                Découvrir Giva
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
