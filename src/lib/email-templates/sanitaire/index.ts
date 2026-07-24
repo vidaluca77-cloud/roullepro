@@ -14,6 +14,7 @@ export { renderDripJ2Demarrage }     from "./drip-j2-demarrage";
 export { renderDripJ5FinEssai }      from "./drip-j5-fin-essai";
 export { renderTrialWillEnd }        from "./trial-will-end";
 export { renderRelanceEssai }        from "./relance-essai";
+export { renderStudioSocialEchec }   from "./studio-social-echec";
 
 // Types publics
 export type { InscriptionAccuseParams }       from "./inscription-accuse";
@@ -28,3 +29,4 @@ export type { DripJ2Params }                  from "./drip-j2-demarrage";
 export type { DripJ5Params }                  from "./drip-j5-fin-essai";
 export type { TrialWillEndParams }            from "./trial-will-end";
 export type { RelanceEssaiParams }            from "./relance-essai";
+export type { StudioSocialEchecParams }       from "./studio-social-echec";

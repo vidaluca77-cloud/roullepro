@@ -40,6 +40,10 @@
 [functions."relance-essai"]
   schedule = "30 7 * * *"
 
+# Scheduled function : publication auto des posts planifies du Studio reseaux sociaux, toutes les heures
+[functions."studio-social-publish"]
+  schedule = "0 * * * *"
+
 [[headers]]
   for = "/*"
   [headers.values]
