@@ -3,7 +3,7 @@
  *
  * Un pro sanitaire « claimed » bénéficie d'une période offerte (50 premiers = 6 mois,
  * 50 suivants = 2 mois, puis essai 7 jours). La fin de cette période est portée par
- * COALESCE(free_trial_ends_at, plan_active_until). On relance par email à J-7, J-3 et
+ * COALESCE(free_trial_ends_at, plan_active_until, plan_expires_at). On relance par email à J-7, J-3 et
  * J-1 avant l'échéance, comparaison faite en DATE CALENDAIRE Europe/Paris (et non en
  * heures glissantes), pour que « dans 3 jours » corresponde bien à 3 jours de calendrier.
  *
@@ -32,6 +32,13 @@ export type ProRelance = {
   claimed: boolean | null;
   free_trial_ends_at: string | null;
   plan_active_until: string | null;
+  /**
+   * Date d'expiration des essais automatiques 7 jours (cf. sanitaire-auto-trial.ts) :
+   * pour ces pros, c'est la SEULE colonne renseignée (free_trial_ends_at et
+   * plan_active_until restent NULL). Sert de dernier recours dans calculerEcheance,
+   * en cohérence avec peutAccepterCourses (src/lib/sanitaire-plans.ts).
+   */
+  plan_expires_at: string | null;
   stripe_subscription_id: string | null;
 };
 
@@ -44,11 +51,12 @@ export type RelanceSelection = {
 };
 
 /**
- * Échéance de fin d'offre : free_trial_ends_at prioritaire, sinon plan_active_until.
- * Retourne l'ISO string ou null si aucune des deux n'est renseignée / valide.
+ * Échéance de fin d'offre : free_trial_ends_at prioritaire, sinon plan_active_until,
+ * sinon plan_expires_at (essais auto 7 jours qui n'ont QUE cette colonne renseignée).
+ * Retourne l'ISO string ou null si aucune des trois n'est renseignée / valide.
  */
 export function calculerEcheance(pro: ProRelance): string | null {
-  const brut = pro.free_trial_ends_at ?? pro.plan_active_until;
+  const brut = pro.free_trial_ends_at ?? pro.plan_active_until ?? pro.plan_expires_at;
   if (!brut) return null;
   const t = new Date(brut).getTime();
   if (Number.isNaN(t)) return null;
