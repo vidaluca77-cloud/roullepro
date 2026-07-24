@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import GoogleAnalytics from '@/components/analytics/GoogleAnalytics';
 import NewsletterBanner from '@/components/NewsletterBanner';
 import FloatingReserveTaxi from '@/components/FloatingReserveTaxi';
+import PartnerBannerSlot from '@/components/partenaires/PartnerBannerSlot';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -155,6 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleAnalytics />
         <Navbar />
         <main className="min-h-screen">{children}</main>
+        <PartnerBannerSlot />
         <Footer />
         <NewsletterBanner />
         <FloatingReserveTaxi />
