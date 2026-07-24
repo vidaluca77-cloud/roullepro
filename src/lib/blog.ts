@@ -288,6 +288,18 @@ const TRANSACTIONAL_POSTS: BlogPost[] = (() => {
   }
 })();
 
+const PARTNER_POSTS: BlogPost[] = (() => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const mod = require("./blog-partner-posts");
+    return Array.isArray(mod?.PARTNER_POSTS)
+      ? (mod.PARTNER_POSTS as BlogPost[])
+      : [];
+  } catch {
+    return [];
+  }
+})();
+
 const ALL_POSTS: BlogPost[] = [
   ...POSTS,
   ...NEW_POSTS,
@@ -295,6 +307,7 @@ const ALL_POSTS: BlogPost[] = [
   ...MEDICAL_POSTS,
   ...SEO_VILLES_POSTS,
   ...TRANSACTIONAL_POSTS,
+  ...PARTNER_POSTS,
 ];
 
 /* ----------------------------- CATÉGORIES ----------------------------- */

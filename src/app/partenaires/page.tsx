@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Mail, Users, ArrowRight, ShieldCheck, Scale } from "lucide-react";
+import {
+  Mail,
+  Users,
+  ArrowRight,
+  ShieldCheck,
+  Scale,
+  BookHeart,
+} from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Programme partenaire",
@@ -83,6 +90,32 @@ export default function PartenairesPage() {
                 Découvrir l&apos;offre
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
+            </div>
+
+            <div className="bg-white border border-gray-200 rounded-2xl p-6 flex flex-col sm:col-span-2">
+              <div className="flex items-center gap-2 mb-2">
+                <BookHeart className="w-5 h-5 text-rose-700" />
+                <h3 className="font-semibold text-gray-900">Notre Livre</h3>
+                <span className="ml-auto inline-flex items-center rounded-full bg-rose-600 px-2.5 py-0.5 text-xs font-bold text-white">
+                  −10 %
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed mb-2 flex-1">
+                Offrez leurs mémoires à ceux que vous aimez — un vrai livre
+                écrit à partir de leurs souvenirs.
+              </p>
+              <p className="text-sm text-rose-700 font-medium mb-4">
+                −10 % avec le code ROULLEPRO.
+              </p>
+              <a
+                href="https://notrelivre.com?utm_source=roullepro&utm_medium=partenaires"
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center gap-1.5 text-sm bg-rose-700 hover:bg-rose-800 text-white font-semibold px-4 py-2 rounded-xl transition self-start"
+              >
+                Découvrir Notre Livre
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
             </div>
           </div>
         </section>
