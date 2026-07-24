@@ -10,7 +10,10 @@ import {
   CalendarClock,
   Save,
   AlertTriangle,
+  Share2,
+  Link2,
 } from "lucide-react";
+import StudioConnexions from "@/components/sanitaire/StudioConnexions";
 
 const PROVIDERS: { key: string; label: string }[] = [
   { key: "facebook", label: "Facebook" },
@@ -63,11 +66,35 @@ export default function StudioSocial({
   nomAffiche: string;
   configured: boolean;
 }) {
+  const [onglet, setOnglet] = useState<"posts" | "connexions">("posts");
   const [posts, setPosts] = useState<Post[]>([]);
   const [quota, setQuota] = useState<Quota | null>(null);
   const [chargement, setChargement] = useState(true);
   const [generation, setGeneration] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [flash, setFlash] = useState<string | null>(null);
+
+  // Messages de retour du flux OAuth (?connecte=… / ?erreur=…).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connecte = params.get("connecte");
+    const err = params.get("erreur");
+    if (connecte) {
+      setOnglet("connexions");
+      setFlash(`Compte ${connecte === "meta" ? "Facebook / Instagram" : "Google Business"} connecté.`);
+    } else if (err) {
+      setOnglet("connexions");
+      const libelle: Record<string, string> = {
+        indisponible: "Cette connexion n'est pas encore disponible.",
+        plan: "Réservé aux abonnés Pro.",
+        state: "Session de connexion expirée, réessayez.",
+      };
+      setFlash(libelle[err] || "La connexion a échoué, réessayez.");
+    }
+    if (connecte || err) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const charger = useCallback(async () => {
     setChargement(true);
@@ -122,6 +149,38 @@ export default function StudioSocial({
         </p>
       </header>
 
+      {/* Onglets */}
+      <div className="mb-6 flex gap-1 rounded-xl border border-gray-200 bg-white p-1">
+        <button
+          type="button"
+          onClick={() => setOnglet("posts")}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+            onglet === "posts" ? "bg-[#0066CC] text-white" : "text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          <Share2 className="w-4 h-4" /> Mes posts
+        </button>
+        <button
+          type="button"
+          onClick={() => setOnglet("connexions")}
+          className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
+            onglet === "connexions" ? "bg-[#0066CC] text-white" : "text-gray-600 hover:bg-gray-50"
+          }`}
+        >
+          <Link2 className="w-4 h-4" /> Connexions
+        </button>
+      </div>
+
+      {flash && (
+        <div className="mb-4 rounded-xl border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+          {flash}
+        </div>
+      )}
+
+      {onglet === "connexions" ? (
+        <StudioConnexions />
+      ) : (
+        <>
       {!configured && (
         <div className="mb-6 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           <AlertTriangle className="w-5 h-5 flex-shrink-0" />
@@ -193,6 +252,8 @@ export default function StudioSocial({
             <PostCard key={p.id} post={p} onChange={charger} />
           ))}
         </ul>
+      )}
+        </>
       )}
     </div>
   );
