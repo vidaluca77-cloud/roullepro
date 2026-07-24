@@ -27,6 +27,7 @@ function pro(over: Partial<ProRelance> = {}): ProRelance {
     claimed: true,
     free_trial_ends_at: null,
     plan_active_until: null,
+    plan_expires_at: null,
     stripe_subscription_id: null,
     ...over,
   };
@@ -94,7 +95,7 @@ test("FENETRES_RELANCE expose bien 7 / 3 / 1", () => {
   assert.deepEqual(FENETRES_RELANCE, { J7: 7, J3: 3, J1: 1 });
 });
 
-// ─── COALESCE(free_trial_ends_at, plan_active_until) ─────────────────────────
+// ─── COALESCE(free_trial_ends_at, plan_active_until, plan_expires_at) ─────────
 
 test("free_trial_ends_at est prioritaire sur plan_active_until", () => {
   const res = selectionnerRelance({
@@ -106,6 +107,43 @@ test("free_trial_ends_at est prioritaire sur plan_active_until", () => {
 
 test("fallback sur plan_active_until quand free_trial_ends_at est null", () => {
   assert.equal(calculerEcheance(pro({ plan_active_until: echeanceIso(1) })), echeanceIso(1));
+});
+
+test("essai auto : plan_expires_at seul (free_trial_ends_at et plan_active_until null) → relance", () => {
+  const res = selectionnerRelance({ pro: pro({ plan_expires_at: echeanceIso(7) }), now: NOW });
+  assert.equal(res?.type, "J7");
+  assert.equal(res?.echeanceDate, "2026-07-30");
+});
+
+test("calculerEcheance : fallback sur plan_expires_at en dernier recours", () => {
+  assert.equal(calculerEcheance(pro({ plan_expires_at: echeanceIso(1) })), echeanceIso(1));
+});
+
+test("priorités multiples : free_trial_ends_at > plan_active_until > plan_expires_at", () => {
+  // Les trois renseignés → free_trial_ends_at gagne.
+  assert.equal(
+    calculerEcheance(
+      pro({
+        free_trial_ends_at: echeanceIso(1),
+        plan_active_until: echeanceIso(3),
+        plan_expires_at: echeanceIso(7),
+      }),
+    ),
+    echeanceIso(1),
+  );
+  // free_trial_ends_at null → plan_active_until gagne sur plan_expires_at.
+  assert.equal(
+    calculerEcheance(pro({ plan_active_until: echeanceIso(3), plan_expires_at: echeanceIso(7) })),
+    echeanceIso(3),
+  );
+});
+
+test("priorité : plan_expires_at ignoré si plan_active_until renseigné (sélection J3)", () => {
+  const res = selectionnerRelance({
+    pro: pro({ plan_active_until: echeanceIso(3), plan_expires_at: echeanceIso(7) }),
+    now: NOW,
+  });
+  assert.equal(res?.type, "J3");
 });
 
 test("aucune date renseignée → pas d'échéance, pas de relance", () => {

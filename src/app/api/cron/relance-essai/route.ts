@@ -2,7 +2,7 @@
  * GET|POST /api/cron/relance-essai
  *
  * Relances automatiques de fin d'essai / d'offre gratuite des pros sanitaire « claimed ».
- * Fenêtres J-7 / J-3 / J-1 avant l'échéance COALESCE(free_trial_ends_at, plan_active_until),
+ * Fenêtres J-7 / J-3 / J-1 avant l'échéance COALESCE(free_trial_ends_at, plan_active_until, plan_expires_at),
  * comparaison par date calendaire Europe/Paris (cf. src/lib/relance-essai.ts).
  *
  * Deux tons d'email (src/lib/email-templates/sanitaire/relance-essai.ts) :
@@ -60,21 +60,24 @@ async function handle(req: Request) {
   const admin = getAdminServiceClient();
   const now = new Date();
 
-  // Fenêtre large côté SQL (échéance entre aujourd'hui et +8 jours sur l'une OU l'autre
-  // colonne) ; le filtrage calendaire fin J-7/J-3/J-1 est fait en JS par selectionnerRelance.
+  // Fenêtre large côté SQL (échéance entre aujourd'hui et +8 jours sur l'une DES trois
+  // colonnes) ; le filtrage calendaire fin J-7/J-3/J-1 est fait en JS par selectionnerRelance.
+  // Le 3e terme cible les essais auto 7 jours qui n'ont QUE plan_expires_at renseigné
+  // (free_trial_ends_at et plan_active_until NULL) — cf. sanitaire-auto-trial.ts.
   const bornInf = now.toISOString();
   const bornSup = new Date(now.getTime() + 8 * 86_400_000).toISOString();
 
   const { data: pros, error } = await admin
     .from("pros_sanitaire")
     .select(
-      "id,claimed,raison_sociale,nom_commercial,email_public,ville,free_trial_ends_at,plan_active_until,stripe_subscription_id",
+      "id,claimed,raison_sociale,nom_commercial,email_public,ville,free_trial_ends_at,plan_active_until,plan_expires_at,stripe_subscription_id",
     )
     .eq("claimed", true)
     .not("email_public", "is", null)
     .or(
       `and(free_trial_ends_at.gte.${bornInf},free_trial_ends_at.lte.${bornSup}),` +
-        `and(free_trial_ends_at.is.null,plan_active_until.gte.${bornInf},plan_active_until.lte.${bornSup})`,
+        `and(free_trial_ends_at.is.null,plan_active_until.gte.${bornInf},plan_active_until.lte.${bornSup}),` +
+        `and(free_trial_ends_at.is.null,plan_active_until.is.null,plan_expires_at.gte.${bornInf},plan_expires_at.lte.${bornSup})`,
     )
     .limit(1000);
 
