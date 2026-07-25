@@ -74,6 +74,8 @@ type ProInfo = {
   email_public: string | null;
   plan: string | null;
   plan_expires_at: string | null;
+  plan_active_until: string | null;
+  free_trial_ends_at: string | null;
   stripe_subscription_id: string | null;
 };
 
@@ -246,7 +248,9 @@ async function chargerContexte(
 ): Promise<ContextePro | null> {
   const { data: proData } = await admin
     .from("pros_sanitaire")
-    .select("id, raison_sociale, nom_commercial, email_public, plan, plan_expires_at, stripe_subscription_id")
+    .select(
+      "id, raison_sociale, nom_commercial, email_public, plan, plan_expires_at, plan_active_until, free_trial_ends_at, stripe_subscription_id"
+    )
     .eq("id", proId)
     .maybeSingle();
   const pro = proData as ProInfo | null;

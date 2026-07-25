@@ -28,16 +28,20 @@ export default async function StudioSocialPage() {
   const { data: pros } = await supabase
     .from("pros_sanitaire")
     .select(
-      "id, raison_sociale, nom_commercial, ville, plan, plan_expires_at, stripe_subscription_id"
+      "id, raison_sociale, nom_commercial, ville, plan, plan_expires_at, plan_active_until, free_trial_ends_at, stripe_subscription_id"
     )
     .eq("claimed_by", user.id);
 
+  // free_trial_ends_at et plan_active_until sont indispensables ici : sans elles,
+  // peutUtiliserStudioSocial ne verrait aucune échéance sur les offres longues.
   const fiches = (pros || []) as {
     raison_sociale: string | null;
     nom_commercial: string | null;
     ville: string | null;
     plan: string | null;
     plan_expires_at: string | null;
+    plan_active_until: string | null;
+    free_trial_ends_at: string | null;
     stripe_subscription_id: string | null;
   }[];
   const ficheActive = fiches.find((f) => peutUtiliserStudioSocial(f));

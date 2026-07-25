@@ -142,6 +142,11 @@ test("estProviderValide", () => {
 });
 
 // ─── Gating plan (peutUtiliserStudioSocial) ──────────────────────────────────
+// Règle métier : ouvert à tous les pros réclamés, SAUF période offerte terminée
+// sans abonnement actif.
+
+const futur = new Date(Date.now() + 86_400_000).toISOString();
+const passe = new Date(Date.now() - 86_400_000).toISOString();
 
 test("peutUtiliserStudioSocial : abonné Stripe actif", () => {
   assert.ok(
@@ -149,16 +154,84 @@ test("peutUtiliserStudioSocial : abonné Stripe actif", () => {
   );
 });
 
-test("peutUtiliserStudioSocial : essai en cours vs expiré", () => {
-  const futur = new Date(Date.now() + 86_400_000).toISOString();
-  const passe = new Date(Date.now() - 86_400_000).toISOString();
+test("peutUtiliserStudioSocial : essai auto 7 jours (plan_expires_at) en cours vs expiré", () => {
   assert.ok(peutUtiliserStudioSocial({ plan: "essential", plan_expires_at: futur, stripe_subscription_id: null }));
   assert.ok(!peutUtiliserStudioSocial({ plan: "essential", plan_expires_at: passe, stripe_subscription_id: null }));
 });
 
-test("peutUtiliserStudioSocial : plan gratuit refusé", () => {
-  assert.ok(!peutUtiliserStudioSocial({ plan: "gratuit", plan_expires_at: null, stripe_subscription_id: null }));
+test("peutUtiliserStudioSocial : offre longue sur free_trial_ends_at, fiche restée 'gratuit'", () => {
+  // Cas des 50 premiers inscrits (6 mois) et des 50 suivants (2 mois) : l'échéance
+  // est portée par free_trial_ends_at et le plan reste 'gratuit'. C'est exactement
+  // la régression qui bloquait la fiche LVL IA derrière le paywall.
+  assert.ok(
+    peutUtiliserStudioSocial({
+      plan: "gratuit",
+      free_trial_ends_at: futur,
+      plan_active_until: null,
+      plan_expires_at: null,
+      stripe_subscription_id: null,
+    })
+  );
+  assert.ok(
+    !peutUtiliserStudioSocial({
+      plan: "gratuit",
+      free_trial_ends_at: passe,
+      plan_active_until: null,
+      plan_expires_at: null,
+      stripe_subscription_id: null,
+    })
+  );
+});
+
+test("peutUtiliserStudioSocial : période payée en cours via plan_active_until", () => {
+  assert.ok(
+    peutUtiliserStudioSocial({ plan: "gratuit", plan_active_until: futur, stripe_subscription_id: null })
+  );
+});
+
+test("peutUtiliserStudioSocial : aucune échéance connue => accès (offre non terminée)", () => {
+  // Une offre sans date n'est pas « terminée » : le paywall ne doit pas s'afficher.
+  assert.ok(peutUtiliserStudioSocial({ plan: "gratuit", plan_expires_at: null, stripe_subscription_id: null }));
+  assert.ok(peutUtiliserStudioSocial({ plan: null }));
+});
+
+test("peutUtiliserStudioSocial : free_trial_ends_at prioritaire sur les autres colonnes", () => {
+  // echeanceOffre applique COALESCE(free_trial_ends_at, plan_active_until, plan_expires_at).
+  assert.ok(
+    peutUtiliserStudioSocial({
+      plan: "gratuit",
+      free_trial_ends_at: futur,
+      plan_expires_at: passe,
+      stripe_subscription_id: null,
+    })
+  );
+  assert.ok(
+    !peutUtiliserStudioSocial({
+      plan: "gratuit",
+      free_trial_ends_at: passe,
+      plan_expires_at: futur,
+      stripe_subscription_id: null,
+    })
+  );
+});
+
+test("peutUtiliserStudioSocial : abonnement résilié (plan gratuit + sub id) suit l'échéance", () => {
+  // Le webhook Stripe remet plan='gratuit' à la résiliation en conservant
+  // stripe_subscription_id : la seule présence de l'id ne doit pas ouvrir l'accès.
+  assert.ok(
+    !peutUtiliserStudioSocial({
+      plan: "gratuit",
+      stripe_subscription_id: "sub_resilie",
+      plan_active_until: passe,
+      plan_expires_at: null,
+      free_trial_ends_at: null,
+    })
+  );
+});
+
+test("peutUtiliserStudioSocial : pas de fiche => refus", () => {
   assert.ok(!peutUtiliserStudioSocial(null));
+  assert.ok(!peutUtiliserStudioSocial(undefined));
 });
 
 test("les quotas mensuels valent 8", () => {

@@ -225,9 +225,9 @@ export function nomAffichePro(pro: ProStudioContexte): string {
 }
 
 /**
- * Renvoie la fiche pro de l'utilisateur éligible au Studio (plan payant actif,
- * essai inclus), ou null. Utilise un client admin (service_role). Réservé au
- * backend : ne jamais exposer les tokens ni le plan au client.
+ * Renvoie la fiche pro de l'utilisateur éligible au Studio (abonnement actif ou
+ * période offerte en cours), ou null. Utilise un client admin (service_role).
+ * Réservé au backend : ne jamais exposer les tokens ni le plan au client.
  */
 export async function getProStudioActif(
   admin: SupabaseClient,
@@ -236,14 +236,18 @@ export async function getProStudioActif(
   const { data } = await admin
     .from("pros_sanitaire")
     .select(
-      "id, raison_sociale, nom_commercial, ville, departement, categorie, description, plan, plan_expires_at, stripe_subscription_id"
+      "id, raison_sociale, nom_commercial, ville, departement, categorie, description, plan, plan_expires_at, plan_active_until, free_trial_ends_at, stripe_subscription_id"
     )
     .eq("claimed_by", userId);
 
+  // free_trial_ends_at et plan_active_until sont indispensables ici : sans elles,
+  // peutUtiliserStudioSocial ne verrait aucune échéance sur les offres longues.
   const fiches = (data || []) as Array<
     ProStudioContexte & {
       plan: string | null;
       plan_expires_at: string | null;
+      plan_active_until: string | null;
+      free_trial_ends_at: string | null;
       stripe_subscription_id: string | null;
     }
   >;

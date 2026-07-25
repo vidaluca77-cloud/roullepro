@@ -1,6 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isPaidPlan, peutAccepterCourses } from "./sanitaire-plans";
+import {
+  isPaidPlan,
+  peutAccepterCourses,
+  echeanceOffre,
+  abonnementActif,
+} from "./sanitaire-plans";
 
 // Date de reference deterministe : 17/07/2026 12:00 UTC.
 const NOW = new Date("2026-07-17T12:00:00Z").getTime();
@@ -90,4 +95,39 @@ test("peutAccepterCourses : date invalide -> faux", () => {
 test("peutAccepterCourses : pro null/undefined -> faux", () => {
   assert.equal(peutAccepterCourses(null, NOW), false);
   assert.equal(peutAccepterCourses(undefined, NOW), false);
+});
+
+// ─── echeanceOffre : COALESCE(free_trial_ends_at, plan_active_until, plan_expires_at) ───
+
+test("echeanceOffre : priorite free_trial_ends_at > plan_active_until > plan_expires_at", () => {
+  assert.equal(
+    echeanceOffre({ free_trial_ends_at: FUTUR, plan_active_until: PASSE, plan_expires_at: PASSE }),
+    FUTUR
+  );
+  assert.equal(echeanceOffre({ plan_active_until: FUTUR, plan_expires_at: PASSE }), FUTUR);
+  assert.equal(echeanceOffre({ plan_expires_at: FUTUR }), FUTUR);
+});
+
+test("echeanceOffre : aucune colonne renseignee ou date invalide -> null", () => {
+  assert.equal(echeanceOffre({}), null);
+  assert.equal(
+    echeanceOffre({ free_trial_ends_at: null, plan_active_until: null, plan_expires_at: null }),
+    null
+  );
+  assert.equal(echeanceOffre({ plan_expires_at: "pas-une-date" }), null);
+});
+
+// ─── abonnementActif ─────────────────────────────────────────────────────────
+
+test("abonnementActif : plan payant + subscription id -> vrai", () => {
+  assert.equal(abonnementActif({ plan: "essential", stripe_subscription_id: "sub_1" }), true);
+});
+
+test("abonnementActif : resiliation (plan remis a gratuit) -> faux malgre le subscription id", () => {
+  assert.equal(abonnementActif({ plan: "gratuit", stripe_subscription_id: "sub_1" }), false);
+});
+
+test("abonnementActif : pas de subscription id -> faux", () => {
+  assert.equal(abonnementActif({ plan: "essential", stripe_subscription_id: null }), false);
+  assert.equal(abonnementActif(null), false);
 });
