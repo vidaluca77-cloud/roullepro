@@ -61,6 +61,20 @@ export function peutAccepterCourses(
   return expires > now;
 }
 
+/**
+ * Détermine si un pro a le droit d'utiliser le Studio réseaux sociaux IA.
+ *
+ * Même règle temporelle que l'acceptation de courses : plan payant actif, essai
+ * inclus (cf. peutAccepterCourses). Le Studio est réservé aux abonnés Pro, l'essai
+ * gratuit donnant un accès complet tant qu'il n'est pas expiré.
+ */
+export function peutUtiliserStudioSocial(
+  pro: ProAcceptationFields | null | undefined,
+  now: number = Date.now()
+): boolean {
+  return peutAccepterCourses(pro, now);
+}
+
 export function getPlanLabel(plan: string | null | undefined): string {
   switch (plan) {
     case "essential":

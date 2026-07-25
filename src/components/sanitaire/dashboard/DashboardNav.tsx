@@ -8,6 +8,7 @@ import {
   Truck,
   CalendarDays,
   Sparkles,
+  Share2,
   MessageCircle,
   Users,
   ShieldCheck,
@@ -61,6 +62,14 @@ const SIDEBAR_ITEMS: NavItem[] = [
     lockable: true,
   },
   {
+    key: "studio",
+    label: "Studio réseaux",
+    href: `${BASE}/studio-social`,
+    icon: Share2,
+    matchPrefix: `${BASE}/studio-social`,
+    lockable: true,
+  },
+  {
     key: "messages",
     label: "Messagerie",
     href: `${BASE}/messages`,
@@ -104,6 +113,7 @@ const MOBILE_PRIMARY: NavItem[] = [
 // Reste des entrées, présentées dans le menu « Plus ».
 const MOBILE_MORE: NavItem[] = [
   byKey("planning"),
+  byKey("studio"),
   byKey("messages"),
   byKey("ameli"),
   byKey("abonnement"),
