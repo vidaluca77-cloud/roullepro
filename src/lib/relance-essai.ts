@@ -14,6 +14,8 @@
  * Ce module ne fait AUCUN accès réseau/DB : il est intégralement testable.
  */
 
+import { echeanceOffre } from "@/lib/sanitaire-plans";
+
 export type TypeRelance = "J7" | "J3" | "J1";
 
 /** Nombre de jours calendaires avant l'échéance pour chaque relance. */
@@ -54,13 +56,12 @@ export type RelanceSelection = {
  * Échéance de fin d'offre : free_trial_ends_at prioritaire, sinon plan_active_until,
  * sinon plan_expires_at (essais auto 7 jours qui n'ont QUE cette colonne renseignée).
  * Retourne l'ISO string ou null si aucune des trois n'est renseignée / valide.
+ *
+ * Délègue à echeanceOffre : la même échéance pilote les relances et l'accès au
+ * Studio, les deux ne doivent pas pouvoir diverger.
  */
 export function calculerEcheance(pro: ProRelance): string | null {
-  const brut = pro.free_trial_ends_at ?? pro.plan_active_until ?? pro.plan_expires_at;
-  if (!brut) return null;
-  const t = new Date(brut).getTime();
-  if (Number.isNaN(t)) return null;
-  return brut;
+  return echeanceOffre(pro);
 }
 
 /**
