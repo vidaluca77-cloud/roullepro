@@ -15,12 +15,14 @@ export const runtime = "nodejs";
 import { NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getAdminServiceClient } from "@/lib/admin-guard";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { mistralConfigured } from "@/lib/ia-assistant";
 import {
   getProStudioActif,
   genererPosts,
-  nombrePostsGenerables,
-  bornesMoisParis,
+  ajustementReservation,
+  incrementerUsageMois,
+  moisParis,
   QUOTA_POSTS_MOIS,
 } from "@/lib/studio-social";
 
@@ -31,6 +33,15 @@ export async function POST(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  }
+
+  // Route la plus coûteuse du Studio (appel LLM) : garde-fou par utilisateur.
+  const { ok } = checkRateLimit(`studio-social-generate:${user.id}`, 5, 60_000);
+  if (!ok) {
+    return NextResponse.json(
+      { error: "Trop de générations d'affilée. Patientez une minute." },
+      { status: 429 }
+    );
   }
 
   if (!mistralConfigured()) {
@@ -57,18 +68,22 @@ export async function POST(req: Request) {
   }
   const demande = body.nombre === 8 ? 8 : 4;
 
-  // Quota mensuel : compter les posts générés par IA ce mois calendaire Paris.
-  const { debut, fin } = bornesMoisParis();
-  const { count } = await admin
-    .from("social_posts")
-    .select("id", { count: "exact", head: true })
-    .eq("pro_id", pro.id)
-    .eq("genere_par_ia", true)
-    .gte("created_at", debut)
-    .lt("created_at", fin);
-
-  const dejaGeneres = count ?? 0;
-  const aGenerer = nombrePostsGenerables(demande, dejaGeneres);
+  // Quota mensuel : réservation atomique sur le compteur (pas de course
+  // lecture-puis-écriture entre deux requêtes concurrentes). La part non consommée
+  // est remboursée ; une suppression de post ne rend jamais de quota.
+  const mois = moisParis();
+  const total = await incrementerUsageMois(admin, pro.id, { generes: demande }, mois);
+  if (!total) {
+    return NextResponse.json({ error: "Quota indisponible, réessayez." }, { status: 503 });
+  }
+  const { autorise: aGenerer, rembourser } = ajustementReservation(
+    total.posts_generes,
+    demande,
+    QUOTA_POSTS_MOIS
+  );
+  if (rembourser > 0) {
+    await incrementerUsageMois(admin, pro.id, { generes: -rembourser }, mois);
+  }
   if (aGenerer <= 0) {
     return NextResponse.json(
       {
@@ -81,10 +96,14 @@ export async function POST(req: Request) {
 
   const posts = await genererPosts(pro, aGenerer);
   if (posts.length === 0) {
+    await incrementerUsageMois(admin, pro.id, { generes: -aGenerer }, mois);
     return NextResponse.json(
       { error: "La génération n'a produit aucun post. Réessayez dans un instant." },
       { status: 502 }
     );
+  }
+  if (posts.length < aGenerer) {
+    await incrementerUsageMois(admin, pro.id, { generes: posts.length - aGenerer }, mois);
   }
 
   const lignes = posts.map((p) => ({
@@ -103,6 +122,7 @@ export async function POST(req: Request) {
     .select("id, sujet, contenu, hashtags, image_url, providers_cibles, statut, scheduled_at, published_at, created_at");
 
   if (error) {
+    await incrementerUsageMois(admin, pro.id, { generes: -posts.length }, mois);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

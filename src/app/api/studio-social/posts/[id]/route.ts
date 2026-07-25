@@ -17,29 +17,56 @@ import {
   getProStudioActif,
   estProviderValide,
   normaliserHashtags,
+  PROVIDER_LABEL,
   type SocialProvider,
 } from "@/lib/studio-social";
 
 const POST_COLS =
   "id, sujet, contenu, hashtags, image_url, providers_cibles, statut, scheduled_at, published_at, resultats, genere_par_ia, created_at";
 
-/** Récupère le post s'il appartient à une fiche du pro connecté, sinon null. */
+/**
+ * Récupère le post s'il appartient à la fiche éligible du pro connecté, sinon null.
+ * On compare directement pro_id à la fiche retenue par getProStudioActif : un post
+ * rattaché à une autre fiche (même possédée, mais sans plan actif) est refusé.
+ */
 async function chargerPostPossede(
   admin: SupabaseClient,
-  userId: string,
+  proId: string,
   postId: string
 ): Promise<{ id: string; statut: string; image_url: string | null } | null> {
   const { data } = await admin
     .from("social_posts")
-    .select("id, statut, image_url, pro_id, pros_sanitaire!inner(claimed_by)")
+    .select("id, statut, image_url, pro_id")
     .eq("id", postId)
     .maybeSingle();
-  if (!data) return null;
-  const prorel = (data as { pros_sanitaire?: { claimed_by?: string } | { claimed_by?: string }[] })
-    .pros_sanitaire;
-  const claimedBy = Array.isArray(prorel) ? prorel[0]?.claimed_by : prorel?.claimed_by;
-  if (claimedBy !== userId) return null;
-  return { id: data.id as string, statut: data.statut as string, image_url: (data.image_url as string | null) ?? null };
+  if (!data || data.pro_id !== proId) return null;
+  return {
+    id: data.id as string,
+    statut: data.statut as string,
+    image_url: (data.image_url as string | null) ?? null,
+  };
+}
+
+/** Une URL d'image doit être absolue en https (utilisée telle quelle par Meta/Google). */
+function imageUrlValide(v: string): boolean {
+  try {
+    return new URL(v).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/** Providers effectivement connectés (connexion active) pour ce pro. */
+async function providersConnectes(
+  admin: SupabaseClient,
+  proId: string
+): Promise<Set<string>> {
+  const { data } = await admin
+    .from("social_connections")
+    .select("provider, statut")
+    .eq("pro_id", proId)
+    .eq("statut", "active");
+  return new Set(((data as Array<{ provider: string }> | null) || []).map((c) => c.provider));
 }
 
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
@@ -58,10 +85,16 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     );
   }
 
-  const post = await chargerPostPossede(admin, user.id, params.id);
+  const post = await chargerPostPossede(admin, pro.id, params.id);
   if (!post) return NextResponse.json({ error: "Post introuvable" }, { status: 404 });
   if (post.statut === "publie") {
     return NextResponse.json({ error: "Un post publié n'est plus modifiable." }, { status: 409 });
+  }
+  if (post.statut === "publication_en_cours") {
+    return NextResponse.json(
+      { error: "Publication en cours, réessayez dans quelques minutes." },
+      { status: 409 }
+    );
   }
 
   let body: {
@@ -89,7 +122,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   }
   if (Array.isArray(body.hashtags)) maj.hashtags = normaliserHashtags(body.hashtags);
   if (body.image_url === null || typeof body.image_url === "string") {
-    maj.image_url = body.image_url ? String(body.image_url).slice(0, 1000) : null;
+    const brut = body.image_url ? String(body.image_url).trim().slice(0, 1000) : "";
+    if (brut && !imageUrlValide(brut)) {
+      return NextResponse.json(
+        { error: "L'URL de l'image doit être une adresse https accessible publiquement." },
+        { status: 400 }
+      );
+    }
+    maj.image_url = brut || null;
   }
 
   let providers: SocialProvider[] | undefined;
@@ -112,14 +152,25 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     if (quand.getTime() <= Date.now()) {
       return NextResponse.json({ error: "La date de planification doit être future." }, { status: 400 });
     }
-    const ciblesFinales =
-      providers ?? (undefined as SocialProvider[] | undefined);
     // On a besoin de connaître les providers cibles et l'image finale après maj.
-    const ciblesEffectives =
-      ciblesFinales ?? (await providersActuels(admin, params.id));
+    const ciblesEffectives = providers ?? (await providersActuels(admin, params.id));
     if (ciblesEffectives.length === 0) {
       return NextResponse.json(
         { error: "Sélectionnez au moins une plateforme cible avant de planifier." },
+        { status: 400 }
+      );
+    }
+    // Toute cible doit être connectée : sinon la publication échouerait sur cette
+    // cible tout en consommant une publication réelle sur les autres.
+    const connectes = await providersConnectes(admin, pro.id);
+    const manquants = ciblesEffectives.filter((p) => !connectes.has(p));
+    if (manquants.length > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "Connectez d'abord ces plateformes dans l'onglet Connexions : " +
+            manquants.map((p) => PROVIDER_LABEL[p]).join(", ") + ".",
+        },
         { status: 400 }
       );
     }
@@ -164,8 +215,30 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
 
   const admin = getAdminServiceClient();
-  const post = await chargerPostPossede(admin, user.id, params.id);
+  const pro = await getProStudioActif(admin, user.id);
+  if (!pro) {
+    return NextResponse.json(
+      { error: "Le Studio réseaux sociaux est réservé aux abonnés Pro." },
+      { status: 403 }
+    );
+  }
+
+  const post = await chargerPostPossede(admin, pro.id, params.id);
   if (!post) return NextResponse.json({ error: "Post introuvable" }, { status: 404 });
+  // Un post publié est un historique de publication réelle : il reste en base
+  // (le quota est de toute façon compté sur des compteurs monotones).
+  if (post.statut === "publie") {
+    return NextResponse.json(
+      { error: "Un post publié ne peut pas être supprimé de l'historique." },
+      { status: 409 }
+    );
+  }
+  if (post.statut === "publication_en_cours") {
+    return NextResponse.json(
+      { error: "Publication en cours, réessayez dans quelques minutes." },
+      { status: 409 }
+    );
+  }
 
   const { error } = await admin.from("social_posts").delete().eq("id", params.id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

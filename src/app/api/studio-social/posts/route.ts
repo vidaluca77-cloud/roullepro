@@ -13,7 +13,7 @@ import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getAdminServiceClient } from "@/lib/admin-guard";
 import {
   getProStudioActif,
-  bornesMoisParis,
+  lireUsageMois,
   construireQuotaEtat,
   normaliserHashtags,
 } from "@/lib/studio-social";
@@ -42,32 +42,18 @@ export async function GET() {
     );
   }
 
-  const { debut, fin } = bornesMoisParis();
-
-  const [postsRes, generesRes, publicationsRes] = await Promise.all([
+  // Le quota vient des compteurs mensuels monotones : supprimer un post ne le rend pas.
+  const [postsRes, usage] = await Promise.all([
     admin
       .from("social_posts")
       .select(POST_COLS)
       .eq("pro_id", pro.id)
       .order("created_at", { ascending: false })
       .limit(200),
-    admin
-      .from("social_posts")
-      .select("id", { count: "exact", head: true })
-      .eq("pro_id", pro.id)
-      .eq("genere_par_ia", true)
-      .gte("created_at", debut)
-      .lt("created_at", fin),
-    admin
-      .from("social_posts")
-      .select("id", { count: "exact", head: true })
-      .eq("pro_id", pro.id)
-      .eq("statut", "publie")
-      .gte("published_at", debut)
-      .lt("published_at", fin),
+    lireUsageMois(admin, pro.id),
   ]);
 
-  const quota = construireQuotaEtat(generesRes.count ?? 0, publicationsRes.count ?? 0);
+  const quota = construireQuotaEtat(usage.posts_generes, usage.publications);
 
   return NextResponse.json({
     ok: true,

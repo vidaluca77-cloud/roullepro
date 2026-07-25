@@ -11,6 +11,7 @@ import {
   construirePromptGeneration,
   textePourProvider,
   estProviderValide,
+  ajustementReservation,
   QUOTA_POSTS_MOIS,
   QUOTA_PUBLICATIONS_MOIS,
   type ProStudioContexte,
@@ -163,4 +164,26 @@ test("peutUtiliserStudioSocial : plan gratuit refusé", () => {
 test("les quotas mensuels valent 8", () => {
   assert.equal(QUOTA_POSTS_MOIS, 8);
   assert.equal(QUOTA_PUBLICATIONS_MOIS, 8);
+});
+
+// ─── Réservation atomique sur compteurs monotones ─────────────────────────────
+
+test("ajustementReservation : réservation entièrement dans le quota", () => {
+  assert.deepEqual(ajustementReservation(3, 3, 8), { autorise: 3, rembourser: 0 });
+});
+
+test("ajustementReservation : réservation partiellement au-delà du quota", () => {
+  // 6 déjà consommés, 4 réservés => total 10 : seuls 2 sont autorisés.
+  assert.deepEqual(ajustementReservation(10, 4, 8), { autorise: 2, rembourser: 2 });
+});
+
+test("ajustementReservation : quota déjà atteint => tout est remboursé", () => {
+  assert.deepEqual(ajustementReservation(11, 3, 8), { autorise: 0, rembourser: 3 });
+});
+
+test("ajustementReservation : deux réservations concurrentes ne dépassent pas le quota", () => {
+  // Deux appels simultanés incrémentent le compteur monotone : 0→5 puis 5→10.
+  const a = ajustementReservation(5, 5, 8);
+  const b = ajustementReservation(10, 5, 8);
+  assert.equal(a.autorise + b.autorise, 8);
 });

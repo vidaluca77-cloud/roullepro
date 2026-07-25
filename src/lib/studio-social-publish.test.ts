@@ -9,8 +9,17 @@ import {
   payloadFacebookFeed,
   payloadInstagramCaption,
   payloadGbpLocalPost,
+  reclamerPost,
+  repartirEquitablement,
+  resultatPersistable,
+  erreurHttp,
+  erreurReseau,
+  tokenRejete,
+  estLocationGbp,
+  publierGbp,
   type PostAPublier,
   type Connexion,
+  type ClientClaim,
 } from "./studio-social-publish";
 
 function post(partial: Partial<PostAPublier>): PostAPublier {
@@ -180,4 +189,127 @@ test("payloadGbpLocalPost : summary tronqué à 1500 caractères", () => {
   const p = post({ contenu: "a".repeat(2000), hashtags: [] });
   const body = payloadGbpLocalPost(p) as { summary: string };
   assert.equal(body.summary.length, 1500);
+});
+
+// ─── Claim atomique ───────────────────────────────────────────────────────────
+
+/** Table en mémoire : l'update ne rend une ligne que si le statut correspond. */
+function clientClaim(statutInitial: string) {
+  const etat = { statut: statutInitial, updates: 0 };
+  const client: ClientClaim = {
+    from: () => ({
+      update: (valeurs: Record<string, unknown>) => ({
+        eq: () => ({
+          eq: (_col: string, attendu: unknown) => ({
+            select: async () => {
+              if (etat.statut !== attendu) return { data: [] };
+              etat.statut = String(valeurs.statut);
+              etat.updates += 1;
+              return { data: [{ id: "p1" }] };
+            },
+          }),
+        }),
+      }),
+    }),
+  };
+  return { client, etat };
+}
+
+test("reclamerPost : un post planifié est réclamé et passe en publication_en_cours", async () => {
+  const { client, etat } = clientClaim("planifie");
+  assert.equal(await reclamerPost(client, "p1"), true);
+  assert.equal(etat.statut, "publication_en_cours");
+});
+
+test("reclamerPost : deux runs concurrents, un seul obtient le claim", async () => {
+  const { client, etat } = clientClaim("planifie");
+  const [a, b] = [await reclamerPost(client, "p1"), await reclamerPost(client, "p1")];
+  assert.deepEqual([a, b], [true, false]);
+  assert.equal(etat.updates, 1);
+});
+
+test("reclamerPost : un post déjà en cours ou publié n'est jamais réclamé", async () => {
+  for (const statut of ["publication_en_cours", "publie", "echec"]) {
+    const { client } = clientClaim(statut);
+    assert.equal(await reclamerPost(client, "p1"), false);
+  }
+});
+
+// ─── Équité entre pros ────────────────────────────────────────────────────────
+
+test("repartirEquitablement : borne par pro et entrelace les pros", () => {
+  const posts = [
+    ...[1, 2, 3, 4, 5].map((n) => post({ id: `a${n}`, pro_id: "A" })),
+    ...[1, 2].map((n) => post({ id: `b${n}`, pro_id: "B" })),
+  ];
+  const res = repartirEquitablement(posts, 2, 10);
+  assert.deepEqual(res.map((p) => p.id), ["a1", "b1", "a2", "b2"]);
+});
+
+test("repartirEquitablement : un pro saturé ne monopolise pas le run", () => {
+  const posts = [
+    ...Array.from({ length: 50 }, (_, i) => post({ id: `a${i}`, pro_id: "A" })),
+    post({ id: "b1", pro_id: "B" }),
+  ];
+  const res = repartirEquitablement(posts, 3, 4);
+  assert.equal(res.filter((p) => p.pro_id === "A").length, 3);
+  assert.equal(res.filter((p) => p.pro_id === "B").length, 1);
+});
+
+test("repartirEquitablement : respecte maxTotal", () => {
+  const posts = Array.from({ length: 10 }, (_, i) => post({ id: `p${i}`, pro_id: `pro${i}` }));
+  assert.equal(repartirEquitablement(posts, 3, 4).length, 4);
+});
+
+// ─── Retry sûr et classification des erreurs ──────────────────────────────────
+
+test("erreurHttp : rejouable seulement sur 429 et 5xx", () => {
+  assert.equal(erreurHttp({ status: 429 }, {}).retryable, true);
+  assert.equal(erreurHttp({ status: 503 }, {}).retryable, true);
+  assert.equal(erreurHttp({ status: 400 }, {}).retryable, undefined);
+  assert.equal(erreurHttp({ status: 403 }, {}).retryable, undefined);
+});
+
+test("erreurReseau : un timeout n'est jamais rejouable", () => {
+  const abort = Object.assign(new Error("aborted"), { name: "AbortError" });
+  const res = erreurReseau(abort);
+  assert.equal(res.retryable, undefined);
+  assert.match(res.erreur!, /délai dépassé/);
+});
+
+test("tokenRejete : 401, code Meta 190, invalid_grant, UNAUTHENTICATED", () => {
+  assert.equal(tokenRejete(401, {}), true);
+  assert.equal(tokenRejete(400, { error: { code: 190 } }), true);
+  assert.equal(tokenRejete(400, { error: "invalid_grant" }), true);
+  assert.equal(tokenRejete(403, { error: { status: "UNAUTHENTICATED" } }), true);
+  assert.equal(tokenRejete(400, { error: { code: 100 } }), false);
+});
+
+test("resultatPersistable : n'écrit jamais les métadonnées de tentative", () => {
+  const r = resultatPersistable({
+    external_id: "1",
+    url: "u",
+    erreur: "e",
+    retryable: true,
+    tokenInvalide: true,
+  });
+  assert.deepEqual(r, { external_id: "1", url: "u", erreur: "e" });
+});
+
+// ─── Ressource GBP publiable ──────────────────────────────────────────────────
+
+test("estLocationGbp : seule une ressource accounts/x/locations/y est publiable", () => {
+  assert.equal(estLocationGbp("accounts/123/locations/456"), true);
+  assert.equal(estLocationGbp("accounts/123"), false);
+  assert.equal(estLocationGbp("locations/456"), false);
+  assert.equal(estLocationGbp(null), false);
+});
+
+test("publierGbp : refuse une connexion sans établissement sélectionné", async () => {
+  const res = await publierGbp(
+    conn({ provider: "google_business", account_id: "accounts/123" }),
+    post({ providers_cibles: ["google_business"] })
+  );
+  assert.equal(res.external_id, undefined);
+  assert.match(res.erreur!, /établissement Google Business/);
 });

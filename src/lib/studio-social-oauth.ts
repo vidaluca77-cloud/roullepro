@@ -36,13 +36,17 @@ export function providerActive(provider: SocialProvider): boolean {
 }
 
 // ── Scopes ───────────────────────────────────────────────────
+/**
+ * Périmètre minimal validé en App Review. `business_management` est volontairement
+ * absent : /me/accounts suffit à lister les Pages de l'utilisateur, et cette
+ * permission élargie complique inutilement la revue Meta.
+ */
 export const META_SCOPES = [
   "pages_show_list",
   "pages_manage_posts",
   "pages_read_engagement",
   "instagram_basic",
   "instagram_content_publish",
-  "business_management",
 ];
 
 export const GOOGLE_SCOPES = ["https://www.googleapis.com/auth/business.manage"];

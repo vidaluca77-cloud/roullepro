@@ -21,10 +21,14 @@ export default async () => {
     const res = await fetch(`${baseUrl}/api/cron/studio-social-publish`, {
       headers: { Authorization: `Bearer ${secret}` },
     });
-    const body = await res.json();
+    const body = await res.json().catch(() => null);
+    // Statut propagé : un 200 systématique masquerait les échecs dans les logs Netlify.
     return new Response(
       JSON.stringify({ ok: res.ok, status: res.status, body }),
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      {
+        status: res.ok ? 200 : 500,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   } catch (err) {
     return new Response(

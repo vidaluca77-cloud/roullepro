@@ -30,7 +30,9 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return NextResponse.redirect(`${appUrl()}/auth/login?next=${STUDIO_URL}`);
+    return NextResponse.redirect(
+      `${appUrl()}/auth/login?next=${encodeURIComponent(STUDIO_URL)}`
+    );
   }
 
   const admin = getAdminServiceClient();
@@ -47,7 +49,7 @@ export async function GET() {
   const cookieStore = await cookies();
   cookieStore.set("ss_oauth_meta", state, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 600,

@@ -85,9 +85,15 @@ export default function StudioSocial({
     } else if (err) {
       setOnglet("connexions");
       const libelle: Record<string, string> = {
+        annule: "Connexion annulée : aucune autorisation n'a été accordée.",
         indisponible: "Cette connexion n'est pas encore disponible.",
         plan: "Réservé aux abonnés Pro.",
         state: "Session de connexion expirée, réessayez.",
+        chiffrement: "Connexion momentanément indisponible, réessayez plus tard.",
+        no_account: "Aucun compte Google Business n'est associé à ce compte Google.",
+        no_location:
+          "Aucun établissement Google Business trouvé : créez d'abord une fiche établissement.",
+        no_page: "Aucune Page Facebook trouvée sur ce compte.",
       };
       setFlash(libelle[err] || "La connexion a échoué, réessayez.");
     }

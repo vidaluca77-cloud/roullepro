@@ -374,45 +374,76 @@ export default function ConfidentialitePage() {
           </div>
         </div>
 
-        {/* 8. Suppression des données */}
-        <div className="bg-white rounded-xl shadow-sm p-8">
+        {/* 8. Suppression de vos données */}
+        <div id="suppression" className="bg-white rounded-xl shadow-sm p-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4 border-b border-gray-100 pb-3">
-            8. Suppression des données
+            8. Suppression de vos données
           </h2>
-          <div className="space-y-3 text-gray-700">
-            <p>
-              <span className="font-medium">Déconnexion d'un réseau social</span> :
-              depuis l'onglet « Connexions » du Studio réseaux sociaux, la
-              déconnexion d'un réseau (Facebook, Instagram ou Google Business
-              Profile) entraîne{" "}
-              <span className="font-medium">
-                la suppression immédiate des jetons d'accès correspondants
-              </span>{" "}
-              stockés sur nos serveurs. Aucune nouvelle publication n'est alors
-              possible sur ce réseau tant qu'il n'est pas reconnecté.
-            </p>
-            <p>
-              <span className="font-medium">Suppression du compte</span> : la
-              suppression de votre compte entraîne{" "}
-              <span className="font-medium">
-                l'effacement de l'ensemble de vos données personnelles
-              </span>{" "}
-              (compte, fiche gérée, connexions et jetons de réseaux sociaux,
-              posts du Studio), sous réserve des données que la loi impose de
-              conserver (documents comptables et fiscaux).
-            </p>
-            <p>
-              Pour demander la suppression de votre compte et de vos données,
-              adressez votre demande par e-mail à{" "}
-              <a
-                href="mailto:contact@roullepro.com"
-                className="text-blue-600 hover:underline font-medium"
-              >
-                contact@roullepro.com
-              </a>{" "}
-              depuis l'adresse associée à votre compte. Votre demande sera traitée
-              dans les meilleurs délais et au plus tard dans un délai d'un mois.
-            </p>
+          <div className="space-y-4 text-gray-700">
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">
+                Déconnecter un réseau social (suppression des jetons d'accès)
+              </h3>
+              <p>
+                La déconnexion d'un réseau entraîne la{" "}
+                <span className="font-medium">
+                  suppression immédiate et définitive des jetons d'accès
+                </span>{" "}
+                correspondants (Page Facebook, compte Instagram Business, fiche
+                Google Business Profile) stockés sur nos serveurs. Aucune nouvelle
+                publication n'est alors possible sur ce réseau tant qu'il n'est pas
+                reconnecté.
+              </p>
+              <ol className="mt-2 ml-5 list-decimal space-y-1">
+                <li>Connectez-vous à votre compte RoullePro.</li>
+                <li>
+                  Ouvrez{" "}
+                  <span className="font-medium">
+                    Espace professionnel → Studio réseaux sociaux
+                  </span>
+                  .
+                </li>
+                <li>
+                  Allez dans l'onglet <span className="font-medium">Connexions</span>.
+                </li>
+                <li>
+                  Cliquez sur <span className="font-medium">Déconnecter</span> en face
+                  du réseau concerné.
+                </li>
+              </ol>
+              <p className="mt-2">
+                Vous pouvez également retirer l'accès de l'application directement
+                depuis les paramètres de votre compte Facebook, Instagram ou Google.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">
+                Supprimer votre compte et l'ensemble de vos données
+              </h3>
+              <p>
+                Adressez votre demande par e-mail à{" "}
+                <a
+                  href="mailto:contact@roullepro.com"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  contact@roullepro.com
+                </a>{" "}
+                depuis l'adresse associée à votre compte, avec pour objet
+                « Suppression de mes données ». Nous procédons à l'effacement dans un{" "}
+                <span className="font-medium">délai maximum de 30 jours</span> et vous
+                confirmons la suppression par e-mail.
+              </p>
+              <p className="mt-2">
+                Sont alors effacés : votre compte, la fiche annuaire que vous gérez,
+                vos connexions et jetons de réseaux sociaux, ainsi que les
+                publications créées dans le Studio réseaux sociaux. Les publications
+                déjà diffusées sur vos propres pages Facebook, Instagram ou Google
+                Business Profile restent votre propriété : elles doivent être
+                supprimées depuis ces plateformes. Les données que la loi impose de
+                conserver (documents comptables et fiscaux) sont conservées jusqu'au
+                terme du délai légal.
+              </p>
+            </div>
           </div>
         </div>
 

@@ -49,6 +49,26 @@ test("providerActive exige le flag ET la config d'app", () => {
   assert.equal(providerActive("google_business"), false);
 });
 
+// ─── Scopes ──────────────────────────────────────────────────────────────────
+
+test("META_SCOPES : périmètre minimal, sans business_management", () => {
+  assert.deepEqual(META_SCOPES, [
+    "pages_show_list",
+    "pages_manage_posts",
+    "pages_read_engagement",
+    "instagram_basic",
+    "instagram_content_publish",
+  ]);
+  // Permission élargie retirée pour l'App Review : /me/accounts suffit.
+  assert.equal(META_SCOPES.includes("business_management"), false);
+});
+
+test("l'URL d'autorisation Meta ne demande pas business_management", () => {
+  process.env.META_APP_ID = "appid123";
+  const url = new URL(construireUrlAuthMeta("nonce.pro1"));
+  assert.equal(url.searchParams.get("scope")!.includes("business_management"), false);
+});
+
 // ─── URLs OAuth ──────────────────────────────────────────────────────────────
 
 test("URL Meta contient scopes, redirect et response_type", () => {

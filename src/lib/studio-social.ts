@@ -120,6 +120,70 @@ export function nombrePostsGenerables(
   return Math.max(0, Math.min(demande, restant));
 }
 
+/**
+ * Quotas basés sur des compteurs monotones (table studio_social_usage) : on réserve
+ * d'abord `reserve` unités par un incrément atomique, puis on interprète le total
+ * renvoyé. Cela supprime la course lecture-puis-écriture entre deux requêtes
+ * concurrentes, au prix d'un remboursement de la part non consommée.
+ *
+ * `autorise` = ce qu'on peut réellement faire, `rembourser` = le delta négatif à
+ * repasser au compteur.
+ */
+export function ajustementReservation(
+  totalApresReservation: number,
+  reserve: number,
+  quota: number
+): { autorise: number; rembourser: number } {
+  const totalAvant = Math.max(0, totalApresReservation - reserve);
+  const autorise = Math.max(0, Math.min(reserve, quota - totalAvant));
+  return { autorise, rembourser: reserve - autorise };
+}
+
+export type UsageMois = { posts_generes: number; publications: number };
+
+/** Lit les compteurs de quota du mois (0 si aucune ligne). Backend uniquement. */
+export async function lireUsageMois(
+  admin: SupabaseClient,
+  proId: string,
+  mois: string = moisParis()
+): Promise<UsageMois> {
+  const { data } = await admin
+    .from("studio_social_usage")
+    .select("posts_generes, publications")
+    .eq("pro_id", proId)
+    .eq("mois", mois)
+    .maybeSingle();
+  return {
+    posts_generes: (data?.posts_generes as number | undefined) ?? 0,
+    publications: (data?.publications as number | undefined) ?? 0,
+  };
+}
+
+/**
+ * Incrémente atomiquement les compteurs du mois et renvoie les nouveaux totaux.
+ * Les deltas peuvent être négatifs pour rembourser une réservation non consommée.
+ */
+export async function incrementerUsageMois(
+  admin: SupabaseClient,
+  proId: string,
+  deltas: { generes?: number; publications?: number },
+  mois: string = moisParis()
+): Promise<UsageMois | null> {
+  const { data, error } = await admin.rpc("studio_social_incrementer", {
+    p_pro_id: proId,
+    p_mois: mois,
+    p_generes: deltas.generes ?? 0,
+    p_publications: deltas.publications ?? 0,
+  });
+  if (error) return null;
+  const ligne = Array.isArray(data) ? data[0] : data;
+  if (!ligne) return null;
+  return {
+    posts_generes: Number(ligne.posts_generes ?? 0),
+    publications: Number(ligne.publications ?? 0),
+  };
+}
+
 // ── Piliers éditoriaux ───────────────────────────────────────
 export const PILIERS = [
   "conseils_patients",

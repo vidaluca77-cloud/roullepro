@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Loader2, Facebook, Instagram, MapPin, Check, Clock } from "lucide-react";
+import { Loader2, Facebook, Instagram, MapPin, Check, Clock, AlertTriangle } from "lucide-react";
 
 type Connexion = {
   provider: "facebook" | "instagram" | "google_business";
@@ -69,6 +69,9 @@ export default function StudioConnexions() {
         {connexions.map((c) => {
           const meta = META[c.provider];
           const Icon = meta.Icon;
+          // Token révoqué/expiré côté plateforme : le cron a marqué la connexion en
+          // erreur, seule une nouvelle autorisation la rétablit.
+          const aReconnecter = !c.connecte && c.statut === "error";
           return (
             <li
               key={c.provider}
@@ -84,6 +87,11 @@ export default function StudioConnexions() {
                     <p className="flex items-center gap-1 text-xs text-emerald-600">
                       <Check className="w-3.5 h-3.5" />
                       Connecté{c.account_name ? ` · ${c.account_name}` : ""}
+                    </p>
+                  ) : aReconnecter ? (
+                    <p className="flex items-center gap-1 text-xs text-red-600">
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      Accès expiré ou révoqué — reconnectez le compte
                     </p>
                   ) : c.disponible ? (
                     <p className="text-xs text-gray-400">Non connecté</p>
@@ -109,7 +117,7 @@ export default function StudioConnexions() {
                   href={meta.start}
                   className="rounded-xl bg-[#0066CC] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#0052a3]"
                 >
-                  Connecter
+                  {aReconnecter ? "Reconnecter" : "Connecter"}
                 </a>
               ) : (
                 <span className="rounded-xl bg-gray-100 px-3 py-2 text-sm font-medium text-gray-400">

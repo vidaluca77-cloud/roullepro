@@ -28,8 +28,12 @@ export type ProviderResultat = {
   external_id?: string;
   url?: string;
   erreur?: string;
+  /** Renseigné à la tentative, jamais persisté (cf. resultatPersistable). */
+  retryable?: boolean;
+  tokenInvalide?: boolean;
 };
 
+/** Connexion en mémoire : tokens DÉJÀ déchiffrés, jamais loggés ni renvoyés au client. */
 export type Connexion = {
   provider: string;
   account_id: string | null;
@@ -38,6 +42,15 @@ export type Connexion = {
   token_expires_at: string | null;
   statut: string | null;
 };
+
+/** Retire les métadonnées de tentative avant écriture dans social_posts.resultats. */
+export function resultatPersistable(r: ProviderResultat): ProviderResultat {
+  const out: ProviderResultat = {};
+  if (r.external_id) out.external_id = r.external_id;
+  if (r.url) out.url = r.url;
+  if (r.erreur) out.erreur = r.erreur;
+  return out;
+}
 
 // ── Sélection des posts à publier ────────────────────────────
 /**
@@ -64,6 +77,38 @@ export function selectionnerPostsAPublier(
       return ta - tb;
     });
   return eligibles.slice(0, Math.max(0, quotaRestant));
+}
+
+/**
+ * Répartit équitablement les posts d'un run entre les pros : au plus `maxParPro`
+ * posts par pro, puis entrelacement round-robin (ordre d'échéance conservé au sein
+ * d'un pro). Sans cela, un pro avec 50 posts échus monopoliserait tous les runs.
+ */
+export function repartirEquitablement(
+  posts: PostAPublier[],
+  maxParPro: number,
+  maxTotal: number
+): PostAPublier[] {
+  const files = new Map<string, PostAPublier[]>();
+  const ordrePros: string[] = [];
+  for (const p of posts) {
+    let file = files.get(p.pro_id);
+    if (!file) {
+      file = [];
+      files.set(p.pro_id, file);
+      ordrePros.push(p.pro_id);
+    }
+    if (file.length < maxParPro) file.push(p);
+  }
+  const out: PostAPublier[] = [];
+  for (let tour = 0; tour < maxParPro && out.length < maxTotal; tour += 1) {
+    for (const proId of ordrePros) {
+      const p = files.get(proId)?.[tour];
+      if (p) out.push(p);
+      if (out.length >= maxTotal) break;
+    }
+  }
+  return out;
 }
 
 /**
@@ -119,6 +164,44 @@ export function publicationsRestantesMois(publicationsCeMois: number): number {
   return Math.max(0, QUOTA_PUBLICATIONS_MOIS - publicationsCeMois);
 }
 
+/** Sous-ensemble de supabase-js nécessaire au claim (facilite le test). */
+export type ClientClaim = {
+  from(table: string): {
+    update(valeurs: Record<string, unknown>): {
+      eq(
+        colonne: string,
+        valeur: unknown
+      ): {
+        eq(
+          colonne: string,
+          valeur: unknown
+        ): {
+          // PromiseLike : le builder supabase-js est « thenable » sans être une Promise.
+          select(colonnes: string): PromiseLike<{ data: Array<{ id: string }> | null }>;
+        };
+      };
+    };
+  };
+};
+
+/**
+ * Claim atomique d'un post AVANT tout appel réseau : l'update est conditionné au
+ * statut 'planifie', donc deux runs qui se chevauchent ne peuvent pas publier le
+ * même post — le perdant obtient 0 ligne et renvoie false.
+ */
+export async function reclamerPost(
+  admin: ClientClaim,
+  postId: string
+): Promise<boolean> {
+  const { data } = await admin
+    .from("social_posts")
+    .update({ statut: "publication_en_cours" })
+    .eq("id", postId)
+    .eq("statut", "planifie")
+    .select("id");
+  return !!data && data.length > 0;
+}
+
 // ── Payloads (testables) ─────────────────────────────────────
 export function payloadFacebookFeed(post: PostAPublier): { message: string } {
   return { message: textePourProvider("facebook", post.contenu, post.hashtags) };
@@ -140,7 +223,9 @@ export function payloadGbpLocalPost(post: PostAPublier): Record<string, unknown>
 }
 
 // ── Publishers HTTP ──────────────────────────────────────────
-const TIMEOUT_MS = 12_000;
+// Court, pour tenir dans le budget d'exécution d'une fonction Netlify (cf. le
+// deadline du cron) : un timeout ne peut de toute façon pas être réessayé.
+const TIMEOUT_MS = 8_000;
 
 async function fetchTimeout(url: string, init: RequestInit): Promise<Response> {
   const controller = new AbortController();
@@ -177,12 +262,12 @@ export async function publierFacebook(
       body: JSON.stringify(body),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { erreur: extraireErreur(data) };
+    if (!res.ok) return erreurHttp(res, data);
     const id: string | undefined = data?.post_id || data?.id;
     if (!id) return { erreur: "réponse Facebook sans identifiant" };
     return { external_id: id, url: `https://www.facebook.com/${id}` };
   } catch (e) {
-    return { erreur: messageErreur(e) };
+    return erreurReseau(e);
   }
 }
 
@@ -204,7 +289,8 @@ export async function publierInstagram(
       body: JSON.stringify({ image_url: post.image_url, caption, access_token: token }),
     });
     const creerData = await creerRes.json().catch(() => ({}));
-    if (!creerRes.ok || !creerData?.id) return { erreur: extraireErreur(creerData) };
+    if (!creerRes.ok) return erreurHttp(creerRes, creerData);
+    if (!creerData?.id) return { erreur: "réponse Instagram sans conteneur média" };
 
     const publierRes = await fetchTimeout(`${base}/media_publish`, {
       method: "POST",
@@ -212,11 +298,21 @@ export async function publierInstagram(
       body: JSON.stringify({ creation_id: creerData.id, access_token: token }),
     });
     const publierData = await publierRes.json().catch(() => ({}));
-    if (!publierRes.ok || !publierData?.id) return { erreur: extraireErreur(publierData) };
+    if (!publierRes.ok) return erreurHttp(publierRes, publierData);
+    if (!publierData?.id) return { erreur: "réponse Instagram sans identifiant" };
     return { external_id: publierData.id };
   } catch (e) {
-    return { erreur: messageErreur(e) };
+    return erreurReseau(e);
   }
+}
+
+/**
+ * Vérifie que account_id est bien une ressource de location GBP publiable :
+ * `accounts/{compte}/locations/{location}`. Un simple `accounts/{id}` ne permet pas
+ * de publier (cf. callback Google qui liste et stocke la location).
+ */
+export function estLocationGbp(accountId: string | null | undefined): boolean {
+  return /^accounts\/[^/]+\/locations\/[^/]+$/.test((accountId || "").trim());
 }
 
 /** Publie un localPost sur Google Business Profile. */
@@ -225,9 +321,14 @@ export async function publierGbp(
   post: PostAPublier,
   accessTokenFrais?: string
 ): Promise<ProviderResultat> {
-  const accountLocation = conn.account_id; // format attendu : accounts/{id}/locations/{id}
+  const accountLocation = (conn.account_id || "").trim();
   const token = accessTokenFrais || conn.access_token;
   if (!accountLocation || !token) return { erreur: "connexion Google Business incomplète" };
+  if (!estLocationGbp(accountLocation)) {
+    return {
+      erreur: "aucun établissement Google Business sélectionné — reconnectez le compte",
+    };
+  }
   try {
     const url = `https://mybusiness.googleapis.com/v4/${accountLocation}/localPosts`;
     const res = await fetchTimeout(url, {
@@ -239,25 +340,30 @@ export async function publierGbp(
       body: JSON.stringify(payloadGbpLocalPost(post)),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return { erreur: extraireErreur(data) };
+    if (!res.ok) return erreurHttp(res, data);
     const name: string | undefined = data?.name;
     if (!name) return { erreur: "réponse Google Business sans identifiant" };
     return { external_id: name, url: data?.searchUrl };
   } catch (e) {
-    return { erreur: messageErreur(e) };
+    return erreurReseau(e);
   }
 }
 
+export type RafraichissementGoogle =
+  | { ok: true; accessToken: string; expiresIn: number | null }
+  | { ok: false; tokenInvalide: boolean };
+
 /**
- * Rafraîchit un access_token Google via le refresh_token. Renvoie le nouveau token
- * + son expiration ISO, ou null en cas d'échec. Ne loggue jamais les tokens.
+ * Rafraîchit un access_token Google via le refresh_token. `tokenInvalide` indique un
+ * refus définitif (invalid_grant : consentement révoqué) qui doit marquer la connexion
+ * en erreur. Ne loggue jamais les tokens.
  */
 export async function rafraichirTokenGoogle(
   refreshToken: string
-): Promise<{ accessToken: string; expiresIn: number | null } | null> {
+): Promise<RafraichissementGoogle> {
   const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-  if (!clientId || !clientSecret) return null;
+  if (!clientId || !clientSecret) return { ok: false, tokenInvalide: false };
   try {
     const body = new URLSearchParams({
       client_id: clientId,
@@ -270,12 +376,13 @@ export async function rafraichirTokenGoogle(
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),
     });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data?.access_token) return null;
-    return { accessToken: data.access_token, expiresIn: data?.expires_in ?? null };
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data?.access_token) {
+      return { ok: false, tokenInvalide: tokenRejete(res.status, data) };
+    }
+    return { ok: true, accessToken: data.access_token, expiresIn: data?.expires_in ?? null };
   } catch {
-    return null;
+    return { ok: false, tokenInvalide: false };
   }
 }
 
@@ -292,7 +399,7 @@ export async function publierSurProvider(
 }
 
 // ── Utilitaires d'erreur ─────────────────────────────────────
-function extraireErreur(data: unknown): string {
+export function extraireErreur(data: unknown): string {
   const err = (data as { error?: { message?: string } | string })?.error;
   if (typeof err === "string") return err.slice(0, 300);
   if (err && typeof err === "object" && "message" in err) {
@@ -301,6 +408,45 @@ function extraireErreur(data: unknown): string {
   return "erreur API";
 }
 
-function messageErreur(e: unknown): string {
-  return (e instanceof Error ? e.message : String(e)).slice(0, 300);
+/**
+ * Erreur avec réponse de la plateforme : seul ce cas peut être réessayé, et
+ * uniquement sur 429 (quota) ou 5xx (incident distant). Un 4xx métier est définitif.
+ */
+export function erreurHttp(
+  res: { status: number },
+  data: unknown
+): ProviderResultat {
+  const out: ProviderResultat = { erreur: extraireErreur(data) };
+  if (res.status === 429 || res.status >= 500) out.retryable = true;
+  if (tokenRejete(res.status, data)) out.tokenInvalide = true;
+  return out;
+}
+
+/** Détecte un token révoqué/expiré : Meta code 190, Google 401 / invalid_grant. */
+export function tokenRejete(status: number, data: unknown): boolean {
+  if (status === 401) return true;
+  const err = (data as { error?: unknown })?.error;
+  if (typeof err === "string") return err === "invalid_grant" || err === "invalid_token";
+  if (err && typeof err === "object") {
+    const code = (err as { code?: number }).code;
+    if (code === 190) return true;
+    const statut = (err as { status?: string }).status;
+    if (statut === "UNAUTHENTICATED") return true;
+  }
+  return false;
+}
+
+/**
+ * Échec sans réponse de la plateforme (coupure, timeout). JAMAIS réessayable :
+ * la publication a peut-être abouti côté plateforme, un second envoi créerait un doublon.
+ */
+export function erreurReseau(e: unknown): ProviderResultat {
+  const nom = e instanceof Error ? e.name : "";
+  if (nom === "AbortError" || nom === "TimeoutError") {
+    return {
+      erreur:
+        "délai dépassé sans réponse de la plateforme — vérifiez votre page avant de replanifier",
+    };
+  }
+  return { erreur: (e instanceof Error ? e.message : String(e)).slice(0, 300) };
 }

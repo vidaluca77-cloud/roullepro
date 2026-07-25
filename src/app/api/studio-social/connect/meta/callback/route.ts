@@ -3,9 +3,11 @@
  *
  * Callback OAuth Meta : échange le code contre un token utilisateur longue durée,
  * récupère la Page Facebook (/me/accounts) et le compte Instagram Business lié, puis
- * stocke les tokens de Page côté serveur (jamais exposés au client).
+ * stocke les tokens de Page CHIFFRÉS côté serveur (jamais exposés au client).
  *
- * Sécurité : vérifie le state anti-CSRF (cookie httpOnly) et la propriété de la fiche.
+ * Sécurité : state anti-CSRF (cookie httpOnly) + propriété de la fiche. Le
+ * client_secret et les tokens ne circulent jamais en query string : échange en corps
+ * POST, lectures Graph avec un header Authorization.
  */
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -15,6 +17,7 @@ import { cookies } from "next/headers";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { getAdminServiceClient } from "@/lib/admin-guard";
 import { getProStudioActif } from "@/lib/studio-social";
+import { chiffrerToken, tokenKeyConfigured } from "@/lib/studio-social-crypto";
 import {
   providerActive,
   metaRedirectUri,
@@ -24,21 +27,32 @@ import {
 } from "@/lib/studio-social-oauth";
 
 const STUDIO_URL = "/transport-medical/pro/studio-social";
+const GRAPH = `https://graph.facebook.com/${META_GRAPH_VERSION}`;
 
 function retour(statut: "connecte" | "erreur", detail?: string) {
   const q = statut === "connecte" ? "connecte=meta" : `erreur=${detail || "meta"}`;
   return NextResponse.redirect(`${appUrl()}${STUDIO_URL}?${q}`);
 }
 
+/** Appel Graph authentifié par header : le token ne finit ni dans une URL ni dans un log. */
+async function graph(chemin: string, token: string): Promise<Response> {
+  return fetch(`${GRAPH}/${chemin}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
+  const refus = url.searchParams.get("error");
 
   const cookieStore = await cookies();
   const attendu = cookieStore.get("ss_oauth_meta")?.value;
   cookieStore.delete("ss_oauth_meta");
 
+  // L'utilisateur a refusé/annulé côté Meta : pas une erreur technique.
+  if (refus) return retour("erreur", "annule");
   if (!code || !state || !attendu || state !== attendu) {
     return retour("erreur", "state");
   }
@@ -54,47 +68,63 @@ export async function GET(req: Request) {
   const proIdState = state.split(".")[1];
   if (!pro || pro.id !== proIdState) return retour("erreur", "plan");
   if (!providerActive("facebook")) return retour("erreur", "indisponible");
+  if (!tokenKeyConfigured()) return retour("erreur", "chiffrement");
 
   const appId = process.env.META_APP_ID!;
   const appSecret = process.env.META_APP_SECRET!;
 
   try {
-    // 1. Code → token utilisateur courte durée.
-    const tokenUrl = new URL(
-      `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token`
-    );
-    tokenUrl.searchParams.set("client_id", appId);
-    tokenUrl.searchParams.set("client_secret", appSecret);
-    tokenUrl.searchParams.set("redirect_uri", metaRedirectUri());
-    tokenUrl.searchParams.set("code", code);
-    const tokenRes = await fetch(tokenUrl.toString());
+    // 1. Code → token utilisateur courte durée (secret en corps POST).
+    const tokenRes = await fetch(`${GRAPH}/oauth/access_token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: appId,
+        client_secret: appSecret,
+        redirect_uri: metaRedirectUri(),
+        code,
+      }).toString(),
+    });
     if (!tokenRes.ok) return retour("erreur", "token");
     const tokenData = await tokenRes.json();
     const shortToken: string | undefined = tokenData?.access_token;
     if (!shortToken) return retour("erreur", "token");
 
     // 2. Échange → token utilisateur longue durée (~60 j).
-    const longUrl = new URL(
-      `https://graph.facebook.com/${META_GRAPH_VERSION}/oauth/access_token`
-    );
-    longUrl.searchParams.set("grant_type", "fb_exchange_token");
-    longUrl.searchParams.set("client_id", appId);
-    longUrl.searchParams.set("client_secret", appSecret);
-    longUrl.searchParams.set("fb_exchange_token", shortToken);
-    const longRes = await fetch(longUrl.toString());
+    const longRes = await fetch(`${GRAPH}/oauth/access_token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "fb_exchange_token",
+        client_id: appId,
+        client_secret: appSecret,
+        fb_exchange_token: shortToken,
+      }).toString(),
+    });
     const longData = longRes.ok ? await longRes.json() : {};
     const userToken: string = longData?.access_token || shortToken;
 
-    // 3. Page(s) gérée(s) : on retient la première.
-    const pagesRes = await fetch(
-      `https://graph.facebook.com/${META_GRAPH_VERSION}/me/accounts?fields=id,name,access_token,instagram_business_account&access_token=${encodeURIComponent(userToken)}`
+    // 3. Pages gérées (/me/accounts suffit, sans business_management).
+    const pagesRes = await graph(
+      "me/accounts?fields=id,name,access_token,instagram_business_account",
+      userToken
     );
     if (!pagesRes.ok) return retour("erreur", "pages");
     const pagesData = await pagesRes.json();
-    const page = (pagesData?.data || [])[0];
+    const pages: Array<{ id?: string; name?: string; access_token?: string }> =
+      pagesData?.data || [];
+    const page = pages[0];
     if (!page?.id || !page?.access_token) return retour("erreur", "no_page");
 
+    // Liste des Pages conservée (sans token) pour permettre un choix ultérieur.
+    const metadata = {
+      pages: pages
+        .filter((p) => p.id)
+        .map((p) => ({ id: p.id, name: p.name ?? null }))
+        .slice(0, 20),
+    };
     const nowIso = new Date().toISOString();
+    const pageTokenChiffre = chiffrerToken(page.access_token);
 
     // 4. Connexion Facebook (token de Page longue durée = pas d'expiration fixe).
     await admin.from("social_connections").upsert(
@@ -103,10 +133,11 @@ export async function GET(req: Request) {
         provider: "facebook",
         account_id: page.id,
         account_name: page.name || null,
-        access_token: page.access_token,
-        refresh_token: null,
+        access_token_chiffre: pageTokenChiffre,
+        refresh_token_chiffre: null,
         token_expires_at: null,
         scopes: META_SCOPES.join(","),
+        account_metadata: metadata,
         statut: "active",
         updated_at: nowIso,
       },
@@ -114,13 +145,13 @@ export async function GET(req: Request) {
     );
 
     // 5. Compte Instagram Business lié à la Page (si présent).
-    const igId: string | undefined = page.instagram_business_account?.id;
+    const igId: string | undefined = (
+      page as { instagram_business_account?: { id?: string } }
+    ).instagram_business_account?.id;
     if (igId) {
       let igNom: string | null = null;
       try {
-        const igRes = await fetch(
-          `https://graph.facebook.com/${META_GRAPH_VERSION}/${igId}?fields=username&access_token=${encodeURIComponent(page.access_token)}`
-        );
+        const igRes = await graph(`${igId}?fields=username`, page.access_token);
         if (igRes.ok) igNom = (await igRes.json())?.username ?? null;
       } catch {
         /* nom best-effort */
@@ -131,10 +162,11 @@ export async function GET(req: Request) {
           provider: "instagram",
           account_id: igId,
           account_name: igNom,
-          access_token: page.access_token,
-          refresh_token: null,
+          access_token_chiffre: pageTokenChiffre,
+          refresh_token_chiffre: null,
           token_expires_at: null,
           scopes: META_SCOPES.join(","),
+          account_metadata: {},
           statut: "active",
           updated_at: nowIso,
         },
