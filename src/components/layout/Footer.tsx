@@ -186,7 +186,7 @@ export default function Footer() {
             <Link href="/forum" className="hover:text-white transition">Forum</Link>
             <Link href="/signaler" className="hover:text-white transition">Signaler une fiche</Link>
             <Link href="/partenaires" className="hover:text-white transition">Partenaires</Link>
-            <Link href="/partenaires/assurance-pro" className="hover:text-white transition">Assurance pro</Link>
+            <Link href="/partenaires/assurance-pro" className="hover:text-white transition">Assurances</Link>
             <Link href="/rgpd" className="hover:text-white transition">RGPD</Link>
             <Link href="/confidentialite" className="hover:text-white transition">Confidentialité</Link>
             <Link href="/mentions-legales" className="hover:text-white transition">Mentions légales</Link>

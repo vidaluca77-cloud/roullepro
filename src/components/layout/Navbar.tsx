@@ -27,7 +27,7 @@ export default function Navbar() {
     { href: '/', label: 'Accueil' },
     { href: '/transport-medical', label: 'Annuaire' },
     { href: '/pro', label: 'Espace pro' },
-    { href: '/partenaires/assurance-pro', label: 'Assurance pro' },
+    { href: '/partenaires/assurance-pro', label: 'Assurances' },
     { href: '/blog', label: 'Blog' },
   ];
 
