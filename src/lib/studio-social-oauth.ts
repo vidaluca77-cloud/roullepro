@@ -37,14 +37,23 @@ export function providerActive(provider: SocialProvider): boolean {
 
 // ── Scopes ───────────────────────────────────────────────────
 /**
- * Périmètre minimal validé en App Review. `business_management` est volontairement
- * absent : /me/accounts suffit à lister les Pages de l'utilisateur, et cette
- * permission élargie complique inutilement la revue Meta.
+ * Périmètre validé en App Review.
+ *
+ * `business_management` est nécessaire depuis le changement de plateforme Meta de
+ * septembre 2023 (Graph API v17+) : /me/accounts ne retourne plus les Pages
+ * rattachées à un compte Business Manager (Meta Business Suite) sans cette
+ * permission, même pour un utilisateur Admin de la Page et de l'app. Comme la
+ * quasi-totalité des pros gèrent leur Page via un portefeuille professionnel, ce
+ * scope est indispensable pour que la connexion fonctionne dans le cas général —
+ * pas seulement en test. Voir la documentation Meta :
+ * https://developers.facebook.com/docs/graph-api/changelog/non-versioned-changes/nvc-2023#user-accounts
+ * https://developers.facebook.com/docs/graph-api/reference/user/accounts/#limitations
  */
 export const META_SCOPES = [
   "pages_show_list",
   "pages_manage_posts",
   "pages_read_engagement",
+  "business_management",
   "instagram_basic",
   "instagram_content_publish",
 ];
