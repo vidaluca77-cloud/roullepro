@@ -26,7 +26,8 @@ import { jsonLdHtml } from "@/lib/seo-schema";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Taxi conventionné CPAM, VSL, ambulance — Annuaire national | RoullePro",
+  // Le suffixe " | RoullePro" est ajouté par title.template (layout racine).
+  title: "Taxi conventionné CPAM, VSL, ambulance — Annuaire national",
   description:
     "Annuaire gratuit du transport sanitaire en France : 26 000+ ambulances, VSL et taxis conventionnés CPAM. Téléphone direct, tarif Sécurité sociale, tiers payant.",
   alternates: { canonical: "/" },
