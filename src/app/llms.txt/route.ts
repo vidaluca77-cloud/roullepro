@@ -12,6 +12,7 @@ const CONTENT = `# RoullePro
 
 ## Piliers du transport sanitaire
 
+- [Transport sanitaire](${BASE_URL}/transport-sanitaire): cadre légal, agrément ARS, types de transport, spécialités, tarifs et remboursement.
 - [VSL — Véhicule Sanitaire Léger](${BASE_URL}/vsl): définition, prescription, remboursement CPAM et annuaire des VSL agréés.
 - [Taxi conventionné CPAM](${BASE_URL}/taxi-conventionne): fonctionnement, prescription, prise en charge et annuaire des taxis conventionnés.
 - [Bon de transport (CERFA 11574)](${BASE_URL}/bon-de-transport): prescription médicale de transport, entente préalable et remboursement.
@@ -27,6 +28,7 @@ const CONTENT = `# RoullePro
 - [Transport médical autour de moi](${BASE_URL}/transport-medical/autour-de-moi): géolocalisation du transporteur conventionné le plus proche.
 - [Ambulance autour de moi](${BASE_URL}/ambulance-autour-de-moi): trouver une ambulance agréée proche.
 - [Taxi conventionné et VSL autour de moi](${BASE_URL}/taxi-vsl-autour-de-moi): trouver un taxi conventionné ou un VSL proche.
+- [VSL autour de moi](${BASE_URL}/vsl-autour-de-moi): trouver un véhicule sanitaire léger conventionné proche.
 
 ## Annuaire et données
 
