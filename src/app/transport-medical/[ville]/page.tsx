@@ -14,6 +14,7 @@ import {
   buildFaqJsonLd,
   buildBreadcrumbJsonLd,
   buildProsItemList,
+  formatDateVerification,
   getVilleFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
@@ -304,6 +305,10 @@ export default async function VillePage({ params, searchParams }: Props) {
           </h1>
           <p className="text-blue-100">
             {totalCount} {totalCount > 1 ? "professionnels référencés" : "professionnel référencé"} · Département {departement} · {region}
+          </p>
+          <p className="text-xs text-blue-200 mt-2">
+            Au {formatDateVerification()}, RoullePro recense {groupedFull.ambulance.length} ambulances,{" "}
+            {groupedFull.vsl.length} VSL et {groupedFull.taxi_conventionne.length} taxis conventionnés à {nomVille}.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {CATEGORIES_SANITAIRE.map((cat) => {

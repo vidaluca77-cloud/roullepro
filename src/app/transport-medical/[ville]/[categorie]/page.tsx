@@ -4,7 +4,13 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
-import { buildFaqJsonLd, buildBreadcrumbJsonLd, buildProsItemList, getVilleFaq } from "@/lib/sanitaire-seo";
+import {
+  buildFaqJsonLd,
+  buildBreadcrumbJsonLd,
+  buildProsItemList,
+  formatDateVerification,
+  getVilleFaq,
+} from "@/lib/sanitaire-seo";
 import { getCityCategoryContent } from "@/lib/seo-city-content";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import {
@@ -170,9 +176,13 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   }
   const nomVille = formatNomVille(nomVilleRaw);
 
+  const dateVerification = formatDateVerification();
+  const nbConventionnes = pros.filter((p) => p.ameli_conventionne).length;
+
   // JSON-LD ItemList enrichi : Google peut afficher en carrousel local
   const jsonLd = {
     "@context": "https://schema.org",
+    dateModified: new Date().toISOString(),
     ...buildProsItemList({
       name: `${cat.labelPluriel} à ${nomVille}`,
       description: `Annuaire des ${cat.labelPluriel.toLowerCase()} conventionnés CPAM à ${nomVille}`,
@@ -258,6 +268,16 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
                 ? ` · Département ${departement}`
                 : ""}
           </p>
+          {pros.length > 0 && (
+            <p className="text-xs text-blue-200 mt-2">
+              Au {dateVerification}, RoullePro recense {pros.length}{" "}
+              {pros.length > 1 ? cat.labelPluriel.toLowerCase() : cat.label.toLowerCase()} à {nomVille}
+              {nbConventionnes > 0
+                ? `, dont ${nbConventionnes} ${nbConventionnes > 1 ? "conventionnés" : "conventionné"} CPAM confirmés dans l'annuaire Ameli`
+                : ""}
+              .
+            </p>
+          )}
         </div>
       </section>
 

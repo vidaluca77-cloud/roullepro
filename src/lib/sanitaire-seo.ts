@@ -186,6 +186,21 @@ export function buildFaqJsonLd(questions: { question: string; answer: string }[]
 const MAX_ITEMLIST_ENTITIES = 20;
 
 /**
+ * Date de derniere verification en toutes lettres ("27 juillet 2026").
+ * Les moteurs generatifs (AI Overviews, Perplexity) privilegient les donnees
+ * chiffrees explicitement datees ; les pages listing etant en ISR, la date
+ * correspond bien a la derniere regeneration.
+ */
+export function formatDateVerification(date: Date = new Date()): string {
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Paris",
+  });
+}
+
+/**
  * Noeud ItemList d'un listing de pros, chaque entree portant l'entite metier
  * complete (type schema.org de la categorie, telephone, adresse, geo) au lieu
  * d'un simple couple nom/URL. Les moteurs generatifs peuvent alors citer la
