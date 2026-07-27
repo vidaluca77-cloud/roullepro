@@ -10,6 +10,7 @@ import { SEO_CITY_CONTENT, getCityCategoryContent } from "./seo-city-content";
  */
 const COMBOS_ATTENDUS = [
   "abymes/ambulance",
+  "les-abymes/taxi-conventionne",
   "ambres/taxi-conventionne",
   "amiens/ambulance",
   "amiens/taxi-conventionne",
@@ -106,10 +107,14 @@ const COMBOS_ATTENDUS = [
   "vignot/taxi-conventionne",
 ];
 
-test("les 95 combos prioritaires ont une entree editoriale dediee", () => {
+test("les 95 combos prioritaires (+1 correction de slug) ont une entree editoriale dediee", () => {
   const manquants = COMBOS_ATTENDUS.filter((cle) => !SEO_CITY_CONTENT[cle]);
   assert.deepEqual(manquants, [], `entrees manquantes : ${manquants.join(", ")}`);
-  assert.equal(COMBOS_ATTENDUS.length, 95);
+  // 95 combos du brief initial + "les-abymes/taxi-conventionne" ajoutee apres
+  // verification Supabase : le slug de production "les-abymes" (17 taxis actifs,
+  // ~50 impressions GSC cumulees) differe du slug "abymes" (2 ambulances, 258
+  // impressions) deja couvert par le brief. Les deux slugs coexistent en base.
+  assert.equal(COMBOS_ATTENDUS.length, 96);
 });
 
 test("chaque entree respecte le format attendu par le hub", () => {

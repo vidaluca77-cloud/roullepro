@@ -2709,6 +2709,39 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
     ],
   },
 
+  "les-abymes/taxi-conventionne": {
+    intro: [
+      "Aux Abymes (971), commune la plus peuplée de Guadeloupe, le taxi conventionné est le mode de transport remboursé le plus utilisé pour les patients autonomes. Il dessert le CHU de Guadeloupe, route de Chauvel, implanté sur la commune même, ainsi que la Polyclinique de la Guadeloupe au Morne Jolivière : consultations de suivi, séances de dialyse ou de chimiothérapie, examens d'imagerie, bilans préopératoires. Cette proximité avec le plateau technique de référence de l'archipel simplifie les trajets réguliers de nombreux patients abymiens.",
+      "Un taxi conventionné a signé une convention avec la CPAM de Guadeloupe : ce conventionnement, et non le compteur habituel, fixe le tarif remboursable du trajet. Le chauffeur n'a pas d'obligation de qualification sanitaire, car ce transport s'adresse à un patient capable de monter et descendre seul du véhicule. Dès qu'un brancardage, une position allongée ou une surveillance médicale s'imposent, c'est l'ambulance, avec son équipage DEA, qui doit être prescrite à la place.",
+      "L'Assurance maladie rembourse 100 % du tarif conventionné en affection longue durée, accident du travail ou hospitalisation liée, et 65 % pour les autres motifs, la mutuelle couvrant en général le reste. Le tiers payant évite d'avancer les frais sur présentation de la prescription médicale de transport et de la carte Vitale. Pour un traitement itératif au CHU, réserver auprès du même chauffeur limite les temps d'attente et stabilise les horaires de rendez-vous. Comparez ci-dessous les taxis conventionnés des Abymes, avec leur téléphone direct.",
+    ],
+    voisines: [
+      { nom: "Pointe-à-Pitre", slug: "pointe-a-pitre" },
+      { nom: "Baie-Mahault", slug: "baie-mahault" },
+      { nom: "Le Gosier", slug: "le-gosier" },
+      { nom: "Morne-à-l'Eau", slug: "morne-a-l-eau" },
+      { nom: "Le Moule", slug: "le-moule" },
+      { nom: "Sainte-Anne", slug: "sainte-anne" },
+    ],
+    faq: [
+      {
+        question: "Quelle différence entre un taxi conventionné et un taxi ordinaire aux Abymes ?",
+        answer:
+          "Le taxi conventionné a signé un accord avec la CPAM de Guadeloupe qui fixe un tarif remboursable pour les trajets médicaux prescrits, contrairement à un taxi classique facturé au compteur. Il transporte un patient valide, assis, sans besoin de surveillance médicale pendant le trajet vers le CHU de Guadeloupe ou la Polyclinique.",
+      },
+      {
+        question: "Le taxi conventionné est-il remboursé à 100 % aux Abymes ?",
+        answer:
+          "Le remboursement atteint 100 % du tarif conventionné en affection longue durée, accident du travail ou hospitalisation liée, sur prescription médicale. Pour les autres motifs de transport, le taux est de 65 %, la mutuelle prenant en charge le complément dans la plupart des contrats.",
+      },
+      {
+        question: "Comment réserver un taxi conventionné pour un rendez-vous au CHU de Guadeloupe ?",
+        answer:
+          "Contactez directement l'un des taxis conventionnés référencés ci-dessous en indiquant l'heure du rendez-vous, le service concerné et votre lieu de prise en charge. Munissez-vous de la prescription médicale de transport et de votre carte Vitale pour bénéficier du tiers payant.",
+      },
+    ],
+  },
+
   "ducos/ambulance": {
     intro: [
       "Ducos ne compte aucun établissement hospitalier sur son territoire. Les quelque 17 000 habitants de ce carrefour du centre de la Martinique (972) sont rattachés au CHU de Martinique, à Fort-de-France, situé à environ 11 kilomètres. C'est donc autour de cette liaison que les entreprises d'ambulances agréées par l'ARS bâtissent leur activité, le CHU regroupant sept hôpitaux dont Pierre Zobda-Quitman. Dire les choses clairement évite les mauvaises surprises : à Ducos, tout transport allongé suppose un déplacement vers le chef-lieu ou vers un autre site du groupe hospitalier.",
