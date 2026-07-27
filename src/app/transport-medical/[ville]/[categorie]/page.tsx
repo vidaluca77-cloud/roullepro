@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, ChevronRight, Star, BadgeCheck } from "lucide-react";
 import { getCategorieBySlug, deslugifyVille, type ProSanitaire } from "@/lib/sanitaire-data";
-import { buildFaqJsonLd, buildBreadcrumbJsonLd, getVilleFaq } from "@/lib/sanitaire-seo";
+import { buildFaqJsonLd, buildBreadcrumbJsonLd, buildProsItemList, getVilleFaq } from "@/lib/sanitaire-seo";
 import { getCityCategoryContent } from "@/lib/seo-city-content";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import {
@@ -173,17 +173,13 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
   // JSON-LD ItemList enrichi : Google peut afficher en carrousel local
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: `${cat.labelPluriel} à ${nomVille}`,
-    description: `Annuaire des ${cat.labelPluriel.toLowerCase()} conventionnés CPAM à ${nomVille}`,
-    url: `https://roullepro.com/transport-medical/${ville}/${categorie}`,
-    numberOfItems: pros.length,
-    itemListElement: pros.slice(0, 20).map((p, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      url: `https://roullepro.com/transport-medical/${ville}/${categorie}/${p.slug}`,
-      name: p.nom_commercial || p.raison_sociale,
-    })),
+    ...buildProsItemList({
+      name: `${cat.labelPluriel} à ${nomVille}`,
+      description: `Annuaire des ${cat.labelPluriel.toLowerCase()} conventionnés CPAM à ${nomVille}`,
+      url: `https://roullepro.com/transport-medical/${ville}/${categorie}`,
+      pros,
+      itemUrl: (p) => `https://roullepro.com/transport-medical/${ville}/${categorie}/${p.slug}`,
+    }),
   };
 
   // Contenu editorial enrichi pour les pages hub prioritaires (striking distance).

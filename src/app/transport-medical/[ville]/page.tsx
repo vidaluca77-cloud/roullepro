@@ -13,6 +13,7 @@ import {
 import {
   buildFaqJsonLd,
   buildBreadcrumbJsonLd,
+  buildProsItemList,
   getVilleFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
@@ -214,27 +215,12 @@ export default async function VillePage({ params, searchParams }: Props) {
     description: `Annuaire des ambulances, VSL et taxis conventionnés à ${nomVille}`,
     url: `https://roullepro.com/transport-medical/${ville}`,
     dateModified: new Date().toISOString(),
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: pros.length,
-      itemListElement: pros.slice(0, 20).map((p, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        item: {
-          "@type": "MedicalBusiness",
-          name: p.nom_commercial || p.raison_sociale,
-          medicalSpecialty: "MedicalTransport",
-          telephone: p.telephone_public || undefined,
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: p.adresse || undefined,
-            postalCode: p.code_postal,
-            addressLocality: formatNomVille(p.ville),
-            addressCountry: "FR",
-          },
-        },
-      })),
-    },
+    mainEntity: buildProsItemList({
+      name: `Transport sanitaire à ${nomVille}`,
+      pros,
+      itemUrl: (p) =>
+        `https://roullepro.com/transport-medical/${ville}/${getCategorieByKey(p.categorie)?.slug ?? p.categorie}/${p.slug}`,
+    }),
   };
 
   const override = getVilleSeoOverride(ville);
