@@ -263,3 +263,25 @@ test("le rendu concatene des segments reconstitue chaque paragraphe publie", () 
     }
   }
 });
+
+test("aucun lien ne coupe un mot en deux", () => {
+  // Un nom mal choisi ("Institut" seul) produirait un lien au milieu d'un mot :
+  // la mention liee doit toujours etre bordee par une frontiere de mot.
+  for (const [cle, contenu] of Object.entries(SEO_CITY_CONTENT)) {
+    if (!contenu.etablissements) continue;
+    for (const p of contenu.intro) {
+      let pos = 0;
+      for (const seg of segmenterParagraphe(p, contenu.etablissements)) {
+        if (seg.slug) {
+          const avant = pos > 0 ? p[pos - 1] : " ";
+          const apres = pos + seg.texte.length < p.length ? p[pos + seg.texte.length] : " ";
+          assert.ok(
+            !/[\p{L}\p{N}]/u.test(avant) && !/[\p{L}\p{N}]/u.test(apres),
+            `${cle} : "${seg.texte}" coupe un mot`
+          );
+        }
+        pos += seg.texte.length;
+      }
+    }
+  }
+});
