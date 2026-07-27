@@ -22,10 +22,70 @@ export type CityCategoryContent = {
   voisines: { nom: string; slug: string }[];
   /** Questions/reponses locales ajoutees au FAQPage JSON-LD et affichees. */
   faq: { question: string; answer: string }[];
+  /**
+   * Etablissements FINESS cites en toutes lettres dans `intro`, transformes en liens
+   * vers /etablissements/[slug] au rendu. `nom` doit etre une sous-chaine exacte d'un
+   * des paragraphes d'`intro` ; `slug` doit exister dans etablissements_sante_public.
+   */
+  etablissements?: { nom: string; slug: string }[];
 };
+
+/** Segment de paragraphe : texte brut, ou mention d'etablissement a lier. */
+export type SegmentParagraphe = { texte: string; slug?: string };
+
+/**
+ * Decoupe un paragraphe en segments, en isolant la PREMIERE occurrence de chaque
+ * etablissement pour eviter la sur-optimisation (un meme slug n'est lie qu'une fois
+ * par paragraphe). Les noms les plus longs passent en premier afin qu'une mention
+ * courte ("Hopital Renee Sabran") ne coupe pas la plus specifique
+ * ("Hopital Renee Sabran de Giens").
+ */
+export function segmenterParagraphe(
+  paragraphe: string,
+  etablissements: { nom: string; slug: string }[] | undefined
+): SegmentParagraphe[] {
+  if (!etablissements || etablissements.length === 0) return [{ texte: paragraphe }];
+
+  const tries = [...etablissements].sort((a, b) => b.nom.length - a.nom.length);
+  let segments: SegmentParagraphe[] = [{ texte: paragraphe }];
+  const slugsLies = new Set<string>();
+
+  for (const { nom, slug } of tries) {
+    if (!nom || slugsLies.has(slug)) continue;
+    const suivants: SegmentParagraphe[] = [];
+    let trouve = false;
+    for (const seg of segments) {
+      if (trouve || seg.slug) {
+        suivants.push(seg);
+        continue;
+      }
+      const i = seg.texte.indexOf(nom);
+      if (i === -1) {
+        suivants.push(seg);
+        continue;
+      }
+      trouve = true;
+      if (i > 0) suivants.push({ texte: seg.texte.slice(0, i) });
+      suivants.push({ texte: nom, slug });
+      const reste = seg.texte.slice(i + nom.length);
+      if (reste) suivants.push({ texte: reste });
+    }
+    if (trouve) {
+      slugsLies.add(slug);
+      segments = suivants;
+    }
+  }
+
+  return segments;
+}
 
 export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   "nice/ambulance": {
+    etablissements: [
+      { nom: "hôpital Pasteur", slug: "chu-de-nice-hopital-pasteur-06" },
+      { nom: "hôpital de l'Archet", slug: "chu-de-nice-hopital-de-l-archet-06" },
+      { nom: "hôpital de Cimiez", slug: "chu-de-nice-hopital-de-cimiez-06" },
+    ],
     intro: [
       "Le CHU de Nice se répartit sur trois implantations qui structurent l'activité de transport allongé des Alpes-Maritimes (06) : l'hôpital Pasteur, dont le bâtiment Pasteur 2 concentre les activités aiguës à l'est de la ville, l'hôpital de l'Archet (Archet 1 et 2) à l'ouest, et l'hôpital de Cimiez sur les hauteurs. Les entreprises d'ambulances agréées par l'ARS Provence-Alpes-Côte d'Azur assurent les liaisons entre ces sites ainsi que les trajets entre le domicile et l'hôpital, dans une ville dont l'étendue et le relief compliquent souvent les déplacements.",
       "L'ambulance est le seul mode permettant un transport en position allongée ou semi-assise : équipage de deux personnes dont un diplômé d'État ambulancier (DEA), brancard, oxygène et matériel de premiers secours à bord. Elle est prescrite pour les sorties de bloc ou de réanimation, les transferts d'un site du CHU vers un autre, les admissions programmées et les retours à domicile après une hospitalisation lourde. En dehors des heures ouvrables, les transports urgents relèvent de la garde ambulancière du département, régulée sous l'égide du SAMU 06 (Centre 15) ; en cas d'urgence vitale, c'est le 15 qu'il faut appeler.",
@@ -59,6 +119,12 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "cagnes-sur-mer/ambulance": {
+    etablissements: [
+      { nom: "polyclinique Saint-Jean", slug: "polyclinique-saint-jean-06" },
+      { nom: "hôpital de l'Archet", slug: "chu-de-nice-hopital-de-l-archet-06" },
+      { nom: "hôpital Pasteur 2", slug: "chu-de-nice-hopital-pasteur-06" },
+      { nom: "Institut Arnault Tzanck de Saint-Laurent-du-Var", slug: "institut-arnault-tzanck-06" },
+    ],
     intro: [
       "Cagnes-sur-Mer, troisième commune des Alpes-Maritimes (06) après Nice et Antibes, dispose de plusieurs entreprises d'ambulances agréées par l'ARS. Idéalement située entre Nice et Antibes, la ville bénéficie d'un accès rapide aux grands plateaux techniques de la Côte d'Azur : le CHU de Nice (hôpital Pasteur 2 et hôpital de l'Archet), l'Institut Arnault Tzanck de Saint-Laurent-du-Var tout proche, et la polyclinique Saint-Jean à Cagnes-sur-Mer même, spécialisée notamment en chirurgie et en soins de suite.",
       "Les ambulances cagnoises assurent les transports allongés pour les sorties d'hospitalisation, les transferts entre établissements et les consultations. Elles participent, avec les autres sociétés du secteur, à la garde ambulancière départementale coordonnée sous l'égide du SAMU 06 (Centre 15). La proximité immédiate de Saint-Laurent-du-Var, Villeneuve-Loubet et Vence facilite la mutualisation des moyens sur ce bassin de population dense du littoral.",
@@ -87,6 +153,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "albi/ambulance": {
+    etablissements: [
+      { nom: "Centre hospitalier d'Albi", slug: "centre-hospitalier-albi-81" },
+      { nom: "Polyclinique du Sidobre", slug: "polyclinique-du-sidobre-81" },
+    ],
     intro: [
       "Albi, préfecture du Tarn (81) inscrite au patrimoine mondial de l'UNESCO pour sa Cité épiscopale, s'appuie sur un réseau d'ambulances agréées par l'ARS Occitanie. Ces entreprises desservent en premier lieu le Centre hospitalier d'Albi (hôpital de la Renaudié), principal établissement public du nord du département, ainsi que la clinique Toulouse-Lautrec et la Polyclinique du Sidobre pour les prises en charge privées.",
       "Les ambulances albigeoises interviennent pour les transports allongés : sorties d'hospitalisation, transferts vers le CHU de Toulouse (Purpan, Rangueil) pour les plateaux techniques spécialisés, consultations et hospitalisations programmées. Elles assurent, avec les sociétés de Castres, Gaillac et Carmaux, la garde ambulancière du Tarn organisée sous l'égide du SAMU 81, garantissant une permanence des transports urgents en dehors des heures ouvrables.",
@@ -115,6 +185,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "nimes/ambulance": {
+    etablissements: [
+      { nom: "CHU de Nîmes", slug: "groupe-hopitalier-caremeau-chu-nimes-territoire-nimes-30" },
+      { nom: "Institut de Cancérologie du Gard", slug: "kenval-institut-de-cancerologie-du-gard-30" },
+    ],
     intro: [
       "Nîmes, préfecture du Gard (30), s'appuie sur un tissu dense d'entreprises d'ambulances agréées par l'ARS Occitanie. Elles convergent d'abord vers le CHU de Nîmes et son hôpital universitaire Carémeau, place du Professeur Robert-Debré, établissement de référence pour l'ensemble du département. L'Institut de Cancérologie du Gard complète cette offre pour les patients suivis en oncologie, dont les allers-retours répétés représentent une part notable de l'activité de transport allongé. Autour de la ville-centre, les communes de Marguerittes, Milhaud, Caissargues ou Rodilhan dépendent du même plateau technique, ce qui structure naturellement les tournées des équipages nîmois.",
       "Le recours à l'ambulance se justifie lorsque l'état du patient impose le transport allongé ou une surveillance pendant le trajet : sortie de bloc, retour à domicile après une hospitalisation lourde, transfert entre deux services. Le véhicule embarque brancard, oxygène et matériel de premiers secours, et son équipage comprend obligatoirement un diplômé d'État ambulancier. En dehors des heures ouvrables, les sociétés nîmoises prennent leur tour dans la garde ambulancière du département, régulée sous l'égide du SAMU 30 (Centre 15) : c'est le médecin régulateur qui engage l'ambulance de garde lorsqu'un transport urgent devient nécessaire la nuit, le week-end ou un jour férié.",
@@ -176,6 +250,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "beauvais/ambulance": {
+    etablissements: [
+      { nom: "Centre hospitalier de Beauvais", slug: "ch-beauvais-60" },
+      { nom: "CHU de Lille", slug: "centre-hospitalier-regional-universitaire-de-lille-59" },
+    ],
     intro: [
       "Beauvais, préfecture de l'Oise (60), s'appuie sur plusieurs entreprises d'ambulances agréées par l'ARS Hauts-de-France. Elles desservent principalement le Centre hospitalier de Beauvais, établissement de référence du nord-ouest du département (urgences, maternité, chirurgie), ainsi que le Groupe hospitalier public du Sud de l'Oise et les cliniques privées de l'agglomération beauvaisienne.",
       "Les ambulances de Beauvais assurent les transports allongés : sorties d'hospitalisation, transferts inter-établissements et hospitalisations programmées, y compris vers les CHU de Lille et Amiens ou les hôpitaux d'Île-de-France pour les plateaux techniques spécialisés, Beauvais se trouvant à la charnière entre Picardie et région parisienne. Elles participent, avec les sociétés de Compiègne, Creil et Senlis, à la garde ambulancière de l'Oise organisée par le SAMU 60 (Centre 15), qui garantit une permanence des transports urgents la nuit et le week-end.",
@@ -204,6 +282,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "vesoul/ambulance": {
+    etablissements: [
+      { nom: "hôpital de Vesoul", slug: "gh-haute-saone-site-vesoul-70" },
+      { nom: "CHU de Besançon", slug: "centre-hospitalier-universitaire-besancon-25" },
+    ],
     intro: [
       "Vesoul, préfecture de la Haute-Saône (70), s'appuie sur des entreprises d'ambulances agréées par l'ARS Bourgogne-Franche-Comté. Elles desservent en premier lieu le Groupe hospitalier de la Haute-Saône (GH70), dont l'hôpital de Vesoul constitue le principal site (urgences, médecine, chirurgie, maternité), ainsi que les structures de soins de suite et les EHPAD du bassin vésulien.",
       "Les ambulances de Vesoul assurent les transports allongés : sorties d'hospitalisation, transferts inter-établissements et hospitalisations programmées, y compris vers le CHU de Besançon (Jean Minjoz) pour les plateaux techniques spécialisés comme la neurochirurgie, la cardiologie interventionnelle ou l'oncologie lourde. Elles participent, avec les sociétés de Luxeuil-les-Bains, Lure et Gray, à la garde ambulancière de la Haute-Saône coordonnée par le SAMU 70 (Centre 15), indispensable sur ce territoire rural aux distances importantes.",
@@ -232,6 +314,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "limoges/ambulance": {
+    etablissements: [
+      { nom: "hôpital Dupuytren", slug: "centre-hospitalier-universitaire-dupuytren-limoges-87" },
+      { nom: "CHU de Limoges", slug: "centre-hospitalier-universitaire-dupuytren-limoges-87" },
+    ],
     intro: [
       "Limoges, préfecture de la Haute-Vienne (87) et principale ville de l'ex-Limousin, dispose d'un réseau étoffé d'entreprises d'ambulances agréées par l'ARS Nouvelle-Aquitaine. Elles desservent en priorité le CHU de Limoges, dont l'hôpital Dupuytren constitue le grand plateau technique régional (urgences, réanimation, oncologie, transplantation, maternité de niveau 3), ainsi que l'hôpital du Cluzeau, les cliniques Chénieux et François-Chénieux, et la Polyclinique de Limoges.",
       "Les ambulances limougeaudes assurent les transports allongés : sorties d'hospitalisation, transferts inter-établissements, consultations spécialisées et hospitalisations programmées. En tant que CHU de recours pour toute l'ex-région Limousin, Limoges génère un flux important de transports depuis la Creuse et la Corrèze voisines. Les sociétés locales participent à la garde ambulancière de la Haute-Vienne, coordonnée par le SAMU 87 (Centre 15), qui assure la permanence des transports urgents hors heures ouvrables.",
@@ -260,6 +346,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "arras/ambulance": {
+    etablissements: [
+      { nom: "Centre hospitalier d'Arras", slug: "centre-hospitalier-d-arras-62" },
+      { nom: "CHU de Lille", slug: "centre-hospitalier-regional-universitaire-de-lille-59" },
+    ],
     intro: [
       "Arras, préfecture du Pas-de-Calais (62), s'appuie sur plusieurs entreprises d'ambulances agréées par l'ARS Hauts-de-France. Elles desservent principalement le Centre hospitalier d'Arras, établissement de référence du sud du département (urgences, maternité, chirurgie, cancérologie), ainsi que la Polyclinique du Bois et les cliniques privées de l'agglomération arrageoise.",
       "Les ambulances d'Arras assurent les transports allongés : sorties d'hospitalisation, transferts inter-établissements et hospitalisations programmées, y compris vers le CHU de Lille pour les plateaux techniques les plus spécialisés (neurochirurgie, chirurgie cardiaque, greffes). Elles participent, avec les sociétés de Lens, Béthune et Hénin-Beaumont, à la garde ambulancière du Pas-de-Calais organisée par le SAMU 62 (Centre 15), dans un bassin de population dense hérité de l'ancien bassin minier.",
@@ -288,6 +378,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "strasbourg/taxi-conventionne": {
+    etablissements: [
+      { nom: "Hôpital Civil", slug: "hopital-civil-nouvel-hopital-civil-67" },
+      { nom: "hôpital de Hautepierre", slug: "hopital-de-hautepierre-67" },
+    ],
     intro: [
       "Strasbourg, préfecture du Bas-Rhin (67) et capitale de la région Grand Est, compte de nombreux taxis conventionnés par la CPAM du Bas-Rhin. Agréés pour le transport de patients assis autonomes sur prescription médicale, ils desservent en premier lieu les Hôpitaux universitaires de Strasbourg (HUS) : le Nouvel Hôpital Civil et l'Hôpital Civil au centre-ville, l'hôpital de Hautepierre, principal site d'urgences de l'agglomération, ainsi que la Clinique Rhéna pour les prises en charge du secteur privé.",
       "Le taxi conventionné est particulièrement adapté aux trajets itératifs : séances de dialyse, cures de chimiothérapie ou de radiothérapie, consultations de suivi et examens d'imagerie dans les services des HUS. Il applique un tarif conventionné avec la CPAM et pratique le tiers payant : sur présentation de la prescription médicale de transport et de la carte Vitale, le patient n'avance pas les frais. À la différence du VSL, il n'exige pas de qualification sanitaire de son chauffeur, mais transporte lui aussi les patients assis remboursés par l'Assurance maladie.",
@@ -321,6 +415,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "paris/ambulance": {
+    etablissements: [
+      { nom: "hôpital Saint-Louis", slug: "ghu-aphp-nord-universite-paris-cite-site-saint-louis-75" },
+      { nom: "hôpital Cochin", slug: "ghu-aphp-centre-universite-paris-cite-site-cochin-port-royal-75" },
+      { nom: "Hôtel-Dieu", slug: "ghu-aphp-centre-universite-paris-cite-site-hotel-dieu-75" },
+    ],
     intro: [
       "Aucune autre ville française ne concentre autant de plateaux techniques que Paris (75) : l'AP-HP y aligne ses sites de référence, parmi lesquels l'hôpital Saint-Louis, l'Hôtel-Dieu et l'hôpital Cochin, auxquels s'ajoutent de nombreuses cliniques privées. Pour les entreprises d'ambulances agréées par l'ARS Île-de-France, cette densité se traduit par un enchaînement continu de courses : admissions programmées, sorties de chirurgie, transferts d'un site de l'AP-HP à un autre, retours à domicile après une hospitalisation lourde. Le transport allongé se pratique donc ici à grande échelle, dans un contexte de circulation et de stationnement plus contraint que partout ailleurs en France.",
       "Ce qui définit une ambulance n'est pas sa vitesse mais son armement et son équipage : deux personnes au minimum, dont un diplômé d'État ambulancier, un brancard, de l'oxygène et le matériel de premiers secours. Le médecin la prescrit lorsque la position assise est impossible ou qu'une surveillance s'impose pendant le trajet ; un patient autonome relève, lui, du transport assis. En dehors des heures ouvrables, les sociétés parisiennes peuvent être engagées au titre de la garde ambulancière du département, régulée sous l'égide du SAMU 75 (Centre 15), qui assure la permanence des transports urgents la nuit, le week-end et les jours fériés.",
@@ -353,6 +452,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "paris/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Saint-Louis", slug: "ghu-aphp-nord-universite-paris-cite-site-saint-louis-75" },
+      { nom: "hôpital Cochin", slug: "ghu-aphp-centre-universite-paris-cite-site-cochin-port-royal-75" },
+      { nom: "Hôtel-Dieu", slug: "ghu-aphp-centre-universite-paris-cite-site-hotel-dieu-75" },
+    ],
     intro: [
       "Trois séances de dialyse par semaine, une série de rayons étalée sur plusieurs semaines, une cure de chimiothérapie tous les quinze jours : pour un patient parisien autonome, l'enjeu du transport sanitaire n'est pas l'urgence, c'est la régularité. Le taxi conventionné répond précisément à ce besoin, en position assise, sans brancard ni surveillance médicale, vers les sites de l'AP-HP comme l'hôpital Saint-Louis, l'Hôtel-Dieu ou l'hôpital Cochin, mais aussi vers les cabinets d'imagerie et les centres de rééducation de la capitale. C'est, à Paris (75), le mode de transport le plus fréquemment prescrit pour les traitements suivis au long cours.",
       "Un taxi conventionné parisien reste un taxi : autorisation de stationnement, compteur, plaque professionnelle. Ce qui change, c'est la convention signée avec l'Assurance maladie, qui lui impose un tarif dédié au transport de patients, distinct de la course commerciale, et l'autorise à accepter le bon de transport. Son chauffeur n'est soumis à aucune qualification sanitaire obligatoire, contrairement à l'auxiliaire ambulancier qui conduit un VSL ou au diplômé d'État ambulancier présent à bord d'une ambulance. Concrètement, le tiers payant s'applique : vous remettez la prescription médicale de transport et la carte Vitale, et vous ne réglez pas la part prise en charge.",
@@ -385,6 +489,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "marseille/ambulance": {
+    etablissements: [
+      { nom: "hôpital de la Timone", slug: "aphm-hopital-la-timone-13" },
+      { nom: "hôpital Nord", slug: "aphm-hopital-nord-13" },
+      { nom: "hôpital de la Conception", slug: "aphm-hopital-de-la-conception-13" },
+    ],
     intro: [
       "À Marseille (13), la carte des transports allongés se lit d'abord à travers l'AP-HM : l'hôpital de la Timone, qui abrite le SAMU 13 et son Centre 15, l'hôpital Nord, l'hôpital de la Conception et les Hôpitaux Sud, réunissant Sainte-Marguerite et Salvator. Quatre implantations, quatre bassins de recrutement, et donc un volume important de transferts d'un site à l'autre qui s'ajoute aux trajets entre le domicile et l'hôpital. Les entreprises d'ambulances agréées par l'ARS Provence-Alpes-Côte d'Azur travaillent au quotidien avec ces plateaux techniques, pour des patients dont l'état interdit la position assise.",
       "Le transport en ambulance suppose un véhicule armé — brancard, oxygène, matériel de premiers secours — et un équipage de deux personnes dont au moins un diplômé d'État ambulancier. Il couvre les sorties de réanimation ou de chirurgie, les hospitalisations programmées, les retours à domicile après un séjour lourd et les passages d'un site de l'AP-HM à un autre. Les sociétés marseillaises prennent également leur tour dans la garde ambulancière des Bouches-du-Rhône, régulée sous l'égide du SAMU 13 (Centre 15), qui garantit la disponibilité d'un moyen de transport urgent la nuit, le week-end et les jours fériés.",
@@ -418,6 +527,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "marseille/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Nord", slug: "aphm-hopital-nord-13" },
+    ],
     intro: [
       "Le critère qui décide du mode de transport n'est pas la gravité de la maladie, mais l'autonomie du patient le jour du trajet. À Marseille (13), dès lors qu'une personne peut monter dans un véhicule ordinaire et rester assise sans surveillance, c'est le taxi conventionné que le médecin prescrit : séances de dialyse, radiothérapie, chimiothérapie, examens d'imagerie et consultations de suivi vers les sites de l'AP-HM — la Timone, l'hôpital Nord, la Conception, les Hôpitaux Sud — comme vers les cliniques de l'agglomération. Ce mode couvre ainsi la majeure partie des transports sanitaires remboursés dans la deuxième ville de France.",
       "Le conventionnement ne transforme pas un taxi en véhicule sanitaire. Le chauffeur n'a aucune qualification sanitaire obligatoire, à la différence de l'auxiliaire ambulancier qui conduit un VSL ; il aide à monter et à descendre, accompagne éventuellement jusqu'à l'accueil, mais n'assure aucun soin. Ce que la convention signée avec la CPAM des Bouches-du-Rhône apporte, c'est un tarif encadré par l'Assurance maladie, distinct du compteur habituel, l'acceptation du bon de transport et le tiers payant : sur présentation de la prescription médicale de transport et de la carte Vitale, vous n'avancez pas les frais couverts par l'Assurance maladie.",
@@ -451,6 +563,12 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "toulouse/ambulance": {
+    etablissements: [
+      { nom: "hôpital Purpan", slug: "hopital-purpan-chu-toulouse-31" },
+      { nom: "hôpital Rangueil", slug: "hopital-de-rangueil-chu-toulouse-31" },
+      { nom: "hôpital Larrey", slug: "hopital-larrey-chu-toulouse-31" },
+      { nom: "Hôtel-Dieu Saint-Jacques", slug: "hotel-dieu-saint-jacques-chu-toulouse-31" },
+    ],
     intro: [
       "Le CHU de Toulouse ne se visite pas d'une seule adresse : l'hôpital Purpan, l'hôpital Rangueil, l'hôpital Larrey et l'Hôtel-Dieu Saint-Jacques se répartissent les spécialités de part et d'autre de la Garonne. Pour un patient de Toulouse (31), un parcours de soins passe donc souvent par plusieurs sites, et chaque changement d'établissement peut se traduire par un transport. Les entreprises d'ambulances agréées par l'ARS Occitanie assurent ces mouvements pour les personnes qui ne peuvent pas voyager assises ou qui doivent rester sous surveillance, aux côtés des trajets domicile-hôpital et des retours après hospitalisation.",
       "Une ambulance se reconnaît à son équipage et à son armement : deux personnes au minimum, dont un diplômé d'État ambulancier, un brancard, de l'oxygène et le matériel de premiers secours. C'est le mode prescrit après une chirurgie lourde, à la sortie d'un service de soins critiques, pour un transfert entre Purpan et Rangueil ou pour une admission programmée nécessitant un brancardage. Ces mêmes sociétés toulousaines participent à la garde ambulancière de la Haute-Garonne, régulée sous l'égide du SAMU 31 (Centre 15), qui couvre les transports urgents la nuit, le week-end et les jours fériés.",
@@ -484,6 +602,12 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "toulouse/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Purpan", slug: "hopital-purpan-chu-toulouse-31" },
+      { nom: "hôpital Rangueil", slug: "hopital-de-rangueil-chu-toulouse-31" },
+      { nom: "hôpital Larrey", slug: "hopital-larrey-chu-toulouse-31" },
+      { nom: "Hôtel-Dieu Saint-Jacques", slug: "hotel-dieu-saint-jacques-chu-toulouse-31" },
+    ],
     intro: [
       "L'agglomération toulousaine s'étire de Blagnac à Ramonville-Saint-Agne, et beaucoup de patients suivis au CHU habitent cette couronne plutôt que le centre de Toulouse (31). Pour eux, le taxi conventionné est la solution de transport assis remboursée par l'Assurance maladie : il conduit vers l'hôpital Purpan, l'hôpital Rangueil, l'hôpital Larrey ou l'Hôtel-Dieu Saint-Jacques, comme vers les centres de dialyse, d'oncologie et de rééducation de la métropole. Il s'adresse aux personnes autonomes, capables de faire le trajet assises, sans brancard, sans oxygène et sans surveillance médicale pendant le déplacement.",
       "Le mécanisme est simple à condition d'en comprendre la logique : ce n'est pas un agrément sanitaire qui rend la course remboursable, mais la convention signée avec la CPAM de la Haute-Garonne. Elle fixe un tarif dédié au transport de patients, distinct de la course libre, et autorise le chauffeur à accepter le bon de transport. Aucune qualification sanitaire n'est exigée de lui, à la différence de l'équipage d'une ambulance. En échange, le tiers payant s'applique : la prescription médicale de transport et la carte Vitale suffisent, vous n'avancez pas la part prise en charge.",
@@ -517,6 +641,12 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "montpellier/ambulance": {
+    etablissements: [
+      { nom: "hôpital Lapeyronie", slug: "hopital-lapeyronie-chu-montpellier-34" },
+      { nom: "hôpital Saint-Éloi", slug: "hopital-saint-eloi-chu-montpellier-34" },
+      { nom: "hôpital Gui de Chauliac", slug: "hopital-gui-de-chauliac-chu-montpellier-34" },
+      { nom: "hôpital Arnaud de Villeneuve", slug: "chu-montpellier-hopital-arnaud-de-villeneuve-34" },
+    ],
     intro: [
       "Montpellier (34) s'organise autour d'un CHU réparti sur plusieurs sites aux vocations distinctes : l'hôpital Lapeyronie, où sont installées les urgences, l'hôpital Saint-Éloi, l'hôpital Gui de Chauliac et l'hôpital Arnaud de Villeneuve. Cette répartition a une conséquence directe sur le transport sanitaire : un même patient peut être adressé successivement à deux ou trois adresses, ce qui multiplie les transferts inter-sites. Les entreprises d'ambulances agréées par l'ARS Occitanie assurent ces liaisons ainsi que les trajets depuis le domicile, dès lors que le patient ne peut pas voyager assis ou doit rester surveillé.",
       "Le transport allongé répond à des situations précises : sortie de bloc opératoire, retour à domicile après une hospitalisation lourde, admission programmée avec brancardage, passage d'un site du CHU à un autre. Le véhicule embarque un brancard, de l'oxygène et le matériel de premiers secours, et son équipage comprend au moins un diplômé d'État ambulancier. En dehors des heures ouvrables, les sociétés montpelliéraines peuvent être appelées au titre de la garde ambulancière de l'Hérault, régulée sous l'égide du SAMU 34 (Centre 15), qui couvre la nuit, le week-end et les jours fériés.",
@@ -583,6 +713,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "caen/ambulance": {
+    etablissements: [
+      { nom: "CHU Caen Normandie", slug: "centre-hospitalier-universitaire-cote-de-nacre-14" },
+    ],
     intro: [
       "Le CHU Caen Normandie, implanté avenue de la Côte de Nacre, structure à lui seul l'essentiel de l'activité de transport allongé du Calvados (14) : environ 1 516 lits, plus de 50 000 hospitalisations par an dont 20 000 passages aux urgences. Ces volumes se traduisent chaque jour par un flux continu de mouvements entre les domiciles, les services d'hospitalisation et les plateaux techniques. Les entreprises d'ambulances caennaises, agréées par l'ARS Normandie, prennent en charge ces trajets pour les patients dont l'état interdit la position assise ou impose une surveillance pendant le déplacement.",
       "Une ambulance se distingue du VSL et du taxi conventionné par son armement et son équipage : deux personnes au minimum, dont un diplômé d'État ambulancier (DEA), un brancard, de l'oxygène et le matériel de premiers secours. Elle est prescrite pour les sorties de chirurgie ou de réanimation, les admissions programmées, les transferts vers un établissement de suite et les retours à domicile après une hospitalisation lourde. Les sociétés du secteur participent par ailleurs à la garde ambulancière du département, régulée sous l'égide du SAMU 14 (Centre 15), qui couvre les transports urgents la nuit, le week-end et les jours fériés.",
@@ -616,6 +749,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "caen/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Côte de Nacre", slug: "centre-hospitalier-universitaire-cote-de-nacre-14" },
+      { nom: "CHU Caen Normandie", slug: "centre-hospitalier-universitaire-cote-de-nacre-14" },
+    ],
     intro: [
       "Trois séances de dialyse par semaine, une radiothérapie quotidienne pendant plusieurs semaines, un suivi post-opératoire tous les quinze jours : pour ces trajets répétés vers le CHU Caen Normandie (hôpital Côte de Nacre), le taxi conventionné est le mode de transport le plus utilisé dans le Calvados (14). Il s'adresse au patient autonome, capable de monter dans le véhicule et d'effectuer le trajet assis, sans brancard ni surveillance médicale pendant la route. Un besoin d'accompagnement plus soutenu orienterait vers le VSL, et un transport allongé vers l'ambulance.",
       "Ce n'est pas un agrément sanitaire qui l'autorise à transporter des assurés, mais une convention signée avec la CPAM du Calvados. Le chauffeur n'est donc soumis à aucune qualification sanitaire obligatoire, contrairement à l'auxiliaire ambulancier qui conduit un VSL ; en contrepartie, il applique un tarif conventionné, distinct du tarif taxi habituel, et pratique le tiers payant. Sur présentation de la prescription médicale de transport et de la carte Vitale, vous ne réglez rien sur la part prise en charge par l'Assurance maladie.",
@@ -649,6 +786,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "dijon/ambulance": {
+    etablissements: [
+      { nom: "Hôpital Privé Dijon Bourgogne", slug: "hopital-prive-dijon-bourgogne-21" },
+    ],
     intro: [
       "Préfecture de la Côte-d'Or (21), Dijon dispose d'une offre hospitalière organisée autour de trois pôles distincts : le CHU Dijon Bourgogne et son hôpital François-Mitterrand, sur le site du Bocage, rue Paul Gaffarel ; le Centre Georges-François Leclerc, dédié à la cancérologie, rue du Professeur Marion ; et l'Hôpital Privé Dijon Bourgogne, à Fontaine-lès-Dijon. Les entreprises d'ambulances agréées par l'ARS Bourgogne-Franche-Comté assurent la desserte de ces trois adresses en transport allongé, pour les admissions comme pour les retours à domicile.",
       "Le CHU dijonnais réunit des urgences adultes et pédiatriques ouvertes 24 heures sur 24, une maternité de niveau 3 et un centre de traumatologie : autant d'activités qui génèrent des transferts délicats, souvent en position allongée. L'ambulance répond précisément à ce besoin, avec un équipage de deux personnes dont un diplômé d'État ambulancier (DEA), un brancard, de l'oxygène et le matériel de premiers secours à bord. La permanence des transports urgents en dehors des heures ouvrables relève de la garde ambulancière du département, régulée sous l'égide du SAMU 21 (Centre 15).",
@@ -682,6 +822,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "dijon/taxi-conventionne": {
+    etablissements: [
+      { nom: "Hôpital Privé Dijon Bourgogne", slug: "hopital-prive-dijon-bourgogne-21" },
+    ],
     intro: [
       "Tous les transports pris en charge par l'Assurance maladie ne se font pas allongé : à Dijon (21), une large part des trajets remboursés relève du transport assis, et donc du taxi conventionné. Séances de radiothérapie ou de chimiothérapie au Centre Georges-François Leclerc, consultations de suivi au CHU Dijon Bourgogne (hôpital François-Mitterrand, site du Bocage), examens à l'Hôpital Privé Dijon Bourgogne de Fontaine-lès-Dijon : le point commun de ces déplacements est un patient autonome, en état de voyager assis sans surveillance.",
       "Le taxi conventionné tire son droit au remboursement d'une convention passée avec la CPAM de la Côte-d'Or, et non d'un agrément ARS. Son chauffeur n'est pas tenu à une qualification sanitaire — c'est la différence principale avec le VSL, conduit par un auxiliaire ambulancier dans un véhicule agréé — mais il applique un tarif conventionné et accepte le bon de transport en tiers payant. Le barème de remboursement, lui, est identique pour les deux modes : 100 % en affection longue durée, accident du travail ou hospitalisation liée, 65 % dans les autres situations.",
@@ -812,6 +955,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "beziers/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Béziers", slug: "centre-hospitalier-de-beziers-34" },
+    ],
     intro: [
       "Le Centre Hospitalier de Béziers, installé dans la ZAC de Montimaran, rue Valentin Haüy, est l'établissement de référence du territoire de santé Ouest-Hérault, qui dessert plus de 300 000 habitants. Cette fonction de pivot explique l'intensité de l'activité ambulancière locale : à Béziers (34), les transports allongés ne se limitent pas à la ville-centre, ils irriguent tout un secteur allant du littoral aux terres du Biterrois. Les sociétés agréées par l'ARS Occitanie en assurent la charge quotidienne.",
       "Le recours à l'ambulance suppose que l'état du patient interdise la position assise ou impose une surveillance en cours de route. Le véhicule est armé d'un brancard, d'oxygène et de matériel de premiers secours, et l'équipage compte au moins un diplômé d'État ambulancier (DEA). Sorties d'hospitalisation, transferts vers un établissement de suite ou vers un plateau technique plus spécialisé, admissions programmées : ces motifs constituent le quotidien des ambulances biterroises. La nuit, le week-end et les jours fériés, les transports urgents relèvent de la garde ambulancière du département, régulée sous l'égide du SAMU 34 (Centre 15).",
@@ -845,6 +991,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "beziers/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Béziers", slug: "centre-hospitalier-de-beziers-34" },
+    ],
     intro: [
       "Pour un traitement suivi au Centre Hospitalier de Béziers, la question n'est pas seulement de trouver un véhicule, mais de trouver un transport remboursé. À Béziers (34), le taxi conventionné répond à ce besoin pour les patients assis autonomes : il a signé une convention avec la CPAM de l'Hérault, applique un tarif encadré et accepte le bon de transport. C'est le mode le plus courant pour les séances répétées, les examens et les consultations de contrôle.",
       "Contrairement au VSL, véhicule agréé par l'ARS et conduit par un auxiliaire ambulancier, le taxi conventionné n'exige aucune qualification sanitaire de son chauffeur. Il ne remplace donc ni l'ambulance, réservée au transport allongé, ni un accompagnement médicalisé. Le remboursement, en revanche, est le même que pour un VSL : 100 % du tarif conventionné en affection longue durée, accident du travail ou hospitalisation liée, et 65 % pour les autres motifs, avec tiers payant sur présentation de la prescription et de la carte Vitale.",
@@ -873,6 +1022,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "antibes/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier d'Antibes Juan-les-Pins", slug: "centre-hospitalier-d-antibes-juan-les-pins-06" },
+    ],
     intro: [
       "Antibes (06) s'appuie sur le Centre Hospitalier d'Antibes Juan-les-Pins, avenue de Nice, membre du Groupe Hospitalier Sophia Antipolis – Vallée du Var. Cet établissement dessert un bassin qui dépasse largement la commune et englobe notamment Biot, Vallauris, Villeneuve-Loubet et Valbonne. Les entreprises d'ambulances agréées par l'ARS Provence-Alpes-Côte d'Azur assurent l'ensemble des transports allongés vers et depuis ce plateau technique, ainsi que les transferts vers un établissement plus spécialisé lorsque le soin l'exige. Leur activité suit de près le rythme des hospitalisations et des consultations programmées.",
       "Ce qui définit une ambulance, c'est son armement et son équipage : brancard, oxygène, matériel de premiers secours, deux personnes à bord dont un diplômé d'État ambulancier (DEA). Elle est prescrite quand le patient ne peut pas être transporté assis ou doit rester surveillé pendant le trajet — sortie de chirurgie, transfert inter-établissements, admission programmée, retour à domicile après une hospitalisation lourde. Hors heures ouvrables, la continuité des transports urgents est assurée par la garde ambulancière du département, régulée sous l'égide du SAMU 06 (Centre 15).",
@@ -905,6 +1057,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "antibes/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier d'Antibes Juan-les-Pins", slug: "centre-hospitalier-d-antibes-juan-les-pins-06" },
+    ],
     intro: [
       "Le taxi conventionné antibois transporte des patients assis, autonomes, sur prescription médicale — et rien d'autre. C'est cette définition simple qui en fait le mode dominant pour les trajets répétés vers le Centre Hospitalier d'Antibes Juan-les-Pins : séances de dialyse, radiothérapie, rééducation, consultations de suivi et examens d'imagerie. Le patient monte et descend seul du véhicule, éventuellement avec une aide légère ; dès qu'un brancardage ou une surveillance devient nécessaire, c'est une ambulance que le médecin prescrira.",
       "Le droit au remboursement vient d'une convention signée avec la CPAM des Alpes-Maritimes, non d'un agrément sanitaire : le chauffeur d'un taxi conventionné n'a aucune obligation de qualification sanitaire, contrairement à l'auxiliaire ambulancier qui conduit un VSL. Il applique en revanche un tarif conventionné, distinct du compteur habituel, et pratique le tiers payant. La prise en charge atteint 100 % en affection longue durée, accident du travail ou hospitalisation liée, et 65 % pour les autres motifs, la mutuelle couvrant le plus souvent le complément.",
@@ -932,6 +1087,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "nice/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Pasteur", slug: "chu-de-nice-hopital-pasteur-06" },
+      { nom: "hôpital de l'Archet", slug: "chu-de-nice-hopital-de-l-archet-06" },
+      { nom: "hôpital de Cimiez", slug: "chu-de-nice-hopital-de-cimiez-06" },
+    ],
     intro: [
       "Cinquième ville de France, Nice (06) génère un volume considérable de transports assis remboursés vers les trois sites de son CHU : l'hôpital Pasteur (Pasteur 2), l'hôpital de l'Archet (Archet 1 et 2) et l'hôpital de Cimiez. Dialyse, chimiothérapie, radiothérapie, rééducation, consultations de suivi : ces rendez-vous reviennent souvent plusieurs fois par semaine, et c'est précisément là que le taxi conventionné trouve son utilité. Il s'adresse aux patients capables d'effectuer le trajet assis, sans surveillance médicale.",
       "Un taxi conventionné niçois est un taxi titulaire d'une autorisation de stationnement qui a en outre signé une convention avec la CPAM des Alpes-Maritimes. Cette convention, et non un agrément ARS, ouvre le droit au remboursement : le chauffeur n'est soumis à aucune qualification sanitaire obligatoire, à la différence de l'auxiliaire ambulancier qui conduit un VSL. Le tarif appliqué est celui de la convention et non celui du compteur ordinaire, et le tiers payant joue sur présentation du bon de transport et de la carte Vitale.",
@@ -965,6 +1125,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "reims/ambulance": {
+    etablissements: [
+      { nom: "hôpital Maison Blanche", slug: "hopital-maison-blanche-chu-reims-51" },
+      { nom: "hôpital Robert-Debré", slug: "hopital-robert-debre-chu-reims-51" },
+    ],
     intro: [
       "Le CHU de Reims ne tient pas sur une seule adresse : l'hôpital Robert-Debré, rue du Général Koenig, concentre l'essentiel des lits avec 575 places, l'hôpital Maison Blanche, rue Cognacq-Jay, réunit 465 places et les urgences adultes, tandis que le site Sébastopol complète l'ensemble. S'y ajoutent l'American Memorial Hospital pour la pédiatrie et l'Institut Godinot pour la cancérologie. Cette dispersion des plateaux techniques sur le territoire rémois génère un flux quotidien de transferts que les entreprises d'ambulances de la Marne, agréées par l'ARS Grand Est, assurent en position allongée ou semi-assise.",
       "Une ambulance rémoise se distingue du transport assis par son équipage et son armement : deux personnes au minimum, dont un diplômé d'État ambulancier, un brancard, de l'oxygène et le matériel de premiers secours. C'est le mode prescrit lorsque l'état du patient interdit la position assise ou impose une surveillance pendant le trajet — sortie de réanimation, retour à domicile après une chirurgie lourde, passage d'un site du CHU à un autre. En dehors des heures ouvrables, ces mêmes sociétés peuvent être engagées au titre de la garde ambulancière du département, régulée sous l'égide du SAMU 51 (Centre 15).",
@@ -1031,6 +1195,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "reims/vsl": {
+    etablissements: [
+      { nom: "hôpital Maison Blanche", slug: "hopital-maison-blanche-chu-reims-51" },
+      { nom: "hôpital Robert-Debré", slug: "hopital-robert-debre-chu-reims-51" },
+    ],
     intro: [
       "Le véhicule sanitaire léger occupe une place précise entre l'ambulance et le taxi : c'est une voiture agréée par l'ARS Grand Est, identifiée comme véhicule de transport sanitaire, conduite par un auxiliaire ambulancier formé aux gestes d'urgence et à l'aide aux personnes. À Reims, les VSL assurent les trajets assis vers l'hôpital Robert-Debré, l'hôpital Maison Blanche, le site Sébastopol ou l'Institut Godinot pour des patients qui n'ont pas besoin d'être allongés, mais dont l'état justifie une prise en charge par un professionnel du transport sanitaire.",
       "Deux particularités distinguent nettement le VSL du taxi conventionné rémois. D'abord la qualification : l'auxiliaire ambulancier relève d'une formation réglementée, ce qui n'est pas exigé d'un chauffeur de taxi conventionné. Ensuite le partage : un VSL peut transporter jusqu'à trois patients assis sur un même trajet, ce qui explique des horaires parfois calés sur le groupe plutôt que sur un seul rendez-vous. Le nombre de véhicules agréés est par ailleurs encadré par un quota départemental fixé par l'ARS, ce qui rend l'offre de VSL plus rare et plus tendue que celle des taxis.",
@@ -1059,6 +1227,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "thionville/ambulance": {
+    etablissements: [
+      { nom: "hôpital Bel-Air", slug: "chr-metz-thionville-hopital-bel-air-thionville-57" },
+    ],
     intro: [
       "À Thionville, l'activité de transport sanitaire s'organise autour de l'hôpital Bel-Air, 1-3 rue du Friscaty, site nord du CHR Metz-Thionville. L'établissement a bénéficié d'un vaste programme de rénovation d'environ 210 millions d'euros, qui a modernisé ses plateaux techniques et conforté son rôle de référence pour le nord de la Moselle. Les entreprises d'ambulances agréées par l'ARS Grand Est y acheminent chaque jour des patients en position allongée, et assurent les liaisons avec les sites messins du CHR lorsqu'une prise en charge relève d'un autre pôle du groupe.",
       "Le recours à l'ambulance répond à un critère médical, pas à un critère de confort : elle s'impose quand le patient doit voyager allongé, requiert une surveillance ou une aide au brancardage. L'équipage compte au moins un diplômé d'État ambulancier et le véhicule embarque brancard, oxygène et matériel de premiers secours. Les sociétés thionvilloises interviennent pour les sorties d'hospitalisation, les transferts inter-établissements et les entrées programmées, et prennent part, avec celles du reste du département, à la garde ambulancière régulée sous l'égide du SAMU 57 (Centre 15) la nuit, le week-end et les jours fériés.",
@@ -1091,6 +1262,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "thionville/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Bel-Air", slug: "chr-metz-thionville-hopital-bel-air-thionville-57" },
+    ],
     intro: [
       "Un rendez-vous à l'hôpital Bel-Air, une séance de dialyse, un contrôle après chirurgie : dès que le patient tient assis et se déplace seul, le taxi conventionné est le mode de transport que le médecin coche le plus souvent sur la prescription. À Thionville, ces sociétés couvrent aussi bien les trajets courts vers le site du Friscaty que les déplacements plus longs vers les autres établissements du CHR Metz-Thionville, quand le suivi impose de changer de site.",
       "Le taxi conventionné thionvillois tire son droit au remboursement d'une convention passée avec la CPAM de la Moselle, et non d'un agrément sanitaire : son chauffeur n'est soumis à aucune obligation de qualification en transport sanitaire, contrairement à l'auxiliaire ambulancier qui conduit un VSL. En échange du conventionnement, la course est facturée selon un tarif encadré, distinct du tarif taxi libre, et le tiers payant s'applique. Muni de la prescription mentionnant le transport assis et de votre carte Vitale, vous ne réglez pas la part remboursée.",
@@ -1118,6 +1292,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "thionville/vsl": {
+    etablissements: [
+      { nom: "hôpital Bel-Air", slug: "chr-metz-thionville-hopital-bel-air-thionville-57" },
+    ],
     intro: [
       "Entre l'ambulance, réservée au transport allongé, et le taxi conventionné, qui reste un taxi, le VSL constitue la solution intermédiaire du transport sanitaire assis. Le véhicule est agréé par l'ARS Grand Est, signalé comme véhicule sanitaire léger, et son conducteur est un auxiliaire ambulancier titulaire d'une formation réglementée aux premiers secours et à la manutention des personnes. À Thionville, les VSL conduisent notamment les patients vers l'hôpital Bel-Air, site du CHR Metz-Thionville, pour des consultations, des examens ou des séances de traitement.",
       "Ce statut sanitaire a des conséquences concrètes. L'auxiliaire ambulancier sait installer un patient fragile, l'accompagner dans l'établissement et réagir à un malaise pendant le trajet. Le VSL peut par ailleurs regrouper jusqu'à trois patients assis, ce qui optimise les moyens mais impose parfois un horaire de groupe plutôt qu'un horaire individuel. Enfin, le parc de VSL agréés est plafonné par un quota départemental fixé par l'ARS : sur le nord mosellan, cette contrainte réglementaire explique que les disponibilités soient plus limitées que celles des taxis conventionnés, en particulier le matin.",
@@ -1150,6 +1327,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-denis/ambulance": {
+    etablissements: [
+      { nom: "hôpital Delafontaine", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "Centre hospitalier de Saint-Denis", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "hôpital Avicenne de l'AP-HP", slug: "ghu-ap-hp-hu-paris-seine-saint-denis-site-avicenne-93" },
+    ],
     intro: [
       "Saint-Denis (93), en Seine-Saint-Denis, s'appuie sur le Centre hospitalier de Saint-Denis, seul établissement public de santé de Plaine Commune, territoire d'environ 435 000 habitants. Ses deux sites — l'hôpital Delafontaine, 2 rue du Docteur Delafontaine, et le site Casanova — totalisent 845 lits. À proximité immédiate, l'hôpital Avicenne de l'AP-HP, à Bobigny, complète l'offre de recours du département. Les entreprises d'ambulances dionysiennes, agréées par l'ARS Île-de-France, assurent les transports allongés vers ces établissements comme les liaisons avec les hôpitaux parisiens.",
       "L'ambulance intervient lorsque la position assise est impossible ou que le trajet nécessite une surveillance : sortie de service de médecine ou de chirurgie, transfert entre Delafontaine et un plateau technique spécialisé, hospitalisation programmée. Le véhicule comporte brancard, oxygène et matériel de premiers secours, et l'équipage compte au moins un diplômé d'État ambulancier. Les sociétés du secteur participent également à la garde ambulancière du département, régulée sous l'égide du SAMU 93 (Centre 15), qui assure la permanence des transports urgents la nuit, le week-end et les jours fériés.",
@@ -1182,6 +1364,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-denis/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital Delafontaine", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "Centre hospitalier de Saint-Denis", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "hôpital Avicenne de l'AP-HP", slug: "ghu-ap-hp-hu-paris-seine-saint-denis-site-avicenne-93" },
+    ],
     intro: [
       "Ne pas confondre : il s'agit ici de Saint-Denis en Seine-Saint-Denis (93), la commune de l'hôpital Delafontaine et de Plaine Commune. Sur ce territoire très peuplé, le taxi conventionné assure la majeure partie des transports assis remboursés : séances de dialyse, cures de chimiothérapie, rééducation, consultations de suivi et examens d'imagerie, vers le Centre hospitalier de Saint-Denis, son site Casanova, l'hôpital Avicenne de l'AP-HP à Bobigny ou les établissements parisiens. Il concerne les patients autonomes, capables de faire le trajet assis sans surveillance.",
       "Le conventionnement, signé avec la CPAM de la Seine-Saint-Denis, est ce qui ouvre droit au remboursement : ce n'est pas un agrément sanitaire, et aucune qualification en transport de malades n'est imposée au chauffeur, contrairement au VSL. Concrètement, la course est facturée selon le tarif de la convention, et non au compteur du taxi classique, et le tiers payant s'applique sur présentation de la prescription médicale de transport mentionnant le transport assis, accompagnée de la carte Vitale. Vous ne réglez alors pas la part remboursée par l'Assurance maladie.",
@@ -1214,6 +1401,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-denis/vsl": {
+    etablissements: [
+      { nom: "hôpital Delafontaine", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "Centre hospitalier de Saint-Denis", slug: "centre-hospitalier-de-st-denis-hopital-delafontaine-93" },
+      { nom: "hôpital Avicenne de l'AP-HP", slug: "ghu-ap-hp-hu-paris-seine-saint-denis-site-avicenne-93" },
+    ],
     intro: [
       "En Seine-Saint-Denis, le véhicule sanitaire léger répond à une situation précise : le patient tient assis, mais son état ou son âge justifie l'intervention d'un professionnel du transport sanitaire plutôt que d'un chauffeur de taxi. Le VSL est un véhicule agréé par l'ARS Île-de-France, identifié comme tel, conduit par un auxiliaire ambulancier dont la formation aux premiers secours et à l'aide à la mobilité est réglementée. À Saint-Denis, ces véhicules desservent l'hôpital Delafontaine, le site Casanova du Centre hospitalier de Saint-Denis et l'hôpital Avicenne de l'AP-HP à Bobigny.",
       "Trois traits séparent le VSL du taxi conventionné dionysien. La qualification du conducteur, d'abord, qui relève du champ sanitaire et non du transport de personnes. Le transport partagé, ensuite : un VSL peut prendre en charge jusqu'à trois patients assis lors d'un même trajet, ce qui explique des horaires calés sur un groupe de rendez-vous. Le régime d'autorisation, enfin : le parc de VSL agréés est plafonné par un quota départemental arrêté par l'ARS, si bien que l'offre reste plus contrainte que celle des taxis conventionnés, notamment sur les créneaux matinaux.",
@@ -1329,6 +1521,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "strasbourg/ambulance": {
+    etablissements: [
+      { nom: "Hôpital Civil", slug: "hopital-civil-nouvel-hopital-civil-67" },
+      { nom: "hôpital de Hautepierre", slug: "hopital-de-hautepierre-67" },
+    ],
     intro: [
       "Les Hôpitaux universitaires de Strasbourg (HUS) comptent parmi les plus grands ensembles hospitalo-universitaires de France, et leur organisation multi-sites structure l'ensemble du transport sanitaire du Bas-Rhin (67). L'hôpital de Hautepierre, principal site d'urgences avec 1 021 lits, le Nouvel Hôpital Civil et l'Hôpital Civil se répartissent les spécialités, tandis que la Clinique Rhéna représente l'offre privée de l'Eurométropole. Les entreprises d'ambulances strasbourgeoises, agréées par l'ARS Grand Est, assurent entre ces établissements un flux continu de transports allongés.",
       "L'ambulance se prescrit lorsque le patient ne peut pas voyager assis, doit être brancardé ou surveillé pendant le trajet. Le véhicule embarque brancard, oxygène et matériel de premiers secours, et l'équipage comprend au moins un diplômé d'État ambulancier. Sorties de réanimation ou de bloc, transferts de Hautepierre vers le Nouvel Hôpital Civil, entrées programmées, retours à domicile après une hospitalisation lourde : ces missions constituent le quotidien des sociétés locales, qui participent en outre à la garde ambulancière du département, régulée sous l'égide du SAMU 67 (Centre 15), la nuit, le week-end et les jours fériés.",
@@ -1362,6 +1558,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "strasbourg/vsl": {
+    etablissements: [
+      { nom: "Hôpital Civil", slug: "hopital-civil-nouvel-hopital-civil-67" },
+      { nom: "hôpital de Hautepierre", slug: "hopital-de-hautepierre-67" },
+    ],
     intro: [
       "À Strasbourg, le véhicule sanitaire léger comble l'écart entre l'ambulance et le taxi conventionné. Agréé par l'ARS Grand Est au titre du transport sanitaire, il est conduit par un auxiliaire ambulancier titulaire d'une formation réglementée aux premiers secours et à l'aide à la mobilité. Les VSL strasbourgeois acheminent, assis, les patients vers l'hôpital de Hautepierre, le Nouvel Hôpital Civil, l'Hôpital Civil ou la Clinique Rhéna, pour des consultations de suivi, des examens ou des séances de traitement répétées.",
       "Le contraste avec le taxi conventionné mérite d'être posé clairement. Le VSL est un véhicule sanitaire immatriculé comme tel et soumis à un agrément ARS, alors que le taxi conventionné reste un taxi titulaire d'une autorisation de stationnement, conventionné par la CPAM. Son conducteur possède une qualification sanitaire, ce que la réglementation n'impose pas au chauffeur de taxi. Enfin, un VSL peut transporter jusqu'à trois patients assis simultanément, et le nombre de véhicules agréés dans le Bas-Rhin est encadré par un quota fixé par l'ARS, ce qui rend cette offre plus rare.",
@@ -1395,6 +1595,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "nimes/taxi-conventionne": {
+    etablissements: [
+      { nom: "CHU de Nîmes", slug: "groupe-hopitalier-caremeau-chu-nimes-territoire-nimes-30" },
+      { nom: "Institut de Cancérologie du Gard", slug: "kenval-institut-de-cancerologie-du-gard-30" },
+    ],
     intro: [
       "Le taxi conventionné occupe à Nîmes une place centrale dans le parcours de soins des patients qui se déplacent assis. Chaque jour, ces véhicules acheminent vers l'hôpital universitaire Carémeau, siège du CHU de Nîmes, les personnes convoquées en consultation, en séance de dialyse ou en bilan préopératoire. Ils desservent également l'Institut de Cancérologie du Gard, où les protocoles de radiothérapie imposent des venues rapprochées sur plusieurs semaines. Pour ces trajets répétés, la ponctualité et la stabilité du chauffeur comptent souvent autant que le tarif.",
       "Un taxi conventionné n'est pas un véhicule sanitaire : c'est un taxi dont l'exploitant a signé une convention avec la CPAM du Gard. Il applique de ce fait une tarification encadrée, distincte de la course libre, et accepte le bon de transport. Aucune qualification sanitaire n'est exigée de son conducteur, contrairement au VSL confié à un auxiliaire ambulancier ou à l'ambulance dont l'équipage comporte un diplômé d'État. Ce mode de transport suppose donc un patient autonome, capable de monter et de descendre seul du véhicule et de rester assis durant tout le trajet.",
@@ -1461,6 +1665,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "narbonne/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Narbonne", slug: "centre-hospitalier-de-narbonne-hotel-dieu-11" },
+    ],
     intro: [
       "À Narbonne, le transport assis conventionné répond à une demande constante : dialyse, séances de rééducation, consultations de suivi et examens d'imagerie au Centre Hospitalier de Narbonne, boulevard Docteur Lacroix, mais aussi rendez-vous à la Polyclinique de Narbonne ou à la Clinique Sainte-Thérèse. Le taxi conventionné s'adresse au patient qui marche, s'installe seul dans le véhicule et supporte sans difficulté la position assise pendant tout le trajet. Dès que l'état de santé impose le brancard ou une surveillance en cours de route, la prescription doit au contraire orienter vers l'ambulance.",
       "Le conventionnement n'est pas un simple argument commercial : il résulte d'une convention signée entre l'exploitant du taxi et la CPAM de l'Aude, qui fixe une tarification spécifique au transport de malades et autorise la facturation directe à l'Assurance maladie. Le chauffeur d'un taxi conventionné n'a en revanche aucune obligation de qualification sanitaire, à la différence de l'auxiliaire ambulancier qui conduit un VSL, et à plus forte raison de l'équipage d'ambulance dont un membre est diplômé d'État. Les deux véhicules de transport assis ouvrent pourtant exactement les mêmes droits au remboursement : c'est le prescripteur qui tranche selon votre état de santé et votre degré d'autonomie.",
@@ -1489,6 +1696,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "lunel/ambulance": {
+    etablissements: [
+      { nom: "CHU de Montpellier", slug: "chu-montpellier-34" },
+    ],
     intro: [
       "Lunel, à l'est de l'Hérault (34), possède son propre établissement public : le Centre Hospitalier de Lunel, place de la République, fort de 234 lits mais orienté pour l'essentiel vers la médecine et l'hébergement des personnes âgées en EHPAD. Les pathologies lourdes et les urgences ne sont pas traitées sur place : elles relèvent du CHU de Montpellier, avec lequel l'hôpital lunellois travaille en lien étroit. Cette organisation explique le volume important de transports allongés au départ de Lunel vers la métropole montpelliéraine.",
       "L'ambulance intervient dès que le patient ne peut voyager assis ou nécessite une surveillance : transfert du service de médecine lunellois vers un plateau technique montpelliérain, retour d'hospitalisation, entrée programmée en établissement. Le véhicule dispose d'un brancard, d'oxygène et de matériel de premiers secours, et l'équipage comprend un diplômé d'État ambulancier. Hors heures ouvrables, les sociétés du secteur participent à la garde ambulancière de l'Hérault, régulée sous l'égide du SAMU 34 (Centre 15), seul décideur de l'engagement d'un véhicule pour un transport urgent.",
@@ -1611,6 +1821,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "hyeres/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Marie-José Treffot", slug: "centre-hospitalier-de-hyeres-marie-josee-treffot-83" },
+      { nom: "Hôpital Renée Sabran", slug: "hopital-renee-sabran-hyeres-83" },
+    ],
     intro: [
       "Hyères (83) présente une configuration sanitaire peu banale, répartie entre la ville, la presqu'île de Giens et les îles d'Or. Trois établissements structurent l'activité des ambulances locales : le Centre Hospitalier Marie-José Treffot, avenue Maréchal Juin, l'Hôpital Renée Sabran installé à Giens et géré par les Hospices Civils de Lyon, et l'Hôpital Privé Toulon Hyères-Sainte Marguerite. Cette dispersion géographique, doublée d'une circulation littorale très chargée en saison, fait de la maîtrise des itinéraires un véritable savoir-faire chez les équipages locaux agréés par l'ARS Provence-Alpes-Côte d'Azur.",
       "Le transport en ambulance concerne les patients qui doivent voyager allongés ou sous surveillance : sortie de bloc, retour à domicile après une hospitalisation lourde, transfert d'un établissement à un autre, entrée programmée en service de soins. Brancard, oxygène et matériel de premiers secours équipent le véhicule, et l'équipage comprend obligatoirement un diplômé d'État ambulancier. Hors heures ouvrables, les entreprises hyéroises prennent leur tour dans la garde ambulancière du Var, régulée sous l'égide du SAMU 83 (Centre 15) : l'engagement d'un véhicule pour un transport urgent relève alors de la seule décision du médecin régulateur.",
@@ -1643,6 +1857,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "hyeres/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Marie-José Treffot", slug: "centre-hospitalier-de-hyeres-marie-josee-treffot-83" },
+      { nom: "Hôpital Renée Sabran de Giens", slug: "hopital-renee-sabran-hyeres-83" },
+      { nom: "Hôpital Renée Sabran", slug: "hopital-renee-sabran-hyeres-83" },
+    ],
     intro: [
       "Le taxi conventionné assure à Hyères l'essentiel des transports assis prescrits : consultations et examens au Centre Hospitalier Marie-José Treffot, séjours et suivis à l'Hôpital Renée Sabran de Giens, interventions et bilans à l'Hôpital Privé Toulon Hyères-Sainte Marguerite. Il s'adresse aux patients autonomes, capables de monter dans un véhicule de tourisme et de rester assis durant le trajet, soit la grande majorité des personnes suivies en dialyse, en radiothérapie ou en rééducation fonctionnelle sur le bassin hyérois. Les autres relèvent d'un transport allongé ou surveillé, donc de l'ambulance.",
       "Ce que recouvre le mot conventionné mérite une précision : il s'agit d'un taxi dont l'exploitant a signé une convention avec la CPAM du Var, ce qui l'engage sur une tarification encadrée et l'autorise à facturer directement l'Assurance maladie. Aucun diplôme sanitaire n'est requis du chauffeur, contrairement au VSL confié à un auxiliaire ambulancier et, a fortiori, à l'ambulance dont l'équipage comporte un diplômé d'État. Les droits au remboursement sont en revanche strictement identiques pour le taxi conventionné et le VSL : seule votre prescription détermine le véhicule qui viendra vous chercher.",
@@ -1670,6 +1889,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "la-seyne-sur-mer/ambulance": {
+    etablissements: [
+      { nom: "Clinique du Cap d'Or", slug: "clinique-du-cap-d-or-83" },
+      { nom: "Hôpital George Sand", slug: "chits-ch-george-sand-83" },
+    ],
     intro: [
       "La Seyne-sur-Mer (83) est desservie par l'Hôpital George Sand, avenue Jules Renard, hôpital de proximité de 319 lits rattaché au Centre Hospitalier Intercommunal Toulon-La Seyne-sur-Mer (CHITS) et positionné comme recours pour l'Ouest Var. Le plateau technique lourd du groupement se trouve toutefois à Toulon, sur le site Sainte-Musse (798 lits), qui abrite également le SAMU-SMUR et le Centre 15 du Var. La Clinique du Cap d'Or, avenue des Anciens Combattants d'Indochine, complète l'offre seynoise du côté privé, avec ses propres flux d'entrées programmées et de sorties d'hospitalisation.",
       "Cette répartition de part et d'autre de la rade génère un flux constant de transports allongés : passage de George Sand à Sainte-Musse pour un examen ou une intervention, retour à La Seyne en soins de suite, sortie d'hospitalisation vers le domicile. L'ambulance embarque brancard, oxygène et matériel de premiers secours, sous la responsabilité d'un équipage comprenant un diplômé d'État ambulancier. La nuit, le week-end et les jours fériés, les sociétés locales assurent la garde ambulancière du département, régulée sous l'égide du SAMU 83 (Centre 15).",
@@ -1702,6 +1925,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "la-seyne-sur-mer/taxi-conventionne": {
+    etablissements: [
+      { nom: "Clinique du Cap d'Or", slug: "clinique-du-cap-d-or-83" },
+      { nom: "Hôpital George Sand", slug: "chits-ch-george-sand-83" },
+    ],
     intro: [
       "Pour un patient seynois autonome, le taxi conventionné couvre la plupart des déplacements prescrits : consultations à l'Hôpital George Sand, examens et interventions sur le site Sainte-Musse du CHITS à Toulon, prises en charge à la Clinique du Cap d'Or. Le trajet vers Toulon, court en distance mais souvent long en durée aux heures de pointe, revient plusieurs fois par semaine dans les protocoles de dialyse ou de radiothérapie. D'où l'intérêt de travailler avec un transporteur qui connaît le contournement de la rade.",
       "Un taxi conventionné reste un taxi : son exploitant a simplement signé une convention avec la CPAM du Var, laquelle encadre les tarifs applicables au transport de malades et permet la facturation directe à l'Assurance maladie. Le chauffeur n'a pas d'obligation de qualification sanitaire, et c'est la différence essentielle avec le VSL, conduit par un auxiliaire ambulancier, comme avec l'ambulance dont l'équipage comporte un diplômé d'État. Le transport se fait assis et suppose que vous puissiez vous installer puis sortir du véhicule sans aide.",
@@ -1729,6 +1956,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-raphael/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Intercommunal Fréjus", slug: "centre-hospitalier-inter-communal-de-frejus-saint-raphael-83" },
+    ],
     intro: [
       "Saint-Raphaël (83) forme avec Fréjus une même agglomération sanitaire, articulée autour du Centre Hospitalier Intercommunal Fréjus/Saint-Raphaël, dit CHI Bonnet. Un point mérite d'être connu des patients : le site principal, qui porte le gros du plateau technique, se situe à Fréjus, avenue de Saint-Lambert, tandis que Saint-Raphaël accueille le site de gérontologie et de soins de suite et de réadaptation, boulevard Georges Clemenceau. La Clinique Notre-Dame de la Merci, avenue du Maréchal Lyautey, complète l'offre raphaëloise du côté privé et alimente elle aussi la demande de transport sanitaire sur la commune.",
       "Cette organisation bi-site explique la place du transport allongé sur la commune : navettes entre les deux sites du CHI, entrées en soins de suite après une hospitalisation aiguë, retours à domicile en fin de séjour. L'ambulance, armée d'un brancard, d'oxygène et de matériel de premiers secours et servie par un équipage comprenant un diplômé d'État ambulancier, s'impose dès que le patient ne peut voyager assis. La permanence hors heures ouvrables est assurée par la garde ambulancière du Var, régulée sous l'égide du SAMU 83 (Centre 15).",
@@ -1786,6 +2016,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "brest/ambulance": {
+    etablissements: [
+      { nom: "hôpital de la Cavale Blanche", slug: "chru-brest-site-hopital-la-cavale-blanche-29" },
+      { nom: "hôpital Augustin-Morvan", slug: "chru-brest-site-hopital-morvan-29" },
+    ],
     intro: [
       "Le CHRU de Brest fonctionne sur deux pôles bien distincts : l'hôpital Augustin-Morvan, siège du CHU, installé en centre-ville avenue Foch, et l'hôpital de la Cavale Blanche, à l'ouest de l'agglomération, qui regroupe la majorité des services et les urgences. Cette dualité structure le quotidien des entreprises d'ambulances agréées par l'ARS Bretagne implantées à Brest (29) : une part notable de leur activité consiste à convoyer des patients allongés d'un site à l'autre, ou vers les autres implantations du CHRU, qui en compte neuf au total, dont Bohars pour la psychiatrie et Carhaix.",
       "L'ambulance n'est pas un simple véhicule de transport : elle est prescrite lorsque l'état du patient impose la position allongée ou une surveillance pendant le trajet. L'équipage comprend au moins un diplômé d'État ambulancier (DEA) et le véhicule embarque brancard, oxygène et matériel de premiers secours. Sortie de bloc, retour à domicile après une hospitalisation lourde, entrée programmée, transfert vers un plateau technique : les motifs varient, mais tous reposent sur une prescription médicale de transport. Les sociétés brestoises participent par ailleurs à la garde ambulancière du Finistère, régulée sous l'égide du SAMU 29 (Centre 15) en dehors des heures ouvrables.",
@@ -1819,6 +2053,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "brest/taxi-conventionne": {
+    etablissements: [
+      { nom: "hôpital de la Cavale Blanche", slug: "chru-brest-site-hopital-la-cavale-blanche-29" },
+      { nom: "hôpital Augustin-Morvan", slug: "chru-brest-site-hopital-morvan-29" },
+    ],
     intro: [
       "À Brest (29), le taxi conventionné prend en charge les transports assis remboursés par l'Assurance maladie : consultations de suivi, séances de soins répétées, examens d'imagerie, entrées et sorties d'hospitalisation lorsque l'état de santé le permet. Il s'adresse aux patients autonomes, capables de monter dans un véhicule ordinaire et de rester assis pendant le trajet, sans brancard ni surveillance. C'est le mode de transport le plus couramment prescrit vers les deux grands sites du CHRU, l'hôpital Augustin-Morvan en centre-ville et l'hôpital de la Cavale Blanche à l'ouest de l'agglomération brestoise.",
       "Un taxi conventionné est un taxi qui a signé une convention avec la CPAM du Finistère. Cette convention fixe le tarif applicable au transport de patients, distinct de la course commerciale ordinaire, et ouvre droit au tiers payant : vous ne réglez rien au chauffeur dès lors que vous lui remettez votre prescription médicale de transport et votre carte Vitale. À la différence de l'ambulancier, le chauffeur n'est soumis à aucune qualification sanitaire obligatoire — c'est précisément ce qui sépare ce service de l'ambulance, réservée aux patients allongés ou placés sous surveillance.",
@@ -1847,6 +2085,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "clermont-ferrand/ambulance": {
+    etablissements: [
+      { nom: "hôpital Gabriel-Montpied", slug: "hopital-gabriel-montpied-chu-clermont-ferrand-63" },
+      { nom: "hôpital Estaing", slug: "hopital-estaing-chu-clermont-ferrand-63" },
+      { nom: "hôpital Louise-Michel", slug: "hopital-louise-michel-chu-clermont-ferrand-63" },
+    ],
     intro: [
       "Le CHU de Clermont-Ferrand se déploie sur trois implantations aux vocations nettement séparées : l'hôpital Gabriel-Montpied, rue Montalembert, qui abrite les urgences adultes ainsi que le SAMU et le SMUR du Puy-de-Dôme ; l'hôpital Estaing, place Lucie et Raymond Aubrac, dédié à la femme et à l'enfant ; l'hôpital Louise-Michel, à Cébazat, orienté vers la gériatrie. Les entreprises d'ambulances agréées par l'ARS Auvergne-Rhône-Alpes et installées à Clermont-Ferrand (63) organisent leur activité autour de ce triangle, établissement de référence pour toute l'Auvergne.",
       "Une ambulance est prescrite dans deux situations : le patient ne peut voyager qu'allongé, ou son état exige une surveillance durant le trajet. Le véhicule, agréé par l'ARS, embarque un brancard, de l'oxygène et le matériel de premiers secours, et circule avec un équipage de deux personnes dont au moins un diplômé d'État ambulancier. Il faut distinguer ce transport sanitaire du SMUR basé à Gabriel-Montpied, qui relève de l'urgence médicalisée : les sociétés privées assurent, elles, les transferts, les sorties d'hospitalisation et les entrées programmées, et prennent leur tour dans la garde ambulancière du département, régulée sous l'égide du SAMU 63 (Centre 15).",
@@ -1908,6 +2151,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "boulogne-sur-mer/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Duchenne", slug: "centre-hospitalier-duchenne-de-boulogne-sur-mer-62" },
+    ],
     intro: [
       "Premier port de pêche français, Boulogne-sur-Mer (62) dispose d'un établissement au poids inhabituel pour une ville de cette taille : le Centre Hospitalier Duchenne, allée Jacques Monod, qui compte environ 1 060 à 1 080 lits. Il abrite un SMUR et assure également une mission de secours médicalisé en mer, particularité directement liée à l'activité maritime du littoral. À proximité, le CMCO Côte d'Opale, établissement privé implanté à Saint-Martin-Boulogne, complète l'offre du secteur. Les entreprises d'ambulances agréées par l'ARS Hauts-de-France desservent l'un comme l'autre.",
       "Le transport en ambulance répond à un critère précis : l'impossibilité de voyager assis, ou la nécessité d'une surveillance pendant le trajet. Brancard, oxygène et matériel de premiers secours équipent le véhicule, et l'équipage comprend au moins un diplômé d'État ambulancier. Concrètement, cela couvre les sorties de bloc, les retours à domicile après une hospitalisation lourde, les entrées programmées et les transferts entre établissements. En dehors des heures ouvrables, la garde ambulancière du département prend le relais pour les transports urgents, régulée sous l'égide du SAMU 62 (Centre 15).",
@@ -1941,6 +2187,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "boulogne-sur-mer/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Duchenne", slug: "centre-hospitalier-duchenne-de-boulogne-sur-mer-62" },
+    ],
     intro: [
       "Un taxi conventionné n'est pas un taxi ordinaire qui accepterait les patients : c'est un taxi ayant signé une convention avec l'Assurance maladie, laquelle fixe le tarif applicable aux transports prescrits et autorise le tiers payant. À Boulogne-sur-Mer (62), ce service assure les trajets assis vers le Centre Hospitalier Duchenne, allée Jacques Monod, et vers le CMCO Côte d'Opale à Saint-Martin-Boulogne : consultations, examens, séances de soins répétées, entrées et sorties d'hospitalisation quand l'état du patient le permet.",
       "La condition est l'autonomie : monter dans un véhicule ordinaire, rester assis pendant le trajet, se passer de surveillance. Si l'un de ces trois points n'est pas rempli, c'est une ambulance qui sera prescrite, avec brancard, oxygène et diplômé d'État ambulancier à bord. Le chauffeur de taxi conventionné, lui, n'est soumis à aucune qualification sanitaire obligatoire : son rôle est le transport, encadré par la convention et par la prescription médicale que vous lui remettez avec votre carte Vitale.",
@@ -1996,6 +2245,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "bayeux/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Bayeux", slug: "centre-hospitalier-aunay-bayeux-14" },
+    ],
     intro: [
       "Dans le Bessin, un rendez-vous médical se traduit souvent par une vingtaine de kilomètres de route et un aller-retour à organiser dans la journée. Le taxi conventionné répond précisément à ce besoin : il transporte, sur prescription médicale, les patients de Bayeux (14) qui peuvent effectuer le trajet assis, sans brancard ni surveillance. Consultations de suivi, examens, séances de soins répétées, sorties d'hospitalisation : les motifs sont les mêmes qu'en ville, mais la distance et la faible densité de transports en commun rendent le service plus déterminant encore.",
       "Le conventionnement est un accord passé avec la CPAM du Calvados. Il encadre le tarif du transport de patients, distinct de la course commerciale, et permet le tiers payant : vous remettez votre prescription de transport et votre carte Vitale au chauffeur, qui se fait régler directement par l'Assurance maladie. Aucune qualification sanitaire n'est exigée de ce chauffeur, contrairement à l'équipage d'une ambulance ; la contrepartie est que ce mode de transport est strictement réservé aux patients autonomes.",
@@ -2023,6 +2275,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "guerande/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Saint-Nazaire", slug: "centre-hospitalier-de-saint-nazaire-44" },
+    ],
     intro: [
       "Il faut le dire clairement : Guérande (44) ne compte pas d'établissement hospitalier sur son territoire. La cité médiévale et ses marais salants sont rattachés au secteur du Centre Hospitalier de Saint-Nazaire, situé à environ 16,6 km à l'est. Cette configuration donne au transport sanitaire un rôle structurant : chaque hospitalisation, chaque consultation spécialisée, chaque sortie de service suppose un déplacement hors de la commune, assuré par les entreprises d'ambulances agréées par l'ARS Pays de la Loire implantées sur la presqu'île.",
       "L'ambulance intervient quand le patient doit voyager allongé ou rester sous surveillance : retour à domicile après une intervention, entrée programmée, transfert entre services. Le véhicule est agréé, équipé d'un brancard, d'oxygène et du matériel de premiers secours, et l'équipage comprend au moins un diplômé d'État ambulancier. En dehors des heures ouvrables, les transports urgents relèvent de la garde ambulancière du département, régulée sous l'égide du SAMU 44 (Centre 15) : en cas d'urgence vitale, c'est le 15 qu'il faut composer, jamais directement une société de transport.",
@@ -2054,6 +2309,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "guerande/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Saint-Nazaire", slug: "centre-hospitalier-de-saint-nazaire-44" },
+    ],
     intro: [
       "Sans établissement hospitalier sur la commune, Guérande (44) fonctionne en lien avec le secteur du Centre Hospitalier de Saint-Nazaire, à environ 16,6 km : le moindre rendez-vous se traduit par un aller-retour d'une trentaine de kilomètres. Le taxi conventionné est le mode de transport le plus adapté à ces déplacements quand le patient est autonome, capable de monter dans un véhicule ordinaire et de rester assis pendant le trajet. Consultations de suivi, examens, séances de soins répétées et sorties d'hospitalisation en constituent l'essentiel.",
       "Pour être remboursé, le trajet doit remplir deux conditions cumulatives : une prescription médicale de transport établie par un médecin, et un taxi effectivement conventionné avec la CPAM de Loire-Atlantique. Cette convention encadre le tarif appliqué aux transports de patients et permet le tiers payant, sur simple présentation du bon de transport et de la carte Vitale. Le chauffeur n'a pas de qualification sanitaire obligatoire, ce qui différencie nettement ce service de l'ambulance ou du VSL et le réserve aux patients n'ayant besoin d'aucune assistance médicale.",
@@ -2080,6 +2338,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "gennevilliers/ambulance": {
+    etablissements: [
+      { nom: "Hôpital Louis-Mourier AP-HP", slug: "ghu-aphp-nord-universite-paris-cite-site-louis-mourier-92" },
+    ],
     intro: [
       "Le paysage sanitaire de Gennevilliers (92) mérite d'être décrit avec précision, car il prête à confusion. La commune accueille l'Hôpital Saint-Jean, dit des Grésillons, 89 avenue des Grésillons : un établissement de santé privé d'intérêt collectif spécialisé en soins de suite et de réadaptation, et non un hôpital de soins aigus généraliste. S'y ajoute le Centre Hospitalier Spécialisé Roger-Prévot, dédié à la psychiatrie. Les urgences des habitants de Gennevilliers sont, elles, notamment prises en charge à l'Hôpital Louis-Mourier AP-HP, à Colombes.",
       "Cette répartition explique la physionomie de l'activité des entreprises d'ambulances agréées par l'ARS Île-de-France : beaucoup d'admissions et de sorties en soins de suite et de réadaptation à Saint-Jean, des transferts vers ou depuis les établissements de soins aigus du secteur, et des retours à domicile. L'ambulance est prescrite lorsque le patient ne peut voyager qu'allongé ou doit rester sous surveillance ; brancard, oxygène et matériel de premiers secours équipent le véhicule, avec un diplômé d'État ambulancier dans l'équipage. Hors heures ouvrables, la garde ambulancière du département est régulée sous l'égide du SAMU 92 (Centre 15).",
@@ -2112,6 +2373,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "gennevilliers/taxi-conventionne": {
+    etablissements: [
+      { nom: "Hôpital Louis-Mourier AP-HP", slug: "ghu-aphp-nord-universite-paris-cite-site-louis-mourier-92" },
+    ],
     intro: [
       "À Gennevilliers (92), le transport assis remboursé occupe une place particulière : l'Hôpital Saint-Jean des Grésillons, établissement de santé privé d'intérêt collectif spécialisé en soins de suite et de réadaptation, génère par nature des venues répétées, et la rééducation se prête au transport assis dès lors que le patient est autonome. Les taxis conventionnés assurent aussi les trajets vers l'Hôpital Louis-Mourier AP-HP de Colombes, où sont notamment prises en charge les urgences des Gennevillois, ainsi que les consultations de suivi et les examens hors commune.",
       "Le mécanisme est identique partout : le médecin établit une prescription médicale de transport mentionnant le transport assis, et le taxi doit avoir signé une convention avec la CPAM des Hauts-de-Seine. Cette convention fixe un tarif propre au transport de patients et rend possible le tiers payant, carte Vitale et bon de transport à l'appui. Le chauffeur n'est astreint à aucune qualification sanitaire obligatoire : c'est ce qui distingue le taxi conventionné du VSL, conduit par un auxiliaire ambulancier, et de l'ambulance, réservée aux transports allongés ou sous surveillance.",
@@ -2195,6 +2459,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "ambres/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier d'Albi", slug: "centre-hospitalier-albi-81" },
+    ],
     intro: [
       "Ambrès ne dispose pas d'établissement de santé sur son territoire : cette petite commune rurale du Tarn (81) est rattachée au secteur du Centre Hospitalier d'Albi, qui appartient au groupement hospitalier Tarn-Nord. Concrètement, tout rendez-vous de spécialiste, toute séance de rééducation et toute entrée programmée supposent un déplacement. Pour les patients capables de voyager assis, le taxi conventionné est le mode de transport que les médecins prescrivent le plus souvent, parce qu'il évite d'immobiliser une ambulance pour un trajet qui ne demande ni brancard ni oxygène.",
       "Un taxi conventionné est un artisan taxi qui a signé une convention avec la CPAM du Tarn. Cette signature n'est pas un diplôme de santé : le chauffeur n'est soumis à aucune qualification sanitaire obligatoire, contrairement à l'équipage d'une ambulance. Ce qu'apporte le conventionnement, c'est un tarif encadré par l'Assurance maladie et l'acceptation du bon de transport, donc la possibilité de ne rien avancer. Le tiers payant s'applique sur présentation de la prescription médicale de transport et de la carte Vitale.",
@@ -2228,6 +2495,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "borderes-sur-lechez/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Tarbes-Lourdes", slug: "ch-tarbes-lourdes-gespe-site-tarbes-65" },
+    ],
     intro: [
       "À Bordères-sur-l'Échez, dans les Hautes-Pyrénées (65), le taxi conventionné répond à un besoin très concret : la commune se trouve à 4 à 6 kilomètres du centre de Tarbes et ne possède pas d'établissement hospitalier propre. Elle est rattachée au Centre Hospitalier de Bigorre, également désigné sous le nom de Centre Hospitalier Tarbes-Lourdes, dont le site tarbais du boulevard du Maréchal de Lattre de Tassigny concentre les consultations et les plateaux techniques du bassin.",
       "Ce transport s'adresse aux patients autonomes, qui montent et descendent seuls et n'ont besoin d'aucune assistance pendant le trajet. Le véhicule est un taxi ordinaire, mais son exploitant a signé une convention avec la CPAM des Hautes-Pyrénées : il applique un tarif négocié, différent d'une course libre, et accepte le bon de transport. Aucune qualification sanitaire n'est exigée du chauffeur ; l'ambulance, elle, reste réservée aux trajets allongés ou surveillés, avec brancard et oxygène à bord.",
@@ -2256,6 +2526,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "estrablin/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Lucien-Hussel de Vienne", slug: "centre-hospitalier-lucien-hussel-de-vienne-38" },
+    ],
     intro: [
       "Sept à huit kilomètres seulement séparent Estrablin de Vienne, et une trentaine de Lyon. Cette position, sur les coteaux à l'est de la ville, explique l'essentiel de l'organisation des transports sanitaires dans cette commune iséroise (38) d'environ 3 600 habitants : Estrablin n'a pas d'établissement hospitalier sur son territoire et relève du secteur du Centre Hospitalier Lucien-Hussel de Vienne, situé montée du Docteur Chapuis, où sont assurées la majorité des consultations et des hospitalisations du bassin.",
       "Le taxi conventionné couvre les trajets assis de patients autonomes : consultation de contrôle, séance de kinésithérapie, cure de chimiothérapie ambulatoire, examen d'imagerie. Il ne s'agit pas d'un véhicule sanitaire ; le chauffeur n'a aucune qualification médicale obligatoire, mais son entreprise a passé convention avec la CPAM de l'Isère, ce qui fixe le tarif applicable et autorise le tiers payant. Le transport allongé, avec brancard, oxygène et équipage diplômé, relève au contraire de l'ambulance.",
@@ -2289,6 +2562,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "maze-milon/taxi-conventionne": {
+    etablissements: [
+      { nom: "CHU d'Angers", slug: "centre-hospitalier-universitaire-d-angers-49" },
+    ],
     intro: [
       "Née en 2016 de la fusion de Mazé et de Milon, la commune de Mazé-Milon appartient au Maine-et-Loire (49) et n'accueille pas d'établissement de santé sur son territoire : les prises en charge hospitalières relèvent du CHU d'Angers, hôpital de rattachement du secteur. Cette configuration, commune aux villages des Basses Vallées angevines, fait du transport assis conventionné un maillon quotidien du parcours de soins, notamment pour les suivis longs qui imposent des allers-retours réguliers vers Angers.",
       "Le taxi conventionné se distingue nettement de l'ambulance. Il transporte des patients assis et autonomes, sans surveillance ni matériel médical à bord, et son chauffeur n'est astreint à aucune qualification sanitaire ; l'ambulance, elle, embarque brancard et oxygène avec un équipage comprenant un diplômé d'État ambulancier. Ce qui rend le taxi remboursable, c'est la convention passée avec la CPAM du Maine-et-Loire : elle fixe le tarif, encadre la facturation et permet la dispense d'avance de frais.",
@@ -2377,6 +2653,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "vignot/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Saint-Charles de Commercy", slug: "centre-hospitalier-saint-charles-de-commercy-55" },
+    ],
     intro: [
       "Vignot vit à deux kilomètres de Commercy, dans la Meuse (55), et cette proximité structure toute l'organisation des transports sanitaires de cette commune d'environ 1 300 habitants. Vignot n'accueille pas d'établissement de santé : elle est rattachée au Centre Hospitalier Saint-Charles de Commercy, établissement public de proximité du Haut Val de Meuse, rue Henri Garnier. Pour les patients autonomes, le taxi conventionné couvre l'essentiel de ces trajets courts mais répétés, souvent hebdomadaires lorsqu'un suivi est en cours.",
       "Le principe est simple : un artisan taxi signe une convention avec la CPAM de la Meuse, applique le tarif fixé par l'Assurance maladie et accepte le bon de transport, ce qui permet la dispense d'avance de frais. Son chauffeur n'a pas de qualification sanitaire obligatoire, car le service rendu est un transport assis pour un patient qui se déplace seul. Un besoin de brancard, d'oxygène ou de surveillance fait basculer la prescription vers l'ambulance et son équipage diplômé.",
@@ -2404,6 +2683,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "rohrbach-les-bitche/ambulance": {
+    etablissements: [
+      { nom: "Hôpital Robert-Pax", slug: "hopital-robert-pax-de-sarreguemines-57" },
+      { nom: "Hôpital Saint-Joseph de Bitche", slug: "hopital-st-joseph-bitche-ch-robert-pax-57" },
+    ],
     intro: [
       "Au cœur du Pays de Bitche, dans le nord-est de la Moselle (57) et à quelques kilomètres de la frontière allemande, Rohrbach-lès-Bitche n'accueille pas d'établissement hospitalier sur son territoire. Les patients relèvent des Hôpitaux de Sarreguemines, dont l'Hôpital Robert-Pax se trouve à environ 16 kilomètres, et de l'Hôpital Saint-Joseph de Bitche, plus proche. Cette double orientation explique une part importante de l'activité des ambulances locales : transferts entre les deux sites, retours à domicile et entrées programmées.",
       "L'ambulance est le seul mode de transport sanitaire adapté aux patients qui doivent voyager allongés ou sous surveillance. Le véhicule, agréé par l'ARS Grand Est, embarque un brancard, de l'oxygène et le matériel de premiers secours, avec un équipage de deux personnes dont au moins un diplômé d'État ambulancier. Rien de tel dans un taxi conventionné, réservé aux patients autonomes voyageant assis, dont le chauffeur n'a aucune qualification sanitaire obligatoire.",
@@ -2498,6 +2781,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "aureilhan/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Tarbes-Lourdes", slug: "ch-tarbes-lourdes-gespe-site-tarbes-65" },
+    ],
     intro: [
       "Troisième commune la plus peuplée des Hautes-Pyrénées (65) et pleinement intégrée à l'agglomération Tarbes-Lourdes-Pyrénées, Aureilhan n'accueille pourtant aucun établissement hospitalier sur son territoire. Ses habitants sont rattachés au Centre Hospitalier de Bigorre, également appelé Centre Hospitalier Tarbes-Lourdes, dont le site tarbais du boulevard du Maréchal de Lattre de Tassigny concentre les urgences et les plateaux techniques du département. C'est vers lui que convergent la plupart des transports allongés au départ d'Aureilhan.",
       "L'ambulance intervient lorsque l'état du patient interdit le transport assis : sortie de bloc opératoire, retour à domicile après une hospitalisation lourde, transfert entre établissements, prise en charge nécessitant de l'oxygène ou une surveillance continue. Le véhicule est agréé par l'ARS Occitanie, équipé d'un brancard et du matériel de premiers secours, et l'équipage comprend au moins un diplômé d'État ambulancier. Un taxi conventionné, à l'inverse, ne transporte que des patients autonomes, assis, sans exigence de qualification sanitaire pour son chauffeur.",
@@ -2531,6 +2817,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "aureilhan/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Tarbes-Lourdes", slug: "ch-tarbes-lourdes-gespe-site-tarbes-65" },
+    ],
     intro: [
       "Troisième commune des Hautes-Pyrénées par sa population, Aureilhan (65) n'accueille pourtant aucun établissement hospitalier sur son territoire : elle relève du Centre Hospitalier de Bigorre, à Tarbes, également connu sous le nom de Centre Hospitalier Tarbes-Lourdes. Pour ses habitants, l'essentiel des rendez-vous médicaux implique donc un déplacement vers la ville voisine, à l'intérieur de l'agglomération Tarbes-Lourdes-Pyrénées. Le taxi conventionné couvre naturellement ces trajets courts mais répétés : consultation de spécialiste, examen d'imagerie, série de séances de rééducation ou de dialyse, entrée programmée en hospitalisation de jour.",
       "Le principe du conventionnement est souvent mal compris : il ne transforme pas le taxi en véhicule sanitaire. Le chauffeur n'a aucune qualification sanitaire obligatoire, et le service se limite à un transport assis pour un patient autonome. Ce que la convention signée avec la CPAM des Hautes-Pyrénées apporte, c'est un tarif encadré par l'Assurance maladie, l'acceptation du bon de transport et le tiers payant, qui vous évite toute avance de frais sur présentation de la carte Vitale. Si votre état exige un brancard, de l'oxygène ou une surveillance, le médecin prescrit une ambulance.",
@@ -2559,6 +2848,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-jean-le-blanc/ambulance": {
+    etablissements: [
+      { nom: "Hôpital de la Source", slug: "chru-d-orleans-hopital-de-la-source-45" },
+      { nom: "CHU d'Orléans", slug: "chru-d-orleans-hopital-de-la-source-45" },
+    ],
     intro: [
       "Commune de la rive gauche de la Loire intégrée à Orléans Métropole, Saint-Jean-le-Blanc (45) n'accueille pas d'établissement hospitalier sur son territoire : elle relève du CHU d'Orléans et de son Hôpital de la Source, avenue de l'Hôpital, devenu centre hospitalier universitaire en octobre 2023 après avoir longtemps porté le statut de centre hospitalier régional. Franchir la Loire pour rejoindre les plateaux techniques fait donc partie du quotidien des transports sanitaires du secteur, qu'il s'agisse d'une entrée programmée, d'un retour à domicile après hospitalisation ou d'un transfert vers un établissement de suite.",
       "L'ambulance est prescrite lorsque le patient doit voyager allongé ou sous surveillance médicale. Son véhicule, agréé par l'ARS Centre-Val de Loire, embarque un brancard, de l'oxygène et le matériel de premiers secours ; l'équipage compte deux personnes, dont au moins un diplômé d'État ambulancier. Cette exigence de qualification distingue clairement l'ambulance du taxi conventionné, réservé aux patients autonomes voyageant assis et dont le chauffeur n'est tenu à aucune formation sanitaire. C'est le médecin prescripteur qui tranche entre les deux, en fonction de l'état du patient le jour du trajet.",
@@ -2590,6 +2883,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-jean-le-blanc/taxi-conventionne": {
+    etablissements: [
+      { nom: "Hôpital de la Source", slug: "chru-d-orleans-hopital-de-la-source-45" },
+      { nom: "CHU d'Orléans", slug: "chru-d-orleans-hopital-de-la-source-45" },
+    ],
     intro: [
       "À Saint-Jean-le-Blanc (45), le taxi conventionné sert avant tout à franchir la Loire : la commune, membre d'Orléans Métropole, ne dispose pas d'établissement hospitalier propre et dépend du CHU d'Orléans, dont l'Hôpital de la Source rassemble consultations, examens et hospitalisations programmées. Devenu centre hospitalier universitaire en octobre 2023, l'établissement orléanais a vu croître le volume de consultations spécialisées drainées depuis les communes de la rive gauche. Pour un patient autonome, ce trajet de quelques kilomètres n'exige ni brancard ni surveillance : c'est exactement la situation pour laquelle le transport assis conventionné a été conçu.",
       "Le conventionnement, ici, est un accord passé avec la CPAM du Loiret. Le taxi applique un tarif encadré, distinct d'une course libre, et accepte le bon de transport, ce qui déclenche le tiers payant : vous ne réglez rien sur présentation de votre carte Vitale. Le chauffeur n'a pas de qualification sanitaire obligatoire, à la différence de l'auxiliaire ambulancier qui conduit un VSL ou du diplômé d'État ambulancier présent à bord d'une ambulance.",
@@ -2616,6 +2913,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "le-chambon-feugerolles/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Georges Claudinon", slug: "ch-georges-claudinon-42" },
+    ],
     intro: [
       "Le Chambon-Feugerolles fait partie des rares communes de sa taille à héberger son propre établissement public de santé : le Centre Hospitalier Georges Claudinon, rue Paul Langevin, implanté sur son territoire dans la vallée de l'Ondaine (42). Membre du Groupement Hospitalier de Territoire de la Loire, il travaille en lien avec le CHU de Saint-Étienne, situé à environ 7 kilomètres, et avec l'Institut de Cancérologie Lucien Neuwirth pour les prises en charge oncologiques.",
       "Cette organisation en réseau nourrit une activité de transport allongé spécifique : les ambulances du secteur assurent de nombreux transferts entre le Centre Hospitalier Georges Claudinon et les plateaux techniques stéphanois, en plus des sorties d'hospitalisation et des entrées programmées. Le véhicule, agréé par l'ARS Auvergne-Rhône-Alpes, est équipé d'un brancard, d'oxygène et de matériel de premiers secours, et son équipage de deux personnes comprend au moins un diplômé d'État ambulancier.",
@@ -2649,6 +2949,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "le-chambon-feugerolles/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Georges Claudinon", slug: "ch-georges-claudinon-42" },
+    ],
     intro: [
       "Avoir un hôpital sur place ne dispense pas de se déplacer. Au Chambon-Feugerolles (42), le Centre Hospitalier Georges Claudinon couvre une partie des besoins de la vallée de l'Ondaine, mais de nombreux soins spécialisés relèvent du CHU de Saint-Étienne, à environ 7 kilomètres, ou de l'Institut de Cancérologie Lucien Neuwirth. Pour les patients autonomes, ces allers-retours se font en taxi conventionné, mode de transport assis pris en charge par l'Assurance maladie.",
       "Le conventionnement est un accord passé avec la CPAM de la Loire : il fixe le tarif applicable et permet au chauffeur d'accepter votre bon de transport, donc de pratiquer le tiers payant. Il n'implique en revanche aucune formation sanitaire : le taxi conventionné s'adresse à des patients qui montent, s'assoient et descendent seuls. Dès qu'un brancard, de l'oxygène ou une surveillance sont nécessaires, la prescription bascule vers l'ambulance et son équipage comprenant un diplômé d'État ambulancier.",
@@ -2677,6 +2980,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "abymes/ambulance": {
+    etablissements: [
+      { nom: "CHU de Pointe-à-Pitre", slug: "centre-hospitalier-universitaire-de-pointe-a-pitre-9a" },
+      { nom: "CHU de Guadeloupe", slug: "centre-hospitalier-universitaire-de-pointe-a-pitre-9a" },
+      { nom: "Polyclinique de la Guadeloupe", slug: "polyclinique-de-guadeloupe-9a" },
+    ],
     intro: [
       "Aux Abymes (971), commune la plus peuplée de Guadeloupe avec 51 760 habitants en 2022, le transport allongé s'organise autour d'un établissement que la commune héberge directement : le CHU de Guadeloupe, route de Chauvel, également désigné comme CHU de Pointe-à-Pitre/Les Abymes. La Polyclinique de la Guadeloupe, rue Raphaël Jolivière au Morne Jolivière, complète cette offre pour les prises en charge privées. Les entreprises d'ambulances agréées par l'ARS interviennent donc à quelques minutes du plateau technique de référence de l'archipel, une configuration peu fréquente dans les territoires ultramarins.",
       "L'ambulance est prescrite lorsque le patient doit voyager allongé ou rester sous surveillance pendant le trajet : sortie de bloc, retour à domicile après une hospitalisation lourde, transfert entre le CHU et la polyclinique, entrée programmée dans un service. L'équipage comprend au moins un diplômé d'État ambulancier (DEA) et le véhicule embarque brancard, oxygène et matériel de premiers secours. Les sociétés abymiennes contribuent à la garde ambulancière du département, régulée sous l'égide du SAMU 971 (Centre 15), qui assure la permanence des transports urgents la nuit, les week-ends et les jours fériés.",
@@ -2710,6 +3018,10 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "les-abymes/taxi-conventionne": {
+    etablissements: [
+      { nom: "CHU de Guadeloupe", slug: "centre-hospitalier-universitaire-de-pointe-a-pitre-9a" },
+      { nom: "Polyclinique de la Guadeloupe", slug: "polyclinique-de-guadeloupe-9a" },
+    ],
     intro: [
       "Aux Abymes (971), commune la plus peuplée de Guadeloupe, le taxi conventionné est le mode de transport remboursé le plus utilisé pour les patients autonomes. Il dessert le CHU de Guadeloupe, route de Chauvel, implanté sur la commune même, ainsi que la Polyclinique de la Guadeloupe au Morne Jolivière : consultations de suivi, séances de dialyse ou de chimiothérapie, examens d'imagerie, bilans préopératoires. Cette proximité avec le plateau technique de référence de l'archipel simplifie les trajets réguliers de nombreux patients abymiens.",
       "Un taxi conventionné a signé une convention avec la CPAM de Guadeloupe : ce conventionnement, et non le compteur habituel, fixe le tarif remboursable du trajet. Le chauffeur n'a pas d'obligation de qualification sanitaire, car ce transport s'adresse à un patient capable de monter et descendre seul du véhicule. Dès qu'un brancardage, une position allongée ou une surveillance médicale s'imposent, c'est l'ambulance, avec son équipage DEA, qui doit être prescrite à la place.",
@@ -2800,6 +3112,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "kourou/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Kourou", slug: "centre-hospitalier-intercom-de-kourou-9c" },
+      { nom: "CHU de Guyane", slug: "chu-de-guyane-9c" },
+      { nom: "Centre Hospitalier Andrée-Rosemon de Cayenne", slug: "chu-de-guyane-9c" },
+    ],
     intro: [
       "Kourou (973) dispose d'un atout que peu de communes guyanaises partagent : un hôpital sur place. Le Centre Hospitalier de Kourou (CHK), avenue Léopold Héder, devenu site du CHU de Guyane, totalise 112 lits et constitue le point d'appui des transports sanitaires du secteur. Autour de lui, les entreprises d'ambulances agréées assurent les sorties d'hospitalisation, les entrées programmées et les transferts vers les autres établissements du territoire, dans une ville également connue pour héberger le Centre Spatial Guyanais.",
       "L'échelle guyanaise transforme la nature du métier. Le Centre Hospitalier Andrée-Rosemon de Cayenne se trouve à environ 60 kilomètres, et le CHOG de Saint-Laurent-du-Maroni à quelque 200 kilomètres : un transfert entre plateaux techniques n'est pas une course urbaine mais un trajet longue distance, qui mobilise un véhicule et son équipage pour une large part de la journée. Toute ambulance embarque brancard et oxygène et circule avec au moins un diplômé d'État ambulancier, condition d'un transport allongé ou surveillé.",
@@ -2830,6 +3147,11 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "kourou/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier de Kourou", slug: "centre-hospitalier-intercom-de-kourou-9c" },
+      { nom: "CHU de Guyane", slug: "chu-de-guyane-9c" },
+      { nom: "Centre Hospitalier Andrée-Rosemon de Cayenne", slug: "chu-de-guyane-9c" },
+    ],
     intro: [
       "À Kourou (973), le taxi conventionné répond à un besoin très concret : effectuer, en position assise et sans avancer de frais, les trajets de suivi médical que la géographie guyanaise rend longs. Consultations, examens et séances itératives se déroulent au Centre Hospitalier de Kourou, site du CHU de Guyane avenue Léopold Héder, mais aussi au Centre Hospitalier Andrée-Rosemon de Cayenne, à environ 60 kilomètres, voire au CHOG de Saint-Laurent-du-Maroni, à quelque 200 kilomètres de la commune.",
       "Ce mode de transport s'adresse exclusivement au patient autonome : celui qui monte et descend du véhicule sans aide et n'a besoin ni de brancard ni de surveillance. Le chauffeur d'un taxi conventionné n'est pas tenu à une qualification sanitaire ; ce qui compte, c'est la convention signée avec la CPAM de la Guyane, qui fixe un tarif encadré et permet la prise en charge du trajet. Si l'état de santé impose la position allongée, la prescription doit mentionner une ambulance.",
@@ -3037,6 +3359,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-paul/ambulance": {
+    etablissements: [
+      { nom: "Centre Hospitalier Ouest Réunion", slug: "centre-hospitalier-ouest-reunion-9d" },
+    ],
     intro: [
       "L'hôpital opérationnel du secteur de Saint-Paul (974) est le Centre Hospitalier Ouest Réunion, le CHOR, anciennement Hôpital Gabriel Martin, installé impasse Plaine Chabrier, au Grand Pourpier Sud. Une précision utile s'impose : le siège administratif et juridique du CHU de La Réunion est lui aussi localisé à Saint-Paul, mais il ne s'agit pas de l'établissement de soins du territoire. Les entreprises d'ambulances agréées par l'ARS travaillent donc au quotidien avec le CHOR.",
       "Leurs missions relèvent du transport allongé ou surveillé : sorties de chirurgie, retours à domicile après hospitalisation, admissions programmées, transferts entre services ou vers un autre établissement lorsque la spécialité requise n'est pas disponible sur place. Le véhicule est agréé et armé d'un brancard, d'oxygène et du matériel de premiers secours, avec un équipage comprenant au moins un diplômé d'État ambulancier. Les sociétés saint-pauloises participent à la garde ambulancière du département, régulée sous l'égide du SAMU 974 (Centre 15).",
@@ -3067,6 +3392,9 @@ export const SEO_CITY_CONTENT: Record<string, CityCategoryContent> = {
   },
 
   "saint-paul/taxi-conventionne": {
+    etablissements: [
+      { nom: "Centre Hospitalier Ouest Réunion", slug: "centre-hospitalier-ouest-reunion-9d" },
+    ],
     intro: [
       "Dans l'ouest de La Réunion, les trajets assis remboursés convergent vers le Centre Hospitalier Ouest Réunion (CHOR), ex Hôpital Gabriel Martin, implanté à Saint-Paul (974) impasse Plaine Chabrier. Consultations de suivi, examens d'imagerie, séances itératives et bilans préopératoires justifient chaque semaine de nombreux déplacements que le taxi conventionné prend en charge pour les patients autonomes, sur simple prescription médicale de transport. À noter pour éviter toute confusion : le siège administratif du CHU de La Réunion est lui aussi domicilié à Saint-Paul, mais c'est bien le CHOR qui assure la prise en charge hospitalière du secteur.",
       "Ce qui rend le remboursement possible n'est pas le véhicule mais la convention signée avec la CPAM de La Réunion : elle encadre le tarif, remplace la facturation au compteur et permet le tiers payant. Le chauffeur n'est pas soumis à une qualification sanitaire, contrairement à l'auxiliaire ambulancier qui conduit un VSL ; le taxi conventionné et le VSL ouvrent en revanche des droits identiques pour un transport assis. L'ambulance, elle, reste réservée aux patients devant voyager allongés ou sous surveillance.",

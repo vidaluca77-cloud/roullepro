@@ -18,7 +18,7 @@ import {
   getVilleFaq,
 } from "@/lib/sanitaire-seo";
 import { villeCategorieUrl, ficheUrl, utiliseUrlCourte } from "@/lib/sanitaire-urls";
-import { getCityCategoryContent } from "@/lib/seo-city-content";
+import { getCityCategoryContent, segmenterParagraphe } from "@/lib/seo-city-content";
 import { buildHubTitle, buildHubDescription } from "@/lib/sanitaire-hub-meta";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import {
@@ -315,7 +315,21 @@ export default async function VilleCategorieHub({
       <section className="max-w-6xl mx-auto px-4 py-10">
         <div className="prose prose-sm max-w-none text-gray-700 mb-8 leading-relaxed">
           {seoContent.map((p, i) => (
-            <p key={i} className="mb-3">{p}</p>
+            <p key={i} className="mb-3">
+              {segmenterParagraphe(p, enriched?.etablissements).map((seg, j) =>
+                seg.slug ? (
+                  <Link
+                    key={j}
+                    href={`/etablissements/${seg.slug}`}
+                    className="text-[#0066CC] hover:underline"
+                  >
+                    {seg.texte}
+                  </Link>
+                ) : (
+                  <span key={j}>{seg.texte}</span>
+                )
+              )}
+            </p>
           ))}
         </div>
 
