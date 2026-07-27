@@ -3,8 +3,19 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { ChevronRight, MapPin, Cross, Car, Users } from "lucide-react";
-import { getDepartementByCode, dansLeDepartement, duDepartement } from "@/lib/departements-fr";
-import { CATEGORIES_SANITAIRE, type CategorieSanitaire } from "@/lib/sanitaire-data";
+import {
+  getDepartementByCode,
+  getAllDepartementCodes,
+  dansLeDepartement,
+  duDepartement,
+} from "@/lib/departements-fr";
+import {
+  CATEGORIES_SANITAIRE,
+  getRegionSlugByDepartement,
+  getRegionBySlug,
+  type CategorieSanitaire,
+} from "@/lib/sanitaire-data";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 import {
   buildBreadcrumbJsonLd,
   buildFaqJsonLd,
@@ -13,10 +24,18 @@ import { getDepartementSeoOverride } from "@/lib/sanitaire-departement-seo";
 import { buildTarifBlock, formatNomVille, type FaqItem } from "@/lib/sanitaire-ville-categorie";
 
 export const revalidate = 3600;
+// Les codes hors liste (ex. variantes de casse) restent servis en ISR ; un code
+// inconnu de DEPARTEMENTS_FR renvoie 404 via notFound().
+export const dynamicParams = true;
 
 type Props = {
   params: Promise<{ code: string }>;
 };
+
+/** Pre-genere les 101 departements + collectivites de departements-fr.ts. */
+export function generateStaticParams() {
+  return getAllDepartementCodes().map((code) => ({ code }));
+}
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -187,18 +206,23 @@ export default async function DepartementPage({ params }: Props) {
     buildTarifBlock(cat.key, dep.code, dep.nom)
   ).filter((b): b is NonNullable<typeof b> => b !== null);
 
-  const breadLd = buildBreadcrumbJsonLd(
-    seoOverride
-      ? [
-          { name: "Accueil", url: "/" },
-          { name: "Transport médical", url: "/transport-medical" },
-          { name: dep.nom, url: `/transport-medical/departement/${dep.code}` },
-        ]
-      : [
-          { name: "Annuaire", url: "/transport-medical" },
-          { name: `Departement ${dep.nom} (${dep.code})`, url: `/transport-medical/departement/${dep.code}` },
-        ],
-  );
+  const regionSlug = getRegionSlugByDepartement(dep.code);
+  const regionSeo = regionSlug ? getRegionBySlug(regionSlug) : undefined;
+
+  const breadItems: { name: string; url: string }[] = seoOverride
+    ? [
+        { name: "Accueil", url: "/" },
+        { name: "Transport médical", url: "/transport-medical" },
+      ]
+    : [{ name: "Annuaire", url: "/transport-medical" }];
+  if (regionSeo) {
+    breadItems.push({ name: regionSeo.nom, url: `/transport-medical/region/${regionSeo.slug}` });
+  }
+  breadItems.push({
+    name: seoOverride ? dep.nom : `Departement ${dep.nom} (${dep.code})`,
+    url: `/transport-medical/departement/${dep.code}`,
+  });
+  const breadLd = buildBreadcrumbJsonLd(breadItems);
 
   const genericFaqs = [
     {
@@ -283,6 +307,14 @@ export default async function DepartementPage({ params }: Props) {
           <nav className="flex items-center gap-2 text-xs text-blue-200 mb-4 flex-wrap">
             <Link href="/transport-medical" className="hover:text-white">Annuaire</Link>
             <ChevronRight className="w-3 h-3" />
+            {regionSeo && (
+              <>
+                <Link href={`/transport-medical/region/${regionSeo.slug}`} className="hover:text-white">
+                  {regionSeo.nom}
+                </Link>
+                <ChevronRight className="w-3 h-3" />
+              </>
+            )}
             <span className="text-white">{dep.nom} ({dep.code})</span>
           </nav>
           <h1 className="text-3xl sm:text-4xl font-bold mb-2">
@@ -391,7 +423,7 @@ export default async function DepartementPage({ params }: Props) {
                       {topVilles.map((v) => (
                         <Link
                           key={v.ville_slug}
-                          href={`/transport-medical/${v.ville_slug}/${cat.slug}`}
+                          href={villeCategorieUrl(cat.slug, v.ville_slug)}
                           className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-medium text-gray-900 transition"
                         >
                           {cat.label} {formatNomVille(v.ville)}
@@ -461,6 +493,42 @@ export default async function DepartementPage({ params }: Props) {
             </Link>
           </div>
         </article>
+
+        {regionSeo && (
+          <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">
+              Transport sanitaire en {regionSeo.nom}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              Le département {dep.nom} ({dep.code}) fait partie de la région {regionSeo.nom}. Élargissez votre
+              recherche aux départements voisins de la même région.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href={`/transport-medical/region/${regionSeo.slug}`}
+                className="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-[#0066CC] transition"
+              >
+                Toute la région {regionSeo.nom}
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+              {regionSeo.departements
+                .filter((code) => code !== dep.code)
+                .map((code) => {
+                  const voisin = getDepartementByCode(code);
+                  if (!voisin) return null;
+                  return (
+                    <Link
+                      key={code}
+                      href={`/transport-medical/departement/${code}`}
+                      className="border border-gray-200 rounded-xl px-3 py-2 text-sm font-medium text-gray-900 hover:bg-blue-50 hover:text-[#0066CC] transition"
+                    >
+                      {voisin.nom} ({code})
+                    </Link>
+                  );
+                })}
+            </div>
+          </article>
+        )}
 
         <article className="bg-white border border-gray-200 rounded-2xl p-6 mt-6">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Catégories de transport sanitaire</h2>
