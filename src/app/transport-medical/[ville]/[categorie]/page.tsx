@@ -268,7 +268,9 @@ export default async function VilleCategoriePage({ params, searchParams }: Props
                 ? ` · Département ${departement}`
                 : ""}
           </p>
-          {pros.length > 0 && (
+          {/* Masqué sous filtre Ameli : la liste est alors partielle, le chiffre
+              annoncé ne refléterait pas la couverture réelle de la ville. */}
+          {pros.length > 0 && !ameliOnly && (
             <p className="text-xs text-blue-200 mt-2">
               Au {dateVerification}, RoullePro recense {pros.length}{" "}
               {pros.length > 1 ? cat.labelPluriel.toLowerCase() : cat.label.toLowerCase()} à {nomVille}

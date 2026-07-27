@@ -306,10 +306,14 @@ export default async function VillePage({ params, searchParams }: Props) {
           <p className="text-blue-100">
             {totalCount} {totalCount > 1 ? "professionnels référencés" : "professionnel référencé"} · Département {departement} · {region}
           </p>
-          <p className="text-xs text-blue-200 mt-2">
-            Au {formatDateVerification()}, RoullePro recense {groupedFull.ambulance.length} ambulances,{" "}
-            {groupedFull.vsl.length} VSL et {groupedFull.taxi_conventionne.length} taxis conventionnés à {nomVille}.
-          </p>
+          {/* Compteur global (countProsForVille) : la liste SSR est plafonnée et
+              peut être filtrée Ameli, ses sous-totaux ne sont donc pas fiables ici. */}
+          {!ameliOnly && (
+            <p className="text-xs text-blue-200 mt-2">
+              Au {formatDateVerification()}, RoullePro recense {totalCount} professionnel
+              {totalCount > 1 ? "s" : ""} du transport sanitaire et conventionné à {nomVille}.
+            </p>
+          )}
           <div className="mt-6 flex flex-wrap gap-2">
             {CATEGORIES_SANITAIRE.map((cat) => {
               const count = grouped[cat.key].length;
