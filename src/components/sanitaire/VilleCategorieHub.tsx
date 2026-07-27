@@ -19,6 +19,7 @@ import {
 } from "@/lib/sanitaire-seo";
 import { villeCategorieUrl, ficheUrl, utiliseUrlCourte } from "@/lib/sanitaire-urls";
 import { getCityCategoryContent } from "@/lib/seo-city-content";
+import { buildHubTitle, buildHubDescription } from "@/lib/sanitaire-hub-meta";
 import { getDepartementByCode } from "@/lib/departements-fr";
 import {
   buildTarifBlock,
@@ -114,23 +115,6 @@ function dedupeFaq(items: FaqItem[]): FaqItem[] {
   return out;
 }
 
-/**
- * Title/description cibles sur l'intention exacte pour les hubs a URL courte
- * ("taxi conventionne Paris", "ambulance Montpellier"), ou l'utilisateur
- * cherche un service et un prix, pas un annuaire.
- */
-function buildTitreCible(categorieSlug: string, nomVille: string, nb: number): string | null {
-  if (categorieSlug === "taxi-conventionne") {
-    return `Taxi conventionné à ${nomVille} — tarif Sécu, réservation en ligne`;
-  }
-  if (categorieSlug === "ambulance") {
-    return nb > 0
-      ? `Ambulance à ${nomVille} — ${nb} services, prise en charge CPAM`
-      : `Ambulance à ${nomVille} — intervention rapide, prise en charge CPAM`;
-  }
-  return null;
-}
-
 export async function buildVilleCategorieMetadata(
   villeSlug: string,
   categorieSlug: string
@@ -142,18 +126,15 @@ export async function buildVilleCategorieMetadata(
   const nb = pros.length;
   const conventionnes = pros.filter((p) => p.ameli_conventionne).length;
 
-  // Title : action + nombre = signal d'utilité + AI search.
   // Le suffixe " | RoullePro" est ajouté automatiquement par title.template (layout).
-  const titleAnnuaire = nb > 1
-    ? `${cat.labelPluriel} à ${nomVille} : ${nb} pros conventionnés CPAM`
-    : nb === 1
-      ? `${cat.labelPluriel} à ${nomVille} : 1 pro conventionné CPAM`
-      : `${cat.labelPluriel} à ${nomVille}`;
-  const title = buildTitreCible(categorieSlug, nomVille, nb) ?? titleAnnuaire;
-
-  const description = nb > 0
-    ? `${nb} ${cat.labelPluriel.toLowerCase()} à ${nomVille}${conventionnes > 0 ? `, dont ${conventionnes} conventionnés CPAM` : ""}. Téléphone direct, tarif Sécu, tiers payant. Réservation gratuite en ligne.`.slice(0, 160)
-    : `${cat.labelPluriel} à ${nomVille} : annuaire gratuit. Tarif Sécurité sociale, tiers payant, réservation en ligne.`.slice(0, 160);
+  const title = buildHubTitle(categorieSlug, nomVille, nb, cat.labelPluriel);
+  const description = buildHubDescription(
+    categorieSlug,
+    nomVille,
+    nb,
+    conventionnes,
+    cat.labelPluriel
+  );
 
   return {
     title,
