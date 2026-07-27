@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 import {
   MapPin,
   Phone,
@@ -163,7 +164,7 @@ export default async function FicheProPage({ params }: Props) {
   const breadLd = buildBreadcrumbJsonLd([
     { name: "Annuaire", url: "/transport-medical" },
     { name: pro.ville, url: `/transport-medical/${ville}` },
-    { name: cat?.labelPluriel || "Fiche", url: `/transport-medical/${ville}/${categorie}` },
+    { name: cat?.labelPluriel || "Fiche", url: villeCategorieUrl(categorie, ville) },
     {
       name: pro.nom_commercial || pro.raison_sociale,
       url: `/transport-medical/${ville}/${categorie}/${slug}`,
@@ -197,7 +198,7 @@ export default async function FicheProPage({ params }: Props) {
             <ChevronRight className="w-3 h-3" />
             {cat && (
               <>
-                <Link href={`/transport-medical/${ville}/${categorie}`} className="hover:text-white">{cat.labelPluriel}</Link>
+                <Link href={villeCategorieUrl(categorie, ville)} className="hover:text-white">{cat.labelPluriel}</Link>
                 <ChevronRight className="w-3 h-3" />
               </>
             )}
@@ -540,7 +541,7 @@ export default async function FicheProPage({ params }: Props) {
             </ul>
             <div className="mt-4 pt-4 border-t border-gray-100">
               <Link
-                href={`/transport-medical/${pro.ville_slug || ville}/${categorie}`}
+                href={villeCategorieUrl(categorie, pro.ville_slug || ville)}
                 className="inline-flex items-center gap-1 text-sm text-[#0066CC] font-semibold hover:underline"
               >
                 Voir tous les {cat?.labelPluriel?.toLowerCase() || "professionnels"} à {pro.ville}

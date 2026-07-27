@@ -16,6 +16,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 import {
   ChevronRight,
   MapPin,
@@ -303,7 +304,7 @@ export default async function CategorieNationalePage({ params }: Props) {
       "@type": "ListItem",
       position: i + 1,
       name: `${cat.label} ${v.ville}`,
-      url: `${BASE_URL}/transport-medical/${v.ville_slug}/${cat.slug}`,
+      url: `${BASE_URL}${villeCategorieUrl(cat.slug, v.ville_slug)}`,
     })),
   };
 
@@ -470,7 +471,7 @@ export default async function CategorieNationalePage({ params }: Props) {
               {topVilles.map((v) => (
                 <Link
                   key={v.ville_slug}
-                  href={`/transport-medical/${v.ville_slug}/${cat.slug}`}
+                  href={villeCategorieUrl(cat.slug, v.ville_slug)}
                   className="flex items-center justify-between gap-2 bg-gray-50 hover:bg-blue-50 hover:text-[#0066CC] text-gray-800 text-sm px-4 py-2.5 rounded-lg transition border border-gray-100"
                 >
                   <span className="flex items-center gap-2 min-w-0 truncate">

@@ -6,6 +6,7 @@ import { DEPARTEMENTS_FR } from "@/lib/departements-fr";
 import { REGLES_CPAM } from "@/lib/tarif-cpam";
 import { REGLES_VSL, REGLES_AMBULANCE } from "@/lib/tarif-transport-sanitaire";
 import { ArticlesLiesPilier } from "@/components/blog/ArticlesLiesPilier";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 
 export const revalidate = 3600;
 
@@ -427,7 +428,7 @@ export default function TaxiConventionnePage() {
             {VILLES_TAXI_PRIORITAIRES.map((v) => (
               <Link
                 key={v.slug}
-                href={`/transport-medical/${v.slug}/taxi-conventionne`}
+                href={villeCategorieUrl("taxi-conventionne", v.slug)}
                 className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
               >
                 Taxi conventionné {v.nom}

@@ -9,9 +9,10 @@ import { CATEGORIES_SEO, VILLES_SEO } from "./seo-data";
 import { getAllDepartementCodes } from "./departements-fr";
 import { TYPES_ETABLISSEMENT } from "./etablissements-data";
 import { VSL_VILLES } from "../data/vsl-villes";
+import { villeCategorieUrl } from "./sanitaire-urls";
+import { getVillesEligibles, getVillesAvecCategorie } from "./villes-eligibles";
 import { DOM_TERRITOIRES } from "../data/dom-territoires";
 import { CATEGORIES_SANITAIRE, REGIONS_FR_SEO } from "./sanitaire-data";
-import { getVilleSeoOverride } from "./sanitaire-ville-seo";
 
 export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 
@@ -206,11 +207,18 @@ export async function buildStaticEntries(): Promise<SitemapEntry[]> {
     { url: `${BASE_URL}/tarif-vsl`, changefreq: "weekly", priority: 0.9 },
   ];
 
-  // Pages VSL par ville (Phase 2 SEO) : 30 grandes villes.
-  const vslVilles: SitemapEntry[] = VSL_VILLES.map((v) => ({
-    url: `${BASE_URL}/vsl/${v.slug}`,
+  // Pages VSL par ville : toutes les villes comptant au moins un VSL actif.
+  // Les villes editorialisees (VSL_VILLES) gardent une priorite superieure ;
+  // les autres sont declarees en 0.65 (contenu genere, moins riche).
+  const vslEditorialSlugs = new Set(VSL_VILLES.map((v) => v.slug));
+  const vslSlugs = new Set<string>([
+    ...VSL_VILLES.map((v) => v.slug),
+    ...(await getVillesAvecCategorie("vsl")),
+  ]);
+  const vslVilles: SitemapEntry[] = Array.from(vslSlugs).map((slug) => ({
+    url: `${BASE_URL}/vsl/${slug}`,
     changefreq: "weekly",
-    priority: 0.8,
+    priority: vslEditorialSlugs.has(slug) ? 0.8 : 0.65,
   }));
 
   // Pages DOM (departements et regions d'outre-mer) : transport medical conventionne.
@@ -414,44 +422,12 @@ export async function buildRegAlertsSitemap(): Promise<SitemapEntry[]> {
 
 /** id 1 : villes sanitaire + pages categorie/ville */
 export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
-  const supabase = getSupabase();
-
-  const villesAll: string[] = [];
-  let from = 0;
-  const size = 1000;
-  // Borne large : > 25 000 pros actifs -> 40 pages de 1000 evitent toute troncature
-  // (un comptage tronque fausserait le seuil de qualite ci-dessous).
-  for (let i = 0; i < 40; i += 1) {
-    const { data } = await supabase
-      .from("pros_sanitaire_public")
-      .select("ville_slug")
-      .eq("actif", true)
-      .eq("suspendu", false)
-      .range(from, from + size - 1);
-    if (!data || data.length === 0) break;
-    villesAll.push(
-      ...(data as { ville_slug: string }[]).map((r) => r.ville_slug).filter(Boolean)
-    );
-    if (data.length < size) break;
-    from += size;
-  }
-
-  // Comptage des professionnels par ville pour appliquer le seuil de qualite.
-  const countParVille = new Map<string, number>();
-  for (const slug of villesAll) {
-    countParVille.set(slug, (countParVille.get(slug) ?? 0) + 1);
-  }
-
-  // Seuil anti "scaled/thin content" : le sitemap ne declare que les villes qui
-  // recensent au moins SEUIL_INDEX_VILLE professionnels reels, ou qui beneficient
-  // d'un contenu editorial unique (override). Coherent avec le robots noindex applique
-  // aux pages ville sous le seuil (transport-medical/[ville]/page.tsx).
-  const SEUIL_INDEX_VILLE = 3;
-  const villesUniques = Array.from(new Set(villesAll)).filter(
-    (slug) =>
-      (countParVille.get(slug) ?? 0) >= SEUIL_INDEX_VILLE ||
-      getVilleSeoOverride(slug) !== null
-  );
+  // Seuil anti "scaled/thin content" applique par getVillesEligibles() : seules
+  // les villes recensant au moins SEUIL_INDEX_VILLE professionnels reels, ou
+  // beneficiant d'un contenu editorial unique, sont declarees. Meme source que
+  // les generateStaticParams des hubs, donc sitemap et pre-generation restent
+  // toujours alignes.
+  const villesUniques = await getVillesEligibles();
 
   // Top villes FR à fort volume de recherche : priority surélevée pour signaler
   // à Google les pages stratégiques (données DataForSEO Search Volume).
@@ -473,7 +449,9 @@ export async function buildSanitaireVillesEntries(): Promise<SitemapEntry[]> {
     const isTopVille = VILLES_TOP_FR.has(slug);
     for (const c of categoriesSanitaire) {
       villeCatPages.push({
-        url: `${BASE_URL}/transport-medical/${slug}/${c}`,
+        // URL canonique : courte pour ambulance / taxi-conventionne, longue
+        // pour vsl. Ne jamais declarer une URL redirigee en 301 dans le sitemap.
+        url: `${BASE_URL}${villeCategorieUrl(c, slug)}`,
         changefreq: "weekly",
         // Pages hub locales = forte valeur SEO (cible "ambulance Paris" 1600/m)
         priority: isTopVille ? 0.85 : 0.7,

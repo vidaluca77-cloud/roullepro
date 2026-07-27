@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Car, ChevronRight, Shield, Search, MapPin, Stethoscope } from "lucide-react";
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 
 export const revalidate = 3600;
 
@@ -188,7 +189,7 @@ export default function TaxiVslAutourDeMoiPage() {
             {VILLES.map((v) => (
               <Link
                 key={v.slug}
-                href={`/transport-medical/${v.slug}/taxi-conventionne`}
+                href={villeCategorieUrl("taxi-conventionne", v.slug)}
                 className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 text-sm font-semibold text-gray-900 transition"
               >
                 Taxi conventionné {v.nom}
