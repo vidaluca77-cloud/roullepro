@@ -51,22 +51,24 @@ test("providerActive exige le flag ET la config d'app", () => {
 
 // ─── Scopes ──────────────────────────────────────────────────────────────────
 
-test("META_SCOPES : périmètre minimal, sans business_management", () => {
+test("META_SCOPES : inclut business_management (requis pour /me/accounts avec Pages Business Manager)", () => {
   assert.deepEqual(META_SCOPES, [
     "pages_show_list",
     "pages_manage_posts",
     "pages_read_engagement",
+    "business_management",
     "instagram_basic",
     "instagram_content_publish",
   ]);
-  // Permission élargie retirée pour l'App Review : /me/accounts suffit.
-  assert.equal(META_SCOPES.includes("business_management"), false);
+  // Depuis le changement de plateforme Meta (Graph API v17+), /me/accounts ne
+  // retourne pas les Pages rattachées à un Business Manager sans ce scope.
+  assert.equal(META_SCOPES.includes("business_management"), true);
 });
 
-test("l'URL d'autorisation Meta ne demande pas business_management", () => {
+test("l'URL d'autorisation Meta demande bien business_management", () => {
   process.env.META_APP_ID = "appid123";
   const url = new URL(construireUrlAuthMeta("nonce.pro1"));
-  assert.equal(url.searchParams.get("scope")!.includes("business_management"), false);
+  assert.equal(url.searchParams.get("scope")!.includes("business_management"), true);
 });
 
 // ─── URLs OAuth ──────────────────────────────────────────────────────────────
