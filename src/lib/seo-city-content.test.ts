@@ -264,6 +264,9 @@ test("le rendu concatene des segments reconstitue chaque paragraphe publie", () 
   }
 });
 
+// Le tsconfig cible ES5 : pas de classes Unicode \p{L}, on enumere les plages.
+const ALPHANUM = /[0-9A-Za-z\u00C0-\u024F]/;
+
 test("aucun lien ne coupe un mot en deux", () => {
   // Un nom mal choisi ("Institut" seul) produirait un lien au milieu d'un mot :
   // la mention liee doit toujours etre bordee par une frontiere de mot.
@@ -276,7 +279,7 @@ test("aucun lien ne coupe un mot en deux", () => {
           const avant = pos > 0 ? p[pos - 1] : " ";
           const apres = pos + seg.texte.length < p.length ? p[pos + seg.texte.length] : " ";
           assert.ok(
-            !/[\p{L}\p{N}]/u.test(avant) && !/[\p{L}\p{N}]/u.test(apres),
+            !ALPHANUM.test(avant) && !ALPHANUM.test(apres),
             `${cle} : "${seg.texte}" coupe un mot`
           );
         }
