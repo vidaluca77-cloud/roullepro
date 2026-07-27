@@ -1,6 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { SEO_CITY_CONTENT, getCityCategoryContent } from "./seo-city-content";
+import {
+  SEO_CITY_CONTENT,
+  getCityCategoryContent,
+  segmenterParagraphe,
+} from "./seo-city-content";
 
 /**
  * Les 95 couples ville x categorie effectivement servis en production
@@ -184,5 +188,103 @@ test("chaque page cite le taux de remboursement de sa propre categorie", () => {
     const attendu = categorie === "ambulance" ? "55 %" : "65 %";
     assert.ok(texte.includes(attendu), `${cle} : taux ${attendu} absent`);
     assert.ok(texte.includes("100 %"), `${cle} : taux ALD absent`);
+  }
+});
+
+test("chaque etablissement lie cite un nom present tel quel dans l'intro", () => {
+  // Le rendu remplace une sous-chaine exacte du paragraphe : si le nom derive du
+  // texte, le lien disparait silencieusement sans qu'aucune page ne casse.
+  for (const [cle, contenu] of Object.entries(SEO_CITY_CONTENT)) {
+    if (!contenu.etablissements) continue;
+    assert.ok(contenu.etablissements.length > 0, `${cle} : champ etablissements vide`);
+    for (const e of contenu.etablissements) {
+      assert.match(e.slug, /^[a-z0-9]+(-[a-z0-9]+)*$/, `${cle} : slug invalide ${e.slug}`);
+      assert.ok(
+        contenu.intro.some((p) => p.includes(e.nom)),
+        `${cle} : "${e.nom}" absent des paragraphes d'intro`
+      );
+    }
+  }
+});
+
+test("segmenterParagraphe rend le texte inchange sans etablissements", () => {
+  const p = "Le CHU de Nice compte trois sites.";
+  assert.deepEqual(segmenterParagraphe(p, undefined), [{ texte: p }]);
+  assert.deepEqual(segmenterParagraphe(p, []), [{ texte: p }]);
+});
+
+test("segmenterParagraphe isole la mention et conserve le texte integral", () => {
+  const p = "Les urgences de l'hôpital Pasteur accueillent les patients.";
+  const segments = segmenterParagraphe(p, [
+    { nom: "hôpital Pasteur", slug: "chu-de-nice-hopital-pasteur-06" },
+  ]);
+  assert.deepEqual(segments, [
+    { texte: "Les urgences de l'" },
+    { texte: "hôpital Pasteur", slug: "chu-de-nice-hopital-pasteur-06" },
+    { texte: " accueillent les patients." },
+  ]);
+  assert.equal(segments.map((s) => s.texte).join(""), p);
+});
+
+test("segmenterParagraphe ne lie que la premiere occurrence d'un meme slug", () => {
+  const p = "L'hôpital Nord puis l'hôpital Nord de nouveau.";
+  const segments = segmenterParagraphe(p, [
+    { nom: "hôpital Nord", slug: "aphm-hopital-nord-13" },
+  ]);
+  assert.equal(segments.filter((s) => s.slug).length, 1);
+  assert.equal(segments.map((s) => s.texte).join(""), p);
+});
+
+test("segmenterParagraphe privilegie le nom le plus long en cas d'imbrication", () => {
+  const p = "L'Hôpital Renée Sabran de Giens dispose d'un plateau technique.";
+  const segments = segmenterParagraphe(p, [
+    { nom: "Hôpital Renée Sabran", slug: "hopital-renee-sabran-hyeres-83" },
+    { nom: "Hôpital Renée Sabran de Giens", slug: "hopital-renee-sabran-hyeres-83" },
+  ]);
+  const lies = segments.filter((s) => s.slug);
+  assert.equal(lies.length, 1);
+  assert.equal(lies[0].texte, "Hôpital Renée Sabran de Giens");
+  assert.equal(segments.map((s) => s.texte).join(""), p);
+});
+
+test("segmenterParagraphe laisse le texte intact quand aucun nom ne correspond", () => {
+  const p = "Aucun etablissement n'est cite ici.";
+  assert.deepEqual(
+    segmenterParagraphe(p, [{ nom: "hôpital Cochin", slug: "x-75" }]),
+    [{ texte: p }]
+  );
+});
+
+test("le rendu concatene des segments reconstitue chaque paragraphe publie", () => {
+  for (const [cle, contenu] of Object.entries(SEO_CITY_CONTENT)) {
+    for (const p of contenu.intro) {
+      const segments = segmenterParagraphe(p, contenu.etablissements);
+      assert.equal(segments.map((s) => s.texte).join(""), p, `${cle} : paragraphe altere`);
+    }
+  }
+});
+
+// Le tsconfig cible ES5 : pas de classes Unicode \p{L}, on enumere les plages.
+const ALPHANUM = /[0-9A-Za-z\u00C0-\u024F]/;
+
+test("aucun lien ne coupe un mot en deux", () => {
+  // Un nom mal choisi ("Institut" seul) produirait un lien au milieu d'un mot :
+  // la mention liee doit toujours etre bordee par une frontiere de mot.
+  for (const [cle, contenu] of Object.entries(SEO_CITY_CONTENT)) {
+    if (!contenu.etablissements) continue;
+    for (const p of contenu.intro) {
+      let pos = 0;
+      for (const seg of segmenterParagraphe(p, contenu.etablissements)) {
+        if (seg.slug) {
+          const avant = pos > 0 ? p[pos - 1] : " ";
+          const apres = pos + seg.texte.length < p.length ? p[pos + seg.texte.length] : " ";
+          assert.ok(
+            !ALPHANUM.test(avant) && !ALPHANUM.test(apres),
+            `${cle} : "${seg.texte}" coupe un mot`
+          );
+        }
+        pos += seg.texte.length;
+      }
+    }
   }
 });
