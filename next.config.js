@@ -106,6 +106,22 @@ const nextConfig = {
         destination: '/transport-medical/nice',
         permanent: true,
       },
+      // URLs courtes canoniques des hubs ville à forte intention commerciale.
+      //   /transport-medical/{ville}/ambulance          -> /ambulance/{ville}
+      //   /transport-medical/{ville}/taxi-conventionne  -> /taxi-conventionne/{ville}
+      // Une seule URL indexable par intention : supprime la cannibalisation
+      // entre l'ancienne URL longue et la nouvelle URL courte.
+      //
+      // Le motif ne matche que DEUX segments : les fiches pro
+      // (/transport-medical/{ville}/{categorie}/{slug}) ne sont pas redirigées.
+      // Le lookahead exclut les segments réservés de /transport-medical pour ne
+      // jamais capturer /transport-medical/categorie/ambulance (hub national) ;
+      // il est ancré sur le "/" suivant, donc une ville comme "provins" passe.
+      ...['ambulance', 'taxi-conventionne'].map((categorie) => ({
+        source: `/transport-medical/:ville((?!(?:categorie|departement|region|dom|vers|recherche|pro|tarifs|inscription|autour-de-moi)/)[^/]+)/${categorie}`,
+        destination: `/${categorie}/:ville`,
+        permanent: true,
+      })),
       // Corse : code historique "20" -> Corse-du-Sud (2A) par défaut
       {
         source: '/transport-medical/departement/20',

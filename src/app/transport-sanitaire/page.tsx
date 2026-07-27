@@ -1,9 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { createClient } from "@supabase/supabase-js";
 import { Cross, ChevronRight, Shield, Search, MapPin } from "lucide-react";
-import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
+import { buildFaqJsonLd, buildBreadcrumbJsonLd, formatDateVerification } from "@/lib/sanitaire-seo";
+import { getProStats } from "@/lib/stats";
 
 export const revalidate = 3600;
+
+// Fallback de maillage si la vue d'agregation est indisponible.
+const VILLES_PRINCIPALES: { ville: string; ville_slug: string }[] = [
+  { ville: "Paris", ville_slug: "paris" },
+  { ville: "Marseille", ville_slug: "marseille" },
+  { ville: "Lyon", ville_slug: "lyon" },
+  { ville: "Toulouse", ville_slug: "toulouse" },
+  { ville: "Nice", ville_slug: "nice" },
+  { ville: "Nantes", ville_slug: "nantes" },
+  { ville: "Montpellier", ville_slug: "montpellier" },
+  { ville: "Strasbourg", ville_slug: "strasbourg" },
+  { ville: "Bordeaux", ville_slug: "bordeaux" },
+  { ville: "Lille", ville_slug: "lille" },
+  { ville: "Rennes", ville_slug: "rennes" },
+  { ville: "Caen", ville_slug: "caen" },
+];
+
+// Meme vue d'agregation que la home : villes les mieux couvertes par l'annuaire.
+async function getTopVilles() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("sanitaire_top_villes")
+    .select("ville, ville_slug, count")
+    .limit(24);
+  return (data ?? []) as { ville: string; ville_slug: string; count: number }[];
+}
 
 const TITLE =
   "Transport sanitaire 2026 : ambulance, VSL, démarches et remboursement";
@@ -74,7 +105,9 @@ const FAQ: { question: string; answer: string }[] = [
   },
 ];
 
-export default function TransportSanitairePage() {
+export default async function TransportSanitairePage() {
+  const [stats, topVilles] = await Promise.all([getProStats(), getTopVilles()]);
+  const villes = topVilles.length > 0 ? topVilles : VILLES_PRINCIPALES.map((v) => ({ ...v, count: 0 }));
   const faqLd = buildFaqJsonLd(FAQ);
   const breadLd = buildBreadcrumbJsonLd([
     { name: "Accueil", url: "/" },
@@ -235,6 +268,41 @@ export default function TransportSanitairePage() {
             Le tiers payant évite l'avance des frais. La franchise médicale de 4 € par trajet (plafonnée à 8 € par
             jour et 50 € par an) reste à la charge du patient. Pour aller plus loin, consultez notre article{" "}
             <Link href="/blog/remboursement-transport-medical">remboursement du transport médical</Link>.
+          </p>
+        </section>
+
+        <section id="villes">
+          <h2>Trouver un transport sanitaire par ville</h2>
+          <p>
+            Au {formatDateVerification()}, RoullePro référence{" "}
+            {stats.total.toLocaleString("fr-FR")} professionnels du transport sanitaire et conventionné en France,
+            dont {stats.byCategory.ambulance.toLocaleString("fr-FR")} ambulances et{" "}
+            {stats.byCategory.vsl.toLocaleString("fr-FR")} VSL. Accédez à l'annuaire local des villes les mieux
+            couvertes :
+          </p>
+          <div className="not-prose grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 my-6">
+            {villes.map((v) => (
+              <Link
+                key={v.ville_slug}
+                href={`/transport-medical/${v.ville_slug}`}
+                className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-xl px-3 py-2 transition"
+              >
+                <div className="text-sm font-semibold text-gray-900">{v.ville}</div>
+                {v.count > 0 && (
+                  <div className="text-xs text-gray-500">
+                    {v.count} pro{v.count > 1 ? "s" : ""} référencé{v.count > 1 ? "s" : ""}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+          <p>
+            Vous cherchez un mode précis ? Consultez l'annuaire national des{" "}
+            <Link href="/transport-medical/categorie/ambulance">ambulances</Link>, des{" "}
+            <Link href="/transport-medical/categorie/vsl">VSL</Link> ou des{" "}
+            <Link href="/transport-medical/categorie/taxi-conventionne">taxis conventionnés CPAM</Link>, ou
+            parcourez{" "}
+            <Link href="/transport-medical">l'annuaire complet du transport sanitaire</Link>.
           </p>
         </section>
       </article>

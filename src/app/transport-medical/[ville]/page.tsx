@@ -3,9 +3,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { MapPin, Phone, Shield, Cross, Car, Users, ChevronRight, Star, BadgeCheck } from "lucide-react";
+import { villeCategorieUrl } from "@/lib/sanitaire-urls";
 import {
   CATEGORIES_SANITAIRE,
   getCategorieByKey,
+  getRegionSlugByDepartement,
+  getRegionBySlug,
   deslugifyVille,
   planDisplay,
   type ProSanitaire,
@@ -13,6 +16,8 @@ import {
 import {
   buildFaqJsonLd,
   buildBreadcrumbJsonLd,
+  buildProsItemList,
+  formatDateVerification,
   getVilleFaq,
   getVillesVoisines,
 } from "@/lib/sanitaire-seo";
@@ -214,27 +219,12 @@ export default async function VillePage({ params, searchParams }: Props) {
     description: `Annuaire des ambulances, VSL et taxis conventionnés à ${nomVille}`,
     url: `https://roullepro.com/transport-medical/${ville}`,
     dateModified: new Date().toISOString(),
-    mainEntity: {
-      "@type": "ItemList",
-      numberOfItems: pros.length,
-      itemListElement: pros.slice(0, 20).map((p, i) => ({
-        "@type": "ListItem",
-        position: i + 1,
-        item: {
-          "@type": "MedicalBusiness",
-          name: p.nom_commercial || p.raison_sociale,
-          medicalSpecialty: "MedicalTransport",
-          telephone: p.telephone_public || undefined,
-          address: {
-            "@type": "PostalAddress",
-            streetAddress: p.adresse || undefined,
-            postalCode: p.code_postal,
-            addressLocality: formatNomVille(p.ville),
-            addressCountry: "FR",
-          },
-        },
-      })),
-    },
+    mainEntity: buildProsItemList({
+      name: `Transport sanitaire à ${nomVille}`,
+      pros,
+      itemUrl: (p) =>
+        `https://roullepro.com/transport-medical/${ville}/${getCategorieByKey(p.categorie)?.slug ?? p.categorie}/${p.slug}`,
+    }),
   };
 
   const override = getVilleSeoOverride(ville);
@@ -246,9 +236,17 @@ export default async function VillePage({ params, searchParams }: Props) {
   // les pages /transport-medical/departement/[code] depuis chaque hub ville.
   const depCode = departement || override?.departement || "";
   const depInfo = depCode ? getDepartementByCode(depCode) : null;
+  const regionSlug = depCode ? getRegionSlugByDepartement(depCode) : null;
+  const regionSeo = regionSlug ? getRegionBySlug(regionSlug) : undefined;
   const breadItems: { name: string; url: string }[] = [
     { name: "Annuaire", url: "/transport-medical" },
   ];
+  if (regionSeo) {
+    breadItems.push({
+      name: regionSeo.nom,
+      url: `/transport-medical/region/${regionSeo.slug}`,
+    });
+  }
   if (depInfo) {
     breadItems.push({
       name: `${depInfo.nom} (${depInfo.code})`,
@@ -294,12 +292,22 @@ export default async function VillePage({ params, searchParams }: Props) {
           <nav className="flex items-center gap-2 text-xs text-blue-200 mb-4 flex-wrap">
             <Link href="/transport-medical" className="hover:text-white">Annuaire</Link>
             <ChevronRight className="w-3 h-3" />
-            {region && (
+            {regionSeo ? (
+              <>
+                <Link
+                  href={`/transport-medical/region/${regionSeo.slug}`}
+                  className="hover:text-white"
+                >
+                  {regionSeo.nom}
+                </Link>
+                <ChevronRight className="w-3 h-3" />
+              </>
+            ) : region ? (
               <>
                 <span>{region}</span>
                 <ChevronRight className="w-3 h-3" />
               </>
-            )}
+            ) : null}
             {depInfo && (
               <>
                 <Link
@@ -319,6 +327,14 @@ export default async function VillePage({ params, searchParams }: Props) {
           <p className="text-blue-100">
             {totalCount} {totalCount > 1 ? "professionnels référencés" : "professionnel référencé"} · Département {departement} · {region}
           </p>
+          {/* Compteur global (countProsForVille) : la liste SSR est plafonnée et
+              peut être filtrée Ameli, ses sous-totaux ne sont donc pas fiables ici. */}
+          {!ameliOnly && (
+            <p className="text-xs text-blue-200 mt-2">
+              Au {formatDateVerification()}, RoullePro recense {totalCount} professionnel
+              {totalCount > 1 ? "s" : ""} du transport sanitaire et conventionné à {nomVille}.
+            </p>
+          )}
           <div className="mt-6 flex flex-wrap gap-2">
             {CATEGORIES_SANITAIRE.map((cat) => {
               const count = grouped[cat.key].length;
@@ -326,7 +342,7 @@ export default async function VillePage({ params, searchParams }: Props) {
               return (
                 <Link
                   key={cat.slug}
-                  href={`/transport-medical/${ville}/${cat.slug}`}
+                  href={villeCategorieUrl(cat.slug, ville)}
                   className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full px-4 py-1.5 text-sm"
                 >
                   {cat.labelPluriel} · {count}
@@ -403,7 +419,7 @@ export default async function VillePage({ params, searchParams }: Props) {
               {hasMore && (
                 <div className="mt-6 text-center">
                   <Link
-                    href={`/transport-medical/${ville}/${cat.slug}`}
+                    href={villeCategorieUrl(cat.slug, ville)}
                     className="inline-flex items-center gap-2 bg-[#0066CC] hover:bg-[#0052a3] text-white font-medium px-5 py-2.5 rounded-xl transition"
                   >
                     Voir les {totalInCat} {cat.labelPluriel.toLowerCase()} à {nomVille}
@@ -447,23 +463,39 @@ export default async function VillePage({ params, searchParams }: Props) {
                 </Link>
               ))}
             </div>
-            {departement && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <Link
-                  href={`/transport-medical/departement/${departement}`}
-                  className="inline-flex items-center gap-1 text-sm text-[#0066CC] font-semibold hover:underline"
-                >
-                  Voir tout le transport sanitaire dans le département {departement}
-                  <ChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
           </div>
         </section>
       )}
 
       {villesVoisines.length === 0 && (
         <NearbyCities villeSlug={ville} nomVille={nomVille} />
+      )}
+
+      {/* Maillage ascendant ville -> departement -> region, rendu sur toutes
+          les pages ville et pas seulement quand des villes voisines existent. */}
+      {(departement || regionSeo) && (
+        <section className="max-w-6xl mx-auto px-4 pb-10">
+          <div className="flex flex-wrap gap-3 text-sm">
+            {departement && (
+              <Link
+                href={`/transport-medical/departement/${departement}`}
+                className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-[#0066CC] font-semibold hover:border-blue-200 transition"
+              >
+                Transport sanitaire {depInfo ? depInfo.nom : ""} ({departement})
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            )}
+            {regionSeo && (
+              <Link
+                href={`/transport-medical/region/${regionSeo.slug}`}
+                className="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-xl px-4 py-2 text-[#0066CC] font-semibold hover:border-blue-200 transition"
+              >
+                Transport sanitaire en {regionSeo.nom}
+                <ChevronRight className="w-4 h-4" />
+              </Link>
+            )}
+          </div>
+        </section>
       )}
 
       <EtablissementsVille villeSlug={ville} nomVille={nomVille} />

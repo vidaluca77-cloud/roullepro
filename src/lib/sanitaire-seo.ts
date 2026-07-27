@@ -182,6 +182,97 @@ export function buildFaqJsonLd(questions: { question: string; answer: string }[]
   };
 }
 
+/** Nombre max d'entites detaillees dans un ItemList (au-dela, Google tronque). */
+const MAX_ITEMLIST_ENTITIES = 20;
+
+/**
+ * Date de derniere verification en toutes lettres ("27 juillet 2026").
+ * Les moteurs generatifs (AI Overviews, Perplexity) privilegient les donnees
+ * chiffrees explicitement datees ; les pages listing etant en ISR, la date
+ * correspond bien a la derniere regeneration.
+ */
+export function formatDateVerification(date: Date = new Date()): string {
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Europe/Paris",
+  });
+}
+
+/**
+ * Noeud ItemList d'un listing de pros, chaque entree portant l'entite metier
+ * complete (type schema.org de la categorie, telephone, adresse, geo) au lieu
+ * d'un simple couple nom/URL. Les moteurs generatifs peuvent alors citer la
+ * fiche avec ses coordonnees sans charger la page detail.
+ *
+ * Retourne le noeud sans "@context" : a spreader dans un CollectionPage ou a
+ * emettre en racine en ajoutant le contexte.
+ */
+export function buildProsItemList(input: {
+  name: string;
+  description?: string;
+  url?: string;
+  pros: ProSanitaire[];
+  itemUrl: (pro: ProSanitaire) => string;
+}): Record<string, unknown> {
+  return cleanUndefined({
+    "@type": "ItemList",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    numberOfItems: input.pros.length,
+    itemListElement: input.pros.slice(0, MAX_ITEMLIST_ENTITIES).map((pro, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      item: buildProListItemEntity(pro, input.itemUrl(pro)),
+    })),
+  });
+}
+
+/** Entite schema.org resumee d'un pro, pour insertion dans un ItemList. */
+function buildProListItemEntity(pro: ProSanitaire, url: string) {
+  const categorieKey = pro.categorie as CategorieKey;
+  const adresseDiffusable =
+    pro.adresse && !pro.adresse.includes("[ND]") && !pro.adresse.includes("NON-DIFFUSIBLE")
+      ? pro.adresse
+      : undefined;
+
+  return cleanUndefined({
+    "@type": CATEGORIE_TO_TYPE[categorieKey] || ["LocalBusiness"],
+    "@id": url,
+    name: pro.nom_commercial || pro.raison_sociale,
+    url,
+    telephone: pro.telephone_public || undefined,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: adresseDiffusable,
+      postalCode: pro.code_postal,
+      addressLocality: formatNomVille(pro.ville),
+      addressRegion: pro.region || undefined,
+      addressCountry: "FR",
+    },
+    geo:
+      pro.latitude && pro.longitude
+        ? { "@type": "GeoCoordinates", latitude: pro.latitude, longitude: pro.longitude }
+        : undefined,
+    ...(categorieKey === "vsl" || categorieKey === "ambulance"
+      ? { medicalSpecialty: "MedicalTransport" }
+      : {}),
+    // Meme regle que buildProJsonLd : aucune etoile sans avis reel en base.
+    aggregateRating:
+      pro.rating_value && pro.review_count && pro.review_count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: pro.rating_value,
+            reviewCount: pro.review_count,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
+  });
+}
+
 /**
  * Genere un BreadcrumbList pour le fil d'Ariane enrichi Google.
  */

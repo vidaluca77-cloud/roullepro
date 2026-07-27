@@ -6,17 +6,67 @@ import { Car, ChevronRight, Shield, Phone, MapPin, BadgeCheck } from "lucide-rea
 import { buildFaqJsonLd, buildBreadcrumbJsonLd } from "@/lib/sanitaire-seo";
 import { type ProSanitaire } from "@/lib/sanitaire-data";
 import { VSL_VILLES, getVslVille, type VslVille } from "@/data/vsl-villes";
+import { getDepartementByCode, duDepartement } from "@/lib/departements-fr";
+import { getVillesAvecCategorie } from "@/lib/villes-eligibles";
+import { formatNomVille } from "@/lib/sanitaire-ville-categorie";
 
 export const revalidate = 3600;
-export const dynamicParams = false;
+// Toute ville disposant d'au moins un VSL actif est servie, y compris celles
+// ajoutees en base apres le dernier build (ISR). Les slugs sans VSL -> 404.
+export const dynamicParams = true;
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://roullepro.com";
 const MAX_VSL_SSR = 60;
 
 type Props = { params: Promise<{ ville: string }> };
 
-export function generateStaticParams() {
-  return VSL_VILLES.map((v) => ({ ville: v.slug }));
+/**
+ * Pre-genere les 30 villes editorialisees ET toutes les villes comptant au
+ * moins un VSL actif en base (~381). Sans credentials Supabase, seule la liste
+ * editoriale est pre-generee : le reste bascule en ISR.
+ */
+export async function generateStaticParams() {
+  const slugs = new Set<string>([
+    ...VSL_VILLES.map((v) => v.slug),
+    ...(await getVillesAvecCategorie("vsl")),
+  ]);
+  return Array.from(slugs).map((ville) => ({ ville }));
+}
+
+/**
+ * Contexte editorial de la ville. Les 30 villes historiques ont une fiche
+ * redigee (hopitaux, CPAM) ; les autres sont reconstruites a partir de la base
+ * (nom reel, departement) sans jamais inventer d'etablissement local.
+ */
+async function resolveVslVille(slug: string): Promise<VslVille | null> {
+  const editorial = getVslVille(slug);
+  if (editorial) return editorial;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data } = await supabase
+    .from("pros_sanitaire_public")
+    .select("ville, departement")
+    .eq("actif", true)
+    .eq("suspendu", false)
+    .eq("ville_slug", slug)
+    .eq("categorie", "vsl")
+    .not("departement", "is", null)
+    .limit(1);
+  const row = (data || [])[0] as { ville: string; departement: string } | undefined;
+  if (!row) return null;
+
+  const dep = getDepartementByCode(row.departement);
+  return {
+    slug,
+    nom: formatNomVille(row.ville),
+    departement: dep?.nom ?? row.departement,
+    codeDepartement: row.departement,
+    cpamLibelle: dep ? `CPAM ${duDepartement(dep.code)}` : "CPAM",
+    hopitaux: [],
+  };
 }
 
 async function fetchVslForVille(villeSlug: string): Promise<ProSanitaire[]> {
@@ -41,7 +91,7 @@ async function fetchVslForVille(villeSlug: string): Promise<ProSanitaire[]> {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { ville } = await params;
-  const v = getVslVille(ville);
+  const v = await resolveVslVille(ville);
   if (!v) return {};
   const title = `VSL ${v.nom} — Véhicule Sanitaire Léger conventionné CPAM`;
   const description = `Trouvez un VSL agréé CPAM à ${v.nom}. Tarif convention, prescription, dispense d'avance des frais, véhicules adaptés. Annuaire vérifié.`;
@@ -57,7 +107,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 function buildIntro(v: VslVille): string {
   if (v.introOverride) return v.introOverride;
   const hops = v.hopitaux.slice(0, 3).join(", ");
-  return `À ${v.nom} et dans le département ${v.departement} (${v.codeDepartement}), les sociétés de VSL (Véhicule Sanitaire Léger) assurent le transport assis des patients sur prescription médicale, pris en charge par la ${v.cpamLibelle}. Que ce soit pour des séances de dialyse, de chimiothérapie ou de radiothérapie, des consultations de suivi ou un retour d'hospitalisation depuis des établissements comme ${hops}, RoullePro centralise les coordonnées des entreprises agréées et conventionnées. Le VSL est conduit par un auxiliaire ambulancier formé aux premiers secours et permet la dispense d'avance des frais (tiers payant) : vous n'avancez pas les frais sur la part remboursée. Le tarif est encadré par la convention nationale CPAM 2025-2026, et la prise en charge atteint 100 % pour les patients en affection longue durée (ALD). Consultez ci-dessous les VSL référencés à ${v.nom} ou accédez à l'annuaire complet du transport sanitaire local.`;
+  // Sans etablissement local reference, on ne cite aucun hopital plutot que
+  // d'en inventer un : la phrase reste generique mais exacte.
+  const contexteRetour = hops
+    ? `ou un retour d'hospitalisation depuis des établissements comme ${hops}`
+    : `ou un retour d'hospitalisation`;
+  return `À ${v.nom} et dans le département ${v.departement} (${v.codeDepartement}), les sociétés de VSL (Véhicule Sanitaire Léger) assurent le transport assis des patients sur prescription médicale, pris en charge par la ${v.cpamLibelle}. Que ce soit pour des séances de dialyse, de chimiothérapie ou de radiothérapie, des consultations de suivi ${contexteRetour}, RoullePro centralise les coordonnées des entreprises agréées et conventionnées. Le VSL est conduit par un auxiliaire ambulancier formé aux premiers secours et permet la dispense d'avance des frais (tiers payant) : vous n'avancez pas les frais sur la part remboursée. Le tarif est encadré par la convention nationale CPAM 2025-2026, et la prise en charge atteint 100 % pour les patients en affection longue durée (ALD). Consultez ci-dessous les VSL référencés à ${v.nom} ou accédez à l'annuaire complet du transport sanitaire local.`;
 }
 
 function buildVilleFaq(v: VslVille): { question: string; answer: string }[] {
@@ -87,7 +142,7 @@ function buildVilleFaq(v: VslVille): { question: string; answer: string }[] {
 
 export default async function VslVillePage({ params }: Props) {
   const { ville } = await params;
-  const v = getVslVille(ville);
+  const v = await resolveVslVille(ville);
   if (!v) notFound();
 
   const vslList = await fetchVslForVille(v.slug);
