@@ -14,6 +14,7 @@ import {
   Link2,
   ImagePlus,
   X,
+  Send,
 } from "lucide-react";
 import StudioConnexions from "@/components/sanitaire/StudioConnexions";
 
@@ -334,6 +335,52 @@ function PostCard({ post, onChange }: { post: Post; onChange: () => void }) {
     await envoyer({ action: "deplanifier" });
   }
 
+  /**
+   * Publie immédiatement, sans attendre le prochain passage du cron horaire.
+   * Enregistre d'abord les modifications en cours (contenu, image, cibles) via
+   * PATCH, puis déclenche la publication réelle sur les plateformes cibles.
+   */
+  async function publierMaintenant() {
+    if (cibles.length === 0) {
+      setMsg("Sélectionnez au moins une plateforme cible.");
+      return;
+    }
+    if (igSansImage) {
+      setMsg("Instagram nécessite une image.");
+      return;
+    }
+    setBusy(true);
+    setMsg(null);
+    try {
+      const patch = await fetch(`/api/studio-social/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contenu,
+          hashtags: hashtags.split(/\s+/).filter(Boolean),
+          image_url: imageUrl.trim() || null,
+          providers_cibles: cibles,
+        }),
+      });
+      const patchData = await patch.json();
+      if (!patch.ok) throw new Error(patchData?.error || "Erreur lors de l'enregistrement");
+
+      const res = await fetch(`/api/studio-social/posts/${post.id}/publier`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Erreur lors de la publication");
+      if (data.statut === "echec") {
+        setMsg("La publication a échoué sur au moins une plateforme — vérifiez vos connexions.");
+      } else if (data.statut !== "publie") {
+        setMsg("Publication partielle — vérifiez le détail ci-dessous.");
+      }
+      onChange();
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erreur lors de la publication");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function supprimer() {
     setBusy(true);
     try {
@@ -576,6 +623,19 @@ function PostCard({ post, onChange }: { post: Post; onChange: () => void }) {
                 <CalendarClock className="w-4 h-4" /> Planifier
               </button>
             )}
+            <button
+              type="button"
+              onClick={publierMaintenant}
+              disabled={busy || cibles.length === 0 || igSansImage}
+              title={
+                igSansImage
+                  ? "Ajoutez une image pour publier sur Instagram"
+                  : "Publie tout de suite, sans attendre la planification"
+              }
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" /> Publier maintenant
+            </button>
           </div>
         </div>
       )}
