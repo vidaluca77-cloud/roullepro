@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   Share2,
   Link2,
+  ImagePlus,
+  X,
 } from "lucide-react";
 import StudioConnexions from "@/components/sanitaire/StudioConnexions";
 
@@ -274,6 +276,7 @@ function PostCard({ post, onChange }: { post: Post; onChange: () => void }) {
     post.scheduled_at ? toLocalInput(post.scheduled_at) : ""
   );
   const [busy, setBusy] = useState(false);
+  const [uploadEnCours, setUploadEnCours] = useState(false);
   const [copie, setCopie] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
@@ -357,6 +360,42 @@ function PostCard({ post, onChange }: { post: Post; onChange: () => void }) {
     }
   }
 
+  async function envoyerFichierImage(file: File) {
+    setUploadEnCours(true);
+    setMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/studio-social/upload-image", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || "Erreur lors de l'envoi");
+      setImageUrl(data.url);
+      await envoyer({
+        contenu,
+        hashtags: hashtags.split(/\s+/).filter(Boolean),
+        image_url: data.url,
+        providers_cibles: cibles,
+      });
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Erreur lors de l'envoi de l'image");
+    } finally {
+      setUploadEnCours(false);
+    }
+  }
+
+  async function retirerImage() {
+    setImageUrl("");
+    await envoyer({
+      contenu,
+      hashtags: hashtags.split(/\s+/).filter(Boolean),
+      image_url: null,
+      providers_cibles: cibles,
+    });
+  }
+
   return (
     <li className="rounded-2xl border border-gray-200 bg-white p-5">
       <div className="mb-3 flex items-center justify-between gap-3">
@@ -420,14 +459,54 @@ function PostCard({ post, onChange }: { post: Post; onChange: () => void }) {
         className="mt-2 w-full rounded-xl border border-gray-200 p-2.5 text-sm text-gray-600 focus:border-[#0066CC] focus:outline-none disabled:bg-gray-50"
       />
 
-      <input
-        type="url"
-        value={imageUrl}
-        onChange={(e) => setImageUrl(e.target.value)}
-        disabled={!modifiable}
-        placeholder="URL d'une image (obligatoire pour Instagram)"
-        className="mt-2 w-full rounded-xl border border-gray-200 p-2.5 text-sm text-gray-600 focus:border-[#0066CC] focus:outline-none disabled:bg-gray-50"
-      />
+      <div className="mt-2">
+        {imageUrl ? (
+          <div className="flex items-center gap-3 rounded-xl border border-gray-200 p-2.5">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt="Image du post"
+              className="h-14 w-14 rounded-lg object-cover"
+            />
+            <span className="flex-1 truncate text-xs text-gray-500">Image ajoutée</span>
+            {modifiable && (
+              <button
+                type="button"
+                onClick={retirerImage}
+                disabled={busy || uploadEnCours}
+                title="Retirer l'image"
+                className="rounded-lg p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <label
+            className={`flex items-center justify-center gap-2 rounded-xl border border-dashed border-gray-300 p-2.5 text-sm text-gray-500 transition hover:border-[#0066CC] hover:text-[#0066CC] ${
+              !modifiable || uploadEnCours ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+            }`}
+          >
+            {uploadEnCours ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ImagePlus className="w-4 h-4" />
+            )}
+            {uploadEnCours ? "Envoi en cours…" : "Ajouter une photo depuis votre appareil (obligatoire pour Instagram)"}
+            <input
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/webp"
+              disabled={!modifiable || uploadEnCours}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                e.target.value = "";
+                if (file) void envoyerFichierImage(file);
+              }}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {PROVIDERS.map((pr) => {

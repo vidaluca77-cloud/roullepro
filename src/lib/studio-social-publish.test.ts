@@ -17,6 +17,7 @@ import {
   tokenRejete,
   estLocationGbp,
   publierGbp,
+  attendreConteneurPret,
   type PostAPublier,
   type Connexion,
   type ClientClaim,
@@ -312,4 +313,65 @@ test("publierGbp : refuse une connexion sans établissement sélectionné", asyn
   );
   assert.equal(res.external_id, undefined);
   assert.match(res.erreur!, /établissement Google Business/);
+});
+
+// ─── Polling du conteneur média Instagram (fix "Media ID is not available") ──
+
+test("attendreConteneurPret : prêt immédiatement si status_code=FINISHED", async () => {
+  const originalFetch = global.fetch;
+  let appels = 0;
+  global.fetch = (async () => {
+    appels += 1;
+    return {
+      ok: true,
+      json: async () => ({ status_code: "FINISHED" }),
+    } as Response;
+  }) as typeof fetch;
+  try {
+    const res = await attendreConteneurPret("container1", "token1");
+    assert.deepEqual(res, { pret: true });
+    assert.equal(appels, 1); // pas d'attente inutile si c'est prêt du premier coup
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("attendreConteneurPret : renvoie une erreur définitive sur status_code=ERROR (pas de nouvelle tentative)", async () => {
+  const originalFetch = global.fetch;
+  let appels = 0;
+  global.fetch = (async () => {
+    appels += 1;
+    return {
+      ok: true,
+      json: async () => ({ status_code: "ERROR" }),
+    } as Response;
+  }) as typeof fetch;
+  try {
+    const res = await attendreConteneurPret("container1", "token1");
+    assert.equal(res.pret, false);
+    assert.match(res.erreur!, /échoué \(ERROR\)/);
+    assert.equal(appels, 1); // ERROR est définitif, inutile de réessayer le polling
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test("attendreConteneurPret : passe de IN_PROGRESS à FINISHED sur un second appel", async () => {
+  const originalFetch = global.fetch;
+  let appels = 0;
+  global.fetch = (async () => {
+    appels += 1;
+    const statut = appels === 1 ? "IN_PROGRESS" : "FINISHED";
+    return {
+      ok: true,
+      json: async () => ({ status_code: statut }),
+    } as Response;
+  }) as typeof fetch;
+  try {
+    const res = await attendreConteneurPret("container1", "token1");
+    assert.deepEqual(res, { pret: true });
+    assert.equal(appels, 2); // a bien attendu le passage IN_PROGRESS → FINISHED
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
