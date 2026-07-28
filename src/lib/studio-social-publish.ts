@@ -271,7 +271,42 @@ export async function publierFacebook(
   }
 }
 
-/** Publie sur Instagram : création du container /media puis /media_publish. */
+// Instagram traite l'image de façon asynchrone après /media : publier trop tôt
+// renvoie "Media ID is not available". On attend le statut FINISHED avec un
+// polling court et borné pour rester dans le budget d'exécution du cron.
+const IG_POLL_TENTATIVES = 5;
+const IG_POLL_DELAI_MS = 1_500;
+
+function attendre(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/** Attend que le conteneur média Instagram soit prêt (status_code=FINISHED) avant publication. */
+export async function attendreConteneurPret(
+  containerId: string,
+  token: string
+): Promise<{ pret: boolean; erreur?: string }> {
+  const url = `https://graph.facebook.com/${META_GRAPH_VERSION}/${containerId}?fields=status_code&access_token=${encodeURIComponent(token)}`;
+  for (let tentative = 0; tentative < IG_POLL_TENTATIVES; tentative += 1) {
+    if (tentative > 0) await attendre(IG_POLL_DELAI_MS);
+    try {
+      const res = await fetchTimeout(url, { method: "GET" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) continue; // on retente : l'erreur transitoire ne doit pas faire échouer tout de suite
+      const statut = data?.status_code;
+      if (statut === "FINISHED") return { pret: true };
+      if (statut === "ERROR" || statut === "EXPIRED") {
+        return { pret: false, erreur: `traitement de l'image Instagram échoué (${statut})` };
+      }
+      // IN_PROGRESS ou PUBLISHED : on continue à attendre / on tente quand même.
+    } catch {
+      // erreur réseau transitoire pendant le polling : on retente jusqu'à épuisement.
+    }
+  }
+  return { pret: false };
+}
+
+/** Publie sur Instagram : création du container /media, attente FINISHED, puis /media_publish. */
 export async function publierInstagram(
   conn: Connexion,
   post: PostAPublier
@@ -291,6 +326,18 @@ export async function publierInstagram(
     const creerData = await creerRes.json().catch(() => ({}));
     if (!creerRes.ok) return erreurHttp(creerRes, creerData);
     if (!creerData?.id) return { erreur: "réponse Instagram sans conteneur média" };
+
+    const { pret, erreur: erreurPolling } = await attendreConteneurPret(creerData.id, token);
+    if (!pret) {
+      // Le conteneur existe déjà côté Meta : un nouvel essai identique créerait un
+      // conteneur orphelin supplémentaire, mais jamais de double publication.
+      return {
+        erreur:
+          erreurPolling ||
+          "image Instagram pas encore traitée par Meta — nouvelle tentative à la prochaine planification",
+        retryable: true,
+      };
+    }
 
     const publierRes = await fetchTimeout(`${base}/media_publish`, {
       method: "POST",
