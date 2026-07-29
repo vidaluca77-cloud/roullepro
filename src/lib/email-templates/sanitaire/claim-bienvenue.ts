@@ -79,7 +79,7 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
       </p>
       <ul style="margin:0;padding-left:20px;color:#14532d;font-size:14px;line-height:1.7">
         <li>Référencement de votre fiche <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
-        <li>Réception par email des <strong>demandes de transport</strong> de votre département</li>
+        <li>Réception par email et SMS des <strong>demandes de transport</strong> de votre département</li>
         <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications Facebook, Instagram et Google Business</li>
         <li>Équipe de <strong>6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
         <li><strong>Forum entre pros vérifiés</strong> et statistiques détaillées</li>
@@ -150,7 +150,7 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
     "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
     "Votre essai Essential de 7 jours est activé. Vous avez dès maintenant accès à l'ensemble du plan Pro :",
     "- Référencement de votre fiche sur Google et sur les IA (ChatGPT, Perplexity)",
-    "- Réception par email des demandes de transport de votre département",
+    "- Réception par email et SMS des demandes de transport de votre département",
     "- Studio réseaux sociaux IA : une IA rédige et programme vos publications Facebook, Instagram et Google Business",
     "- Équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
     "- Forum entre pros vérifiés et statistiques détaillées",

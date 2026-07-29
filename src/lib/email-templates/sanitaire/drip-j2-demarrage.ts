@@ -46,7 +46,7 @@ export function renderDripJ2Demarrage(p: DripJ2Params): {
       Votre essai gratuit du plan Pro est actif depuis 2 jours.
       ${ville ? `Votre fiche est en ligne pour la zone <strong>${ville}</strong>` : "Votre fiche est en ligne"},
       référencée sur Google et lisible par les IA génératives (ChatGPT, Perplexity),
-      et vous recevez déjà par email les demandes de transport de votre département.
+      et vous recevez déjà par email et SMS les demandes de transport de votre département.
     </p>
 
     ${ficheLine}
@@ -82,7 +82,7 @@ export function renderDripJ2Demarrage(p: DripJ2Params): {
     "",
     `Bonjour ${p.nomAffiche},`,
     "",
-    `Votre essai gratuit du plan Pro est actif depuis 2 jours.${ville ? ` Votre fiche est en ligne pour la zone ${p.ville}` : " Votre fiche est en ligne"}, référencée sur Google et lisible par les IA génératives (ChatGPT, Perplexity), et vous recevez déjà par email les demandes de transport de votre département.`,
+    `Votre essai gratuit du plan Pro est actif depuis 2 jours.${ville ? ` Votre fiche est en ligne pour la zone ${p.ville}` : " Votre fiche est en ligne"}, référencée sur Google et lisible par les IA génératives (ChatGPT, Perplexity), et vous recevez déjà par email et SMS les demandes de transport de votre département.`,
     "",
     ...(p.ficheUrl ? [`Votre fiche publique : ${p.ficheUrl}`, ""] : []),
     "4 ACTIONS POUR BIEN DÉMARRER",

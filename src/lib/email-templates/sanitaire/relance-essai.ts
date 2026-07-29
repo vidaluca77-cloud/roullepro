@@ -96,7 +96,7 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
       </div>
       <ul style="margin:0;padding-left:20px;color:#374151;line-height:1.8;font-size:14px">
         <li>Fiche référencée <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
-        <li>Demandes de transport de votre département reçues <strong>en priorité par email</strong></li>
+        <li>Demandes de transport de votre département reçues <strong>en priorité par email et SMS</strong></li>
         <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications Facebook, Instagram et Google Business</li>
         <li>Accès à l'<strong>équipe de 6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
         <li>Badge <strong>Pro vérifié</strong> et fiche affichée en premier dans les résultats</li>
@@ -178,7 +178,7 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
   const valueLines = [
     `${p.variante === "informatif" ? "VOTRE ABONNEMENT PRO" : "EN CONTINUANT AVEC LE PLAN PRO"} — ${PRICE_ESSENTIAL_DISPLAY}`,
     "- Fiche référencée sur Google et sur les IA (ChatGPT, Perplexity)",
-    "- Demandes de transport de votre département reçues en priorité par email",
+    "- Demandes de transport de votre département reçues en priorité par email et SMS",
     "- Studio réseaux sociaux IA : une IA rédige et programme vos publications Facebook, Instagram et Google Business",
     "- Accès à l'équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
     "- Badge Pro vérifié et fiche affichée en premier dans les résultats",

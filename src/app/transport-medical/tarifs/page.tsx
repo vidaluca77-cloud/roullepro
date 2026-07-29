@@ -95,9 +95,9 @@ export default async function TarifsPage({
             pour 19,90€ par mois
           </h1>
           <p className="text-blue-100 text-lg max-w-2xl mx-auto">
-            Vous êtes référencé sur Google et sur les IA, vous recevez des demandes de transport,
-            une IA rédige et programme vos publications sur les réseaux sociaux, vous accédez à
-            6 assistants IA spécialisés métier et à un forum entre pros. Sans engagement.
+            Vous êtes référencé sur Google et sur les IA, vous recevez des demandes de transport
+            par email et SMS, une IA rédige et programme vos publications sur les réseaux sociaux,
+            vous accédez à 6 assistants IA spécialisés métier et à un forum entre pros. Sans engagement.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link

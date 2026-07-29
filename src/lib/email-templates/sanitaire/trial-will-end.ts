@@ -43,7 +43,7 @@ export function renderTrialWillEnd(p: TrialWillEndParams): {
       </div>
       <ul style="margin:0;padding-left:20px;color:#374151;line-height:1.8;font-size:14px">
         <li>Votre fiche reste <strong>visible en premier</strong> dans votre département, référencée <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
-        <li>Messagerie patients et réception des <strong>demandes de transport</strong></li>
+        <li>Messagerie patients et réception des <strong>demandes de transport par email et SMS</strong></li>
         <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications Facebook, Instagram et Google Business</li>
         <li>Accès à l'<strong>équipe de 6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
         <li>Forum entre pros vérifiés</li>
@@ -76,7 +76,7 @@ export function renderTrialWillEnd(p: TrialWillEndParams): {
     "",
     `EN CONTINUANT AVEC LE PLAN PRO — ${PRICE_ESSENTIAL_DISPLAY}`,
     "- Votre fiche reste visible en premier dans votre département, référencée sur Google et sur les IA (ChatGPT, Perplexity)",
-    "- Messagerie patients et réception des demandes de transport",
+    "- Messagerie patients et réception des demandes de transport par email et SMS",
     "- Studio réseaux sociaux IA : une IA rédige et programme vos publications Facebook, Instagram et Google Business",
     "- Accès à l'équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
     "- Forum entre pros vérifiés",
