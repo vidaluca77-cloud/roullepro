@@ -61,8 +61,8 @@ export async function GET(req: Request, { params }: RouteParams) {
   if (!verified.ok) {
     const msg =
       verified.reason === "expired"
-        ? "Ce lien d'acceptation a expiré (valable 48h). Connecte-toi à ton tableau de bord pour accepter la course si elle est encore disponible."
-        : "Ce lien d'acceptation est invalide. Connecte-toi à ton tableau de bord pour accepter la course.";
+        ? "Ce lien d'acceptation a expiré (valable 48h). Connecte-toi à ton tableau de bord pour accepter la demande de transport si elle est encore disponible."
+        : "Ce lien d'acceptation est invalide. Connecte-toi à ton tableau de bord pour accepter la demande de transport.";
     return page("Lien expiré ou invalide", msg, "#b45309");
   }
 
@@ -93,8 +93,8 @@ export async function GET(req: Request, { params }: RouteParams) {
     .maybeSingle();
   if (demandeStatut?.statut === "annulee") {
     return page(
-      "Course annulée",
-      "Cette course a été annulée par le patient.",
+      "Demande de transport annulée",
+      "Cette demande de transport a été annulée par le patient.",
       "#b45309"
     );
   }
@@ -102,16 +102,16 @@ export async function GET(req: Request, { params }: RouteParams) {
   if (ligne.statut !== "proposee") {
     const dejaPrise = ligne.statut === "acceptee";
     return page(
-      dejaPrise ? "Course déjà acceptée" : "Course non disponible",
+      dejaPrise ? "Demande de transport déjà acceptée" : "Demande de transport non disponible",
       dejaPrise
-        ? "Tu as déjà accepté cette course. Retrouve les coordonnées du client dans ton tableau de bord."
-        : "Cette course a déjà été attribuée à un autre professionnel ou n'est plus disponible.",
+        ? "Tu as déjà accepté cette demande de transport. Retrouve les coordonnées du client dans ton tableau de bord."
+        : "Cette demande de transport a déjà été attribuée à un autre professionnel ou n'est plus disponible.",
       dejaPrise ? "#059669" : "#b45309"
     );
   }
 
   // Verrou abonnement : un pro en plan gratuit (essai terminé ou jamais abonné)
-  // reçoit toujours le lien email/SMS, mais ne peut pas accepter la course.
+  // reçoit toujours le lien email/SMS, mais ne peut pas accepter la demande de transport.
   // On le renvoie vers la page tarifs avec un contexte explicite.
   const { data: pro } = await admin
     .from("pros_sanitaire")
@@ -137,8 +137,8 @@ export async function GET(req: Request, { params }: RouteParams) {
 
   if (!updated) {
     return page(
-      "Course non disponible",
-      "Cette course vient d'être prise par un autre professionnel.",
+      "Demande de transport non disponible",
+      "Cette demande de transport vient d'être prise par un autre professionnel.",
       "#b45309"
     );
   }
@@ -152,8 +152,8 @@ export async function GET(req: Request, { params }: RouteParams) {
 
   if (apres?.statut !== "acceptee") {
     return page(
-      "Course non disponible",
-      "Cette course vient d'être prise par un autre professionnel.",
+      "Demande de transport non disponible",
+      "Cette demande de transport vient d'être prise par un autre professionnel.",
       "#b45309"
     );
   }
@@ -164,8 +164,8 @@ export async function GET(req: Request, { params }: RouteParams) {
   );
 
   return page(
-    "Course acceptée",
-    "C'est noté, la course t'est attribuée. Tu vas recevoir un email avec les coordonnées du client. Tu peux aussi les retrouver dans ton tableau de bord.",
+    "Demande de transport acceptée",
+    "C'est noté, la demande de transport t'est attribuée. Tu vas recevoir un email avec les coordonnées du client. Tu peux aussi les retrouver dans ton tableau de bord.",
     "#059669"
   );
 }

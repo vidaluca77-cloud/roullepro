@@ -92,9 +92,11 @@ export function renderDripJ5FinEssai(p: DripJ5Params): {
         En continuant avec le plan Pro — ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)}
       </div>
       <ul style="margin:0;padding-left:20px;color:#374151;line-height:1.8;font-size:14px">
+        <li>Fiche référencée <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
         <li>Demandes de transport de votre département reçues <strong>par email</strong></li>
+        <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications</li>
+        <li>Équipe de <strong>6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
         <li>Badge <strong>Pro vérifié</strong> conservé et fiche affichée en premier</li>
-        <li>Équipe de <strong>6 experts IA</strong> du transport sanitaire (réponses sourcées)</li>
         <li>Forum entre pros vérifiés et statistiques détaillées</li>
         <li>Sans engagement &mdash; <strong>résiliable en 1 clic</strong> à tout moment</li>
       </ul>
@@ -106,8 +108,9 @@ export function renderDripJ5FinEssai(p: DripJ5Params): {
     <p style="margin:0 0 16px;color:#374151;line-height:1.6">
       Votre essai gratuit du plan Pro${ville ? ` sur <strong>${ville}</strong>` : ""} se termine dans
       <strong>${joursLabel}</strong>, le <strong>${dateFin}</strong>.
-      Pour continuer à recevoir les demandes de transport de votre département et garder votre
-      visibilité, activez votre abonnement dès maintenant.
+      Pour continuer à recevoir les demandes de transport de votre département, garder votre
+      visibilité sur Google et sur les IA et conserver vos outils IA (Studio réseaux sociaux,
+      6 assistants métier), activez votre abonnement dès maintenant.
     </p>
   `;
 
@@ -132,7 +135,7 @@ export function renderDripJ5FinEssai(p: DripJ5Params): {
     "",
     `Bonjour ${p.nomAffiche},`,
     "",
-    `Votre essai gratuit du plan Pro${ville ? ` sur ${p.ville}` : ""} se termine dans ${joursLabel}, le ${dateFin}. Pour continuer à recevoir les demandes de transport de votre département et garder votre visibilité, activez votre abonnement dès maintenant.`,
+    `Votre essai gratuit du plan Pro${ville ? ` sur ${p.ville}` : ""} se termine dans ${joursLabel}, le ${dateFin}. Pour continuer à recevoir les demandes de transport de votre département, garder votre visibilité sur Google et sur les IA et conserver vos outils IA (Studio réseaux sociaux, 6 assistants métier), activez votre abonnement dès maintenant.`,
     "",
     ...(totalSignaux > 0 ? [
       "CE QUE VOUS A APPORTÉ L'ESSAI",
@@ -142,9 +145,11 @@ export function renderDripJ5FinEssai(p: DripJ5Params): {
       "",
     ] : []),
     `EN CONTINUANT AVEC LE PLAN PRO — ${PRICE_ESSENTIAL_DISPLAY}`,
+    "- Fiche référencée sur Google et sur les IA (ChatGPT, Perplexity)",
     "- Demandes de transport de votre département reçues par email",
+    "- Studio réseaux sociaux IA : une IA rédige et programme vos publications",
+    "- Équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
     "- Badge Pro vérifié conservé et fiche affichée en premier",
-    "- Équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
     "- Forum entre pros vérifiés et statistiques détaillées",
     "- Sans engagement — résiliable en 1 clic à tout moment",
     "",

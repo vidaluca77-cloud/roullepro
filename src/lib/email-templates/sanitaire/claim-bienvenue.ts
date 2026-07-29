@@ -73,10 +73,18 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
       <div style="font-size:12px;font-weight:700;color:${RP_COLOR_SUCCESS};margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">
         Essai Essential 7 jours activé
       </div>
-      <p style="margin:0;color:#14532d;font-size:14px;line-height:1.6">
-        Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée,
-        de la réception par email des demandes de transport de votre département, de l'équipe de
-        6 experts IA du transport sanitaire (réponses sourcées) et du forum entre pros vérifiés.
+      <p style="margin:0 0 12px;color:#14532d;font-size:14px;line-height:1.6">
+        Votre essai Essential de 7 jours est activé. Vous avez dès maintenant accès à
+        l'ensemble du plan Pro&nbsp;:
+      </p>
+      <ul style="margin:0;padding-left:20px;color:#14532d;font-size:14px;line-height:1.7">
+        <li>Référencement de votre fiche <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
+        <li>Réception par email des <strong>demandes de transport</strong> de votre département</li>
+        <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications Facebook, Instagram et Google Business</li>
+        <li>Équipe de <strong>6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
+        <li><strong>Forum entre pros vérifiés</strong> et statistiques détaillées</li>
+      </ul>
+      <p style="margin:12px 0 0;color:#14532d;font-size:14px;line-height:1.6">
         À l'issue de l'essai, l'abonnement Essential continue à ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)} (sans engagement).
       </p>
     </div>
@@ -93,8 +101,12 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
         <strong>Vérifiez vos coordonnées</strong> — téléphone public, e-mail professionnel.
       </li>
       <li>
+        <strong>Connectez vos réseaux sociaux</strong> — Facebook, Instagram, Google Business : l'IA
+        prend ensuite le relais pour rédiger et programmer vos publications.
+      </li>
+      <li>
         <strong>Activez le plan Essential à ${escapeHtml(PRICE_ESSENTIAL_DISPLAY)}</strong> à la fin de votre essai
-        pour conserver le référencement optimisé et continuer à recevoir des demandes.
+        pour conserver le référencement optimisé et continuer à recevoir des demandes de transport.
       </li>
     </ol>
 
@@ -105,8 +117,9 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
       </div>
       <p style="margin:0;color:#78350f;font-size:14px;line-height:1.6">
         L'annuaire RoullePro Transport Sanitaire est gratuit pour les patients.
-        La fiche gratuite reste visible à vie. Les abonnements payants débloquent&nbsp;:
-        messagerie, mise en avant, statistiques détaillées, réception de demandes.
+        La fiche gratuite reste visible à vie. Le plan Pro débloque&nbsp;: messagerie et demandes
+        de transport, Studio réseaux sociaux IA, 6 assistants IA métier, mise en avant locale
+        et statistiques détaillées.
       </p>
     </div>
   `;
@@ -135,15 +148,22 @@ export function renderClaimBienvenue(p: ClaimBienvenueParams): {
     magicText,
     "",
     "ESSAI ESSENTIAL 7 JOURS ACTIVÉ",
-    `Votre essai Essential de 7 jours est activé. Vous bénéficiez de la visibilité optimisée, de la réception par email des demandes de transport de votre département, de l'équipe de 6 experts IA du transport sanitaire (réponses sourcées) et du forum entre pros vérifiés. À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
+    "Votre essai Essential de 7 jours est activé. Vous avez dès maintenant accès à l'ensemble du plan Pro :",
+    "- Référencement de votre fiche sur Google et sur les IA (ChatGPT, Perplexity)",
+    "- Réception par email des demandes de transport de votre département",
+    "- Studio réseaux sociaux IA : une IA rédige et programme vos publications Facebook, Instagram et Google Business",
+    "- Équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
+    "- Forum entre pros vérifiés et statistiques détaillées",
+    `À l'issue de l'essai, l'abonnement Essential continue à ${PRICE_ESSENTIAL_DISPLAY} (sans engagement).`,
     "",
     "PROCHAINES ÉTAPES",
     `1. Complétez votre fiche — photos, horaires détaillés, description (5 minutes).`,
     `2. Vérifiez vos coordonnées — téléphone public, e-mail professionnel.`,
-    `3. Activez le plan Essential à ${PRICE_ESSENTIAL_DISPLAY} à la fin de votre essai pour conserver le référencement optimisé.`,
+    `3. Connectez vos réseaux sociaux (Facebook, Instagram, Google Business) : l'IA prend ensuite le relais pour rédiger et programmer vos publications.`,
+    `4. Activez le plan Essential à ${PRICE_ESSENTIAL_DISPLAY} à la fin de votre essai pour conserver le référencement optimisé et continuer à recevoir des demandes de transport.`,
     "",
     "IMPORTANT",
-    "L'annuaire RoullePro Transport Sanitaire est gratuit pour les patients. La fiche gratuite reste visible à vie. Les abonnements payants débloquent : messagerie, mise en avant, statistiques détaillées, réception de demandes.",
+    "L'annuaire RoullePro Transport Sanitaire est gratuit pour les patients. La fiche gratuite reste visible à vie. Le plan Pro débloque : messagerie et demandes de transport, Studio réseaux sociaux IA, 6 assistants IA métier, mise en avant locale et statistiques détaillées.",
     "",
     "─".repeat(60),
     "L'équipe RoullePro",

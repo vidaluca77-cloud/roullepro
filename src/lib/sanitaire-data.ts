@@ -313,7 +313,7 @@ export type ProSanitaire = {
   // Disponibilite (conges / semaine off) — colonnes optionnelles tant que la
   // migration 20260718140000_pros_disponibilite.sql n'est pas appliquee en prod.
   // Periode [indispo_debut, indispo_fin] pendant laquelle le pro ne recoit plus
-  // de nouvelles demandes de course (cf. src/lib/disponibilite.ts).
+  // de nouvelles demandes de transport (cf. src/lib/disponibilite.ts).
   indispo_debut?: string | null;
   indispo_fin?: string | null;
   site_web: string | null;

@@ -5,7 +5,8 @@
  *  - « informatif » : le pro a enregistré une carte (stripe_subscription_id). Son abonnement
  *    Pro démarrera automatiquement à la fin de l'essai — rien à faire, ton rassurant.
  *  - « conversion » : le pro n'a pas de carte. Sa période offerte s'arrête ; on l'invite à
- *    passer au plan Pro (19,90 €/mois, sans engagement) pour continuer à recevoir les courses.
+ *    passer au plan Pro (19,90 €/mois, sans engagement) pour continuer à recevoir les demandes
+ *    de transport.
  *
  * Les contenus J-7 / J-3 / J-1 diffèrent légèrement (urgence croissante, J-1 = dernier jour).
  */
@@ -94,9 +95,11 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
         ${valueTitle}
       </div>
       <ul style="margin:0;padding-left:20px;color:#374151;line-height:1.8;font-size:14px">
+        <li>Fiche référencée <strong>sur Google et sur les IA</strong> (ChatGPT, Perplexity)</li>
         <li>Demandes de transport de votre département reçues <strong>en priorité par email</strong></li>
+        <li><strong>Studio réseaux sociaux IA</strong>&nbsp;: une IA rédige et programme vos publications Facebook, Instagram et Google Business</li>
+        <li>Accès à l'<strong>équipe de 6 assistants IA</strong> spécialisés du transport sanitaire (réponses sourcées)</li>
         <li>Badge <strong>Pro vérifié</strong> et fiche affichée en premier dans les résultats</li>
-        <li>Accès à l'<strong>équipe de 6 experts IA</strong> du transport sanitaire (réponses sourcées)</li>
         <li>Messagerie patients, forum entre pros vérifiés et statistiques détaillées</li>
         <li>Sans engagement &mdash; <strong>résiliable en 1 clic</strong> à tout moment</li>
       </ul>
@@ -119,7 +122,8 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
         Votre essai gratuit du plan Pro${ville ? ` sur <strong>${ville}</strong>` : ""} se termine
         <strong>${quand}</strong>, le <strong>${dateFin}</strong>.
         Aucune action n'est nécessaire : votre abonnement Pro (${escapeHtml(PRICE_ESSENTIAL_DISPLAY)})
-        démarrera automatiquement pour que vous continuiez à recevoir les courses sans interruption.
+        démarrera automatiquement pour que vous continuiez à recevoir les demandes de transport
+        sans interruption.
       </p>
     `;
     closing = `
@@ -155,7 +159,7 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
     subject = dernierJour
       ? `Dernier jour : votre offre RoullePro se termine demain`
       : `Votre offre RoullePro se termine ${quand} — passez au plan Pro`;
-    preheader = `Continuez à recevoir les courses : plan Pro à ${PRICE_ESSENTIAL_DISPLAY}, sans engagement.`;
+    preheader = `Continuez à recevoir les demandes de transport : plan Pro à ${PRICE_ESSENTIAL_DISPLAY}, sans engagement.`;
   }
 
   const title =
@@ -173,16 +177,18 @@ export function renderRelanceEssai(p: RelanceEssaiParams): {
   // ─── Version texte ───────────────────────────────────────────────────────
   const valueLines = [
     `${p.variante === "informatif" ? "VOTRE ABONNEMENT PRO" : "EN CONTINUANT AVEC LE PLAN PRO"} — ${PRICE_ESSENTIAL_DISPLAY}`,
+    "- Fiche référencée sur Google et sur les IA (ChatGPT, Perplexity)",
     "- Demandes de transport de votre département reçues en priorité par email",
+    "- Studio réseaux sociaux IA : une IA rédige et programme vos publications Facebook, Instagram et Google Business",
+    "- Accès à l'équipe de 6 assistants IA spécialisés du transport sanitaire (réponses sourcées)",
     "- Badge Pro vérifié et fiche affichée en premier dans les résultats",
-    "- Accès à l'équipe de 6 experts IA du transport sanitaire (réponses sourcées)",
     "- Messagerie patients, forum entre pros vérifiés et statistiques détaillées",
     "- Sans engagement — résiliable en 1 clic à tout moment",
   ];
 
   const introText =
     p.variante === "informatif"
-      ? `Votre essai gratuit du plan Pro${ville ? ` sur ${p.ville}` : ""} se termine ${quand}, le ${dateFin}. Aucune action n'est nécessaire : votre abonnement Pro (${PRICE_ESSENTIAL_DISPLAY}) démarrera automatiquement pour que vous continuiez à recevoir les courses sans interruption.`
+      ? `Votre essai gratuit du plan Pro${ville ? ` sur ${p.ville}` : ""} se termine ${quand}, le ${dateFin}. Aucune action n'est nécessaire : votre abonnement Pro (${PRICE_ESSENTIAL_DISPLAY}) démarrera automatiquement pour que vous continuiez à recevoir les demandes de transport sans interruption.`
       : `Votre période offerte${ville ? ` sur ${p.ville}` : ""} se termine ${quand}, le ${dateFin}. ${dernierJour ? "C'est le dernier jour : passez au plan Pro dès aujourd'hui pour ne pas perdre votre visibilité ni les demandes de transport de votre département." : `Pour continuer à recevoir les demandes de transport de votre département en priorité et garder votre visibilité, passez au plan Pro (${PRICE_ESSENTIAL_DISPLAY}, sans engagement).`}`;
 
   const closingText =

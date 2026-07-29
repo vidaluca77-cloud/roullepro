@@ -1,5 +1,5 @@
 // Disponibilite des pros : un pro peut se declarer indisponible (conges, semaine
-// off) pour ne plus recevoir de nouvelles demandes de course sur une periode.
+// off) pour ne plus recevoir de nouvelles demandes de transport sur une periode.
 // Logique pure partagee entre l'UI (etat affiche) et, cote SQL, le trigger de
 // dispatch (voir supabase/migrations/*_pros_disponibilite.sql).
 

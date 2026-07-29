@@ -111,8 +111,11 @@ const TYPE_SMS: Record<TypeTransport, string> = {
 };
 
 /**
- * Construit le message SMS factuel d'une nouvelle course, ex. :
- *   "RoullePro: nouvelle course VSL le 21/07 a 10h00, depart Caen (14). Voir et accepter: roullepro.com/pro/demandes"
+ * Construit le message SMS factuel d'une nouvelle demande de transport, ex. :
+ *   "RoullePro: nouvelle demande VSL le 21/07 a 10h00, depart Caen (14). Voir et accepter: roullepro.com/pro/demandes"
+ *
+ * Libelle volontairement court ("nouvelle demande" et non "nouvelle demande de
+ * transport") pour rester sous 160 caracteres avec une ville longue + l'URL par defaut.
  *
  * - date/heure au fuseau Europe/Paris ;
  * - type en majuscules (TAXI/VSL/AMBULANCE) ;
@@ -159,7 +162,7 @@ export function construireMessageSmsCourse(params: {
   else if (ville) lieu = `, depart ${ville}`;
   else if (dep) lieu = `, depart dep. ${dep}`;
 
-  const message = `RoullePro: nouvelle course ${type}${quand}${lieu}. Voir et accepter: ${url}`;
+  const message = `RoullePro: nouvelle demande ${type}${quand}${lieu}. Voir et accepter: ${url}`;
   return retirerAccents(message);
 }
 

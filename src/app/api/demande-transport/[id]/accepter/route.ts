@@ -74,7 +74,7 @@ export async function POST(_req: Request, { params }: RouteParams) {
   }
 
   // Verrou abonnement : un pro en plan gratuit (essai terminé ou jamais abonné)
-  // continue de VOIR et de RECEVOIR les courses, mais ne peut pas les accepter.
+  // continue de VOIR et de RECEVOIR les demandes de transport, mais ne peut pas les accepter.
   const { data: pro } = await admin
     .from("pros_sanitaire")
     .select("plan, plan_expires_at, stripe_subscription_id")
@@ -85,7 +85,7 @@ export async function POST(_req: Request, { params }: RouteParams) {
     return NextResponse.json(
       {
         error:
-          "Votre période d'essai est terminée. Passez au plan Pro (19,90 €/mois TTC) pour accepter les courses.",
+          "Votre période d'essai est terminée. Passez au plan Pro (19,90 €/mois TTC) pour accepter les demandes de transport.",
         code: "abonnement_requis",
       },
       { status: 403 }

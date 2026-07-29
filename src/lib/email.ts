@@ -1336,7 +1336,7 @@ export async function sendDemandeTransportPro(p: {
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
           Une personne recherche un transport <strong>${escapeHtml(p.typeLibelle)}</strong> dans votre departement
-          via RoullePro. Les premieres reponses sont prioritaires : la course est attribuee au premier pro qui accepte.
+          via RoullePro. Les premieres reponses sont prioritaires : la demande est attribuee au premier pro qui accepte.
         </p>
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:20px 0">
           <table style="width:100%;font-size:14px;border-collapse:collapse">
@@ -1353,10 +1353,10 @@ export async function sendDemandeTransportPro(p: {
         ${estimationStr ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px 16px;margin:16px 0"><p style="margin:0;font-size:14px;color:#1e40af;font-weight:600">${estimationStr}</p><p style="margin:6px 0 0;font-size:12px;color:#64748b">${mentionEstimation(p.typeTransport)}</p></div>` : ''}
         ${p.precisions ? `<div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0"><p style="margin:0 0 4px;font-size:12px;color:#a16207;font-weight:600;text-transform:uppercase">Précisions</p><p style="margin:0;font-size:14px;color:#374151">${escapeHtml(p.precisions).replace(/\n/g, '<br>')}</p></div>` : ''}
         <div style="text-align:center;margin:24px 0">
-          ${accepterUrl ? `${emailButton(accepterUrl, 'Accepter cette course', '#10b981')}<br><br>` : ''}
+          ${accepterUrl ? `${emailButton(accepterUrl, 'Accepter cette demande de transport', '#10b981')}<br><br>` : ''}
           <a href="${dashboardUrl}" style="background:#2563eb;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Voir + accepter</a>
         </div>
-        <p style="font-size:13px;color:#6b7280">${accepterUrl ? 'Le bouton « Accepter cette course » te permet de prendre la course en un clic (lien valable 48h). ' : ''}Les coordonnees du demandeur te seront communiquees des que tu auras accepte la course.</p>
+        <p style="font-size:13px;color:#6b7280">${accepterUrl ? 'Le bouton « Accepter cette demande de transport » te permet de la prendre en un clic (lien valable 48h). ' : ''}Les coordonnees du demandeur te seront communiquees des que tu auras accepte la demande.</p>
         ${emailFooter('Annuaire du transport sanitaire')}
       </div>
     </div>
@@ -1497,11 +1497,11 @@ export async function sendDemandeTransportAcceptationPro(p: {
     : 'Manquant (le patient devra en fournir un)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Course acceptée — coordonnées du client', 'Annuaire du transport sanitaire')}
+      ${emailHeader('Demande de transport acceptée — coordonnées du client', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
-          Tu viens d'accepter cette course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>.
+          Tu viens d'accepter cette demande de transport <strong>${escapeHtml(p.typeLibelle)}</strong>.
           Elle t'est désormais attribuée. Voici les coordonnées du client pour le contacter et organiser le trajet.
         </p>
         <div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:12px;padding:20px;margin:20px 0">
@@ -1537,7 +1537,7 @@ export async function sendDemandeTransportAcceptationPro(p: {
   `;
   await sendEmail({
     to: p.to,
-    subject: 'Course acceptée — coordonnées client',
+    subject: 'Demande de transport acceptée — coordonnées client',
     html,
     replyTo: 'contact@roullepro.com',
     tags: [
@@ -1569,7 +1569,7 @@ export async function sendDemandeTransportAcceptationClient(p: {
     : 'Manquant (à fournir au professionnel)';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Un professionnel a accepté ta course', 'Annuaire du transport sanitaire')}
+      ${emailHeader('Un professionnel a accepté ta demande de transport', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour ${escapeHtml(p.clientNom) || ''},</p>
         <p style="font-size: 15px; color: #374151;">
@@ -1603,7 +1603,7 @@ export async function sendDemandeTransportAcceptationClient(p: {
   `;
   await sendEmail({
     to: p.to,
-    subject: 'Ta course a été acceptée par un professionnel',
+    subject: 'Ta demande de transport a été acceptée par un professionnel',
     html,
     replyTo: 'contact@roullepro.com',
     tags: [
@@ -1625,15 +1625,15 @@ export async function sendDemandeTransportAutreAcceptee(p: {
   const trajet = [p.lieuDepart, p.lieuArrivee].filter(Boolean).join(' → ');
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Course attribuée à un autre professionnel', 'Annuaire du transport sanitaire')}
+      ${emailHeader('Demande de transport attribuée à un autre professionnel', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
-          La course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` du ${escapeHtml(dateStr)}` : ''}
+          La demande de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` du ${escapeHtml(dateStr)}` : ''}
           vient d'être acceptée par un autre professionnel. Tu n'as donc rien à faire de ton côté.
         </p>
         <p style="font-size: 14px; color: #374151;">
-          Merci pour ta réactivité. D'autres demandes te seront proposées dès qu'une course correspondra à ton secteur.
+          Merci pour ta réactivité. D'autres demandes de transport te seront proposées dès qu'une correspondra à ton secteur.
         </p>
         <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Voir mes demandes')}</div>
         ${signatureBloc()}
@@ -1643,7 +1643,7 @@ export async function sendDemandeTransportAutreAcceptee(p: {
   `;
   await sendEmail({
     to: p.to,
-    subject: 'Course attribuée à un autre professionnel',
+    subject: 'Demande de transport attribuée à un autre professionnel',
     html,
     replyTo: 'contact@roullepro.com',
     tags: [
@@ -1665,15 +1665,15 @@ export async function sendDemandeTransportAnnuleePro(p: {
   const trajet = [p.lieuDepart, p.lieuArrivee].filter(Boolean).join(' → ');
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937;">
-      ${emailHeader('Course annulée par le patient', 'Annuaire du transport sanitaire')}
+      ${emailHeader('Demande de transport annulée par le patient', 'Annuaire du transport sanitaire')}
       <div style="padding: 28px 32px;">
         <p style="font-size: 15px;">Bonjour <strong>${escapeHtml(p.proNom)}</strong>,</p>
         <p style="font-size: 15px; color: #374151;">
-          Le patient a annulé la course de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` prévue le ${escapeHtml(dateStr)}` : ''}
+          Le patient a annulé la demande de transport <strong>${escapeHtml(p.typeLibelle)}</strong>${trajet ? ` (${escapeHtml(trajet)})` : ''}${dateStr ? ` prévue le ${escapeHtml(dateStr)}` : ''}
           que tu avais acceptée. Tu n'as donc plus à assurer ce trajet.
         </p>
         <p style="font-size: 14px; color: #374151;">
-          Toutes nos excuses pour le désagrément. D'autres demandes te seront proposées dès qu'une course correspondra à ton secteur.
+          Toutes nos excuses pour le désagrément. D'autres demandes de transport te seront proposées dès qu'une correspondra à ton secteur.
         </p>
         <div style="text-align:center;margin:24px 0">${emailButton(DASHBOARD_PRO_URL, 'Voir mes demandes')}</div>
         ${signatureBloc()}
@@ -1683,7 +1683,7 @@ export async function sendDemandeTransportAnnuleePro(p: {
   `;
   await sendEmail({
     to: p.to,
-    subject: 'Course annulée par le patient',
+    subject: 'Demande de transport annulée par le patient',
     html,
     replyTo: 'contact@roullepro.com',
     tags: [

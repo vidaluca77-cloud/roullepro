@@ -103,7 +103,7 @@ export default function DisponibiliteSection({
               Indisponible{indispoFin ? ` jusqu'au ${formatFr(indispoFin)}` : ""}
             </p>
             <p className="text-xs text-amber-800 mt-0.5">
-              Vous ne recevez pas de nouvelles demandes de course pendant cette période.
+              Vous ne recevez pas de nouvelles demandes de transport pendant cette période.
             </p>
           </div>
           <button

@@ -233,14 +233,14 @@ function CarteProposee({ d, peutAccepter }: { d: DemandeProRow; peutAccepter: bo
         <div className="mt-3 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
           <p className="text-xs text-emerald-900 mb-2">
             Votre période d&apos;essai est terminée — passez au plan Pro (19,90 €/mois TTC)
-            pour accepter les courses.
+            pour accepter les demandes de transport.
           </p>
           <Link
             href="/transport-medical/tarifs?raison=abonnement_requis"
             className="inline-flex items-center justify-center gap-1.5 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-3 py-2 rounded-lg transition"
           >
             <Sparkles className="w-4 h-4" />
-            S&apos;abonner pour accepter cette course
+            S&apos;abonner pour accepter cette demande de transport
           </Link>
         </div>
       ) : (
@@ -256,7 +256,7 @@ function CarteProposee({ d, peutAccepter }: { d: DemandeProRow; peutAccepter: bo
             ) : (
               <CheckCircle2 className="w-4 h-4" />
             )}
-            Accepter cette course
+            Accepter cette demande de transport
           </button>
           <button
             type="button"
@@ -431,7 +431,7 @@ export default function DemandesTransportSection({
 
       {demandes.length === 0 ? (
         <p className="text-xs text-gray-500">
-          Aucune demande pour le moment. Tu recevras ici les courses qui te sont proposées dès
+          Aucune demande pour le moment. Tu recevras ici les demandes de transport qui te sont proposées dès
           qu&apos;un patient en fait la demande sur RoullePro.
         </p>
       ) : (

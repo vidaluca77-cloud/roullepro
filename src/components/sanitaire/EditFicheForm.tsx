@@ -490,7 +490,7 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
             className="mt-0.5 w-4 h-4 accent-[#0066CC]"
           />
           <span className="text-sm text-gray-800">
-            Recevoir les nouvelles courses par SMS
+            Recevoir les nouvelles demandes de transport par SMS
           </span>
         </label>
         {smsNotifications && (
@@ -514,7 +514,7 @@ export default function EditFicheForm({ fiche }: { fiche: ProSanitaire }) {
         )}
         <p className="text-xs text-gray-500 mt-2">
           Option activée par défaut pour les nouveaux inscrits, désactivable à tout moment.
-          SMS de notification uniquement (nouvelles courses dans votre département).
+          SMS de notification uniquement (nouvelles demandes de transport dans votre département).
         </p>
       </div>
 

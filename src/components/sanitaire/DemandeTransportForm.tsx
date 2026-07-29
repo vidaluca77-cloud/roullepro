@@ -435,7 +435,8 @@ export default function DemandeTransportForm({
             </label>
             {!bonTransport && (
               <p className="text-xs text-gray-500 mt-1.5">
-                Sans bon de transport, certains pros peuvent ne pas pouvoir prendre votre course.
+                Sans bon de transport, certains pros peuvent ne pas pouvoir prendre en charge votre
+                demande de transport.
               </p>
             )}
           </div>

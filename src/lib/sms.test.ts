@@ -119,7 +119,7 @@ test("construireMessageSmsCourse : format factuel attendu, sans accents", () => 
   });
   assert.equal(
     msg,
-    "RoullePro: nouvelle course VSL le 21/07 a 10h00, depart Caen (14). Voir et accepter: roullepro.com/pro/demandes"
+    "RoullePro: nouvelle demande VSL le 21/07 a 10h00, depart Caen (14). Voir et accepter: roullepro.com/pro/demandes"
   );
 });
 
