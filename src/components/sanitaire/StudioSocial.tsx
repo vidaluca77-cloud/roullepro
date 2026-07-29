@@ -77,14 +77,20 @@ export default function StudioSocial({
   const [erreur, setErreur] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
 
-  // Messages de retour du flux OAuth (?connecte=… / ?erreur=…).
+  // Messages de retour du flux OAuth (?connecte=… / ?choix=… / ?erreur=…).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const connecte = params.get("connecte");
+    const choix = params.get("choix");
     const err = params.get("erreur");
     if (connecte) {
       setOnglet("connexions");
       setFlash(`Compte ${connecte === "meta" ? "Facebook / Instagram" : "Google Business"} connecté.`);
+    } else if (choix) {
+      // Plusieurs établissements Google détectés : l'onglet Connexions affiche
+      // l'écran de sélection (cf. StudioConnexions), rien de plus à faire ici.
+      setOnglet("connexions");
+      setFlash("Plusieurs établissements Google Business trouvés : choisissez celui à connecter ci-dessous.");
     } else if (err) {
       setOnglet("connexions");
       const libelle: Record<string, string> = {
@@ -100,7 +106,7 @@ export default function StudioSocial({
       };
       setFlash(libelle[err] || "La connexion a échoué, réessayez.");
     }
-    if (connecte || err) {
+    if (connecte || choix || err) {
       window.history.replaceState({}, "", window.location.pathname);
     }
   }, []);

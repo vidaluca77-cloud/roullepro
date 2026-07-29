@@ -2,12 +2,17 @@
  * GET /api/studio-social/connect/google/callback
  *
  * Callback OAuth Google : échange le code contre un access_token + refresh_token,
- * résout l'établissement Google Business Profile à publier (`accounts/{id}/locations/{id}`)
- * puis stocke les tokens CHIFFRÉS côté serveur (jamais exposés au client).
+ * résout le/les établissement(s) Google Business Profile disponibles pour ce compte
+ * Google puis stocke les tokens CHIFFRÉS côté serveur (jamais exposés au client).
  *
- * L'API localPosts ne publie que sur une ressource de location : stocker un simple
- * `accounts/{id}` rendait la connexion inutilisable. La liste des établissements est
- * conservée en metadata (sans token) pour permettre un choix ultérieur.
+ * Un compte Google peut gérer PLUSIEURS comptes/établissements GBP (ex. un pro qui
+ * gère aussi la fiche d'un confrère). L'API `accounts.list` ne garantit aucun ordre
+ * stable : prendre systématiquement le premier résultat connecterait silencieusement
+ * le mauvais établissement. On liste donc TOUS les comptes et TOUTES leurs locations :
+ *   - un seul établissement trouvé au total → connexion directe (pas de friction inutile)
+ *   - plusieurs établissements → statut 'en_attente_choix', liste stockée dans
+ *     `comptes_disponibles` (jamais de token dedans), l'utilisateur choisit ensuite
+ *     via l'écran de sélection du Studio Social.
  */
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -29,9 +34,17 @@ import {
 const STUDIO_URL = "/transport-medical/pro/studio-social";
 
 type Location = { name?: string; title?: string };
+type Compte = { name?: string; accountName?: string };
+/** Établissement candidat, tous comptes confondus : `name` = `accounts/{id}/locations/{id}`. */
+export type EtablissementCandidat = { name: string; title: string | null; compte: string };
 
-function retour(statut: "connecte" | "erreur", detail?: string) {
-  const q = statut === "connecte" ? "connecte=google" : `erreur=${detail || "google"}`;
+function retour(statut: "connecte" | "choix" | "erreur", detail?: string) {
+  const q =
+    statut === "connecte"
+      ? "connecte=google"
+      : statut === "choix"
+        ? "choix=google"
+        : `erreur=${detail || "google"}`;
   return NextResponse.redirect(`${appUrl()}${STUDIO_URL}?${q}`);
 }
 
@@ -44,6 +57,27 @@ async function listerLocations(compte: string, accessToken: string): Promise<Loc
   if (!res.ok) return [];
   const data = await res.json().catch(() => ({}));
   return (data?.locations as Location[] | undefined) || [];
+}
+
+/** Liste tous les établissements de tous les comptes GBP accessibles à ce token. */
+async function listerTousLesEtablissements(
+  comptes: Compte[],
+  accessToken: string
+): Promise<EtablissementCandidat[]> {
+  const resultats: EtablissementCandidat[] = [];
+  for (const c of comptes) {
+    if (!c.name) continue;
+    const locations = await listerLocations(c.name, accessToken);
+    for (const l of locations) {
+      if (!l.name) continue;
+      resultats.push({
+        name: `${c.name}/${l.name}`,
+        title: l.title || c.accountName || null,
+        compte: c.name,
+      });
+    }
+  }
+  return resultats;
 }
 
 export async function GET(req: Request) {
@@ -95,50 +129,66 @@ export async function GET(req: Request) {
     if (!accessToken) return retour("erreur", "token");
     const expiresAt = expiresAtDepuisExpiresIn(tokenData?.expires_in);
 
-    // 1. Compte GBP.
+    // 1. Tous les comptes GBP accessibles à ce token (peut en gérer plusieurs).
     const accRes = await fetch(
       "https://mybusinessaccountmanagement.googleapis.com/v1/accounts",
       { headers: { Authorization: `Bearer ${accessToken}` } }
     );
     if (!accRes.ok) return retour("erreur", "no_account");
     const accData = await accRes.json().catch(() => ({}));
-    const compteBrut = accData?.accounts?.[0];
-    const compte: string | null = compteBrut?.name ?? null;
-    if (!compte) return retour("erreur", "no_account");
+    const comptes: Compte[] = (accData?.accounts as Compte[] | undefined) || [];
+    if (comptes.length === 0) return retour("erreur", "no_account");
 
-    // 2. Établissement publiable : `accounts/{id}/locations/{id}`.
-    const locations = await listerLocations(compte, accessToken);
-    const premiere = locations.find((l) => !!l.name);
-    if (!premiere?.name) return retour("erreur", "no_location");
-    const accountLocation = `${compte}/${premiere.name}`;
+    // 2. Tous les établissements publiables, tous comptes confondus :
+    // `accounts/{id}/locations/{id}`. Jamais de sélection automatique dès qu'il y
+    // a ambiguïté — voir le commentaire d'en-tête du fichier.
+    const etablissements = await listerTousLesEtablissements(comptes, accessToken);
+    if (etablissements.length === 0) return retour("erreur", "no_location");
 
-    const maj: Record<string, unknown> = {
+    const baseMaj: Record<string, unknown> = {
       pro_id: pro.id,
       provider: "google_business",
-      account_id: accountLocation,
-      account_name: premiere.title || compteBrut?.accountName || null,
       access_token_chiffre: chiffrerToken(accessToken),
       token_expires_at: expiresAt,
       scopes: GOOGLE_SCOPES.join(" "),
-      account_metadata: {
-        compte,
-        locations: locations
-          .filter((l) => !!l.name)
-          .map((l) => ({ name: `${compte}/${l.name}`, title: l.title ?? null }))
-          .slice(0, 20),
-      },
-      statut: "active",
       updated_at: new Date().toISOString(),
     };
     // Google ne renvoie le refresh_token qu'au premier consentement : ne jamais
     // écraser celui déjà stocké par un null, sinon plus aucun rafraîchissement.
-    if (refreshToken) maj.refresh_token_chiffre = chiffrerToken(refreshToken);
+    if (refreshToken) baseMaj.refresh_token_chiffre = chiffrerToken(refreshToken);
 
-    await admin
-      .from("social_connections")
-      .upsert(maj, { onConflict: "pro_id,provider" });
+    if (etablissements.length === 1) {
+      // Cas non-ambigu : un seul établissement possible, connexion directe.
+      const seul = etablissements[0];
+      await admin.from("social_connections").upsert(
+        {
+          ...baseMaj,
+          account_id: seul.name,
+          account_name: seul.title,
+          account_metadata: { compte: seul.compte, locations: [seul] },
+          comptes_disponibles: [],
+          statut: "active",
+        },
+        { onConflict: "pro_id,provider" }
+      );
+      return retour("connecte");
+    }
 
-    return retour("connecte");
+    // Cas ambigu : plusieurs établissements trouvés, on ne choisit rien à la
+    // place de l'utilisateur. Le token est déjà stocké (chiffré) pour permettre
+    // la validation finale sans nouvelle autorisation Google.
+    await admin.from("social_connections").upsert(
+      {
+        ...baseMaj,
+        account_id: null,
+        account_name: null,
+        account_metadata: {},
+        comptes_disponibles: etablissements.slice(0, 50),
+        statut: "en_attente_choix",
+      },
+      { onConflict: "pro_id,provider" }
+    );
+    return retour("choix");
   } catch {
     return retour("erreur", "exception");
   }

@@ -152,6 +152,8 @@ export function construireEtatConnexions(
     const c = parProvider.get(provider);
     return {
       provider,
+      // 'en_attente_choix' : plusieurs établissements détectés, l'utilisateur doit
+      // choisir avant que la connexion soit réellement active (cf. écran de choix).
       connecte: !!c && c.statut === "active",
       disponible: providerActive(provider),
       account_name: c?.account_name ?? null,
