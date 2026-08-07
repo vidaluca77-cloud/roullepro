@@ -15,6 +15,8 @@ export { renderDripJ5FinEssai }      from "./drip-j5-fin-essai";
 export { renderTrialWillEnd }        from "./trial-will-end";
 export { renderRelanceEssai }        from "./relance-essai";
 export { renderStudioSocialEchec }   from "./studio-social-echec";
+export { renderVoiceConfirmationPatient }   from "./voice-confirmation-patient";
+export { renderVoicePropositionAbonnement } from "./voice-proposition-abonnement";
 
 // Types publics
 export type { InscriptionAccuseParams }       from "./inscription-accuse";
@@ -30,3 +32,5 @@ export type { DripJ5Params }                  from "./drip-j5-fin-essai";
 export type { TrialWillEndParams }            from "./trial-will-end";
 export type { RelanceEssaiParams }            from "./relance-essai";
 export type { StudioSocialEchecParams }       from "./studio-social-echec";
+export type { VoiceConfirmationPatientParams }   from "./voice-confirmation-patient";
+export type { VoicePropositionAbonnementParams } from "./voice-proposition-abonnement";
